@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight, Mail } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { gsap, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
@@ -269,30 +270,15 @@ export function BlueprintFooter() {
             <Link
               href="#hero"
               onClick={(e) => handleAnchorClick(e, "#hero")}
-              className="inline-flex items-center gap-3 group"
+              className="inline-flex items-center group transition-transform duration-300 hover:opacity-95"
             >
-              <svg viewBox="0 0 40 40" className="w-7 h-7 sm:w-8 sm:h-8 overflow-visible">
-                <circle
-                  cx="20"
-                  cy="20"
-                  r="16"
-                  stroke="#FAF8F5"
-                  strokeWidth="3.5"
-                  strokeOpacity="0.25"
-                  fill="none"
-                />
-                <path
-                  d="M 20 4 A 16 16 0 0 1 36 20"
-                  stroke="#4ADE80"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                  fill="none"
-                  filter="drop-shadow(0px 0px 8px rgba(74, 222, 128, 0.9))"
-                />
-              </svg>
-              <span className="font-sans font-black text-base sm:text-lg tracking-[0.16em] text-[#FAF8F5]">
-                UNIFOLIO<sup className="text-[9px] font-normal ml-0.5 opacity-80">®</sup>
-              </span>
+              <Image
+                src="/Logo/unifolio-wordmark-white.png"
+                alt="Unifolio"
+                width={145}
+                height={33}
+                className="h-7 sm:h-8 w-auto object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
+              />
             </Link>
 
             <p className="font-sans text-sm text-[#8E9B91] font-normal leading-relaxed">

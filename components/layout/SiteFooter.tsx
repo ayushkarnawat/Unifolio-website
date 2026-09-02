@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
@@ -52,11 +53,14 @@ export function SiteFooter() {
         <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 md:grid-cols-12">
           {/* Brand Column */}
           <div className="footer-column md:col-span-6 space-y-4">
-            <Link href="/" className="flex items-center gap-1.5 font-sans text-2xl font-bold tracking-tight text-[#1C241E]">
-              <span className="flex h-7 w-7 items-center justify-center font-serif text-2xl font-black text-[#2E7D4E]">
-                u
-              </span>
-              <span className="font-semibold tracking-tight text-[#1C241E]">nifolio</span>
+            <Link href="/" className="inline-flex items-center group transition-transform duration-300 hover:opacity-95">
+              <Image
+                src="/Logo/unifolio-wordmark-dark.png"
+                alt="Unifolio"
+                width={140}
+                height={32}
+                className="h-7 w-auto object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
+              />
             </Link>
             <p className="max-w-sm font-sans text-sm text-[#525E55] leading-relaxed">
               {siteConfig.tagline}

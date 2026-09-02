@@ -59,6 +59,11 @@ export const metadata: Metadata = {
     title: siteConfig.name,
     description: siteConfig.description,
   },
+  icons: {
+    icon: "/Logo/unifolio-ring-transparent.png",
+    shortcut: "/Logo/unifolio-ring-transparent.png",
+    apple: "/Logo/unifolio-ring-transparent.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

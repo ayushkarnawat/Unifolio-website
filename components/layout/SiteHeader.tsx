@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useRef } from "react";
 import { Menu, X } from "lucide-react";
@@ -65,12 +66,16 @@ export function SiteHeader() {
         {/* Brand Logo */}
         <Link
           href="/"
-          className="flex items-center gap-1.5 font-sans text-2xl font-bold tracking-tight text-[#1C241E] group"
+          className="flex items-center group transition-transform duration-300 hover:opacity-95"
         >
-          <span className="flex h-7 w-7 items-center justify-center font-serif text-2xl font-black text-[#2E7D4E] transition-transform group-hover:scale-110">
-            u
-          </span>
-          <span className="font-semibold tracking-tight text-[#1C241E]">nifolio</span>
+          <Image
+            src="/Logo/unifolio-wordmark-dark.png"
+            alt="Unifolio"
+            width={132}
+            height={30}
+            priority
+            className="h-6 sm:h-7 w-auto object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
+          />
         </Link>
 
         {/* Desktop Navigation */}

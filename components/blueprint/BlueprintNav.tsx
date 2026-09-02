@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { smoothScrollTo } from "@/lib/gsap";
 
 export function BlueprintNav() {
@@ -34,34 +35,20 @@ export function BlueprintNav() {
           : "bg-transparent border-b border-transparent py-5"
       }`}
     >
-      {/* Left Brand Glyph + Logotype */}
+      {/* Left Brand Logo */}
       <Link
         href="#hero"
         onClick={(e) => handleAnchorClick(e, "#hero")}
-        className="flex items-center gap-3 group"
+        className="flex items-center group transition-transform duration-300 hover:opacity-95"
       >
-        <svg viewBox="0 0 40 40" className="w-6 h-6 sm:w-7 sm:h-7 overflow-visible transition-transform duration-300 group-hover:scale-105">
-          <circle
-            cx="20"
-            cy="20"
-            r="16"
-            stroke="#FAF8F5"
-            strokeWidth="3"
-            strokeOpacity="0.25"
-            fill="none"
-          />
-          <path
-            d="M 20 4 A 16 16 0 0 1 36 20"
-            stroke="#4ADE80"
-            strokeWidth="3.5"
-            strokeLinecap="round"
-            fill="none"
-            filter="drop-shadow(0px 0px 8px rgba(74, 222, 128, 0.9))"
-          />
-        </svg>
-        <span className="font-sans font-black text-sm sm:text-base tracking-[0.18em] text-[#FAF8F5] group-hover:text-white transition-colors">
-          UNIFOLIO<sup className="text-[9px] font-normal ml-0.5 opacity-70">®</sup>
-        </span>
+        <Image
+          src="/Logo/unifolio-wordmark-white.png"
+          alt="Unifolio"
+          width={132}
+          height={30}
+          priority
+          className="h-6 sm:h-7 w-auto object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
+        />
       </Link>
 
       {/* Center Navigation Links */}
