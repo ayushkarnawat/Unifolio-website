@@ -6,7 +6,6 @@
   html {
     background-color: #FAF8F5;
     color: #1C241E;
-    scroll-behavior: smooth;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

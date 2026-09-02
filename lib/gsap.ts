@@ -3,10 +3,19 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Flip } from "gsap/Flip";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+
+/**
+ * Check if the user has requested reduced motion
+ */
+export function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 
 // Register GSAP plugins safely on the client side
 if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger, Flip);
+  gsap.registerPlugin(ScrollTrigger, Flip, ScrollToPlugin);
 
   // Configure smooth default ease
   gsap.defaults({
@@ -19,14 +28,46 @@ if (typeof window !== "undefined") {
     limitCallbacks: true,
     ignoreMobileResize: true,
   });
+
+  // Normalize touch/trackpad/wheel scroll deltas so every pinned ScrollTrigger
+  // section (Hero, Stacking Cards, About Metrics) feels the same regardless of
+  // input device, and so a fast flick can't blow through pinned content
+  // uncontrollably. Skipped for reduced-motion users, who never receive pinned
+  // ScrollTriggers in the first place (each section bails out early).
+  if (!prefersReducedMotion()) {
+    ScrollTrigger.normalizeScroll(true);
+  }
 }
 
 /**
- * Check if the user has requested reduced motion
+ * Smoothly scroll to an in-page anchor using GSAP's ScrollToPlugin instead of
+ * native CSS smooth-scrolling. Native `scroll-behavior: smooth` runs its own
+ * scroll animation outside of GSAP's ticker, which fights ScrollTrigger's pin
+ * calculations (especially mid-pin) and causes visible catch-up snapping.
+ * Driving the scroll through GSAP keeps it on the same rAF loop ScrollTrigger
+ * already uses, so anchor navigation and pinned sections never fight.
  */
-export function prefersReducedMotion(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+export function smoothScrollTo(
+  target: string | Element,
+  options: { offset?: number; duration?: number } = {}
+) {
+  if (typeof window === "undefined") return;
+  const { offset = 0, duration = 1.1 } = options;
+
+  const el = typeof target === "string" ? document.querySelector(target) : target;
+  if (!el) return;
+
+  if (prefersReducedMotion()) {
+    el.scrollIntoView({ behavior: "auto", block: "start" });
+    return;
+  }
+
+  gsap.to(window, {
+    duration,
+    ease: "power2.inOut",
+    scrollTo: { y: el, offsetY: offset, autoKill: true },
+    overwrite: "auto",
+  });
 }
 
 /**
