@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { useGSAP } from "@gsap/react";
-import { gsap, prefersReducedMotion } from "@/lib/gsap";
+import { gsap, ScrollTrigger, prefersReducedMotion } from "@/lib/gsap";
 
 export function BlueprintHero() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -34,7 +34,12 @@ export function BlueprintHero() {
       const dispEl = document.getElementById("heroWaveDisplacement");
       if (turbEl) {
         const waveFlowState = { freqX: 0.0045, freqY: 0.009, scale: 13 };
-        gsap.to(waveFlowState, {
+        // feTurbulence/feDisplacementMap recompute is one of the most expensive
+        // things a browser can paint each frame. The ambient drift is slow and
+        // subtle, so sampling it at ~20fps (every 3rd rAF tick) instead of 60fps
+        // is visually indistinguishable while cutting filter recompute cost by ~2/3.
+        let frameSkip = 0;
+        const waveTween = gsap.to(waveFlowState, {
           freqX: 0.0068,
           freqY: 0.0125,
           scale: 17,
@@ -43,6 +48,8 @@ export function BlueprintHero() {
           yoyo: true,
           ease: "sine.inOut",
           onUpdate: () => {
+            frameSkip = (frameSkip + 1) % 3;
+            if (frameSkip !== 0) return;
             turbEl.setAttribute(
               "baseFrequency",
               `${waveFlowState.freqX} ${waveFlowState.freqY}`
@@ -52,7 +59,24 @@ export function BlueprintHero() {
             }
           },
         });
+
+        // Only pay the filter-recompute cost while the hero is actually
+        // on screen; pause it entirely once the user has scrolled past.
+        ScrollTrigger.create({
+          trigger: containerRef.current,
+          start: "top bottom",
+          end: "bottom top",
+          onEnter: () => waveTween.play(),
+          onEnterBack: () => waveTween.play(),
+          onLeave: () => waveTween.pause(),
+          onLeaveBack: () => waveTween.pause(),
+        });
       }
+
+      // Cache the layout read the orbital choreography needs instead of
+      // querying clientWidth on every single scrub tick. Only recomputed when
+      // ScrollTrigger actually re-measures the page (resize/orientation change).
+      let cachedWrapWidth = cardsWrapRef.current?.clientWidth || 640;
 
       // SINGLE COORDINATED MASTER GSAP TIMELINE TIED TO SCROLL TRIGGER
       const tl = gsap.timeline({
@@ -64,6 +88,9 @@ export function BlueprintHero() {
           scrub: 1.6,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          onRefresh: () => {
+            cachedWrapWidth = cardsWrapRef.current?.clientWidth || 640;
+          },
         },
       });
 
@@ -112,7 +139,7 @@ export function BlueprintHero() {
           onUpdate: () => {
             const p = choreographyState.progress; // Master timeline progress (0.0 to 1.0)
 
-            const wrapWidth = cardsWrapRef.current?.clientWidth || 640;
+            const wrapWidth = cachedWrapWidth;
             const stepX = Math.min(68, wrapWidth * 0.125);
 
             // Orbit focal center & radii (shared across formation)
@@ -204,7 +231,7 @@ export function BlueprintHero() {
           scale: 0.95,
           x: 35,
           opacity: 0.22,
-          filter: "blur(4px)",
+          filter: "blur(3px)",
           ease: "power2.inOut",
           duration: 0.18,
         },
@@ -218,7 +245,7 @@ export function BlueprintHero() {
           opacity: 0,
           y: 30,
           scale: 0.98,
-          filter: "blur(6px)",
+          filter: "blur(4px)",
         },
         {
           opacity: 1,
@@ -234,14 +261,17 @@ export function BlueprintHero() {
       // Extended holding interval (t: 0.78 -> 0.88) ensures user comfortably reads the full statement
       tl.to({}, { duration: 0.10 }, 0.78);
 
-      // Gentle, continuous resolution into the incoming horizontal narrative (t: 0.88 -> 1.0)
+      // Gentle, continuous resolution into the incoming horizontal narrative (t: 0.88 -> 1.0).
+      // Fully resolves to transparent (rather than lingering at low opacity) so the handoff
+      // into Stacking Cards' own entrance reads as one continuous motion instead of a
+      // hero "ghost" still faintly visible under the next section's fade-in.
       tl.to(
         [textWrapRef.current, cardsWrapRef.current],
         {
-          opacity: 0.10,
+          opacity: 0,
           y: -16,
           scale: 0.98,
-          filter: "blur(3px)",
+          filter: "blur(2px)",
           ease: "power1.inOut",
           duration: 0.12,
         },
@@ -256,7 +286,11 @@ export function BlueprintHero() {
       id="hero"
       ref={containerRef}
       className="relative w-full bg-[#040705] select-none"
-      style={{ height: "460vh" }}
+      // Height must equal the ScrollTrigger's pin distance (end: "+=420%" = 420vh).
+      // A larger authored height than the actual pin distance leaves a dead,
+      // unpinned scroll gap after the pin releases and before the next
+      // section's own pin engages, which reads as an abrupt stall.
+      style={{ height: "420vh" }}
     >
       {/* Anchor for Section 2 Nav Link */}
       <div id="statement" className="absolute top-[35%] pointer-events-none" />
