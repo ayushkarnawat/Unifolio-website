@@ -44,15 +44,17 @@ export function BlueprintHero() {
 
       // =========================================================================
       // 0. CONTINUOUS ORGANIC AMBIENT MOTION (Existing Wave Lines in Hero Visual)
-      // Slow, smooth, seamless GSAP interpolation driving organic wave flow
+      // Prominent, smooth, seamless GSAP interpolation driving organic wave flow
       // =========================================================================
       const turbEl = document.getElementById("heroWaveTurbulence");
+      const dispEl = document.getElementById("heroWaveDisplacement");
       if (turbEl) {
-        const waveFlowState = { freqX: 0.0035, freqY: 0.0055 };
+        const waveFlowState = { freqX: 0.004, freqY: 0.008, scale: 14 };
         gsap.to(waveFlowState, {
-          freqX: 0.0052,
-          freqY: 0.0082,
-          duration: 16,
+          freqX: 0.0075,
+          freqY: 0.0135,
+          scale: 22,
+          duration: 10,
           repeat: -1,
           yoyo: true,
           ease: "sine.inOut",
@@ -61,6 +63,9 @@ export function BlueprintHero() {
               "baseFrequency",
               `${waveFlowState.freqX} ${waveFlowState.freqY}`
             );
+            if (dispEl) {
+              dispEl.setAttribute("scale", `${waveFlowState.scale}`);
+            }
           },
         });
       }
@@ -310,15 +315,16 @@ export function BlueprintHero() {
                 <feTurbulence
                   id="heroWaveTurbulence"
                   type="fractalNoise"
-                  baseFrequency="0.0035 0.0055"
+                  baseFrequency="0.004 0.008"
                   numOctaves="2"
                   result="noise"
                   seed="4"
                 />
                 <feDisplacementMap
+                  id="heroWaveDisplacement"
                   in="SourceGraphic"
                   in2="noise"
-                  scale="4.5"
+                  scale="16"
                   xChannelSelector="R"
                   yChannelSelector="G"
                 />
