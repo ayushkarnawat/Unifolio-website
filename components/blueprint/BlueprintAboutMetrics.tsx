@@ -203,15 +203,8 @@ export function BlueprintAboutMetrics() {
             </h2>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-8 pb-4">
-            <div className="flex items-center gap-3">
-              <span className="w-2 h-2 rounded-full bg-[#4ADE80] shadow-[0_0_8px_#4ADE80]" />
-              <span className="font-mono text-xs sm:text-sm text-[#8E9B91] uppercase tracking-[0.25em] font-medium">
-                Our Mission
-              </span>
-            </div>
-
-            <div className="max-w-md sm:text-right space-y-1">
+          <div className="flex items-end justify-end pb-4">
+            <div className="max-w-md text-left sm:text-right space-y-1">
               <p className="font-sans font-light text-2xl sm:text-3xl lg:text-4xl text-[#FAF8F5] leading-tight tracking-tight">
                 Creating clarity <br />
                 with sovereign intelligence

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { faqContent } from "@/content/faq";
 import { gsap, prefersReducedMotion } from "@/lib/gsap";
@@ -21,14 +21,21 @@ export function BlueprintFaq() {
     const activeCard = cardRefs.current[idx];
 
     if (activeCard) {
-      const cardLeft = activeCard.offsetLeft;
-      const targetScroll = Math.max(0, cardLeft - 24);
+      requestAnimationFrame(() => {
+        const cardLeft = activeCard.offsetLeft;
+        const cardWidth = activeCard.offsetWidth;
+        const trackWidth = track.clientWidth;
+        const maxScroll = Math.max(0, track.scrollWidth - trackWidth);
 
-      gsap.to(track, {
-        scrollLeft: targetScroll,
-        duration: 0.75,
-        ease: "power2.out",
-        overwrite: "auto",
+        // Center active card smoothly within the visible container, safely bounded
+        const targetScroll = Math.max(0, Math.min(maxScroll, cardLeft - (trackWidth - cardWidth) / 2));
+
+        gsap.to(track, {
+          scrollLeft: targetScroll,
+          duration: 0.65,
+          ease: "power2.out",
+          overwrite: "auto",
+        });
       });
     }
   }, []);
@@ -97,6 +104,7 @@ export function BlueprintFaq() {
     >
       {/* Seamless Top Blend from About */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#030604] to-transparent z-10" />
+
       {/* =========================================================================
           ATMOSPHERIC BACKGROUND VISUALS
          ========================================================================= */}
@@ -208,15 +216,8 @@ export function BlueprintFaq() {
            ========================================================================= */}
         <div className="faq-header-elem flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-4 border-b border-white/[0.08]">
           
-          {/* Left: Section Tag + Headline */}
+          {/* Left: Headline */}
           <div className="space-y-4 max-w-xl">
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] shadow-[0_0_6px_#4ADE80]" />
-              <span className="font-mono text-xs sm:text-sm text-[#4ADE80] uppercase tracking-[0.25em] font-semibold">
-                FAQ —
-              </span>
-            </div>
-
             <h2 className="font-sans font-light md:font-normal text-4xl sm:text-5xl lg:text-[58px] text-[#FAF8F5] tracking-tight leading-[1.06]">
               Frequently <br />
               Asked Questions
@@ -284,34 +285,14 @@ export function BlueprintFaq() {
                   onClick={() => scrollToActive(idx)}
                   className={`group relative rounded-[28px] sm:rounded-[32px] border transition-[width,background-color,border-color,box-shadow] duration-500 ease-out cursor-pointer flex flex-col justify-between overflow-hidden select-none ${
                     isActive
-                      ? "w-[340px] sm:w-[460px] md:w-[540px] lg:w-[580px] bg-gradient-to-br from-[#08180e] via-[#051009] to-[#020805] border-[#4ADE80]/40 shadow-[0_24px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(74,222,128,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] p-7 sm:p-9 md:p-10 min-h-[380px] sm:min-h-[420px]"
-                      : "w-[220px] sm:w-[260px] md:w-[280px] bg-[#050b07]/80 border-white/[0.08] hover:border-white/20 hover:bg-[#08120b] p-6 sm:p-8 min-h-[380px] sm:min-h-[420px]"
+                      ? "w-[340px] sm:w-[460px] md:w-[540px] lg:w-[580px] bg-gradient-to-br from-[#08180e] via-[#051009] to-[#020805] border-[#4ADE80]/40 shadow-[0_24px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(74,222,128,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] p-7 sm:p-9 md:p-10 min-h-[360px] sm:min-h-[400px]"
+                      : "w-[220px] sm:w-[260px] md:w-[280px] bg-[#050b07]/80 border-white/[0.08] hover:border-white/20 hover:bg-[#08120b] p-6 sm:p-8 min-h-[360px] sm:min-h-[400px]"
                   }`}
                 >
                   {/* Active Top Specular Edge */}
                   {isActive && (
                     <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#86EFAC]/40 to-transparent" />
                   )}
-
-                  {/* Card Header: Index & Status Indicator */}
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      className={`font-mono text-xs sm:text-sm font-semibold tracking-widest transition-colors ${
-                        isActive ? "text-[#4ADE80]" : "text-[#8E9B91]/70 group-hover:text-[#4ADE80]"
-                      }`}
-                    >
-                      {item.id}
-                    </span>
-
-                    {isActive ? (
-                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#102417] border border-[#4ADE80]/40 text-[#4ADE80] font-mono text-[10px] uppercase tracking-wider shadow-[0_0_10px_rgba(74,222,128,0.15)]">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] shadow-[0_0_6px_#4ADE80] animate-pulse" />
-                        Active
-                      </div>
-                    ) : (
-                      <div className="w-2 h-2 rounded-full bg-white/20 group-hover:bg-[#4ADE80]/60 transition-colors" />
-                    )}
-                  </div>
 
                   {/* Card Body: Question & (if active) Answer text */}
                   <div className="space-y-4 my-auto py-2">
@@ -327,36 +308,12 @@ export function BlueprintFaq() {
 
                     {/* Detailed Answer */}
                     {isActive && (
-                      <div className="faq-active-answer pt-3 border-t border-white/[0.08]">
+                      <div className="faq-active-answer pt-4 border-t border-white/[0.08]">
                         <p className="font-sans text-xs sm:text-sm md:text-base text-[#8E9B91] leading-relaxed font-normal">
                           {item.answer}
                         </p>
                       </div>
                     )}
-                  </div>
-
-                  {/* Card Bottom Accent Indicator */}
-                  <div className="flex items-center justify-between pt-2">
-                    {isActive ? (
-                      <div className="flex items-center gap-2 font-mono text-[11px] text-[#4ADE80] tracking-widest uppercase">
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Insight</span>
-                      </div>
-                    ) : (
-                      <span className="font-mono text-[11px] text-[#8E9B91]/50 group-hover:text-[#4ADE80] transition-colors uppercase tracking-wider">
-                        Expand →
-                      </span>
-                    )}
-
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
-                        isActive
-                          ? "bg-[#102417] border border-[#4ADE80]/60 text-[#4ADE80]"
-                          : "bg-white/[0.04] border border-white/10 text-white/40 group-hover:border-white/30 group-hover:text-white"
-                      }`}
-                    >
-                      <span className="text-xs font-mono font-bold">{idx + 1}</span>
-                    </div>
                   </div>
                 </div>
               );

@@ -22,12 +22,12 @@ export function BlueprintStackingCards() {
         return -(trackWidth - viewportWidth + 80);
       };
 
-      // SINGLE COORDINATED TIMELINE FOR HORIZONTAL STORYTELLING WITH CINEMATIC IN/OUT DISSOLVE
+      // SINGLE COORDINATED TIMELINE FOR HORIZONTAL STORYTELLING WITH GENEROUS FINAL DWELL PAUSE
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: () => `+=${Math.max(2400, (track.scrollWidth - window.innerWidth) * 1.8 + 1200)}`,
+          end: () => `+=${Math.max(3600, (track.scrollWidth - window.innerWidth) * 2.2 + 2000)}`,
           pin: stageRef.current,
           scrub: 1.6,
           invalidateOnRefresh: true,
@@ -35,7 +35,7 @@ export function BlueprintStackingCards() {
         },
       });
 
-      // 1. Smooth Cinematic Entrance: Natural Emergence from Hero Resolution (0.0 -> 0.12)
+      // 1. Smooth Cinematic Entrance: Natural Emergence from Hero Resolution (0.0 -> 0.10)
       tl.fromTo(
         track,
         {
@@ -47,34 +47,36 @@ export function BlueprintStackingCards() {
           opacity: 1,
           y: 0,
           filter: "blur(0px)",
-          duration: 0.14,
+          duration: 0.10,
           ease: "power2.out",
         },
         0
       );
 
-      // 2. Continuous Horizontal Translation across the Pinned Viewport (0.08 -> 0.88)
+      // 2. Continuous Horizontal Translation across the Pinned Viewport (0.05 -> 0.70)
       tl.to(
         track,
         {
           x: getScrollAmount,
-          duration: 0.80,
+          duration: 0.65,
           ease: "power1.inOut",
         },
-        0.08
+        0.05
       );
 
-      // 3. Smooth Cinematic Exit: Soft Dissolve & Drift Out into Next Section (0.86 -> 1.0)
+      // 3. Generous Intentional End Dwell Pause (0.70 -> 0.90): Final panel remains fully visible & legible
+
+      // 4. Smooth Cinematic Exit: Soft Dissolve & Drift Out into About Us (0.90 -> 1.00)
       tl.to(
         track,
         {
           opacity: 0,
-          y: -20,
-          filter: "blur(3px)",
-          duration: 0.14,
-          ease: "power2.in",
+          y: -16,
+          filter: "blur(2px)",
+          duration: 0.10,
+          ease: "power1.inOut",
         },
-        0.86
+        0.90
       );
     },
     { scope: containerRef }
@@ -85,7 +87,7 @@ export function BlueprintStackingCards() {
       id="offerings"
       ref={containerRef}
       className="relative w-full bg-[#0E1310] select-none"
-      style={{ height: "520vh" }}
+      style={{ height: "640vh" }}
     >
       {/* Seamless Top Gradient Handoff from Hero */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-[#0E1310] via-[#0E1310]/70 to-transparent z-10" />
