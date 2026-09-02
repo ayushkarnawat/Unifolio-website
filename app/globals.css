@@ -125,4 +125,64 @@
   .animate-float-idle {
     animation: float-idle 6s ease-in-out infinite;
   }
+
+  @keyframes ambient-drift-slow {
+    0%, 100% {
+      transform: translate(0px, 0px) rotate(0deg);
+    }
+    33% {
+      transform: translate(2px, -3px) rotate(1deg);
+    }
+    66% {
+      transform: translate(-2px, 2px) rotate(-1deg);
+    }
+  }
+
+  .animate-ambient-drift {
+    animation: ambient-drift-slow 8s ease-in-out infinite;
+  }
+
+  @keyframes ambient-drift-reverse {
+    0%, 100% {
+      transform: translate(0px, 0px) rotate(0deg);
+    }
+    33% {
+      transform: translate(-3px, 2px) rotate(-1.5deg);
+    }
+    66% {
+      transform: translate(2px, -2px) rotate(1deg);
+    }
+  }
+
+  .animate-ambient-drift-rev {
+    animation: ambient-drift-reverse 9s ease-in-out infinite;
+  }
+
+  @keyframes ambient-glow-breathe {
+    0%, 100% {
+      opacity: 0.6;
+      transform: scale(0.98);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.03);
+    }
+  }
+
+  .animate-ambient-glow {
+    animation: ambient-glow-breathe 4s ease-in-out infinite;
+  }
+
+  @keyframes ambient-radar-spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-ambient-spin-slow {
+    animation: ambient-radar-spin 28s linear infinite;
+  }
 }

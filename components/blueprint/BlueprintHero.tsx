@@ -28,50 +28,95 @@ export function BlueprintHero() {
       });
 
       // =========================================================================
-      // 0. CONTINUOUS ORGANIC AMBIENT MOTION (Liquid Wave Strata in Hero Visual)
+      // 0. CONTINUOUS LUXURIOUS AMBIENT WAVE MOTION
+      //    (Calm, organic, slow fluid displacement & radiating signal pulses)
       // =========================================================================
       const turbEl = document.getElementById("heroWaveTurbulence");
       const dispEl = document.getElementById("heroWaveDisplacement");
-      if (turbEl) {
-        const waveFlowState = { freqX: 0.0045, freqY: 0.009, scale: 13 };
-        // feTurbulence/feDisplacementMap recompute is one of the most expensive
-        // things a browser can paint each frame. The ambient drift is slow and
-        // subtle, so sampling it at ~20fps (every 3rd rAF tick) instead of 60fps
-        // is visually indistinguishable while cutting filter recompute cost by ~2/3.
+      
+      let waveTween: gsap.core.Tween | null = null;
+      if (turbEl && dispEl) {
+        // Multi-frequency organic oscillation: slow, fluid, non-mechanical
+        const waveState = { phase: 0 };
         let frameSkip = 0;
-        const waveTween = gsap.to(waveFlowState, {
-          freqX: 0.0068,
-          freqY: 0.0125,
-          scale: 17,
-          duration: 18,
+        
+        waveTween = gsap.to(waveState, {
+          phase: Math.PI * 2,
+          duration: 30, // Long, luxurious 30-second harmonic cycle
+          repeat: -1,
+          ease: "none",
+          onUpdate: () => {
+            frameSkip = (frameSkip + 1) % 2;
+            if (frameSkip !== 0) return;
+            
+            // Dual incommensurate harmonics (golden ratio) for non-repeating natural fluid drift
+            const p1 = waveState.phase;
+            const p2 = p1 * 1.618033;
+            
+            const fx = 0.0032 + 0.0018 * Math.sin(p1);
+            const fy = 0.0068 + 0.0028 * Math.cos(p2);
+            const scale = 16 + 8 * (0.6 * Math.sin(p2) + 0.4 * Math.cos(p1));
+            
+            turbEl.setAttribute("baseFrequency", `${fx.toFixed(5)} ${fy.toFixed(5)}`);
+            dispEl.setAttribute("scale", `${scale.toFixed(1)}`);
+          },
+        });
+      }
+
+      // Staggered, gentle concentric energy pulses radiating through the wave strata
+      const pulse1 = gsap.fromTo(
+        ".hero-wave-pulse-1",
+        { scale: 0.85, opacity: 0 },
+        {
+          scale: 1.85,
+          opacity: 0.35,
+          duration: 10,
           repeat: -1,
           yoyo: true,
           ease: "sine.inOut",
-          onUpdate: () => {
-            frameSkip = (frameSkip + 1) % 3;
-            if (frameSkip !== 0) return;
-            turbEl.setAttribute(
-              "baseFrequency",
-              `${waveFlowState.freqX} ${waveFlowState.freqY}`
-            );
-            if (dispEl) {
-              dispEl.setAttribute("scale", `${waveFlowState.scale}`);
-            }
-          },
-        });
+        }
+      );
 
-        // Only pay the filter-recompute cost while the hero is actually
-        // on screen; pause it entirely once the user has scrolled past.
-        ScrollTrigger.create({
-          trigger: containerRef.current,
-          start: "top bottom",
-          end: "bottom top",
-          onEnter: () => waveTween.play(),
-          onEnterBack: () => waveTween.play(),
-          onLeave: () => waveTween.pause(),
-          onLeaveBack: () => waveTween.pause(),
-        });
-      }
+      const pulse2 = gsap.fromTo(
+        ".hero-wave-pulse-2",
+        { scale: 0.9, opacity: 0 },
+        {
+          scale: 2.15,
+          opacity: 0.25,
+          duration: 14,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: 4,
+        }
+      );
+
+      // Pause continuous ambient animations when hero is scrolled out of viewport
+      ScrollTrigger.create({
+        trigger: containerRef.current,
+        start: "top bottom",
+        end: "bottom top",
+        onEnter: () => {
+          waveTween?.play();
+          pulse1.play();
+          pulse2.play();
+        },
+        onEnterBack: () => {
+          waveTween?.play();
+          pulse1.play();
+          pulse2.play();
+        },
+        onLeave: () => {
+          waveTween?.pause();
+          pulse1.pause();
+          pulse2.pause();
+        },
+        onLeaveBack: () => {
+          waveTween?.pause();
+          pulse1.pause();
+          pulse2.pause();
+        },
+      });
 
       // Cache the layout read the orbital choreography needs instead of
       // querying clientWidth on every single scrub tick. Only recomputed when
@@ -83,9 +128,30 @@ export function BlueprintHero() {
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: "+=420%",
+          // More scroll distance devoted to the same choreography (same
+          // relative timeline fractions throughout) so a normal scroll
+          // gesture no longer blows through the entrance before it can
+          // be seen. Nothing about the motion itself changes — it just
+          // takes more physical scrolling to get through it.
+          end: "+=1000%",
           pin: stageRef.current,
-          scrub: 1.6,
+          // Slightly higher scrub lag smooths out fast/uneven scroll input
+          // a bit further without feeling disconnected from the scrollbar.
+          scrub: 1.5,
+          snap: {
+            snapTo: [0, 0.30, 0.43, 0.56, 0.69, 0.82, 0.95, 1.0],
+            duration: { min: 0.22, max: 0.45 },
+            // 40ms was shorter than the natural gap between consecutive
+            // mouse-wheel scroll events, so snap could engage *between*
+            // wheel ticks during ordinary scrolling, start animating the
+            // scroll position toward the nearest snap point, then get
+            // interrupted by the next tick — a real fight that read as
+            // jitter, and it also yanked the view away from any brief
+            // pause almost instantly. A quarter-second delay only engages
+            // snap once the user has genuinely stopped scrolling.
+            delay: 0.25,
+            ease: "power2.out",
+          },
           anticipatePin: 1,
           invalidateOnRefresh: true,
           onRefresh: () => {
@@ -95,12 +161,12 @@ export function BlueprintHero() {
       });
 
       // =========================================================================
-      // 1. HERO APERTURE EXPANSION & OVERLAPPING HANDOFF (t: 0.0 -> 0.28)
+      // 1. HERO APERTURE EXPANSION & OVERLAPPING HANDOFF (t: 0.0 -> 0.18)
       // =========================================================================
       tl.fromTo(
         heroVisualRef.current,
         { scale: 1, opacity: 1 },
-        { scale: 8.5, opacity: 0, ease: "power2.out", duration: 0.28 },
+        { scale: 8.5, opacity: 0, ease: "power2.out", duration: 0.18 },
         0
       );
 
@@ -109,8 +175,8 @@ export function BlueprintHero() {
         { opacity: 0, scale: 1 },
         {
           keyframes: [
-            { opacity: 1, scale: 1.4, duration: 0.14, ease: "sine.out" },
-            { opacity: 0, scale: 2.1, duration: 0.14, ease: "power1.out" },
+            { opacity: 1, scale: 1.4, duration: 0.09, ease: "sine.out" },
+            { opacity: 0, scale: 2.1, duration: 0.09, ease: "power1.out" },
           ],
         },
         0
@@ -120,12 +186,12 @@ export function BlueprintHero() {
       tl.fromTo(
         lasersRef.current,
         { x: 260, opacity: 0 },
-        { x: -140, opacity: 1, duration: 0.6, ease: "sine.inOut" },
-        0.06
+        { x: -140, opacity: 1, duration: 0.4, ease: "sine.inOut" },
+        0.04
       );
 
       // =========================================================================
-      // 2. STAGGERED 3D ORBITAL CONSTELLATION CHOREOGRAPHY (t: 0.06 -> 0.54)
+      // 2. STAGGERED 3D ORBITAL CONSTELLATION CHOREOGRAPHY (t: 0.04 -> 0.26)
       // Master coordinated timeline with cascading quintic smootherstep docking
       // =========================================================================
       const choreographyState = { progress: 0 };
@@ -135,7 +201,7 @@ export function BlueprintHero() {
         {
           progress: 1,
           ease: "none",
-          duration: 0.48,
+          duration: 0.22,
           onUpdate: () => {
             const p = choreographyState.progress; // Master timeline progress (0.0 to 1.0)
 
@@ -167,8 +233,16 @@ export function BlueprintHero() {
               const orbRotY = Math.cos(theta) * 16;
               const orbRotX = Math.sin(theta) * 8;
 
-              // Staggered emergence from aperture core (Back cards emerge first)
-              const staggerEmergence = Math.max(0, Math.min(1, (p - (5 - i) * 0.02) * 5.0));
+              // Staggered emergence from aperture core (Back cards emerge first).
+              // Eased with the same quintic smootherstep used for docking below —
+              // a linear ramp here has zero velocity nowhere, so opacity/scale
+              // would snap on and snap off at the edges of each card's local
+              // emergence window. Smoothstepping it gives every card a true
+              // zero-velocity start and handoff into the dock phase, so the
+              // fade-up reads as one continuous materialize rather than a pop.
+              const emergenceRaw = Math.max(0, Math.min(1, (p - (5 - i) * 0.02) * 5.0));
+              const staggerEmergence =
+                emergenceRaw * emergenceRaw * emergenceRaw * (emergenceRaw * (emergenceRaw * 6 - 15) + 10);
               const currentScaleBase = orbScale * (0.35 + 0.65 * staggerEmergence);
               const currentOpacity = staggerEmergence;
 
@@ -218,27 +292,13 @@ export function BlueprintHero() {
             });
           },
         },
-        0.06
+        0.04
       );
 
       // =========================================================================
-      // 3. SEAMLESS VISUAL HANDOFF & STATEMENT REVEAL (t: 0.56 -> 1.0)
-      // Cards recede smoothly -> Statement reveals and settles -> Reading pause -> Gentle resolve into next section
+      // 3. STATEMENT REVEAL & STACK COEXISTENCE (t: 0.20 -> 0.34)
+      // Statement expands and settles alongside the docked cards without hiding them
       // =========================================================================
-      tl.to(
-        cardsWrapRef.current,
-        {
-          scale: 0.95,
-          x: 35,
-          opacity: 0.22,
-          filter: "blur(3px)",
-          ease: "power2.inOut",
-          duration: 0.18,
-        },
-        0.56
-      );
-
-      // Large Statement smoothly expands and commands the stage
       tl.fromTo(
         textWrapRef.current,
         {
@@ -252,30 +312,108 @@ export function BlueprintHero() {
           y: 0,
           scale: 1.0,
           filter: "blur(0px)",
-          duration: 0.20,
+          duration: 0.10,
           ease: "power2.out",
+        },
+        0.20
+      );
+
+      // Stationary Dwell 1: Card 0 (Scattered) active in front (t: 0.26 -> 0.34) [Snap: 0.30]
+      tl.to({}, { duration: 0.08 }, 0.26);
+
+      // =========================================================================
+      // 4. DISCRETE SCROLL-DRIVEN CARD PEELS (ONE SCROLL PER CARD)
+      // =========================================================================
+
+      // Step 1: Peel Card 0 (Scattered) upward -> Reveals Card 1 (Collected)
+      tl.to(
+        cardEls[0],
+        {
+          y: -950,
+          opacity: 0,
+          ease: "power1.inOut",
+          duration: 0.05,
+        },
+        0.34
+      );
+
+      // Stationary Dwell 2: Card 1 (Collected) active (t: 0.39 -> 0.47) [Snap: 0.43]
+      tl.to({}, { duration: 0.08 }, 0.39);
+
+      // Step 2: Peel Card 1 (Collected) upward -> Reveals Card 2 (Organized)
+      tl.to(
+        cardEls[1],
+        {
+          y: -950,
+          opacity: 0,
+          ease: "power1.inOut",
+          duration: 0.05,
+        },
+        0.47
+      );
+
+      // Stationary Dwell 3: Card 2 (Organized) active (t: 0.52 -> 0.60) [Snap: 0.56]
+      tl.to({}, { duration: 0.08 }, 0.52);
+
+      // Step 3: Peel Card 2 (Organized) upward -> Reveals Card 3 (Revealed)
+      tl.to(
+        cardEls[2],
+        {
+          y: -950,
+          opacity: 0,
+          ease: "power1.inOut",
+          duration: 0.05,
         },
         0.60
       );
 
-      // Extended holding interval (t: 0.78 -> 0.88) ensures user comfortably reads the full statement
-      tl.to({}, { duration: 0.10 }, 0.78);
+      // Stationary Dwell 4: Card 3 (Revealed) active (t: 0.65 -> 0.73) [Snap: 0.69]
+      tl.to({}, { duration: 0.08 }, 0.65);
 
-      // Gentle, continuous resolution into the incoming horizontal narrative (t: 0.88 -> 1.0).
-      // Fully resolves to transparent (rather than lingering at low opacity) so the handoff
-      // into Stacking Cards' own entrance reads as one continuous motion instead of a
-      // hero "ghost" still faintly visible under the next section's fade-in.
+      // Step 4: Peel Card 3 (Revealed) upward -> Reveals Card 4 (Connected)
       tl.to(
-        [textWrapRef.current, cardsWrapRef.current],
+        cardEls[3],
+        {
+          y: -950,
+          opacity: 0,
+          ease: "power1.inOut",
+          duration: 0.05,
+        },
+        0.73
+      );
+
+      // Stationary Dwell 5: Card 4 (Connected) active (t: 0.78 -> 0.86) [Snap: 0.82]
+      tl.to({}, { duration: 0.08 }, 0.78);
+
+      // Step 5: Peel Card 4 (Connected) upward -> Reveals Card 5 (Clear)
+      tl.to(
+        cardEls[4],
+        {
+          y: -950,
+          opacity: 0,
+          ease: "power1.inOut",
+          duration: 0.05,
+        },
+        0.86
+      );
+
+      // Stationary Dwell 6: Card 5 (Clear) active in full clarity (t: 0.91 -> 0.97) [Snap: 0.95]
+      tl.to({}, { duration: 0.06 }, 0.91);
+
+      // =========================================================================
+      // 5. GENTLE, CONTINUOUS RESOLUTION INTO NEXT CHAPTER (t: 0.97 -> 1.00)
+      // =========================================================================
+      tl.to(
+        [textWrapRef.current, cardsWrapRef.current, lasersRef.current],
         {
           opacity: 0,
           y: -16,
           scale: 0.98,
           filter: "blur(2px)",
           ease: "power1.inOut",
-          duration: 0.12,
+          duration: 0.03,
         },
-        0.88
+        0.97
       );
     },
     { scope: containerRef }
@@ -286,11 +424,10 @@ export function BlueprintHero() {
       id="hero"
       ref={containerRef}
       className="relative w-full bg-[#040705] select-none"
-      // Height must equal the ScrollTrigger's pin distance (end: "+=420%" = 420vh).
-      // A larger authored height than the actual pin distance leaves a dead,
-      // unpinned scroll gap after the pin releases and before the next
-      // section's own pin engages, which reads as an abrupt stall.
-      style={{ height: "420vh" }}
+      // Must match the ScrollTrigger's pin distance (end: "+=1000%" = 1000vh).
+      // A mismatch here leaves a dead, unpinned scroll gap between this
+      // section's pin releasing and the next section's pin engaging.
+      style={{ height: "1000vh" }}
     >
       {/* Anchor for Section 2 Nav Link */}
       <div id="statement" className="absolute top-[35%] pointer-events-none" />
@@ -310,6 +447,7 @@ export function BlueprintHero() {
           className="absolute inset-0 w-full h-full z-10 flex items-center justify-center pointer-events-none"
           style={{ transformOrigin: "60.5% 47.8%" }}
         >
+          {/* 1. Fluid Dynamic Wave Layer (Displacement Filter Applied to Wave Strata) */}
           <div
             className="relative w-full h-full pointer-events-none"
             style={{ filter: "url(#heroWaveFlowFilter)" }}
@@ -324,17 +462,55 @@ export function BlueprintHero() {
             />
           </div>
 
-          {/* Seamless Organic Displacement Filter for Existing Hero Wave Lines */}
+          {/* 2. Concentric Radiating Wave Energy Pulses (Flowing Signal Paths) */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div
+              className="hero-wave-pulse-1 pointer-events-none absolute w-[550px] h-[550px] rounded-full blur-2xl opacity-0"
+              style={{
+                left: "calc(60.5% - 275px)",
+                top: "calc(47.8% - 275px)",
+                background: "radial-gradient(circle, rgba(74,222,128,0) 38%, rgba(74,222,128,0.22) 54%, rgba(34,197,94,0) 68%)",
+              }}
+            />
+            <div
+              className="hero-wave-pulse-2 pointer-events-none absolute w-[720px] h-[720px] rounded-full blur-3xl opacity-0"
+              style={{
+                left: "calc(60.5% - 360px)",
+                top: "calc(47.8% - 360px)",
+                background: "radial-gradient(circle, rgba(74,222,128,0) 36%, rgba(74,222,128,0.16) 52%, rgba(34,197,94,0) 70%)",
+              }}
+            />
+          </div>
+
+          {/* 3. Static, Razor-Sharp Unifolio Central Ring Overlay (Completely Motionless & Distortion-Free) */}
+          <div
+            className="pointer-events-none absolute w-[360px] h-[360px] sm:w-[460px] sm:h-[460px] md:w-[540px] md:h-[540px] lg:w-[600px] lg:h-[600px]"
+            style={{
+              left: "60.5%",
+              top: "47.8%",
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            <Image
+              src="/hero-static-ring.png"
+              alt="Unifolio Ring Core"
+              fill
+              priority
+              className="object-contain pointer-events-none select-none"
+            />
+          </div>
+
+          {/* Seamless Organic Displacement Filter for Hero Wave Lines */}
           <svg className="pointer-events-none absolute w-0 h-0" aria-hidden="true">
             <defs>
               <filter id="heroWaveFlowFilter" x="-10%" y="-10%" width="120%" height="120%">
                 <feTurbulence
                   id="heroWaveTurbulence"
                   type="fractalNoise"
-                  baseFrequency="0.004 0.008"
-                  numOctaves="2"
+                  baseFrequency="0.0032 0.0068"
+                  numOctaves="3"
                   result="noise"
-                  seed="4"
+                  seed="7"
                 />
                 <feDisplacementMap
                   id="heroWaveDisplacement"
@@ -388,14 +564,14 @@ export function BlueprintHero() {
           {/* Right Column: 6 Abstract Financial Intelligence Motion Graphics Cards */}
           <div
             ref={cardsWrapRef}
-            className="lg:col-span-7 xl:col-span-7 relative h-[360px] sm:h-[400px] md:h-[440px] flex items-center justify-start lg:justify-center overflow-visible will-change-transform"
+            className="group/stack lg:col-span-7 xl:col-span-7 relative h-[360px] sm:h-[400px] md:h-[440px] flex items-center justify-start lg:justify-center overflow-visible will-change-transform"
           >
             <div className="relative w-full h-full flex items-center justify-start">
               
-              {/* Card 0: Scattered Data. One Unified View. (5 Layered Sheets + Fiber-Optic Funnel to Singularity) */}
+              {/* Card 0: 01 — Scattered (First scroll peel: Sphere on pedestal) */}
               <div
                 key="glass-card-0"
-                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/95 border border-[#4ADE80]/50 shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(74,222,128,0.16),inset_0_1px_1px_0_rgba(74,222,128,0.4)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7"
+                className="portfolio-card group/card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden will-change-transform bg-[#061009]/95 border border-[#4ADE80]/50 shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(74,222,128,0.16),inset_0_1px_1px_0_rgba(74,222,128,0.4)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7 cursor-pointer transition-[border-color,box-shadow] duration-300 ease-out hover:border-[#4ADE80]/80 hover:shadow-[0_28px_60px_rgba(0,0,0,0.95),0_0_35px_rgba(74,222,128,0.28)] hover:z-40"
                 style={{ zIndex: 30 }}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.08] via-transparent to-transparent" />
@@ -403,60 +579,30 @@ export function BlueprintHero() {
                 {/* Header Centered */}
                 <div className="w-full flex justify-center">
                   <h3 className="font-sans font-bold text-sm sm:text-base text-white tracking-wide uppercase leading-snug text-center">
-                    SCATTERED DATA. <br />
-                    ONE UNIFIED VIEW.
+                    SCATTERED <br />
+                    <span className="text-[#8E9B91] font-medium text-xs sm:text-[13px] tracking-normal capitalize">Fragmented Information</span>
                   </h3>
                 </div>
 
-                {/* Abstract Artwork: 5 Stacked 3D Sheets + Glowing Fiber-Optic Funnel */}
-                <div className="my-auto py-1 flex items-center justify-center relative w-full">
-                  <svg viewBox="0 0 200 130" fill="none" className="w-full h-28 overflow-visible">
-                    <defs>
-                      <linearGradient id="sheetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#4ADE80" stopOpacity="0.18" />
-                        <stop offset="100%" stopColor="#15803D" stopOpacity="0.02" />
-                      </linearGradient>
-                    </defs>
-
-                    {/* 5 Stacked Hovering Translucent 3D Planes */}
-                    {/* Plane 1 (Top) */}
-                    <polygon points="40,15 160,15 135,35 15,35" fill="url(#sheetGrad)" stroke="#4ADE80" strokeWidth="0.75" strokeOpacity="0.4" />
-                    <circle cx="85" cy="25" r="1.5" fill="#86EFAC" />
-                    <circle cx="120" cy="22" r="1.5" fill="#4ADE80" />
-
-                    {/* Plane 2 */}
-                    <polygon points="45,28 165,28 140,48 20,48" fill="url(#sheetGrad)" stroke="#4ADE80" strokeWidth="0.75" strokeOpacity="0.45" />
-                    <circle cx="65" cy="38" r="1.5" fill="#4ADE80" />
-                    <circle cx="105" cy="36" r="1.5" fill="#86EFAC" />
-
-                    {/* Plane 3 */}
-                    <polygon points="50,42 170,42 145,62 25,62" fill="url(#sheetGrad)" stroke="#4ADE80" strokeWidth="0.8" strokeOpacity="0.55" />
-                    <circle cx="90" cy="52" r="1.8" fill="#FFFFFF" />
-                    <circle cx="135" cy="50" r="1.5" fill="#4ADE80" />
-
-                    {/* Plane 4 */}
-                    <polygon points="55,56 175,56 150,76 30,76" fill="url(#sheetGrad)" stroke="#86EFAC" strokeWidth="0.85" strokeOpacity="0.65" />
-                    <circle cx="75" cy="66" r="1.5" fill="#86EFAC" />
-                    <circle cx="125" cy="64" r="1.5" fill="#4ADE80" />
-
-                    {/* Fiber-Optic Funnel Curves */}
-                    <path d="M 40 76 C 60 90, 95 105, 100 115" stroke="#4ADE80" strokeWidth="1" strokeOpacity="0.5" />
-                    <path d="M 75 76 C 85 92, 98 106, 100 115" stroke="#22C55E" strokeWidth="1.2" strokeOpacity="0.7" />
-                    <path d="M 125 76 C 115 92, 102 106, 100 115" stroke="#22C55E" strokeWidth="1.2" strokeOpacity="0.7" />
-                    <path d="M 160 76 C 140 90, 105 105, 100 115" stroke="#4ADE80" strokeWidth="1" strokeOpacity="0.5" />
-
-                    {/* Base Anchor Plane & Singular Luminous Glow Point */}
-                    <polygon points="60,105 140,105 125,125 45,125" fill="rgba(74,222,128,0.06)" stroke="#4ADE80" strokeWidth="0.7" strokeOpacity="0.3" strokeDasharray="3 3" />
-                    <circle cx="100" cy="115" r="4.5" fill="#4ADE80" filter="drop-shadow(0 0 10px #4ADE80)" />
-                    <circle cx="100" cy="115" r="2" fill="#FFFFFF" />
-                  </svg>
+                {/* 3D Visual Illustration */}
+                <div className="my-auto py-1 flex items-center justify-center relative w-full h-[150px] sm:h-[170px] md:h-[190px]">
+                  <div className="relative w-full h-full max-w-[210px] sm:max-w-[230px] max-h-[170px]">
+                    <Image
+                      src="/cards/card-1.png"
+                      alt="Create your account visual"
+                      fill
+                      className="object-contain object-center select-none pointer-events-none drop-shadow-[0_10px_25px_rgba(0,0,0,0.65)]"
+                      sizes="(max-width: 768px) 230px, 260px"
+                      priority
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Card 1: Complexity, Structured with Intelligence (Cascading Document Sheets + Data Stream) */}
+              {/* Card 1: 02 — Collected (Second scroll peel: Curved glass & pill connector) */}
               <div
                 key="glass-card-1"
-                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7"
+                className="portfolio-card group/card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden will-change-transform bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7 cursor-pointer transition-[border-color,box-shadow] duration-300 ease-out hover:border-[#4ADE80]/80 hover:shadow-[0_28px_60px_rgba(0,0,0,0.95),0_0_35px_rgba(74,222,128,0.28)] hover:z-40"
                 style={{ zIndex: 26 }}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent" />
@@ -464,56 +610,30 @@ export function BlueprintHero() {
                 {/* Header Centered */}
                 <div className="w-full flex justify-center">
                   <h3 className="font-sans font-bold text-sm sm:text-base text-white tracking-wide uppercase leading-snug text-center">
-                    COMPLEXITY, STRUCTURED <br />
-                    WITH INTELLIGENCE.
+                    COLLECTED <br />
+                    <span className="text-[#8E9B91] font-medium text-xs sm:text-[13px] tracking-normal capitalize">Inward Convergence</span>
                   </h3>
                 </div>
 
-                {/* Abstract Artwork: Angled Translucent Vertical Panels with Horizontal Connectors */}
-                <div className="my-auto py-1 flex items-center justify-center w-full">
-                  <svg viewBox="0 0 200 130" fill="none" className="w-full h-28 overflow-visible">
-                    {/* Sheet 4 (Back) */}
-                    <g transform="skewY(-10) translate(95, 20)">
-                      <rect x="0" y="0" width="45" height="75" rx="4" fill="rgba(74,222,128,0.03)" stroke="#4ADE80" strokeWidth="0.7" strokeOpacity="0.25" />
-                      <line x1="6" y1="12" x2="30" y2="12" stroke="#4ADE80" strokeWidth="0.7" strokeOpacity="0.3" />
-                    </g>
-
-                    {/* Sheet 3 */}
-                    <g transform="skewY(-10) translate(75, 25)">
-                      <rect x="0" y="0" width="48" height="80" rx="4" fill="rgba(74,222,128,0.05)" stroke="#4ADE80" strokeWidth="0.8" strokeOpacity="0.4" />
-                      <line x1="6" y1="12" x2="32" y2="12" stroke="#4ADE80" strokeWidth="0.8" strokeOpacity="0.4" />
-                    </g>
-
-                    {/* Sheet 2 */}
-                    <g transform="skewY(-10) translate(55, 30)">
-                      <rect x="0" y="0" width="52" height="85" rx="5" fill="rgba(74,222,128,0.08)" stroke="#86EFAC" strokeWidth="0.9" strokeOpacity="0.6" />
-                      <line x1="8" y1="15" x2="35" y2="15" stroke="#86EFAC" strokeWidth="0.9" strokeOpacity="0.7" />
-                      <line x1="8" y1="28" x2="40" y2="28" stroke="#4ADE80" strokeWidth="0.7" strokeOpacity="0.3" />
-                    </g>
-
-                    {/* Sheet 1 (Front Active Sheet with Labels) */}
-                    <g transform="skewY(-10) translate(30, 35)">
-                      <rect x="0" y="0" width="60" height="92" rx="6" fill="rgba(6,16,9,0.85)" stroke="#4ADE80" strokeWidth="1.2" strokeOpacity="0.9" />
-                      <text x="8" y="16" fill="#86EFAC" fontSize="6.5" fontFamily="monospace" fontWeight="600" letterSpacing="0.05em">ASSETS</text>
-                      <text x="8" y="32" fill="#8E9B91" fontSize="5.5" fontFamily="monospace">HOLDINGS</text>
-                      <text x="8" y="48" fill="#8E9B91" fontSize="5.5" fontFamily="monospace">TRANSACTIONS</text>
-                      <text x="8" y="64" fill="#8E9B91" fontSize="5.5" fontFamily="monospace">FEES</text>
-                      <text x="8" y="80" fill="#4ADE80" fontSize="5.5" fontFamily="monospace">RELATIONSHIPS</text>
-                    </g>
-
-                    {/* Horizontal Data Beams Piercing Through */}
-                    <line x1="10" y1="58" x2="185" y2="58" stroke="#4ADE80" strokeWidth="1.2" strokeOpacity="0.75" />
-                    <line x1="10" y1="78" x2="185" y2="78" stroke="#86EFAC" strokeWidth="1" strokeOpacity="0.5" strokeDasharray="4 3" />
-                    <circle cx="160" cy="58" r="2.5" fill="#4ADE80" filter="drop-shadow(0 0 6px #4ADE80)" />
-                    <circle cx="175" cy="78" r="2" fill="#86EFAC" />
-                  </svg>
+                {/* 3D Visual Illustration */}
+                <div className="my-auto py-1 flex items-center justify-center relative w-full h-[150px] sm:h-[170px] md:h-[190px]">
+                  <div className="relative w-full h-full max-w-[210px] sm:max-w-[230px] max-h-[170px]">
+                    <Image
+                      src="/cards/card-2.png"
+                      alt="Tell us about yourself visual"
+                      fill
+                      className="object-contain object-center select-none pointer-events-none drop-shadow-[0_10px_25px_rgba(0,0,0,0.65)]"
+                      sizes="(max-width: 768px) 230px, 260px"
+                      priority
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Card 2: See Relationships. See What Matters. (Interconnected Radar Constellation) */}
+              {/* Card 2: 03 — Organized (Third scroll peel: CAS folder & tray) */}
               <div
                 key="glass-card-2"
-                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7"
+                className="portfolio-card group/card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden will-change-transform bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7 cursor-pointer transition-[border-color,box-shadow] duration-300 ease-out hover:border-[#4ADE80]/80 hover:shadow-[0_28px_60px_rgba(0,0,0,0.95),0_0_35px_rgba(74,222,128,0.28)] hover:z-40"
                 style={{ zIndex: 22 }}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent" />
@@ -521,56 +641,30 @@ export function BlueprintHero() {
                 {/* Header Centered */}
                 <div className="w-full flex justify-center">
                   <h3 className="font-sans font-bold text-sm sm:text-base text-white tracking-wide uppercase leading-snug text-center">
-                    SEE RELATIONSHIPS. <br />
-                    SEE WHAT MATTERS.
+                    ORGANIZED <br />
+                    <span className="text-[#8E9B91] font-medium text-xs sm:text-[13px] tracking-normal capitalize">Structured Strata</span>
                   </h3>
                 </div>
 
-                {/* Abstract Artwork: Pentagonal Radar Constellation & Linked Asset Nodes */}
-                <div className="my-auto py-1 flex items-center justify-center w-full">
-                  <svg viewBox="0 0 200 130" fill="none" className="w-full h-28 overflow-visible">
-                    {/* Concentric Background Orbital Rings */}
-                    <circle cx="100" cy="65" r="52" stroke="#4ADE80" strokeWidth="0.6" strokeOpacity="0.15" strokeDasharray="3 4" />
-                    <circle cx="100" cy="65" r="34" stroke="#4ADE80" strokeWidth="0.75" strokeOpacity="0.25" />
-
-                    {/* Pentagonal Connected Network Lines */}
-                    <polygon points="100,20 155,52 135,105 65,105 45,52" stroke="#86EFAC" strokeWidth="1.2" strokeOpacity="0.6" fill="rgba(74,222,128,0.06)" />
-
-                    {/* Internal Radial Spokes to Center */}
-                    <line x1="100" y1="65" x2="100" y2="20" stroke="#4ADE80" strokeWidth="1" strokeOpacity="0.8" />
-                    <line x1="100" y1="65" x2="155" y2="52" stroke="#4ADE80" strokeWidth="0.9" strokeOpacity="0.6" />
-                    <line x1="100" y1="65" x2="135" y2="105" stroke="#4ADE80" strokeWidth="0.9" strokeOpacity="0.6" />
-                    <line x1="100" y1="65" x2="65" y2="105" stroke="#4ADE80" strokeWidth="0.9" strokeOpacity="0.6" />
-                    <line x1="100" y1="65" x2="45" y2="52" stroke="#4ADE80" strokeWidth="0.9" strokeOpacity="0.6" />
-
-                    {/* Center Luminous Core: YOUR PORTFOLIO */}
-                    <circle cx="100" cy="65" r="16" fill="rgba(6,16,9,0.9)" stroke="#4ADE80" strokeWidth="1.2" />
-                    <circle cx="100" cy="65" r="3" fill="#4ADE80" filter="drop-shadow(0 0 6px #4ADE80)" />
-                    <text x="100" y="78" textAnchor="middle" fill="#FFFFFF" fontSize="5.5" fontFamily="monospace" fontWeight="600" letterSpacing="0.04em">PORTFOLIO</text>
-
-                    {/* Peripheral Asset Nodes with Glow Points */}
-                    <circle cx="100" cy="20" r="3" fill="#86EFAC" />
-                    <text x="100" y="12" textAnchor="middle" fill="#86EFAC" fontSize="5.5" fontFamily="monospace">EQUITIES</text>
-
-                    <circle cx="155" cy="52" r="3" fill="#4ADE80" />
-                    <text x="162" y="55" fill="#8E9B91" fontSize="5" fontFamily="monospace">REAL ESTATE</text>
-
-                    <circle cx="135" cy="105" r="3" fill="#4ADE80" />
-                    <text x="140" y="116" fill="#8E9B91" fontSize="5" fontFamily="monospace">CASH</text>
-
-                    <circle cx="65" cy="105" r="3" fill="#4ADE80" />
-                    <text x="35" y="116" fill="#8E9B91" fontSize="5" fontFamily="monospace">FIXED INCOME</text>
-
-                    <circle cx="45" cy="52" r="3" fill="#4ADE80" />
-                    <text x="15" y="55" fill="#8E9B91" fontSize="5" fontFamily="monospace">PVT EQUITY</text>
-                  </svg>
+                {/* 3D Visual Illustration */}
+                <div className="my-auto py-1 flex items-center justify-center relative w-full h-[150px] sm:h-[170px] md:h-[190px]">
+                  <div className="relative w-full h-full max-w-[210px] sm:max-w-[230px] max-h-[170px]">
+                    <Image
+                      src="/cards/card-3.png"
+                      alt="Upload your CAS visual"
+                      fill
+                      className="object-contain object-center select-none pointer-events-none drop-shadow-[0_10px_25px_rgba(0,0,0,0.65)]"
+                      sizes="(max-width: 768px) 230px, 260px"
+                      priority
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Card 3: Clarity That Drives Confident Decisions (3D Glass Tablet + Floating Glowing Spline) */}
+              {/* Card 3: 04 — Revealed (Fourth scroll peel: Data tiles passing through glass gate) */}
               <div
                 key="glass-card-3"
-                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7"
+                className="portfolio-card group/card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden will-change-transform bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7 cursor-pointer transition-[border-color,box-shadow] duration-300 ease-out hover:border-[#4ADE80]/80 hover:shadow-[0_28px_60px_rgba(0,0,0,0.95),0_0_35px_rgba(74,222,128,0.28)] hover:z-40"
                 style={{ zIndex: 18 }}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent" />
@@ -578,53 +672,30 @@ export function BlueprintHero() {
                 {/* Header Centered */}
                 <div className="w-full flex justify-center">
                   <h3 className="font-sans font-bold text-sm sm:text-base text-white tracking-wide uppercase leading-snug text-center">
-                    CLARITY THAT DRIVES <br />
-                    CONFIDENT DECISIONS.
+                    REVEALED <br />
+                    <span className="text-[#8E9B91] font-medium text-xs sm:text-[13px] tracking-normal capitalize">Hidden Insights</span>
                   </h3>
                 </div>
 
-                {/* Abstract Artwork: 3D Perspective Glass Tablet with Floating Glowing Curve */}
-                <div className="my-auto py-1 flex items-center justify-center w-full">
-                  <svg viewBox="0 0 200 130" fill="none" className="w-full h-28 overflow-visible">
-                    {/* 3D Angled Glass Base Tablet */}
-                    <g transform="skewX(-6) translate(15, 0)">
-                      <rect x="25" y="15" width="135" height="100" rx="10" fill="rgba(6,16,9,0.75)" stroke="#4ADE80" strokeWidth="1" strokeOpacity="0.4" />
-                      
-                      {/* Internal Precision Grid Lines */}
-                      <line x1="35" y1="35" x2="150" y2="35" stroke="#4ADE80" strokeWidth="0.5" strokeOpacity="0.15" />
-                      <line x1="35" y1="55" x2="150" y2="55" stroke="#4ADE80" strokeWidth="0.5" strokeOpacity="0.15" />
-                      <line x1="35" y1="75" x2="150" y2="75" stroke="#4ADE80" strokeWidth="0.5" strokeOpacity="0.15" />
-
-                      {/* Floating Smooth Neon Green Spline Wave */}
-                      <path d="M 35 60 C 55 75, 75 35, 105 50 C 125 60, 135 25, 150 40" stroke="#4ADE80" strokeWidth="2.2" strokeLinecap="round" filter="drop-shadow(0 0 8px rgba(74,222,128,0.5))" />
-                      <path d="M 35 60 C 55 75, 75 35, 105 50 C 125 60, 135 25, 150 40 L 150 85 L 35 85 Z" fill="url(#waveFillGrad)" opacity="0.4" />
-
-                      {/* Glowing Peak Apex Node */}
-                      <circle cx="105" cy="50" r="3.5" fill="#86EFAC" filter="drop-shadow(0 0 8px #4ADE80)" />
-                      <circle cx="105" cy="50" r="1.5" fill="#FFFFFF" />
-                      <circle cx="145" cy="35" r="2.5" fill="#4ADE80" />
-
-                      {/* Minimal Metric Registers Below */}
-                      <rect x="35" y="90" width="30" height="4" rx="2" fill="#8E9B91" opacity="0.4" />
-                      <rect x="75" y="90" width="45" height="4" rx="2" fill="#4ADE80" opacity="0.6" />
-                      <rect x="130" y="90" width="20" height="4" rx="2" fill="#86EFAC" opacity="0.5" />
-                      <rect x="35" y="100" width="45" height="4" rx="2" fill="#8E9B91" opacity="0.3" />
-                      <rect x="90" y="100" width="30" height="4" rx="2" fill="#4ADE80" opacity="0.5" />
-                    </g>
-                    <defs>
-                      <linearGradient id="waveFillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#4ADE80" stopOpacity="0.35" />
-                        <stop offset="100%" stopColor="#22C55E" stopOpacity="0.0" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
+                {/* 3D Visual Illustration */}
+                <div className="my-auto py-1 flex items-center justify-center relative w-full h-[150px] sm:h-[170px] md:h-[190px]">
+                  <div className="relative w-full h-full max-w-[210px] sm:max-w-[230px] max-h-[170px]">
+                    <Image
+                      src="/cards/card-4.png"
+                      alt="We organise your data visual"
+                      fill
+                      className="object-contain object-center select-none pointer-events-none drop-shadow-[0_10px_25px_rgba(0,0,0,0.65)]"
+                      sizes="(max-width: 768px) 230px, 260px"
+                      priority
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Card 4: Direct Pathways. Zero Friction. (Sovereign Direct Pipeline & Vector Rails) */}
+              {/* Card 4: 05 — Connected (Fifth scroll peel: Golden fibers converging into torus) */}
               <div
                 key="glass-card-4"
-                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7"
+                className="portfolio-card group/card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden will-change-transform bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7 cursor-pointer transition-[border-color,box-shadow] duration-300 ease-out hover:border-[#4ADE80]/80 hover:shadow-[0_28px_60px_rgba(0,0,0,0.95),0_0_35px_rgba(74,222,128,0.28)] hover:z-40"
                 style={{ zIndex: 14 }}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent" />
@@ -632,40 +703,30 @@ export function BlueprintHero() {
                 {/* Header Centered */}
                 <div className="w-full flex justify-center">
                   <h3 className="font-sans font-bold text-sm sm:text-base text-white tracking-wide uppercase leading-snug text-center">
-                    DIRECT PATHWAYS. <br />
-                    ZERO FRICTION.
+                    CONNECTED <br />
+                    <span className="text-[#8E9B91] font-medium text-xs sm:text-[13px] tracking-normal capitalize">Synaptic Network</span>
                   </h3>
                 </div>
 
-                {/* Abstract Artwork: Direct Vector Pipeline & Luminous Data Particles */}
-                <div className="my-auto py-1 flex items-center justify-center w-full">
-                  <svg viewBox="0 0 200 130" fill="none" className="w-full h-28 overflow-visible">
-                    {/* Converging Corridor Perspective Rails */}
-                    <line x1="20" y1="25" x2="180" y2="25" stroke="#4ADE80" strokeWidth="0.8" strokeOpacity="0.3" strokeDasharray="4 4" />
-                    <line x1="20" y1="105" x2="180" y2="105" stroke="#4ADE80" strokeWidth="0.8" strokeOpacity="0.3" strokeDasharray="4 4" />
-
-                    {/* Central High-Speed Laser Rails */}
-                    <line x1="20" y1="52" x2="180" y2="52" stroke="#22C55E" strokeWidth="1.4" strokeOpacity="0.7" />
-                    <line x1="20" y1="78" x2="180" y2="78" stroke="#22C55E" strokeWidth="1.4" strokeOpacity="0.7" />
-                    <line x1="20" y1="65" x2="180" y2="65" stroke="#86EFAC" strokeWidth="2" strokeLinecap="round" />
-
-                    {/* Translucent Gate Calibrations */}
-                    <rect x="55" y="40" width="12" height="50" rx="3" fill="rgba(74,222,128,0.12)" stroke="#4ADE80" strokeWidth="0.9" />
-                    <rect x="135" y="40" width="12" height="50" rx="3" fill="rgba(134,239,172,0.15)" stroke="#86EFAC" strokeWidth="1.1" />
-
-                    {/* Moving Particle Pulses */}
-                    <circle cx="61" cy="65" r="3" fill="#4ADE80" />
-                    <circle cx="100" cy="65" r="4.5" fill="#86EFAC" filter="drop-shadow(0 0 8px #4ADE80)" />
-                    <circle cx="100" cy="65" r="2" fill="#FFFFFF" />
-                    <circle cx="141" cy="65" r="3" fill="#4ADE80" />
-                  </svg>
+                {/* 3D Visual Illustration */}
+                <div className="my-auto py-1 flex items-center justify-center relative w-full h-[150px] sm:h-[170px] md:h-[190px]">
+                  <div className="relative w-full h-full max-w-[210px] sm:max-w-[230px] max-h-[170px]">
+                    <Image
+                      src="/cards/card-5.png"
+                      alt="Everything connects visual"
+                      fill
+                      className="object-contain object-center select-none pointer-events-none drop-shadow-[0_10px_25px_rgba(0,0,0,0.65)]"
+                      sizes="(max-width: 768px) 230px, 260px"
+                      priority
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Card 5: Sovereign Control. Uncompromised Security. (Concentric Cryptographic Vault Shields) */}
+              {/* Card 5: 06 — Clear (Sixth final state: Compass ring & marble sectors) */}
               <div
                 key="glass-card-5"
-                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7"
+                className="portfolio-card group/card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden will-change-transform bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7 cursor-pointer transition-[border-color,box-shadow] duration-300 ease-out hover:border-[#4ADE80]/80 hover:shadow-[0_28px_60px_rgba(0,0,0,0.95),0_0_35px_rgba(74,222,128,0.28)] hover:z-40"
                 style={{ zIndex: 10 }}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent" />
@@ -673,32 +734,23 @@ export function BlueprintHero() {
                 {/* Header Centered */}
                 <div className="w-full flex justify-center">
                   <h3 className="font-sans font-bold text-sm sm:text-base text-white tracking-wide uppercase leading-snug text-center">
-                    SOVEREIGN CONTROL. <br />
-                    UNCOMPROMISED SECURITY.
+                    CLEAR <br />
+                    <span className="text-[#8E9B91] font-medium text-xs sm:text-[13px] tracking-normal capitalize">Unified Clarity</span>
                   </h3>
                 </div>
 
-                {/* Abstract Artwork: Concentric Cryptographic Vault Shields & Protected Core */}
-                <div className="my-auto py-1 flex items-center justify-center w-full">
-                  <svg viewBox="0 0 200 130" fill="none" className="w-full h-28 overflow-visible">
-                    {/* Outer Cryptographic Hexagonal Shield */}
-                    <polygon points="100,15 150,38 150,92 100,115 50,92 50,38" fill="rgba(74,222,128,0.04)" stroke="#4ADE80" strokeWidth="0.85" strokeOpacity="0.3" strokeDasharray="6 4" />
-                    
-                    {/* Concentric Precision Rings */}
-                    <circle cx="100" cy="65" r="36" stroke="#22C55E" strokeWidth="1" strokeOpacity="0.45" />
-                    <circle cx="100" cy="65" r="24" stroke="#86EFAC" strokeWidth="1.4" strokeOpacity="0.75" strokeDasharray="20 8" />
-                    
-                    {/* Vault Core Singularity */}
-                    <circle cx="100" cy="65" r="10" fill="#061208" stroke="#4ADE80" strokeWidth="1.8" />
-                    <circle cx="100" cy="65" r="3.5" fill="#4ADE80" filter="drop-shadow(0 0 8px #4ADE80)" />
-                    <circle cx="100" cy="65" r="1.5" fill="#FFFFFF" />
-
-                    {/* Cardinal Security Perimeter Nodes */}
-                    <circle cx="100" cy="29" r="2" fill="#86EFAC" />
-                    <circle cx="100" cy="101" r="2" fill="#86EFAC" />
-                    <circle cx="64" cy="65" r="2" fill="#86EFAC" />
-                    <circle cx="136" cy="65" r="2" fill="#86EFAC" />
-                  </svg>
+                {/* 3D Visual Illustration */}
+                <div className="my-auto py-1 flex items-center justify-center relative w-full h-[150px] sm:h-[170px] md:h-[190px]">
+                  <div className="relative w-full h-full max-w-[210px] sm:max-w-[230px] max-h-[170px]">
+                    <Image
+                      src="/cards/card-6.png"
+                      alt="See your complete portfolio visual"
+                      fill
+                      className="object-contain object-center select-none pointer-events-none drop-shadow-[0_10px_25px_rgba(0,0,0,0.65)]"
+                      sizes="(max-width: 768px) 230px, 260px"
+                      priority
+                    />
+                  </div>
                 </div>
               </div>
 
