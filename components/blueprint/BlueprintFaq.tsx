@@ -53,11 +53,11 @@ export function BlueprintFaq() {
           trigger: containerRef.current,
           start: "top 80%",
         },
-        y: 35,
+        y: 24,
         opacity: 0,
-        stagger: 0.16,
-        duration: 1.1,
-        ease: "power3.out",
+        stagger: 0.12,
+        duration: 1.2,
+        ease: "power2.out",
       });
 
       gsap.from(".faq-track-elem", {
@@ -65,10 +65,10 @@ export function BlueprintFaq() {
           trigger: containerRef.current,
           start: "top 72%",
         },
-        y: 40,
+        y: 28,
         opacity: 0,
-        duration: 1.25,
-        ease: "power3.out",
+        duration: 1.3,
+        ease: "power2.out",
       });
     },
     { scope: containerRef }

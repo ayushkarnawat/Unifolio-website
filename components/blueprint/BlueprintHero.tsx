@@ -28,17 +28,17 @@ export function BlueprintHero() {
       });
 
       // =========================================================================
-      // 0. CONTINUOUS ORGANIC AMBIENT MOTION (Wave Lines in Hero Visual)
+      // 0. CONTINUOUS ORGANIC AMBIENT MOTION (Liquid Wave Strata in Hero Visual)
       // =========================================================================
       const turbEl = document.getElementById("heroWaveTurbulence");
       const dispEl = document.getElementById("heroWaveDisplacement");
       if (turbEl) {
-        const waveFlowState = { freqX: 0.004, freqY: 0.008, scale: 14 };
+        const waveFlowState = { freqX: 0.0045, freqY: 0.009, scale: 13 };
         gsap.to(waveFlowState, {
-          freqX: 0.0075,
-          freqY: 0.0135,
-          scale: 22,
-          duration: 10,
+          freqX: 0.0068,
+          freqY: 0.0125,
+          scale: 17,
+          duration: 18,
           repeat: -1,
           yoyo: true,
           ease: "sine.inOut",
@@ -59,9 +59,9 @@ export function BlueprintHero() {
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: "+=380%",
+          end: "+=420%",
           pin: stageRef.current,
-          scrub: 1.5,
+          scrub: 1.6,
           anticipatePin: 1,
           invalidateOnRefresh: true,
         },
@@ -73,7 +73,7 @@ export function BlueprintHero() {
       tl.fromTo(
         heroVisualRef.current,
         { scale: 1, opacity: 1 },
-        { scale: 8.5, opacity: 0, ease: "power2.inOut", duration: 0.28 },
+        { scale: 8.5, opacity: 0, ease: "power2.out", duration: 0.28 },
         0
       );
 
@@ -82,8 +82,8 @@ export function BlueprintHero() {
         { opacity: 0, scale: 1 },
         {
           keyframes: [
-            { opacity: 1, scale: 1.5, duration: 0.14, ease: "sine.inOut" },
-            { opacity: 0, scale: 2.2, duration: 0.14, ease: "power1.out" },
+            { opacity: 1, scale: 1.4, duration: 0.14, ease: "sine.out" },
+            { opacity: 0, scale: 2.1, duration: 0.14, ease: "power1.out" },
           ],
         },
         0
@@ -92,13 +92,13 @@ export function BlueprintHero() {
       // Ambient Laser Stream in background
       tl.fromTo(
         lasersRef.current,
-        { x: 300, opacity: 0 },
-        { x: -160, opacity: 1, duration: 0.6, ease: "sine.inOut" },
-        0.08
+        { x: 260, opacity: 0 },
+        { x: -140, opacity: 1, duration: 0.6, ease: "sine.inOut" },
+        0.06
       );
 
       // =========================================================================
-      // 2. RESTORED ORIGINAL 3D ORBITAL CONSTALLATION CHOREOGRAPHY (t: 0.08 -> 0.54)
+      // 2. 3D ORBITAL CONSTELLATION CHOREOGRAPHY (t: 0.06 -> 0.54)
       // Ultra-smooth continuous interpolation with quintic smootherstep docking
       // =========================================================================
       const choreographyState = { progress: 0 };
@@ -108,7 +108,7 @@ export function BlueprintHero() {
         {
           progress: 1,
           ease: "none",
-          duration: 0.46,
+          duration: 0.48,
           onUpdate: () => {
             const p = choreographyState.progress; // Normalized 0.0 to 1.0
 
@@ -122,8 +122,8 @@ export function BlueprintHero() {
             const Ry = 185;
 
             // Phase thresholds
-            const orbitEnd = 0.52; // Orbital loop progression
-            const dockEnd = 0.88; // Deceleration & docking
+            const orbitEnd = 0.50; // Orbital loop progression
+            const dockEnd = 0.86; // Deceleration & docking
 
             // Coordinated constellation angular rotation: ~280° of smooth orbital sweep
             const constellationAngle = p * (1.55 * Math.PI);
@@ -140,9 +140,9 @@ export function BlueprintHero() {
               // 3D perspective banking & scaling along orbital path
               const depthNorm = (Math.sin(theta) + 1) / 2; // 0 = back, 1 = front
               const orbScale = 0.70 + 0.42 * depthNorm;
-              const orbRotZ = Math.sin(theta) * 22 + Math.cos(theta) * 8;
-              const orbRotY = Math.cos(theta) * 20;
-              const orbRotX = Math.sin(theta) * 12;
+              const orbRotZ = Math.sin(theta) * 20 + Math.cos(theta) * 6;
+              const orbRotY = Math.cos(theta) * 18;
+              const orbRotX = Math.sin(theta) * 10;
 
               // Smooth emergence from aperture core
               const emergenceFactor = Math.min(1, Math.max(0, p * 4.2));
@@ -190,24 +190,24 @@ export function BlueprintHero() {
             });
           },
         },
-        0.08
+        0.06
       );
 
       // =========================================================================
-      // 3. SEAMLESS VISUAL HANDOFF & STATEMENT REVEAL (t: 0.58 -> 1.0)
+      // 3. SEAMLESS VISUAL HANDOFF & STATEMENT REVEAL (t: 0.56 -> 1.0)
       // Cards recede smoothly -> Statement reveals and settles -> Generous reading pause
       // =========================================================================
       tl.to(
         cardsWrapRef.current,
         {
-          scale: 0.94,
-          x: 45,
-          opacity: 0.25,
+          scale: 0.95,
+          x: 35,
+          opacity: 0.22,
           filter: "blur(4px)",
           ease: "power2.inOut",
           duration: 0.18,
         },
-        0.58
+        0.56
       );
 
       // Large Statement smoothly expands and commands the stage
@@ -215,9 +215,9 @@ export function BlueprintHero() {
         textWrapRef.current,
         {
           opacity: 0,
-          y: 40,
-          scale: 0.96,
-          filter: "blur(8px)",
+          y: 30,
+          scale: 0.98,
+          filter: "blur(6px)",
         },
         {
           opacity: 1,
@@ -227,11 +227,11 @@ export function BlueprintHero() {
           duration: 0.20,
           ease: "power2.out",
         },
-        0.62
+        0.60
       );
 
-      // Extended holding interval (t: 0.82 -> 1.0) ensures user comfortably reads the full statement
-      tl.to({}, { duration: 0.18 }, 0.82);
+      // Extended holding interval (t: 0.80 -> 1.0) ensures user comfortably reads the full statement
+      tl.to({}, { duration: 0.20 }, 0.80);
     },
     { scope: containerRef }
   );

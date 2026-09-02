@@ -22,9 +22,9 @@ export function BlueprintAboutMetrics() {
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: "+=380%",
+          end: "+=420%",
           pin: stageRef.current,
-          scrub: 1.4,
+          scrub: 1.6,
           anticipatePin: 1,
           invalidateOnRefresh: true,
         },
@@ -44,7 +44,7 @@ export function BlueprintAboutMetrics() {
         },
         {
           keyframes: [
-            // Phase 1 -> Phase 2: Glide to the left
+            // Phase 1 -> Phase 2: Glide to the left with smooth continuous acceleration
             {
               x: -280,
               y: -20,
@@ -76,8 +76,8 @@ export function BlueprintAboutMetrics() {
         { opacity: 1, y: 0 },
         {
           opacity: 0,
-          y: -40,
-          duration: 0.14,
+          y: -30,
+          duration: 0.16,
           ease: "power2.inOut",
         },
         0.22
@@ -91,14 +91,14 @@ export function BlueprintAboutMetrics() {
         state2Ref.current,
         {
           opacity: 0,
-          x: 60,
-          filter: "blur(8px)",
+          x: 40,
+          filter: "blur(6px)",
         },
         {
           opacity: 1,
           x: 0,
           filter: "blur(0px)",
-          duration: 0.14,
+          duration: 0.16,
           ease: "power2.out",
         },
         0.30
@@ -108,9 +108,9 @@ export function BlueprintAboutMetrics() {
         state2Ref.current,
         {
           opacity: 0,
-          y: -50,
-          filter: "blur(6px)",
-          duration: 0.12,
+          y: -40,
+          filter: "blur(4px)",
+          duration: 0.14,
           ease: "power2.in",
         },
         0.64
@@ -124,14 +124,14 @@ export function BlueprintAboutMetrics() {
         state3Ref.current,
         {
           opacity: 0,
-          y: 60,
-          filter: "blur(8px)",
+          y: 40,
+          filter: "blur(6px)",
         },
         {
           opacity: 1,
           y: 0,
           filter: "blur(0px)",
-          duration: 0.14,
+          duration: 0.16,
           ease: "power2.out",
         },
         0.72

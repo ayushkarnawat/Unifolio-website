@@ -27,10 +27,10 @@ export function BlueprintContact() {
           trigger: containerRef.current,
           start: "top 80%",
         },
-        y: 35,
+        y: 24,
         opacity: 0,
-        duration: 1.15,
-        ease: "power3.out",
+        duration: 1.2,
+        ease: "power2.out",
       });
 
       gsap.from(".contact-form-card", {
@@ -38,11 +38,11 @@ export function BlueprintContact() {
           trigger: containerRef.current,
           start: "top 78%",
         },
-        y: 45,
+        y: 28,
         opacity: 0,
         duration: 1.3,
-        delay: 0.15,
-        ease: "power3.out",
+        delay: 0.1,
+        ease: "power2.out",
       });
     },
     { scope: containerRef }

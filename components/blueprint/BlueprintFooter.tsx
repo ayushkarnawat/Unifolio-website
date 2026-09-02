@@ -21,12 +21,12 @@ export function BlueprintFooter() {
       if (ctaContentRef.current && orbitalArtRef.current) {
         gsap.fromTo(
           ctaContentRef.current,
-          { opacity: 0, y: 40 },
+          { opacity: 0, y: 24 },
           {
             opacity: 1,
             y: 0,
-            duration: 1.25,
-            ease: "power3.out",
+            duration: 1.3,
+            ease: "power2.out",
             scrollTrigger: {
               trigger: containerRef.current,
               start: "top 80%",
@@ -36,7 +36,7 @@ export function BlueprintFooter() {
 
         gsap.fromTo(
           orbitalArtRef.current,
-          { opacity: 0, scale: 0.92 },
+          { opacity: 0, scale: 0.95 },
           {
             opacity: 1,
             scale: 1,
@@ -59,7 +59,7 @@ export function BlueprintFooter() {
         });
 
         gsap.to(".footer-pulse-dot", {
-          scale: 1.3,
+          scale: 1.25,
           opacity: 0.9,
           duration: 3.5,
           repeat: -1,
@@ -73,12 +73,12 @@ export function BlueprintFooter() {
       if (footerGridRef.current) {
         gsap.fromTo(
           footerGridRef.current,
-          { opacity: 0, y: 30 },
+          { opacity: 0, y: 20 },
           {
             opacity: 1,
             y: 0,
-            duration: 1.0,
-            ease: "power3.out",
+            duration: 1.1,
+            ease: "power2.out",
             scrollTrigger: {
               trigger: footerGridRef.current,
               start: "top 90%",
