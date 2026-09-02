@@ -338,35 +338,17 @@ export function BlueprintHero() {
 
         {/* Main Stage Arena: Left Text + Right Layered Stepped Glass Cards */}
         <div className="relative z-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center my-auto w-full max-w-7xl mx-auto">
-          {/* Left Column: Monumental Headline & Narrative Copy */}
+          {/* Left Column: Monumental Headline */}
           <div
             ref={textWrapRef}
-            className="lg:col-span-5 xl:col-span-5 space-y-5 opacity-0 will-change-transform"
+            className="lg:col-span-5 xl:col-span-5 space-y-4 opacity-0 will-change-transform"
           >
-            {/* Luminous Green Monospace Kicker */}
-            <div className="space-y-1">
-              <span className="font-mono text-xs sm:text-sm text-[#4ADE80] uppercase tracking-[0.25em] font-semibold block">
-                ONE PLATFORM.
-              </span>
-              <span className="font-mono text-xs sm:text-sm text-[#4ADE80] uppercase tracking-[0.25em] font-semibold block">
-                TOTAL PICTURE.
-              </span>
-            </div>
-
             {/* Impactful Condensed Headline (Matching Hero Typography) */}
             <h2 className="font-sans font-black text-4xl sm:text-5xl md:text-6xl lg:text-[54px] xl:text-[62px] text-[#FAF8F5] tracking-[-0.04em] uppercase leading-[0.92]">
               SEE THE WHOLE. <br />
               EVERY ASSET. <br />
               ONE VIEW.
             </h2>
-
-            {/* Subtle Divider */}
-            <div className="w-10 h-[1px] bg-[#4ADE80]/50 my-3" />
-
-            {/* Narrative Editorial Copy */}
-            <p className="font-sans text-xs sm:text-sm md:text-base text-[#FAF8F5]/70 max-w-sm leading-relaxed font-normal">
-              Unifolio connects every fragment of your financial life — across assets, accounts, and institutions — into one intelligent view. No more gaps. No more guesswork. Just clarity.
-            </p>
           </div>
 
           {/* Right Column: 6 Abstract Financial Intelligence Motion Graphics Cards */}
@@ -379,25 +361,21 @@ export function BlueprintHero() {
               {/* Card 0: Scattered Data. One Unified View. (5 Layered Sheets + Fiber-Optic Funnel to Singularity) */}
               <div
                 key="glass-card-0"
-                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/95 border border-[#4ADE80]/50 shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(74,222,128,0.16),inset_0_1px_1px_0_rgba(74,222,128,0.4)] backdrop-blur-2xl flex flex-col justify-between p-5 sm:p-6"
+                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/95 border border-[#4ADE80]/50 shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(74,222,128,0.16),inset_0_1px_1px_0_rgba(74,222,128,0.4)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7"
                 style={{ zIndex: 30 }}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.08] via-transparent to-transparent" />
                 
-                {/* Header */}
-                <div className="space-y-1">
-                  <span className="font-mono text-xs text-[#4ADE80] font-semibold tracking-wider">
-                    01
-                  </span>
-                  <h3 className="font-sans font-bold text-xs sm:text-[13px] text-white tracking-wide uppercase leading-snug">
+                {/* Header Centered */}
+                <div className="w-full flex justify-center">
+                  <h3 className="font-sans font-bold text-sm sm:text-base text-white tracking-wide uppercase leading-snug text-center">
                     SCATTERED DATA. <br />
                     ONE UNIFIED VIEW.
                   </h3>
-                  <div className="w-5 h-[1.5px] bg-[#4ADE80] mt-1.5" />
                 </div>
 
                 {/* Abstract Artwork: 5 Stacked 3D Sheets + Glowing Fiber-Optic Funnel */}
-                <div className="my-auto py-1 flex items-center justify-center relative">
+                <div className="my-auto py-1 flex items-center justify-center relative w-full">
                   <svg viewBox="0 0 200 130" fill="none" className="w-full h-28 overflow-visible">
                     <defs>
                       <linearGradient id="sheetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -439,35 +417,26 @@ export function BlueprintHero() {
                     <circle cx="100" cy="115" r="2" fill="#FFFFFF" />
                   </svg>
                 </div>
-
-                {/* Footer Copy */}
-                <p className="font-sans text-[11px] text-[#8E9B91] leading-relaxed pt-1 border-t border-white/[0.08]">
-                  We consolidate your entire financial world—across accounts, asset classes, and platforms—into one clarity-first view.
-                </p>
               </div>
 
               {/* Card 1: Complexity, Structured with Intelligence (Cascading Document Sheets + Data Stream) */}
               <div
                 key="glass-card-1"
-                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between p-5 sm:p-6"
+                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7"
                 style={{ zIndex: 26 }}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent" />
                 
-                {/* Header */}
-                <div className="space-y-1">
-                  <span className="font-mono text-xs text-[#4ADE80] font-semibold tracking-wider">
-                    02
-                  </span>
-                  <h3 className="font-sans font-bold text-xs sm:text-[13px] text-white tracking-wide uppercase leading-snug">
+                {/* Header Centered */}
+                <div className="w-full flex justify-center">
+                  <h3 className="font-sans font-bold text-sm sm:text-base text-white tracking-wide uppercase leading-snug text-center">
                     COMPLEXITY, STRUCTURED <br />
                     WITH INTELLIGENCE.
                   </h3>
-                  <div className="w-5 h-[1.5px] bg-[#4ADE80] mt-1.5" />
                 </div>
 
                 {/* Abstract Artwork: Angled Translucent Vertical Panels with Horizontal Connectors */}
-                <div className="my-auto py-1 flex items-center justify-center">
+                <div className="my-auto py-1 flex items-center justify-center w-full">
                   <svg viewBox="0 0 200 130" fill="none" className="w-full h-28 overflow-visible">
                     {/* Sheet 4 (Back) */}
                     <g transform="skewY(-10) translate(95, 20)">
@@ -505,46 +474,32 @@ export function BlueprintHero() {
                     <circle cx="175" cy="78" r="2" fill="#86EFAC" />
                   </svg>
                 </div>
-
-                {/* Footer Copy */}
-                <p className="font-sans text-[11px] text-[#8E9B91] leading-relaxed pt-1 border-t border-white/[0.08]">
-                  Our system intelligently organizes what matters—so you can understand the full picture, not just pieces of it.
-                </p>
               </div>
 
               {/* Card 2: See Relationships. See What Matters. (Interconnected Radar Constellation) */}
               <div
                 key="glass-card-2"
-                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between p-5 sm:p-6"
+                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7"
                 style={{ zIndex: 22 }}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent" />
                 
-                {/* Header */}
-                <div className="space-y-1">
-                  <span className="font-mono text-xs text-[#4ADE80] font-semibold tracking-wider">
-                    03
-                  </span>
-                  <h3 className="font-sans font-bold text-xs sm:text-[13px] text-white tracking-wide uppercase leading-snug">
+                {/* Header Centered */}
+                <div className="w-full flex justify-center">
+                  <h3 className="font-sans font-bold text-sm sm:text-base text-white tracking-wide uppercase leading-snug text-center">
                     SEE RELATIONSHIPS. <br />
                     SEE WHAT MATTERS.
                   </h3>
-                  <div className="w-5 h-[1.5px] bg-[#4ADE80] mt-1.5" />
                 </div>
 
                 {/* Abstract Artwork: Pentagonal Radar Constellation & Linked Asset Nodes */}
-                <div className="my-auto py-1 flex items-center justify-center">
+                <div className="my-auto py-1 flex items-center justify-center w-full">
                   <svg viewBox="0 0 200 130" fill="none" className="w-full h-28 overflow-visible">
                     {/* Concentric Background Orbital Rings */}
                     <circle cx="100" cy="65" r="52" stroke="#4ADE80" strokeWidth="0.6" strokeOpacity="0.15" strokeDasharray="3 4" />
                     <circle cx="100" cy="65" r="34" stroke="#4ADE80" strokeWidth="0.75" strokeOpacity="0.25" />
 
                     {/* Pentagonal Connected Network Lines */}
-                    {/* Equities (Top: 100, 18) */}
-                    {/* Real Estate (Right: 155, 52) */}
-                    {/* Cash (Bottom-Right: 135, 105) */}
-                    {/* Fixed Income (Bottom-Left: 65, 105) */}
-                    {/* Private Equity (Left: 45, 52) */}
                     <polygon points="100,20 155,52 135,105 65,105 45,52" stroke="#86EFAC" strokeWidth="1.2" strokeOpacity="0.6" fill="rgba(74,222,128,0.06)" />
 
                     {/* Internal Radial Spokes to Center */}
@@ -576,35 +531,26 @@ export function BlueprintHero() {
                     <text x="15" y="55" fill="#8E9B91" fontSize="5" fontFamily="monospace">PVT EQUITY</text>
                   </svg>
                 </div>
-
-                {/* Footer Copy */}
-                <p className="font-sans text-[11px] text-[#8E9B91] leading-relaxed pt-1 border-t border-white/[0.08]">
-                  Unifolio reveals the connections behind your wealth—helping you spot overlap, exposure, and opportunities.
-                </p>
               </div>
 
               {/* Card 3: Clarity That Drives Confident Decisions (3D Glass Tablet + Floating Glowing Spline) */}
               <div
                 key="glass-card-3"
-                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between p-5 sm:p-6"
+                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7"
                 style={{ zIndex: 18 }}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent" />
                 
-                {/* Header */}
-                <div className="space-y-1">
-                  <span className="font-mono text-xs text-[#4ADE80] font-semibold tracking-wider">
-                    04
-                  </span>
-                  <h3 className="font-sans font-bold text-xs sm:text-[13px] text-white tracking-wide uppercase leading-snug">
+                {/* Header Centered */}
+                <div className="w-full flex justify-center">
+                  <h3 className="font-sans font-bold text-sm sm:text-base text-white tracking-wide uppercase leading-snug text-center">
                     CLARITY THAT DRIVES <br />
                     CONFIDENT DECISIONS.
                   </h3>
-                  <div className="w-5 h-[1.5px] bg-[#4ADE80] mt-1.5" />
                 </div>
 
                 {/* Abstract Artwork: 3D Perspective Glass Tablet with Floating Glowing Curve */}
-                <div className="my-auto py-1 flex items-center justify-center">
+                <div className="my-auto py-1 flex items-center justify-center w-full">
                   <svg viewBox="0 0 200 130" fill="none" className="w-full h-28 overflow-visible">
                     {/* 3D Angled Glass Base Tablet */}
                     <g transform="skewX(-6) translate(15, 0)">
@@ -639,35 +585,26 @@ export function BlueprintHero() {
                     </defs>
                   </svg>
                 </div>
-
-                {/* Footer Copy */}
-                <p className="font-sans text-[11px] text-[#8E9B91] leading-relaxed pt-1 border-t border-white/[0.08]">
-                  With clarity comes confidence. Make smarter decisions with a complete, real-time understanding of your finances.
-                </p>
               </div>
 
               {/* Card 4: Direct Pathways. Zero Friction. (Sovereign Direct Pipeline & Vector Rails) */}
               <div
                 key="glass-card-4"
-                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between p-5 sm:p-6"
+                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7"
                 style={{ zIndex: 14 }}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent" />
                 
-                {/* Header */}
-                <div className="space-y-1">
-                  <span className="font-mono text-xs text-[#4ADE80] font-semibold tracking-wider">
-                    05
-                  </span>
-                  <h3 className="font-sans font-bold text-xs sm:text-[13px] text-white tracking-wide uppercase leading-snug">
+                {/* Header Centered */}
+                <div className="w-full flex justify-center">
+                  <h3 className="font-sans font-bold text-sm sm:text-base text-white tracking-wide uppercase leading-snug text-center">
                     DIRECT PATHWAYS. <br />
                     ZERO FRICTION.
                   </h3>
-                  <div className="w-5 h-[1.5px] bg-[#4ADE80] mt-1.5" />
                 </div>
 
                 {/* Abstract Artwork: Direct Vector Pipeline & Luminous Data Particles */}
-                <div className="my-auto py-1 flex items-center justify-center">
+                <div className="my-auto py-1 flex items-center justify-center w-full">
                   <svg viewBox="0 0 200 130" fill="none" className="w-full h-28 overflow-visible">
                     {/* Converging Corridor Perspective Rails */}
                     <line x1="20" y1="25" x2="180" y2="25" stroke="#4ADE80" strokeWidth="0.8" strokeOpacity="0.3" strokeDasharray="4 4" />
@@ -689,35 +626,26 @@ export function BlueprintHero() {
                     <circle cx="141" cy="65" r="3" fill="#4ADE80" />
                   </svg>
                 </div>
-
-                {/* Footer Copy */}
-                <p className="font-sans text-[11px] text-[#8E9B91] leading-relaxed pt-1 border-t border-white/[0.08]">
-                  Bypass intermediary drag. Migrate and consolidate multi-entity portfolios directly with sovereign precision.
-                </p>
               </div>
 
               {/* Card 5: Sovereign Control. Uncompromised Security. (Concentric Cryptographic Vault Shields) */}
               <div
                 key="glass-card-5"
-                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between p-5 sm:p-6"
+                className="portfolio-card absolute left-0 w-[240px] sm:w-[270px] md:w-[295px] h-[335px] sm:h-[375px] md:h-[405px] rounded-3xl select-none origin-center overflow-hidden bg-[#061009]/85 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_0_rgba(255,255,255,0.2)] backdrop-blur-2xl flex flex-col justify-between items-center p-6 sm:p-7"
                 style={{ zIndex: 10 }}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-transparent" />
                 
-                {/* Header */}
-                <div className="space-y-1">
-                  <span className="font-mono text-xs text-[#4ADE80] font-semibold tracking-wider">
-                    06
-                  </span>
-                  <h3 className="font-sans font-bold text-xs sm:text-[13px] text-white tracking-wide uppercase leading-snug">
+                {/* Header Centered */}
+                <div className="w-full flex justify-center">
+                  <h3 className="font-sans font-bold text-sm sm:text-base text-white tracking-wide uppercase leading-snug text-center">
                     SOVEREIGN CONTROL. <br />
                     UNCOMPROMISED SECURITY.
                   </h3>
-                  <div className="w-5 h-[1.5px] bg-[#4ADE80] mt-1.5" />
                 </div>
 
                 {/* Abstract Artwork: Concentric Cryptographic Vault Shields & Protected Core */}
-                <div className="my-auto py-1 flex items-center justify-center">
+                <div className="my-auto py-1 flex items-center justify-center w-full">
                   <svg viewBox="0 0 200 130" fill="none" className="w-full h-28 overflow-visible">
                     {/* Outer Cryptographic Hexagonal Shield */}
                     <polygon points="100,15 150,38 150,92 100,115 50,92 50,38" fill="rgba(74,222,128,0.04)" stroke="#4ADE80" strokeWidth="0.85" strokeOpacity="0.3" strokeDasharray="6 4" />
@@ -738,11 +666,6 @@ export function BlueprintHero() {
                     <circle cx="136" cy="65" r="2" fill="#86EFAC" />
                   </svg>
                 </div>
-
-                {/* Footer Copy */}
-                <p className="font-sans text-[11px] text-[#8E9B91] leading-relaxed pt-1 border-t border-white/[0.08]">
-                  Your financial data is strictly sovereign, encrypted, and isolated—under your complete ownership.
-                </p>
               </div>
 
             </div>
