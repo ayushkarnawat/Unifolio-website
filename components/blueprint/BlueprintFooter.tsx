@@ -4,7 +4,7 @@ import { useRef } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Mail } from "lucide-react";
 import { useGSAP } from "@gsap/react";
-import { gsap, prefersReducedMotion } from "@/lib/gsap";
+import { gsap, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
 
 export function BlueprintFooter() {
   const containerRef = useRef<HTMLElement | null>(null);
@@ -12,6 +12,16 @@ export function BlueprintFooter() {
   const orbitalArtRef = useRef<HTMLDivElement | null>(null);
   const footerGridRef = useRef<HTMLDivElement | null>(null);
   const bottomBarRef = useRef<HTMLDivElement | null>(null);
+
+  const handleAnchorClick = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    href: string
+  ) => {
+    if (!href.startsWith("#")) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    smoothScrollTo(href);
+  };
 
   useGSAP(
     () => {
@@ -235,6 +245,7 @@ export function BlueprintFooter() {
           <div className="pt-2">
             <Link
               href="#contact"
+              onClick={(e) => handleAnchorClick(e, "#contact")}
               className="group inline-flex items-center gap-3 rounded-2xl border border-[#4ADE80]/50 bg-[#07130c]/90 px-8 sm:px-10 py-4 sm:py-4.5 font-mono text-xs sm:text-sm font-semibold text-[#4ADE80] uppercase tracking-[0.22em] shadow-[0_0_30px_rgba(74,222,128,0.12)] hover:bg-[#102a1b] hover:border-[#4ADE80] hover:text-[#86EFAC] hover:shadow-[0_0_40px_rgba(74,222,128,0.25)] transition-all duration-300 active:scale-[0.98]"
             >
               <span>REQUEST ACCESS</span>
@@ -255,7 +266,11 @@ export function BlueprintFooter() {
         >
           {/* Column 1 (Left): Logo Glyph + Logotype + Tagline */}
           <div className="md:col-span-5 space-y-4">
-            <Link href="#hero" className="inline-flex items-center gap-3 group">
+            <Link
+              href="#hero"
+              onClick={(e) => handleAnchorClick(e, "#hero")}
+              className="inline-flex items-center gap-3 group"
+            >
               <svg viewBox="0 0 40 40" className="w-7 h-7 sm:w-8 sm:h-8 overflow-visible">
                 <circle
                   cx="20"
@@ -288,27 +303,27 @@ export function BlueprintFooter() {
           {/* Column 2 (Center): Navigation Links */}
           <div className="md:col-span-3 space-y-3.5 font-mono text-xs tracking-[0.25em] text-[#8E9B91] uppercase">
             <div>
-              <Link href="#hero" className="hover:text-white transition-colors">
+              <Link href="#hero" onClick={(e) => handleAnchorClick(e, "#hero")} className="hover:text-white transition-colors">
                 HOME
               </Link>
             </div>
             <div>
-              <Link href="#statement" className="hover:text-white transition-colors">
+              <Link href="#statement" onClick={(e) => handleAnchorClick(e, "#statement")} className="hover:text-white transition-colors">
                 PRODUCT
               </Link>
             </div>
             <div>
-              <Link href="#offerings" className="hover:text-white transition-colors">
+              <Link href="#offerings" onClick={(e) => handleAnchorClick(e, "#offerings")} className="hover:text-white transition-colors">
                 OFFERINGS
               </Link>
             </div>
             <div>
-              <Link href="#about" className="hover:text-white transition-colors">
+              <Link href="#about" onClick={(e) => handleAnchorClick(e, "#about")} className="hover:text-white transition-colors">
                 ABOUT
               </Link>
             </div>
             <div>
-              <Link href="#contact" className="hover:text-white transition-colors">
+              <Link href="#contact" onClick={(e) => handleAnchorClick(e, "#contact")} className="hover:text-white transition-colors">
                 CONTACT
               </Link>
             </div>
