@@ -227,14 +227,10 @@ export function BlueprintAboutMetrics() {
           ref={state2Ref}
           className="absolute inset-0 p-8 sm:p-14 lg:p-20 flex items-center justify-end z-10 pointer-events-none opacity-0 will-change-transform max-w-7xl mx-auto"
         >
-          <div className="max-w-2xl lg:max-w-3xl space-y-8 text-left">
-            <h3 className="font-sans font-light text-3xl sm:text-5xl lg:text-6xl text-[#FAF8F5] tracking-tight leading-[1.15]">
+          <div className="max-w-2xl lg:max-w-3xl space-y-6 text-left">
+            <h3 className="font-sans font-light text-3xl sm:text-5xl lg:text-6xl text-[#FAF8F5] tracking-tight leading-[1.18]">
               Our mission is to build absolute transparency and sovereign clarity across every folio, fund, and asset.
             </h3>
-
-            <p className="font-sans font-normal text-sm sm:text-base lg:text-lg text-[#8E9B91] leading-relaxed max-w-2xl">
-              By unmasking hidden distribution fees, consolidating multi-PAN structures, and automating direct migration, we empower families and institutions to see what they truly own.
-            </p>
           </div>
         </div>
 
@@ -248,7 +244,7 @@ export function BlueprintAboutMetrics() {
           {/* Panoramic Container Holding the 3 Panels */}
           <div className="relative w-full rounded-[40px] overflow-hidden border border-white/[0.08] bg-[#020403] shadow-[0_24px_60px_rgba(0,0,0,0.95)] pointer-events-auto">
             
-            {/* ABSTRACT ILLUMINATED TOPOGRAPHIC / CELLULAR SURFACES (Cinematic Art Direction) */}
+            {/* ABSTRACT ILLUMINATED TOPOGRAPHIC & AMBIENT FIELD (Harmonized System Aura) */}
             <div
               ref={contourLayerRef}
               className="pointer-events-none absolute inset-0 w-full h-full overflow-hidden will-change-transform z-0"
@@ -268,8 +264,8 @@ export function BlueprintAboutMetrics() {
 
                   {/* Soft Restrained Rim Glow Filter */}
                   <filter id="subtleSoftGlow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="4" result="blurMid" />
-                    <feGaussianBlur stdDeviation="10" result="blurWide" />
+                    <feGaussianBlur stdDeviation="6" result="blurMid" />
+                    <feGaussianBlur stdDeviation="16" result="blurWide" />
                     <feMerge>
                       <feMergeNode in="blurWide" />
                       <feMergeNode in="blurMid" />
@@ -277,200 +273,84 @@ export function BlueprintAboutMetrics() {
                     </feMerge>
                   </filter>
 
-                  {/* Deep Atmospheric Haze Filter for Middle Card Ambient */}
-                  <filter id="deepAmbientHaze" x="-30%" y="-30%" width="160%" height="160%">
-                    <feGaussianBlur stdDeviation="24" />
-                  </filter>
-
-                  {/* LEFT CARD: Soft Inward-Diffusing Organic Surface Gradient */}
-                  <radialGradient id="leftSurfaceGrad" cx="-20" cy="170" r="240" fx="70" fy="170" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#15803D" stopOpacity="0.26" />
-                    <stop offset="40%" stopColor="#062E16" stopOpacity="0.16" />
-                    <stop offset="75%" stopColor="#021409" stopOpacity="0.05" />
+                  {/* LEFT CARD: Soft Ambient Glow Gradient */}
+                  <radialGradient id="leftSurfaceGrad" cx="120" cy="480" r="320" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#15803D" stopOpacity="0.22" />
+                    <stop offset="50%" stopColor="#062E16" stopOpacity="0.10" />
                     <stop offset="100%" stopColor="#020403" stopOpacity="0" />
                   </radialGradient>
 
-                  {/* MIDDLE CARD: Barely-there ambient atmospheric whisper */}
-                  <radialGradient id="midAmbientGrad" cx="580" cy="620" r="260" fx="580" fy="580" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#15803D" stopOpacity="0.10" />
-                    <stop offset="50%" stopColor="#052010" stopOpacity="0.04" />
-                    <stop offset="100%" stopColor="#020403" stopOpacity="0" />
-                  </radialGradient>
-
-                  {/* RIGHT CARD: Large Bottom-Right Topographic Surface Gradient */}
-                  <radialGradient id="rightBottomSurfaceGrad" cx="1200" cy="600" r="380" fx="1060" fy="440" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#16A34A" stopOpacity="0.30" />
-                    <stop offset="38%" stopColor="#062E16" stopOpacity="0.18" />
-                    <stop offset="78%" stopColor="#021408" stopOpacity="0.05" />
-                    <stop offset="100%" stopColor="#020403" stopOpacity="0" />
-                  </radialGradient>
-
-                  {/* RIGHT CARD: Subtle Upper-Right Organic Horizon Gradient */}
-                  <radialGradient id="rightTopSurfaceGrad" cx="1220" cy="-20" r="260" fx="1120" fy="50" gradientUnits="userSpaceOnUse">
+                  {/* MIDDLE CARD: Central Ambient Whisper */}
+                  <radialGradient id="midAmbientGrad" cx="600" cy="520" r="280" gradientUnits="userSpaceOnUse">
                     <stop offset="0%" stopColor="#15803D" stopOpacity="0.18" />
-                    <stop offset="45%" stopColor="#062814" stopOpacity="0.09" />
-                    <stop offset="85%" stopColor="#020403" stopOpacity="0" />
+                    <stop offset="50%" stopColor="#052010" stopOpacity="0.08" />
+                    <stop offset="100%" stopColor="#020403" stopOpacity="0" />
+                  </radialGradient>
+
+                  {/* RIGHT CARD: Soft Ambient Glow Gradient */}
+                  <radialGradient id="rightBottomSurfaceGrad" cx="1080" cy="480" r="320" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#15803D" stopOpacity="0.22" />
+                    <stop offset="50%" stopColor="#062E16" stopOpacity="0.10" />
+                    <stop offset="100%" stopColor="#020403" stopOpacity="0" />
                   </radialGradient>
                 </defs>
 
-                {/* =========================================================================
-                    1. LEFT CARD: LARGE AMORPHOUS ILLUMINATED SURFACE (Autonomous Ledger)
-                   ========================================================================= */}
-                {/* Soft diffused organic body entering from the left border */}
+                {/* Soft diffused background glows across all three columns */}
+                <ellipse cx="160" cy="500" rx="260" ry="180" fill="url(#leftSurfaceGrad)" />
+                <ellipse cx="600" cy="500" rx="240" ry="160" fill="url(#midAmbientGrad)" />
+                <ellipse cx="1040" cy="500" rx="260" ry="180" fill="url(#rightBottomSurfaceGrad)" />
+
+                {/* Harmonized continuous horizon contour line spanning the bottom */}
                 <path
-                  d="M -120 -80 C -40 20, 110 80, 110 170 C 110 260, 20 330, -80 390 L -120 390 Z"
-                  fill="url(#leftSurfaceGrad)"
-                />
-                {/* Fine subtle grain texture inside the illuminated body */}
-                <path
-                  d="M -120 -80 C -40 20, 110 80, 110 170 C 110 260, 20 330, -80 390 L -120 390 Z"
-                  fill="url(#leftSurfaceGrad)"
-                  filter="url(#subtleSurfaceGrain)"
-                  opacity="0.75"
-                />
-                {/* Soft atmospheric rim underglow */}
-                <path
-                  d="M -40 20 C 60 75, 110 125, 110 170 C 110 225, 60 290, -40 350"
-                  fill="none"
-                  stroke="#22C55E"
-                  strokeWidth="3.5"
-                  strokeOpacity="0.18"
-                  filter="url(#subtleSoftGlow)"
-                />
-                {/* Thin, restrained luminous contour edge */}
-                <path
-                  d="M -40 20 C 60 75, 110 125, 110 170 C 110 225, 60 290, -40 350"
+                  d="M 20 480 C 180 430, 320 510, 480 460 C 640 410, 780 490, 960 450 C 1080 420, 1140 460, 1180 440"
                   fill="none"
                   stroke="#4ADE80"
                   strokeWidth="0.85"
-                  strokeOpacity="0.4"
-                />
-
-                {/* =========================================================================
-                    2. MIDDLE CARD: PURE NEGATIVE SPACE WITH FAINT AMBIENT WHISPER
-                   ========================================================================= */}
-                {/* Clean, dark, and spacious - only a faint bottom ambient haze with no hard lines */}
-                <ellipse
-                  cx="580"
-                  cy="610"
-                  rx="180"
-                  ry="90"
-                  fill="url(#midAmbientGrad)"
-                  filter="url(#deepAmbientHaze)"
-                />
-
-                {/* =========================================================================
-                    3. RIGHT CARD: LARGE SOFT ORGANIC SURFACE (Household Wealth)
-                   ========================================================================= */}
-                {/* Upper-Right Subtle Organic Form */}
-                <path
-                  d="M 980 -50 C 1010 40, 1070 90, 1240 110 L 1240 -50 Z"
-                  fill="url(#rightTopSurfaceGrad)"
-                />
-                <path
-                  d="M 1000 -20 C 1030 45, 1080 85, 1220 105"
-                  fill="none"
-                  stroke="#4ADE80"
-                  strokeWidth="0.75"
-                  strokeOpacity="0.25"
+                  strokeOpacity="0.30"
                   filter="url(#subtleSoftGlow)"
-                />
-
-                {/* Main Large Bottom-Right Topographic Horizon Surface */}
-                <path
-                  d="M 820 640 C 900 540, 990 430, 1060 420 C 1130 410, 1190 425, 1240 440 L 1240 640 Z"
-                  fill="url(#rightBottomSurfaceGrad)"
-                />
-                {/* Fine organic grain texture inside the illuminated surface */}
-                <path
-                  d="M 820 640 C 900 540, 990 430, 1060 420 C 1130 410, 1190 425, 1240 440 L 1240 640 Z"
-                  fill="url(#rightBottomSurfaceGrad)"
-                  filter="url(#subtleSurfaceGrain)"
-                  opacity="0.8"
-                />
-                {/* Soft atmospheric rim underglow */}
-                <path
-                  d="M 860 610 C 930 510, 1000 425, 1060 420 C 1130 410, 1190 425, 1240 440"
-                  fill="none"
-                  stroke="#22C55E"
-                  strokeWidth="4"
-                  strokeOpacity="0.2"
-                  filter="url(#subtleSoftGlow)"
-                />
-                {/* Thin, restrained luminous contour edge */}
-                <path
-                  d="M 860 610 C 930 510, 1000 425, 1060 420 C 1130 410, 1190 425, 1240 440"
-                  fill="none"
-                  stroke="#4ADE80"
-                  strokeWidth="0.9"
-                  strokeOpacity="0.45"
                 />
               </svg>
             </div>
 
-            {/* 3 CAPABILITY PANELS WITH VERY SUBTLE THIN DIVIDING LINES */}
+            {/* 3 CAPABILITY PANELS WITH MINIMAL EDITORIAL REFINEMENT */}
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/[0.06] p-6 sm:p-10 lg:p-12">
               
               {/* Panel 1: Autonomous Ledger */}
-              <div className="group p-5 sm:p-6 lg:p-8 space-y-8 flex flex-col justify-between min-h-[360px] sm:min-h-[420px] rounded-2xl hover:bg-white/[0.02] transition-colors duration-300">
-                <div className="space-y-3">
-                  <div className="font-mono text-xs text-[#4ADE80] font-semibold tracking-widest uppercase flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] shadow-[0_0_6px_#4ADE80] group-hover:scale-125 transition-transform" />
-                    44+ AMCs Unified
-                  </div>
+              <div className="group p-6 sm:p-8 lg:p-10 space-y-12 flex flex-col justify-between min-h-[300px] sm:min-h-[360px] rounded-2xl hover:bg-white/[0.02] transition-colors duration-300">
+                <div>
                   <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight group-hover:text-[#4ADE80] transition-colors">
                     Autonomous Ledger
                   </h4>
                 </div>
 
-                <p className="font-sans text-xs sm:text-sm text-[#8E9B91] leading-relaxed max-w-xs group-hover:text-[#FAF8F5]/90 transition-colors">
-                  Building clarity from scattered statements across 44+ AMCs, depositories & brokerages into a single resolved master ledger.
-                </p>
-
-                <div className="pt-4 border-t border-white/[0.06] font-mono text-2xl sm:text-3xl text-white font-bold tracking-tight">
-                  ₹420Cr+ <span className="text-[11px] font-normal text-[#8E9B91] block uppercase tracking-wider mt-0.5">Tracked Asset Base</span>
+                <div className="pt-6 border-t border-white/[0.06] font-mono text-3xl sm:text-4xl text-white font-bold tracking-tight">
+                  ₹420Cr+ <span className="text-xs font-normal text-[#8E9B91] block uppercase tracking-wider mt-1">Tracked Asset Base</span>
                 </div>
               </div>
 
               {/* Panel 2: Fee Dissection */}
-              <div className="group p-5 sm:p-6 lg:p-8 space-y-8 flex flex-col justify-between min-h-[360px] sm:min-h-[420px] rounded-2xl hover:bg-white/[0.02] transition-colors duration-300">
-                <div className="space-y-3">
-                  <div className="font-mono text-xs text-[#4ADE80] font-semibold tracking-widest uppercase flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] shadow-[0_0_6px_#4ADE80] group-hover:scale-125 transition-transform" />
-                    Expense Ratio Audit
-                  </div>
+              <div className="group p-6 sm:p-8 lg:p-10 space-y-12 flex flex-col justify-between min-h-[300px] sm:min-h-[360px] rounded-2xl hover:bg-white/[0.02] transition-colors duration-300">
+                <div>
                   <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight group-hover:text-[#4ADE80] transition-colors">
                     Fee Dissection
                   </h4>
                 </div>
 
-                <p className="font-sans text-xs sm:text-sm text-[#8E9B91] leading-relaxed max-w-xs group-hover:text-[#FAF8F5]/90 transition-colors">
-                  Keeping wealth compounding by unmasking 15bps expense ratios and 1.5% regular plan trail commissions eating returns.
-                </p>
-
-                <div className="pt-4 border-t border-white/[0.06] font-mono text-2xl sm:text-3xl text-white font-bold tracking-tight">
-                  100% <span className="text-[11px] font-normal text-[#8E9B91] block uppercase tracking-wider mt-0.5">TER Transparency</span>
+                <div className="pt-6 border-t border-white/[0.06] font-mono text-3xl sm:text-4xl text-white font-bold tracking-tight">
+                  100% <span className="text-xs font-normal text-[#8E9B91] block uppercase tracking-wider mt-1">TER Transparency</span>
                 </div>
               </div>
 
               {/* Panel 3: Household Wealth */}
-              <div className="group p-5 sm:p-6 lg:p-8 space-y-8 flex flex-col justify-between min-h-[360px] sm:min-h-[420px] rounded-2xl hover:bg-white/[0.02] transition-colors duration-300">
-                <div className="space-y-3">
-                  <div className="font-mono text-xs text-[#4ADE80] font-semibold tracking-widest uppercase flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] shadow-[0_0_6px_#4ADE80] group-hover:scale-125 transition-transform" />
-                    Multi-PAN Architecture
-                  </div>
+              <div className="group p-6 sm:p-8 lg:p-10 space-y-12 flex flex-col justify-between min-h-[300px] sm:min-h-[360px] rounded-2xl hover:bg-white/[0.02] transition-colors duration-300">
+                <div>
                   <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight group-hover:text-[#4ADE80] transition-colors">
                     Household Wealth
                   </h4>
                 </div>
 
-                <p className="font-sans text-xs sm:text-sm text-[#8E9B91] leading-relaxed max-w-xs group-hover:text-[#FAF8F5]/90 transition-colors">
-                  Unifying multi-generation family portfolios across all entities into one intelligent, tax-optimized view.
-                </p>
-
-                <div className="pt-4 border-t border-white/[0.06] font-mono text-2xl sm:text-3xl text-white font-bold tracking-tight">
-                  18,000+ <span className="text-[11px] font-normal text-[#8E9B91] block uppercase tracking-wider mt-0.5">Active Families</span>
+                <div className="pt-6 border-t border-white/[0.06] font-mono text-3xl sm:text-4xl text-white font-bold tracking-tight">
+                  18,000+ <span className="text-xs font-normal text-[#8E9B91] block uppercase tracking-wider mt-1">Active Families</span>
                 </div>
               </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import { useGSAP } from "@gsap/react";
 import { gsap, prefersReducedMotion } from "@/lib/gsap";
 
@@ -26,7 +27,7 @@ export function BlueprintStackingCards() {
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: () => `+=${Math.max(2000, (track.scrollWidth - window.innerWidth) * 1.6 + 1000)}`,
+          end: () => `+=${Math.max(2400, (track.scrollWidth - window.innerWidth) * 1.8 + 1200)}`,
           pin: stageRef.current,
           scrub: 1.6,
           invalidateOnRefresh: true,
@@ -34,13 +35,13 @@ export function BlueprintStackingCards() {
         },
       });
 
-      // 1. Smooth Cinematic Entrance: Fade & Drift In from Previous Section (0.0 -> 0.12)
+      // 1. Smooth Cinematic Entrance: Natural Emergence from Hero Resolution (0.0 -> 0.12)
       tl.fromTo(
         track,
         {
           opacity: 0,
-          y: 20,
-          filter: "blur(4px)",
+          y: 16,
+          filter: "blur(3px)",
         },
         {
           opacity: 1,
@@ -84,89 +85,66 @@ export function BlueprintStackingCards() {
       id="offerings"
       ref={containerRef}
       className="relative w-full bg-[#0E1310] select-none"
-      style={{ height: "480vh" }}
+      style={{ height: "520vh" }}
     >
       {/* Seamless Top Gradient Handoff from Hero */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-[#040705] via-[#0E1310]/80 to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-[#0E1310] via-[#0E1310]/70 to-transparent z-10" />
 
       {/* Pinned Fullscreen Stage */}
       <div
         ref={stageRef}
         className="relative h-screen w-full overflow-hidden flex items-center bg-[#0E1310]"
       >
-        {/* Subtle Ambient Background Gradients */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,rgba(74,222,128,0.04)_0%,transparent_60%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_60%,rgba(74,222,128,0.03)_0%,transparent_60%)]" />
+        {/* Ambient Environmental Gradients & Horizon Strata */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,rgba(74,222,128,0.05)_0%,transparent_60%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_60%,rgba(74,222,128,0.04)_0%,transparent_60%)]" />
+        <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1px] bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
 
         {/* Continuous Horizontal Panoramic Ribbon */}
         <div
           ref={trackRef}
-          className="flex items-center gap-20 sm:gap-32 md:gap-40 px-12 sm:px-20 md:px-32 w-max whitespace-nowrap will-change-transform"
+          className="flex items-center gap-28 sm:gap-40 md:gap-52 px-16 sm:px-28 md:px-44 w-max whitespace-nowrap will-change-transform"
         >
           {/* =========================================================================
               PROLOGUE: Monumental Editorial Statement
              ========================================================================= */}
-          <div className="flex flex-col justify-center shrink-0 pr-12 sm:pr-20 max-w-[560px] sm:max-w-[700px] whitespace-normal">
-            <h2 className="font-sans font-extrabold text-5xl sm:text-7xl lg:text-8xl text-white tracking-[-0.035em] uppercase leading-[0.92]">
+          <div className="flex flex-col justify-center shrink-0 pr-12 sm:pr-24 max-w-[580px] sm:max-w-[720px] whitespace-normal">
+            <h2 className="font-sans font-extrabold text-5xl sm:text-7xl lg:text-[84px] text-white tracking-[-0.04em] uppercase leading-[0.92]">
               BUILT TO UNIFY. <br />
               <span className="text-[#4ADE80]">DESIGNED TO CLARIFY.</span>
             </h2>
           </div>
 
           {/* =========================================================================
-              CHAPTER 1: ONE VIEW. NOTHING HIDDEN. + Flowing Atmospheric Convergence
+              CHAPTER 1: ONE VIEW. NOTHING HIDDEN. + Horizontal Section Illustration
              ========================================================================= */}
-          <div className="flex items-center gap-12 sm:gap-20 shrink-0">
+          <div className="flex items-center gap-16 sm:gap-24 shrink-0">
             {/* Primary Editorial Heading */}
-            <div className="flex flex-col justify-center shrink-0 whitespace-normal">
+            <div className="flex flex-col justify-center shrink-0 whitespace-normal max-w-[480px]">
               <h3 className="font-sans font-extrabold text-4xl sm:text-6xl lg:text-7xl text-white tracking-[-0.035em] uppercase leading-[0.95]">
                 ONE VIEW. <br />
                 <span className="text-[#8E9B91]/80">NOTHING HIDDEN.</span>
               </h3>
             </div>
 
-            {/* Abstract Atmospheric Visual: Layered Flowing Streams & Converging Nodes */}
-            <div className="w-[280px] sm:w-[380px] md:w-[440px] h-[260px] sm:h-[320px] relative flex items-center justify-center shrink-0">
-              <div className="pointer-events-none absolute inset-0 bg-radial-gradient from-[#4ADE80]/10 via-transparent to-transparent blur-2xl" />
-              <svg viewBox="0 0 320 240" fill="none" className="w-full h-full overflow-visible opacity-90">
-                <defs>
-                  <linearGradient id="flowGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#4ADE80" stopOpacity="0.8" />
-                    <stop offset="50%" stopColor="#22C55E" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#86EFAC" stopOpacity="0.02" />
-                  </linearGradient>
-                  <linearGradient id="flowGrad2" x1="0%" y1="100%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#86EFAC" stopOpacity="0.6" />
-                    <stop offset="100%" stopColor="#15803D" stopOpacity="0.05" />
-                  </linearGradient>
-                </defs>
-
-                {/* Ambient Flow Ribbons */}
-                <path d="M 20 190 C 80 160, 100 60, 180 80 C 240 95, 270 40, 300 50" stroke="url(#flowGrad1)" strokeWidth="2.5" strokeLinecap="round" />
-                <path d="M 20 210 C 90 180, 110 90, 190 110 C 250 125, 280 70, 300 75" stroke="#4ADE80" strokeWidth="1" strokeOpacity="0.35" strokeDasharray="4 6" />
-                <path d="M 20 140 C 70 120, 120 180, 200 130 C 260 90, 280 130, 300 110" stroke="url(#flowGrad2)" strokeWidth="1.8" strokeOpacity="0.75" />
-                <path d="M 40 70 C 100 40, 140 140, 220 100 C 270 75, 290 90, 300 85" stroke="#86EFAC" strokeWidth="1.2" strokeOpacity="0.4" strokeDasharray="6 4" />
-
-                {/* Translucent Morphing Flow Facets */}
-                <path d="M 60 170 Q 140 100 220 120 Q 280 80 300 70 L 300 120 Q 220 160 140 140 Z" fill="rgba(74,222,128,0.05)" />
-                <path d="M 30 150 Q 110 80 190 100 Q 250 60 280 50 L 280 90 Q 190 130 110 120 Z" fill="rgba(134,239,172,0.04)" />
-
-                {/* Illuminated System Nodes */}
-                <circle cx="180" cy="80" r="4.5" fill="#4ADE80" filter="drop-shadow(0 0 10px #4ADE80)" />
-                <circle cx="180" cy="80" r="2" fill="#FFFFFF" />
-                <circle cx="200" cy="130" r="3.5" fill="#86EFAC" filter="drop-shadow(0 0 8px #86EFAC)" />
-                <circle cx="100" cy="140" r="3" fill="#4ADE80" stroke="#0E1310" strokeWidth="1" />
-                <circle cx="270" cy="60" r="2.5" fill="#86EFAC" />
-              </svg>
+            {/* Direct Replacement: Horizontal Section Illustration */}
+            <div className="w-[320px] sm:w-[440px] md:w-[520px] h-[220px] sm:h-[260px] md:h-[290px] relative flex items-center justify-center shrink-0">
+              <Image
+                src="/horizontal section illustration.png"
+                alt="Unifolio — One View. Nothing Hidden."
+                fill
+                className="object-contain object-center pointer-events-none"
+                quality={100}
+              />
             </div>
           </div>
 
           {/* =========================================================================
               CHAPTER 2: SEE WHAT YOUR MONEY LEAVES BEHIND. + Harmonic Wave Field
              ========================================================================= */}
-          <div className="flex items-center gap-12 sm:gap-20 shrink-0">
+          <div className="flex items-center gap-16 sm:gap-24 shrink-0">
             {/* Primary Editorial Heading */}
-            <div className="flex flex-col justify-center shrink-0 whitespace-normal">
+            <div className="flex flex-col justify-center shrink-0 whitespace-normal max-w-[500px]">
               <h3 className="font-sans font-extrabold text-4xl sm:text-6xl lg:text-7xl text-white tracking-[-0.035em] uppercase leading-[0.95]">
                 SEE WHAT <br />
                 <span className="text-[#4ADE80]">YOUR MONEY</span> <br />
@@ -175,12 +153,12 @@ export function BlueprintStackingCards() {
             </div>
 
             {/* Abstract Atmospheric Visual: Undulating Density Waves & Radiating Contours */}
-            <div className="w-[280px] sm:w-[380px] md:w-[440px] h-[260px] sm:h-[320px] relative flex items-center justify-center shrink-0">
-              <div className="pointer-events-none absolute inset-0 bg-radial-gradient from-[#4ADE80]/12 via-transparent to-transparent blur-3xl" />
+            <div className="w-[300px] sm:w-[400px] md:w-[460px] h-[280px] sm:h-[340px] relative flex items-center justify-center shrink-0">
+              <div className="pointer-events-none absolute inset-0 bg-radial-gradient from-[#4ADE80]/14 via-transparent to-transparent blur-3xl" />
               <svg viewBox="0 0 320 240" fill="none" className="w-full h-full overflow-visible opacity-90">
                 <defs>
                   <radialGradient id="auraGrad" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#4ADE80" stopOpacity="0.2" />
+                    <stop offset="0%" stopColor="#4ADE80" stopOpacity="0.22" />
                     <stop offset="60%" stopColor="#22C55E" stopOpacity="0.05" />
                     <stop offset="100%" stopColor="#0E1310" stopOpacity="0" />
                   </radialGradient>
@@ -210,9 +188,9 @@ export function BlueprintStackingCards() {
           {/* =========================================================================
               CHAPTER 3: MANY INVESTMENTS. ONE SYSTEM. + Multi-Dimensional Lattice
              ========================================================================= */}
-          <div className="flex items-center gap-12 sm:gap-20 shrink-0">
+          <div className="flex items-center gap-16 sm:gap-24 shrink-0">
             {/* Primary Editorial Heading */}
-            <div className="flex flex-col justify-center shrink-0 whitespace-normal">
+            <div className="flex flex-col justify-center shrink-0 whitespace-normal max-w-[480px]">
               <h3 className="font-sans font-extrabold text-4xl sm:text-6xl lg:text-7xl text-white tracking-[-0.035em] uppercase leading-[0.95]">
                 MANY INVESTMENTS. <br />
                 <span className="text-[#8E9B91]/80">ONE SYSTEM.</span>
@@ -220,8 +198,8 @@ export function BlueprintStackingCards() {
             </div>
 
             {/* Abstract Atmospheric Visual: Connected Geometric Lattice & Relational Planes */}
-            <div className="w-[280px] sm:w-[380px] md:w-[440px] h-[260px] sm:h-[320px] relative flex items-center justify-center shrink-0">
-              <div className="pointer-events-none absolute inset-0 bg-radial-gradient from-[#4ADE80]/10 via-transparent to-transparent blur-2xl" />
+            <div className="w-[300px] sm:w-[400px] md:w-[460px] h-[280px] sm:h-[340px] relative flex items-center justify-center shrink-0">
+              <div className="pointer-events-none absolute inset-0 bg-radial-gradient from-[#4ADE80]/12 via-transparent to-transparent blur-3xl" />
               <svg viewBox="0 0 320 240" fill="none" className="w-full h-full overflow-visible opacity-90">
                 {/* Faceted Translucent Polygons */}
                 <polygon points="60,60 160,30 130,140 40,110" fill="rgba(74,222,128,0.06)" stroke="#4ADE80" strokeWidth="1" strokeOpacity="0.5" />
@@ -250,8 +228,8 @@ export function BlueprintStackingCards() {
           {/* =========================================================================
               EPILOGUE: Final Resonant Editorial Statement
              ========================================================================= */}
-          <div className="flex flex-col justify-center shrink-0 pl-8 pr-28 max-w-[540px] sm:max-w-[680px] whitespace-normal">
-            <h2 className="font-sans font-extrabold text-5xl sm:text-7xl lg:text-8xl text-white tracking-[-0.035em] uppercase leading-[0.92]">
+          <div className="flex flex-col justify-center shrink-0 pl-12 pr-32 max-w-[580px] sm:max-w-[720px] whitespace-normal">
+            <h2 className="font-sans font-extrabold text-5xl sm:text-7xl lg:text-[84px] text-white tracking-[-0.04em] uppercase leading-[0.92]">
               TOTAL SOVEREIGNTY. <br />
               <span className="text-[#4ADE80]">ZERO COMPROMISE.</span>
             </h2>

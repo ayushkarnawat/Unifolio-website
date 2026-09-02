@@ -22,12 +22,13 @@ export function BlueprintFaq() {
 
     if (activeCard) {
       const cardLeft = activeCard.offsetLeft;
-      const targetScroll = Math.max(0, cardLeft - 20);
+      const targetScroll = Math.max(0, cardLeft - 24);
 
       gsap.to(track, {
         scrollLeft: targetScroll,
-        duration: 0.85,
-        ease: "power3.out",
+        duration: 0.75,
+        ease: "power2.out",
+        overwrite: "auto",
       });
     }
   }, []);
@@ -74,6 +75,16 @@ export function BlueprintFaq() {
     { scope: containerRef }
   );
 
+  // Smooth GSAP reveal for answer content when active card changes
+  useEffect(() => {
+    if (prefersReducedMotion()) return;
+    gsap.fromTo(
+      ".faq-active-answer",
+      { opacity: 0, y: 10 },
+      { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }
+    );
+  }, [activeIdx]);
+
   useEffect(() => {
     scrollToActive(0);
   }, [scrollToActive]);
@@ -107,8 +118,8 @@ export function BlueprintFaq() {
               fx="50%"
               fy="50%"
             >
-              <stop offset="0%" stopColor="#4ADE80" stopOpacity="0.4" />
-              <stop offset="35%" stopColor="#22C55E" stopOpacity="0.18" />
+              <stop offset="0%" stopColor="#4ADE80" stopOpacity="0.35" />
+              <stop offset="35%" stopColor="#22C55E" stopOpacity="0.15" />
               <stop offset="70%" stopColor="#166534" stopOpacity="0.04" />
               <stop offset="100%" stopColor="#030604" stopOpacity="0" />
             </radialGradient>
@@ -151,10 +162,10 @@ export function BlueprintFaq() {
           />
 
           <path
-            d="M 240 100 C 470 142, 680 340, 780 600"
-            stroke="#86EFAC"
-            strokeWidth="1.2"
-            strokeOpacity="0.8"
+            d="M 220 100 C 450 140, 680 340, 780 620"
+            stroke="#4ADE80"
+            strokeWidth="1.5"
+            strokeOpacity="0.5"
             strokeLinecap="round"
           />
         </svg>
@@ -189,16 +200,18 @@ export function BlueprintFaq() {
         </svg>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto space-y-12 lg:space-y-16">
+      {/* Main Content Container */}
+      <div className="relative z-10 max-w-7xl mx-auto space-y-12 sm:space-y-16">
         
         {/* =========================================================================
-            HEADER SECTION (Matching "FAQ Inspiration" Structure & Editorial Pacing)
+            HEADER SECTION: Split Headline + Description + Navigation Buttons
            ========================================================================= */}
-        <div className="faq-header-elem flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-2 border-b border-white/[0.06]">
+        <div className="faq-header-elem flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-4 border-b border-white/[0.08]">
           
-          {/* Left: Eyebrow + Large Editorial Headline */}
+          {/* Left: Section Tag + Headline */}
           <div className="space-y-4 max-w-xl">
             <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] shadow-[0_0_6px_#4ADE80]" />
               <span className="font-mono text-xs sm:text-sm text-[#4ADE80] uppercase tracking-[0.25em] font-semibold">
                 FAQ —
               </span>
@@ -216,14 +229,14 @@ export function BlueprintFaq() {
               Find answers to common questions about Unifolio&apos;s portfolio intelligence, fee dissection, security protocols, and direct migration.
             </p>
 
-            {/* Circular Navigation Arrow Buttons (Inspired by Video Reference) */}
+            {/* Circular Navigation Arrow Buttons */}
             <div className="flex items-center gap-3 shrink-0">
               <button
                 type="button"
                 onClick={handlePrev}
                 disabled={activeIdx === 0}
                 aria-label="Previous question"
-                className={`w-11 h-11 rounded-full border flex items-center justify-center transition-all duration-300 ${
+                className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all duration-300 ${
                   activeIdx === 0
                     ? "border-white/10 text-white/20 cursor-not-allowed bg-transparent"
                     : "border-white/20 bg-white/[0.04] text-white hover:border-[#4ADE80] hover:text-[#4ADE80] hover:bg-[#102217] active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(74,222,128,0.1)]"
@@ -237,7 +250,7 @@ export function BlueprintFaq() {
                 onClick={handleNext}
                 disabled={activeIdx === faqContent.length - 1}
                 aria-label="Next question"
-                className={`w-11 h-11 rounded-full border flex items-center justify-center transition-all duration-300 ${
+                className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all duration-300 ${
                   activeIdx === faqContent.length - 1
                     ? "border-white/10 text-white/20 cursor-not-allowed bg-transparent"
                     : "border-white/20 bg-white/[0.04] text-white hover:border-[#4ADE80] hover:text-[#4ADE80] hover:bg-[#102217] active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(74,222,128,0.1)]"
@@ -251,7 +264,7 @@ export function BlueprintFaq() {
         </div>
 
         {/* =========================================================================
-            HORIZONTAL ACCORDION SLIDER TRACK (Inspired by Video Reference)
+            HORIZONTAL ACCORDION SLIDER TRACK
            ========================================================================= */}
         <div
           ref={trackRef}
@@ -269,13 +282,13 @@ export function BlueprintFaq() {
                     cardRefs.current[idx] = el;
                   }}
                   onClick={() => scrollToActive(idx)}
-                  className={`group relative rounded-[28px] sm:rounded-[32px] border transition-all duration-500 ease-out cursor-pointer flex flex-col justify-between overflow-hidden select-none ${
+                  className={`group relative rounded-[28px] sm:rounded-[32px] border transition-[width,background-color,border-color,box-shadow] duration-500 ease-out cursor-pointer flex flex-col justify-between overflow-hidden select-none ${
                     isActive
-                      ? "w-[340px] sm:w-[460px] md:w-[540px] lg:w-[580px] bg-gradient-to-br from-[#0c2317] via-[#091a11] to-[#040c07] border-[#4ADE80]/50 shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_40px_rgba(74,222,128,0.14),inset_0_1px_1px_rgba(74,222,128,0.3)] p-7 sm:p-9 md:p-10 min-h-[380px] sm:min-h-[420px]"
-                      : "w-[220px] sm:w-[260px] md:w-[280px] bg-[#070c09]/85 border-white/[0.08] hover:border-white/25 hover:bg-[#0b140e] p-6 sm:p-8 min-h-[380px] sm:min-h-[420px]"
+                      ? "w-[340px] sm:w-[460px] md:w-[540px] lg:w-[580px] bg-gradient-to-br from-[#08180e] via-[#051009] to-[#020805] border-[#4ADE80]/40 shadow-[0_24px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(74,222,128,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] p-7 sm:p-9 md:p-10 min-h-[380px] sm:min-h-[420px]"
+                      : "w-[220px] sm:w-[260px] md:w-[280px] bg-[#050b07]/80 border-white/[0.08] hover:border-white/20 hover:bg-[#08120b] p-6 sm:p-8 min-h-[380px] sm:min-h-[420px]"
                   }`}
                 >
-                  {/* Active Specular Rim Gradient */}
+                  {/* Active Top Specular Edge */}
                   {isActive && (
                     <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#86EFAC]/40 to-transparent" />
                   )}
@@ -291,7 +304,7 @@ export function BlueprintFaq() {
                     </span>
 
                     {isActive ? (
-                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#122b1c] border border-[#4ADE80]/40 text-[#4ADE80] font-mono text-[10px] uppercase tracking-wider shadow-[0_0_10px_rgba(74,222,128,0.2)]">
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#102417] border border-[#4ADE80]/40 text-[#4ADE80] font-mono text-[10px] uppercase tracking-wider shadow-[0_0_10px_rgba(74,222,128,0.15)]">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] shadow-[0_0_6px_#4ADE80] animate-pulse" />
                         Active
                       </div>
@@ -312,9 +325,9 @@ export function BlueprintFaq() {
                       {item.question}
                     </h3>
 
-                    {/* Detailed Answer - Rendered with smooth transition when active */}
+                    {/* Detailed Answer */}
                     {isActive && (
-                      <div className="pt-3 border-t border-white/[0.08] animate-fadeIn">
+                      <div className="faq-active-answer pt-3 border-t border-white/[0.08]">
                         <p className="font-sans text-xs sm:text-sm md:text-base text-[#8E9B91] leading-relaxed font-normal">
                           {item.answer}
                         </p>
@@ -338,7 +351,7 @@ export function BlueprintFaq() {
                     <div
                       className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
                         isActive
-                          ? "bg-[#142e1e] border border-[#4ADE80]/60 text-[#4ADE80]"
+                          ? "bg-[#102417] border border-[#4ADE80]/60 text-[#4ADE80]"
                           : "bg-white/[0.04] border border-white/10 text-white/40 group-hover:border-white/30 group-hover:text-white"
                       }`}
                     >

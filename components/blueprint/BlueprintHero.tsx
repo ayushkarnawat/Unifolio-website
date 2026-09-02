@@ -98,8 +98,8 @@ export function BlueprintHero() {
       );
 
       // =========================================================================
-      // 2. 3D ORBITAL CONSTELLATION CHOREOGRAPHY (t: 0.06 -> 0.54)
-      // Ultra-smooth continuous interpolation with quintic smootherstep docking
+      // 2. STAGGERED 3D ORBITAL CONSTELLATION CHOREOGRAPHY (t: 0.06 -> 0.54)
+      // Master coordinated timeline with cascading quintic smootherstep docking
       // =========================================================================
       const choreographyState = { progress: 0 };
 
@@ -110,50 +110,51 @@ export function BlueprintHero() {
           ease: "none",
           duration: 0.48,
           onUpdate: () => {
-            const p = choreographyState.progress; // Normalized 0.0 to 1.0
+            const p = choreographyState.progress; // Master timeline progress (0.0 to 1.0)
 
             const wrapWidth = cardsWrapRef.current?.clientWidth || 640;
             const stepX = Math.min(68, wrapWidth * 0.125);
 
-            // Orbit focal center & radii (shared across all cards)
+            // Orbit focal center & radii (shared across formation)
             const orbitCenterX = Math.min(140, wrapWidth * 0.22);
             const orbitCenterY = 0;
             const Rx = Math.min(330, wrapWidth * 0.52);
             const Ry = 185;
 
-            // Phase thresholds
-            const orbitEnd = 0.50; // Orbital loop progression
-            const dockEnd = 0.86; // Deceleration & docking
-
-            // Coordinated constellation angular rotation: ~280° of smooth orbital sweep
+            // Global orbital sweep angle (~280° of continuous rotation)
             const constellationAngle = p * (1.55 * Math.PI);
 
             cardEls.forEach((card, i) => {
-              // Exact 60° harmonic spacing around the circular orbit
+              // 60° harmonic angular spacing
               const baseAngle = i * ((2 * Math.PI) / 6);
               const theta = baseAngle + constellationAngle;
 
-              // Shared orbital position
+              // Orbital coordinates
               const orbX = orbitCenterX + Math.cos(theta) * Rx;
               const orbY = orbitCenterY + Math.sin(theta) * Ry;
 
-              // 3D perspective banking & scaling along orbital path
-              const depthNorm = (Math.sin(theta) + 1) / 2; // 0 = back, 1 = front
-              const orbScale = 0.70 + 0.42 * depthNorm;
-              const orbRotZ = Math.sin(theta) * 20 + Math.cos(theta) * 6;
-              const orbRotY = Math.cos(theta) * 18;
-              const orbRotX = Math.sin(theta) * 10;
+              // 3D perspective depth normalization along orbit (0 = rear, 1 = front)
+              const depthNorm = (Math.sin(theta) + 1) / 2;
+              const orbScale = 0.72 + 0.38 * depthNorm;
+              const orbRotZ = Math.sin(theta) * 18 + Math.cos(theta) * 5;
+              const orbRotY = Math.cos(theta) * 16;
+              const orbRotX = Math.sin(theta) * 8;
 
-              // Smooth emergence from aperture core
-              const emergenceFactor = Math.min(1, Math.max(0, p * 4.2));
-              const currentScaleBase = orbScale * (0.35 + 0.65 * emergenceFactor);
-              const currentOpacity = Math.min(1, p * 4.8);
+              // Staggered emergence from aperture core (Back cards emerge first)
+              const staggerEmergence = Math.max(0, Math.min(1, (p - (5 - i) * 0.02) * 5.0));
+              const currentScaleBase = orbScale * (0.35 + 0.65 * staggerEmergence);
+              const currentOpacity = staggerEmergence;
 
-              // Target docked coordinates
+              // Target docked composition
               const targetX = i * stepX;
               const targetY = 0;
               const targetScale = 1 - i * 0.045;
               const targetRot = 0;
+
+              // Cascading staggered docking threshold: Card 5 docks first, followed in wave to Card 0
+              const dockLag = (5 - i) * 0.025;
+              const cardOrbitEnd = 0.44 + dockLag;
+              const cardDockEnd = 0.82 + dockLag;
 
               let finalX = orbX;
               let finalY = orbY;
@@ -162,11 +163,11 @@ export function BlueprintHero() {
               let finalRotY = orbRotY;
               let finalRotX = orbRotX;
 
-              // Continuous Quintic Smootherstep blend into final docked layout (0 acceleration at boundaries)
-              if (p > orbitEnd) {
-                const rawBlend = (p - orbitEnd) / (dockEnd - orbitEnd);
+              // Quintic Smootherstep blending (Zero 1st & 2nd derivative acceleration at docking edges)
+              if (p > cardOrbitEnd) {
+                const rawBlend = (p - cardOrbitEnd) / (cardDockEnd - cardOrbitEnd);
                 const t = Math.min(1, Math.max(0, rawBlend));
-                // Quintic smootherstep formula: 6t^5 - 15t^4 + 10t^3
+                // 6t^5 - 15t^4 + 10t^3
                 const smoothBlend = t * t * t * (t * (t * 6 - 15) + 10);
 
                 finalX = orbX * (1 - smoothBlend) + targetX * smoothBlend;
@@ -195,7 +196,7 @@ export function BlueprintHero() {
 
       // =========================================================================
       // 3. SEAMLESS VISUAL HANDOFF & STATEMENT REVEAL (t: 0.56 -> 1.0)
-      // Cards recede smoothly -> Statement reveals and settles -> Generous reading pause
+      // Cards recede smoothly -> Statement reveals and settles -> Reading pause -> Gentle resolve into next section
       // =========================================================================
       tl.to(
         cardsWrapRef.current,
@@ -230,8 +231,22 @@ export function BlueprintHero() {
         0.60
       );
 
-      // Extended holding interval (t: 0.80 -> 1.0) ensures user comfortably reads the full statement
-      tl.to({}, { duration: 0.20 }, 0.80);
+      // Extended holding interval (t: 0.78 -> 0.88) ensures user comfortably reads the full statement
+      tl.to({}, { duration: 0.10 }, 0.78);
+
+      // Gentle, continuous resolution into the incoming horizontal narrative (t: 0.88 -> 1.0)
+      tl.to(
+        [textWrapRef.current, cardsWrapRef.current],
+        {
+          opacity: 0.10,
+          y: -16,
+          scale: 0.98,
+          filter: "blur(3px)",
+          ease: "power1.inOut",
+          duration: 0.12,
+        },
+        0.88
+      );
     },
     { scope: containerRef }
   );
@@ -734,8 +749,8 @@ export function BlueprintHero() {
           </div>
         </div>
 
-        {/* Seamless Bottom Section Blend Handoff */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0E1310]/80 to-transparent z-10" />
+        {/* Seamless Bottom Section Blend Handoff into Horizontal Narrative */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#0E1310] via-[#0E1310]/70 to-transparent z-30" />
       </div>
     </section>
   );
