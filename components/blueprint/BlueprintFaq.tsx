@@ -128,10 +128,10 @@ export function BlueprintFaq() {
     <section
       id="faq"
       ref={containerRef}
-      className="relative w-full bg-[#030604] py-24 sm:py-32 lg:py-36 px-6 sm:px-12 lg:px-20 text-[#FAF8F5] select-none overflow-hidden"
+      className="relative w-full bg-[#000000] py-24 sm:py-32 lg:py-36 px-6 sm:px-12 lg:px-20 text-[#FAF8F5] select-none overflow-hidden"
     >
       {/* Seamless Top Blend from About */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#030604] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#000000] to-transparent z-10" />
 
       {/* =========================================================================
           ATMOSPHERIC BACKGROUND VISUALS
@@ -154,10 +154,9 @@ export function BlueprintFaq() {
               fx="50%"
               fy="50%"
             >
-              <stop offset="0%" stopColor="#4ADE80" stopOpacity="0.35" />
-              <stop offset="35%" stopColor="#22C55E" stopOpacity="0.15" />
-              <stop offset="70%" stopColor="#166534" stopOpacity="0.04" />
-              <stop offset="100%" stopColor="#030604" stopOpacity="0" />
+              <stop offset="0%" stopColor="#22C55E" stopOpacity="0.25" />
+              <stop offset="40%" stopColor="#22C55E" stopOpacity="0.08" />
+              <stop offset="100%" stopColor="#000000" stopOpacity="0" />
             </radialGradient>
             <filter id="crescentSoftGlow" x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur stdDeviation="16" result="blurWide" />
@@ -181,9 +180,9 @@ export function BlueprintFaq() {
 
           <path
             d="M 220 100 C 450 140, 680 340, 780 620"
-            stroke="#15803D"
-            strokeWidth="8"
-            strokeOpacity="0.22"
+            stroke="#22C55E"
+            strokeWidth="6"
+            strokeOpacity="0.20"
             strokeLinecap="round"
             filter="url(#crescentSoftGlow)"
           />
@@ -191,16 +190,16 @@ export function BlueprintFaq() {
           <path
             d="M 230 100 C 460 140, 680 340, 780 610"
             stroke="#22C55E"
-            strokeWidth="3"
-            strokeOpacity="0.5"
+            strokeWidth="2.5"
+            strokeOpacity="0.4"
             strokeLinecap="round"
             filter="url(#crescentSoftGlow)"
           />
 
           <path
             d="M 220 100 C 450 140, 680 340, 780 620"
-            stroke="#4ADE80"
-            strokeWidth="1.5"
+            stroke="#22C55E"
+            strokeWidth="1.2"
             strokeOpacity="0.5"
             strokeLinecap="round"
           />
@@ -217,21 +216,21 @@ export function BlueprintFaq() {
         >
           <defs>
             <radialGradient id="orbitalCoreGlow" cx="0" cy="600" r="400" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#22C55E" stopOpacity="0.15" />
-              <stop offset="60%" stopColor="#052010" stopOpacity="0.04" />
-              <stop offset="100%" stopColor="#030604" stopOpacity="0" />
+              <stop offset="0%" stopColor="#22C55E" stopOpacity="0.12" />
+              <stop offset="60%" stopColor="#22C55E" stopOpacity="0.03" />
+              <stop offset="100%" stopColor="#000000" stopOpacity="0" />
             </radialGradient>
           </defs>
 
           <circle cx="0" cy="600" r="380" fill="url(#orbitalCoreGlow)" />
-          <circle cx="0" cy="600" r="140" stroke="#4ADE80" strokeWidth="0.75" strokeOpacity="0.15" strokeDasharray="3 6" />
-          <circle cx="0" cy="600" r="220" stroke="#4ADE80" strokeWidth="0.8" strokeOpacity="0.2" />
-          <circle cx="0" cy="600" r="300" stroke="#4ADE80" strokeWidth="0.75" strokeOpacity="0.16" />
-          <circle cx="0" cy="600" r="380" stroke="#4ADE80" strokeWidth="0.6" strokeOpacity="0.1" strokeDasharray="4 8" />
+          <circle cx="0" cy="600" r="140" stroke="#22C55E" strokeWidth="0.75" strokeOpacity="0.15" strokeDasharray="3 6" />
+          <circle cx="0" cy="600" r="220" stroke="#22C55E" strokeWidth="0.8" strokeOpacity="0.2" />
+          <circle cx="0" cy="600" r="300" stroke="#22C55E" strokeWidth="0.75" strokeOpacity="0.16" />
+          <circle cx="0" cy="600" r="380" stroke="#22C55E" strokeWidth="0.6" strokeOpacity="0.1" strokeDasharray="4 8" />
 
-          <circle cx="155" cy="445" r="3" fill="#86EFAC" filter="drop-shadow(0 0 6px #4ADE80)" />
+          <circle cx="155" cy="445" r="3" fill="#22C55E" filter="drop-shadow(0 0 6px #22C55E)" />
           <circle cx="155" cy="445" r="1.5" fill="#FFFFFF" />
-          <circle cx="270" cy="470" r="3.5" fill="#86EFAC" filter="drop-shadow(0 0 8px #4ADE80)" />
+          <circle cx="270" cy="470" r="3.5" fill="#22C55E" filter="drop-shadow(0 0 8px #22C55E)" />
           <circle cx="270" cy="470" r="1.8" fill="#FFFFFF" />
         </svg>
       </div>
@@ -268,7 +267,7 @@ export function BlueprintFaq() {
                 className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all duration-300 ${
                   activeIdx === 0
                     ? "border-white/10 text-white/20 cursor-not-allowed bg-transparent"
-                    : "border-white/20 bg-white/[0.04] text-white hover:border-[#4ADE80] hover:text-[#4ADE80] hover:bg-[#102217] active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(74,222,128,0.1)]"
+                    : "border-white/20 bg-white/[0.04] text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(34,197,94,0.1)]"
                 }`}
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -282,7 +281,7 @@ export function BlueprintFaq() {
                 className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all duration-300 ${
                   activeIdx === faqContent.length - 1
                     ? "border-white/10 text-white/20 cursor-not-allowed bg-transparent"
-                    : "border-white/20 bg-white/[0.04] text-white hover:border-[#4ADE80] hover:text-[#4ADE80] hover:bg-[#102217] active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(74,222,128,0.1)]"
+                    : "border-white/20 bg-white/[0.04] text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(34,197,94,0.1)]"
                 }`}
               >
                 <ArrowRight className="w-4 h-4" />
@@ -313,13 +312,13 @@ export function BlueprintFaq() {
                   onClick={() => scrollToActive(idx)}
                   className={`faq-card group relative rounded-[28px] sm:rounded-[32px] border transition-[background-color,border-color,box-shadow] duration-500 ease-out cursor-pointer flex flex-col justify-between overflow-hidden select-none ${
                     isActive
-                      ? "w-[340px] sm:w-[460px] md:w-[540px] lg:w-[580px] bg-gradient-to-br from-[#08180e] via-[#051009] to-[#020805] border-[#4ADE80]/40 shadow-[0_24px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(74,222,128,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] p-7 sm:p-9 md:p-10 min-h-[360px] sm:min-h-[400px]"
-                      : "w-[220px] sm:w-[260px] md:w-[280px] bg-[#050b07]/80 border-white/[0.08] hover:border-white/20 hover:bg-[#08120b] p-6 sm:p-8 min-h-[360px] sm:min-h-[400px]"
+                      ? "w-[340px] sm:w-[460px] md:w-[540px] lg:w-[580px] bg-[#000000] border-[#22C55E]/40 shadow-[0_24px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(34,197,94,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] p-7 sm:p-9 md:p-10 min-h-[360px] sm:min-h-[400px]"
+                      : "w-[220px] sm:w-[260px] md:w-[280px] bg-[#000000]/80 border-white/[0.08] hover:border-white/20 hover:bg-[#000000] p-6 sm:p-8 min-h-[360px] sm:min-h-[400px]"
                   }`}
                 >
                   {/* Active Top Specular Edge */}
                   {isActive && (
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#86EFAC]/40 to-transparent" />
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent" />
                   )}
 
                   {/* Card Body: Question & (if active) Answer text */}
@@ -359,7 +358,7 @@ export function BlueprintFaq() {
               aria-label={`Go to slide ${idx + 1}`}
               className={`transition-all duration-300 rounded-full ${
                 activeIdx === idx
-                  ? "w-8 h-1.5 bg-[#4ADE80] shadow-[0_0_8px_#4ADE80]"
+                  ? "w-8 h-1.5 bg-[#22C55E] shadow-[0_0_8px_#22C55E]"
                   : "w-2 h-1.5 bg-white/20 hover:bg-white/40"
               }`}
             />
@@ -369,7 +368,7 @@ export function BlueprintFaq() {
       </div>
 
       {/* Seamless Bottom Section Blend into Contact */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#030604] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#000000] to-transparent z-10" />
     </section>
   );
 }

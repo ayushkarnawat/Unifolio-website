@@ -22,11 +22,19 @@ export function BlueprintAboutMetrics() {
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: "+=420%",
+          end: "+=480%",
           pin: stageRef.current,
-          scrub: 1.6,
+          scrub: 1,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          // Settle a fast flick onto one of the readable states instead of
+          // letting momentum carry the viewer mid-transition or straight
+          // through the final panel hold.
+          snap: {
+            snapTo: [0, 0.2, 0.42, 0.58, 0.8, 1],
+            duration: { min: 0.2, max: 0.6 },
+            ease: "power1.inOut",
+          },
         },
       });
 
@@ -77,31 +85,31 @@ export function BlueprintAboutMetrics() {
         {
           opacity: 0,
           y: -30,
-          duration: 0.16,
+          duration: 0.14,
           ease: "power2.inOut",
         },
-        0.22
+        0.2
       );
 
       // =========================================================================
       // 3. STATE 2: MISSION STATEMENT & PHILOSOPHY
-      // Glides into center-right (t: 0.30 -> 0.44), generous reading pause (t: 0.44 -> 0.64), then recedes
+      // Glides into center-right (t: 0.28 -> 0.42), reading pause (t: 0.42 -> 0.58), then recedes
+      // (opacity/x only — filter: blur() is non-GPU-composited and was forcing
+      // a repaint on every scrub frame during this transition)
       // =========================================================================
       tl.fromTo(
         state2Ref.current,
         {
           opacity: 0,
           x: 40,
-          filter: "blur(6px)",
         },
         {
           opacity: 1,
           x: 0,
-          filter: "blur(0px)",
-          duration: 0.16,
+          duration: 0.14,
           ease: "power2.out",
         },
-        0.30
+        0.28
       );
 
       tl.to(
@@ -109,44 +117,43 @@ export function BlueprintAboutMetrics() {
         {
           opacity: 0,
           y: -40,
-          filter: "blur(4px)",
-          duration: 0.14,
+          duration: 0.12,
           ease: "power2.in",
         },
-        0.64
+        0.58
       );
 
       // =========================================================================
       // 4. STATE 3: 3-PILLAR PANELS & TOPOGRAPHIC CONTOUR PARALLAX
-      // Glides in smoothly (t: 0.72 -> 0.86), generous review pause (t: 0.86 -> 1.00)
+      // Glides in (t: 0.68 -> 0.80), extended review pause (t: 0.80 -> 1.00 = ~20%
+      // of the 480vh pin, roughly double the previous hold) so the 3 panels are
+      // actually readable instead of scrolling past in a fraction of a second.
       // =========================================================================
       tl.fromTo(
         state3Ref.current,
         {
           opacity: 0,
           y: 40,
-          filter: "blur(6px)",
         },
         {
           opacity: 1,
           y: 0,
-          filter: "blur(0px)",
-          duration: 0.16,
+          duration: 0.12,
           ease: "power2.out",
         },
-        0.72
+        0.68
       );
 
       // Subtle slow parallax shift across the flowing organic contour landscape
       tl.fromTo(
         contourLayerRef.current,
         { y: 40, x: -15, opacity: 0 },
-        { y: -25, x: 15, opacity: 1, duration: 0.28, ease: "none" },
-        0.70
+        { y: -25, x: 15, opacity: 1, duration: 0.3, ease: "none" },
+        0.68
       );
 
       // Final extended holding interval for reading all 3 panels comfortably
-      tl.to({}, { duration: 0.14 }, 0.86);
+      tl.to({}, { duration: 0.2 }, 0.8);
     },
     { scope: containerRef }
   );
@@ -155,20 +162,16 @@ export function BlueprintAboutMetrics() {
     <section
       id="about"
       ref={containerRef}
-      className="relative w-full bg-[#030604] select-none"
-      // Height must equal the ScrollTrigger's pin distance (end: "+=420%" = 420vh)
+      className="relative w-full bg-[#000000] select-none"
+      // Height must equal the ScrollTrigger's pin distance (end: "+=480%" = 480vh)
       // so the pinned stage hands off directly into FAQ with no dead scroll gap.
-      style={{ height: "420vh" }}
+      style={{ height: "480vh" }}
     >
       {/* Fullscreen Pinned Stage */}
       <div
         ref={stageRef}
-        className="relative h-screen w-full overflow-hidden bg-[#030604] flex items-center justify-center p-6 sm:p-12 lg:p-20 text-[#FAF8F5]"
+        className="relative h-screen w-full overflow-hidden bg-[#000000] flex items-center justify-center p-6 sm:p-12 lg:p-20 text-[#FAF8F5]"
       >
-        {/* Subtle Ambient Dark Gradients */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.05)_0%,transparent_65%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(74,222,128,0.03)_0%,transparent_60%)]" />
-
         {/* Ambient Top & Bottom Grid Hairlines */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
@@ -237,7 +240,7 @@ export function BlueprintAboutMetrics() {
           className="absolute inset-0 p-6 sm:p-12 lg:p-20 flex items-center justify-center z-10 pointer-events-none opacity-0 will-change-transform max-w-7xl mx-auto"
         >
           {/* Panoramic Container Holding the 3 Panels */}
-          <div className="relative w-full rounded-[40px] overflow-hidden border border-white/[0.08] bg-[#020403] shadow-[0_24px_60px_rgba(0,0,0,0.95)] pointer-events-auto">
+          <div className="relative w-full rounded-[40px] overflow-hidden border border-white/[0.08] bg-[#000000] shadow-[0_24px_60px_rgba(0,0,0,0.95)] pointer-events-auto">
             
             {/* ABSTRACT ILLUMINATED TOPOGRAPHIC & AMBIENT FIELD (Harmonized System Aura) */}
             <div
@@ -253,7 +256,7 @@ export function BlueprintAboutMetrics() {
                   {/* Subtle Organic Film Grain Filter */}
                   <filter id="subtleSurfaceGrain" x="0%" y="0%" width="100%" height="100%">
                     <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch" result="noise" />
-                    <feColorMatrix type="matrix" values="0 0 0 0 0.15  0 0 0 0 0.7  0 0 0 0 0.3  0 0 0 0.04 0" result="coloredGrain" />
+                    <feColorMatrix type="matrix" values="0 0 0 0 0.13  0 0 0 0 0.77  0 0 0 0 0.37  0 0 0 0.04 0" result="coloredGrain" />
                     <feComposite in="coloredGrain" in2="SourceGraphic" operator="in" />
                   </filter>
 
@@ -270,23 +273,23 @@ export function BlueprintAboutMetrics() {
 
                   {/* LEFT CARD: Soft Ambient Glow Gradient */}
                   <radialGradient id="leftSurfaceGrad" cx="120" cy="480" r="320" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#15803D" stopOpacity="0.22" />
-                    <stop offset="50%" stopColor="#062E16" stopOpacity="0.10" />
-                    <stop offset="100%" stopColor="#020403" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#22C55E" stopOpacity="0.14" />
+                    <stop offset="50%" stopColor="#22C55E" stopOpacity="0.04" />
+                    <stop offset="100%" stopColor="#000000" stopOpacity="0" />
                   </radialGradient>
 
                   {/* MIDDLE CARD: Central Ambient Whisper */}
                   <radialGradient id="midAmbientGrad" cx="600" cy="520" r="280" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#15803D" stopOpacity="0.18" />
-                    <stop offset="50%" stopColor="#052010" stopOpacity="0.08" />
-                    <stop offset="100%" stopColor="#020403" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#22C55E" stopOpacity="0.12" />
+                    <stop offset="50%" stopColor="#22C55E" stopOpacity="0.03" />
+                    <stop offset="100%" stopColor="#000000" stopOpacity="0" />
                   </radialGradient>
 
                   {/* RIGHT CARD: Soft Ambient Glow Gradient */}
                   <radialGradient id="rightBottomSurfaceGrad" cx="1080" cy="480" r="320" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#15803D" stopOpacity="0.22" />
-                    <stop offset="50%" stopColor="#062E16" stopOpacity="0.10" />
-                    <stop offset="100%" stopColor="#020403" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#22C55E" stopOpacity="0.14" />
+                    <stop offset="50%" stopColor="#22C55E" stopOpacity="0.04" />
+                    <stop offset="100%" stopColor="#000000" stopOpacity="0" />
                   </radialGradient>
                 </defs>
 
@@ -299,7 +302,7 @@ export function BlueprintAboutMetrics() {
                 <path
                   d="M 20 480 C 180 430, 320 510, 480 460 C 640 410, 780 490, 960 450 C 1080 420, 1140 460, 1180 440"
                   fill="none"
-                  stroke="#4ADE80"
+                  stroke="#22C55E"
                   strokeWidth="0.85"
                   strokeOpacity="0.30"
                   filter="url(#subtleSoftGlow)"
@@ -313,7 +316,7 @@ export function BlueprintAboutMetrics() {
               {/* Panel 1: Autonomous Ledger */}
               <div className="group p-6 sm:p-8 lg:p-10 space-y-12 flex flex-col justify-between min-h-[300px] sm:min-h-[360px] rounded-2xl hover:bg-white/[0.02] transition-colors duration-300">
                 <div>
-                  <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight group-hover:text-[#4ADE80] transition-colors">
+                  <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight group-hover:text-[#22C55E] transition-colors">
                     Autonomous Ledger
                   </h4>
                 </div>
@@ -326,7 +329,7 @@ export function BlueprintAboutMetrics() {
               {/* Panel 2: Fee Dissection */}
               <div className="group p-6 sm:p-8 lg:p-10 space-y-12 flex flex-col justify-between min-h-[300px] sm:min-h-[360px] rounded-2xl hover:bg-white/[0.02] transition-colors duration-300">
                 <div>
-                  <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight group-hover:text-[#4ADE80] transition-colors">
+                  <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight group-hover:text-[#22C55E] transition-colors">
                     Fee Dissection
                   </h4>
                 </div>
@@ -339,7 +342,7 @@ export function BlueprintAboutMetrics() {
               {/* Panel 3: Household Wealth */}
               <div className="group p-6 sm:p-8 lg:p-10 space-y-12 flex flex-col justify-between min-h-[300px] sm:min-h-[360px] rounded-2xl hover:bg-white/[0.02] transition-colors duration-300">
                 <div>
-                  <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight group-hover:text-[#4ADE80] transition-colors">
+                  <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight group-hover:text-[#22C55E] transition-colors">
                     Household Wealth
                   </h4>
                 </div>
@@ -355,7 +358,7 @@ export function BlueprintAboutMetrics() {
       </div>
 
       {/* Seamless Bottom Section Blend into FAQ */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#030604] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#000000] to-transparent z-10" />
     </section>
   );
 }

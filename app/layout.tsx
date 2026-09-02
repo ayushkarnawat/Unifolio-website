@@ -74,7 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en-IN"
       className={`${fraunces.variable} ${dmSans.variable} ${caveat.variable} ${jetBrainsMono.variable}`}
     >
-      <body className="flex min-h-screen flex-col font-sans bg-[#FAF8F5] text-[#1C241E] selection:bg-[#8CD49E]/40 selection:text-[#1C241E] overflow-x-hidden antialiased">
+      <body className="flex min-h-screen flex-col font-sans bg-[#000000] text-[#FAF8F5] selection:bg-[#22C55E]/40 selection:text-white overflow-x-hidden antialiased">
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger

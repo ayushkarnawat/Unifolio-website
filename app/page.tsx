@@ -18,7 +18,7 @@ export default function HomePage() {
   const softwareSchema = buildSoftwareApplicationSchema();
 
   return (
-    <main className="relative bg-[#0E1310]">
+    <main className="relative bg-[#000000]">
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger

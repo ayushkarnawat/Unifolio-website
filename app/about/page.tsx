@@ -20,7 +20,7 @@ export default function AboutPage() {
       {/* Living Family & Security Editorial Artwork */}
       <div className="mx-auto max-w-content px-4 sm:px-8 mt-12 mb-16 space-y-16">
         <div className="flex flex-col items-center justify-center text-center">
-          <span className="font-handwriting text-2xl text-[#2E7D4E]">
+          <span className="font-handwriting text-2xl text-[#22C55E]">
             One place for your entire family’s journey
           </span>
           <div className="w-full max-w-2xl mt-4">

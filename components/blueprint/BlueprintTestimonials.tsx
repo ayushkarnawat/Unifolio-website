@@ -49,7 +49,7 @@ export function BlueprintTestimonials() {
         {/* Top Active Card */}
         <div className="relative rounded-[40px] border-4 border-black bg-[#FFFBEB] p-8 sm:p-14 lg:p-16 shadow-[8px_8px_0px_rgba(0,0,0,1)] flex flex-col md:flex-row items-center justify-between gap-8 z-10">
           <div className="max-w-lg space-y-6 text-left">
-            <div className="inline-block font-sans font-black text-xs uppercase tracking-wider px-3.5 py-1 bg-[#4ADE80] border-2 border-black rounded-full">
+            <div className="inline-block font-sans font-black text-xs uppercase tracking-wider px-3.5 py-1 bg-[#22C55E] border-2 border-black rounded-full">
               {current.tag}
             </div>
 
