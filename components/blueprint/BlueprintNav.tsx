@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { smoothScrollTo } from "@/lib/gsap";
 
 export function BlueprintNav() {
   const [scrolled, setScrolled] = useState(false);
@@ -15,6 +16,16 @@ export function BlueprintNav() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const handleAnchorClick = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    href: string
+  ) => {
+    if (!href.startsWith("#")) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    smoothScrollTo(href);
+  };
+
   return (
     <nav
       className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-16 py-4 select-none transition-all duration-500 ease-out ${
@@ -24,7 +35,11 @@ export function BlueprintNav() {
       }`}
     >
       {/* Left Brand Glyph + Logotype */}
-      <Link href="#hero" className="flex items-center gap-3 group">
+      <Link
+        href="#hero"
+        onClick={(e) => handleAnchorClick(e, "#hero")}
+        className="flex items-center gap-3 group"
+      >
         <svg viewBox="0 0 40 40" className="w-6 h-6 sm:w-7 sm:h-7 overflow-visible transition-transform duration-300 group-hover:scale-105">
           <circle
             cx="20"
@@ -61,6 +76,7 @@ export function BlueprintNav() {
           <Link
             key={item.label}
             href={item.href}
+            onClick={(e) => handleAnchorClick(e, item.href)}
             className="relative py-1 hover:text-[#FAF8F5] transition-colors duration-200 group"
           >
             <span>{item.label}</span>
@@ -72,6 +88,7 @@ export function BlueprintNav() {
       {/* Right Request Access CTA */}
       <Link
         href="#contact"
+        onClick={(e) => handleAnchorClick(e, "#contact")}
         className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/15 bg-white/[0.03] hover:border-[#4ADE80]/60 hover:bg-[#0f2418] font-mono text-[11px] lg:text-xs tracking-[0.22em] text-[#FAF8F5] uppercase transition-all duration-300 group shadow-[0_0_15px_rgba(74,222,128,0.06)] active:scale-95"
       >
         <span className="group-hover:text-[#4ADE80] transition-colors">REQUEST ACCESS</span>
