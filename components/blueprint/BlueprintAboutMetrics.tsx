@@ -156,7 +156,9 @@ export function BlueprintAboutMetrics() {
       id="about"
       ref={containerRef}
       className="relative w-full bg-[#030604] select-none"
-      style={{ height: "480vh" }}
+      // Height must equal the ScrollTrigger's pin distance (end: "+=420%" = 420vh)
+      // so the pinned stage hands off directly into FAQ with no dead scroll gap.
+      style={{ height: "420vh" }}
     >
       {/* Fullscreen Pinned Stage */}
       <div
