@@ -15,6 +15,7 @@ export function BlueprintStackingCards() {
       if (prefersReducedMotion() || !containerRef.current || !trackRef.current || !stageRef.current) return;
 
       const track = trackRef.current;
+      const container = containerRef.current;
 
       const getScrollAmount = () => {
         const trackWidth = track.scrollWidth;
@@ -22,16 +23,31 @@ export function BlueprintStackingCards() {
         return -(trackWidth - viewportWidth + 80);
       };
 
+      const getEndDistance = () =>
+        Math.max(3600, (track.scrollWidth - window.innerWidth) * 2.2 + 2000);
+
+      // The section's authored CSS height previously used a static "640vh"
+      // guess that had no relationship to the dynamic `end` distance below
+      // (which depends on actual track content width). Whenever the two
+      // disagreed, the pin either released early (leaving a dead unpinned
+      // scroll gap before About Us) or the section overflowed its box. Keeping
+      // the real height in sync with the exact pin distance removes that gap.
+      const syncContainerHeight = () => {
+        container.style.height = `${getEndDistance() + window.innerHeight}px`;
+      };
+      syncContainerHeight();
+
       // SINGLE COORDINATED TIMELINE FOR HORIZONTAL STORYTELLING WITH GENEROUS FINAL DWELL PAUSE
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: containerRef.current,
+          trigger: container,
           start: "top top",
-          end: () => `+=${Math.max(3600, (track.scrollWidth - window.innerWidth) * 2.2 + 2000)}`,
+          end: () => `+=${getEndDistance()}`,
           pin: stageRef.current,
           scrub: 1.6,
           invalidateOnRefresh: true,
           anticipatePin: 1,
+          onRefreshInit: syncContainerHeight,
         },
       });
 
@@ -87,6 +103,8 @@ export function BlueprintStackingCards() {
       id="offerings"
       ref={containerRef}
       className="relative w-full bg-[#0E1310] select-none"
+      // Pre-hydration fallback only; useGSAP overwrites this with the exact
+      // pin distance (getEndDistance + one viewport height) once mounted.
       style={{ height: "640vh" }}
     >
       {/* Seamless Top Gradient Handoff from Hero */}
@@ -154,87 +172,16 @@ export function BlueprintStackingCards() {
               </h3>
             </div>
 
-            {/* Abstract Atmospheric Visual: Undulating Density Waves & Radiating Contours */}
-            <div className="w-[300px] sm:w-[400px] md:w-[460px] h-[280px] sm:h-[340px] relative flex items-center justify-center shrink-0">
-              <div className="pointer-events-none absolute inset-0 bg-radial-gradient from-[#4ADE80]/14 via-transparent to-transparent blur-3xl" />
-              <svg viewBox="0 0 320 240" fill="none" className="w-full h-full overflow-visible opacity-90">
-                <defs>
-                  <radialGradient id="auraGrad" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#4ADE80" stopOpacity="0.22" />
-                    <stop offset="60%" stopColor="#22C55E" stopOpacity="0.05" />
-                    <stop offset="100%" stopColor="#0E1310" stopOpacity="0" />
-                  </radialGradient>
-                </defs>
-
-                {/* Soft Glowing Atmosphere Field */}
-                <ellipse cx="160" cy="120" rx="120" ry="70" fill="url(#auraGrad)" />
-
-                {/* Precision Contour Frequency Lines */}
-                <path d="M 20 180 C 80 170, 110 80, 160 80 C 210 80, 240 170, 300 160" stroke="#4ADE80" strokeWidth="2.2" strokeLinecap="round" />
-                <path d="M 20 160 C 80 150, 110 95, 160 95 C 210 95, 240 150, 300 140" stroke="#86EFAC" strokeWidth="1.5" strokeOpacity="0.75" />
-                <path d="M 20 140 C 80 130, 110 110, 160 110 C 210 110, 240 130, 300 120" stroke="#4ADE80" strokeWidth="1" strokeOpacity="0.45" strokeDasharray="3 4" />
-                <path d="M 20 120 C 80 115, 110 120, 160 120 C 210 120, 240 115, 300 100" stroke="#86EFAC" strokeWidth="0.8" strokeOpacity="0.3" strokeDasharray="5 5" />
-                
-                {/* Horizontal Horizon Beam */}
-                <line x1="20" y1="80" x2="300" y2="80" stroke="#4ADE80" strokeWidth="0.8" strokeOpacity="0.25" strokeDasharray="2 4" />
-                
-                {/* Focal Crest Anchor Points */}
-                <circle cx="160" cy="80" r="5" fill="#4ADE80" filter="drop-shadow(0 0 12px #4ADE80)" />
-                <circle cx="160" cy="80" r="2" fill="#FFFFFF" />
-                <circle cx="110" cy="95" r="3" fill="#86EFAC" />
-                <circle cx="210" cy="95" r="3" fill="#86EFAC" />
-              </svg>
+            {/* Second Chapter Illustration */}
+            <div className="w-[320px] sm:w-[440px] md:w-[520px] h-[220px] sm:h-[260px] md:h-[290px] relative flex items-center justify-center shrink-0">
+              <Image
+                src="/second illustration.png"
+                alt="Unifolio — See What Your Money Leaves Behind."
+                fill
+                className="object-contain object-center pointer-events-none"
+                quality={100}
+              />
             </div>
-          </div>
-
-          {/* =========================================================================
-              CHAPTER 3: MANY INVESTMENTS. ONE SYSTEM. + Multi-Dimensional Lattice
-             ========================================================================= */}
-          <div className="flex items-center gap-16 sm:gap-24 shrink-0">
-            {/* Primary Editorial Heading */}
-            <div className="flex flex-col justify-center shrink-0 whitespace-normal max-w-[480px]">
-              <h3 className="font-sans font-extrabold text-4xl sm:text-6xl lg:text-7xl text-white tracking-[-0.035em] uppercase leading-[0.95]">
-                MANY INVESTMENTS. <br />
-                <span className="text-[#8E9B91]/80">ONE SYSTEM.</span>
-              </h3>
-            </div>
-
-            {/* Abstract Atmospheric Visual: Connected Geometric Lattice & Relational Planes */}
-            <div className="w-[300px] sm:w-[400px] md:w-[460px] h-[280px] sm:h-[340px] relative flex items-center justify-center shrink-0">
-              <div className="pointer-events-none absolute inset-0 bg-radial-gradient from-[#4ADE80]/12 via-transparent to-transparent blur-3xl" />
-              <svg viewBox="0 0 320 240" fill="none" className="w-full h-full overflow-visible opacity-90">
-                {/* Faceted Translucent Polygons */}
-                <polygon points="60,60 160,30 130,140 40,110" fill="rgba(74,222,128,0.06)" stroke="#4ADE80" strokeWidth="1" strokeOpacity="0.5" />
-                <polygon points="160,30 260,50 220,150 130,140" fill="rgba(134,239,172,0.08)" stroke="#86EFAC" strokeWidth="1.2" strokeOpacity="0.7" />
-                <polygon points="130,140 220,150 170,210 90,190" fill="rgba(34,197,94,0.05)" stroke="#22C55E" strokeWidth="0.9" strokeOpacity="0.4" />
-                <polygon points="40,110 130,140 90,190 20,160" fill="rgba(74,222,128,0.04)" stroke="#4ADE80" strokeWidth="0.8" strokeOpacity="0.3" />
-
-                {/* Internal Luminous Connectors */}
-                <line x1="160" y1="30" x2="130" y2="140" stroke="#86EFAC" strokeWidth="1.6" strokeOpacity="0.85" />
-                <line x1="130" y1="140" x2="220" y2="150" stroke="#4ADE80" strokeWidth="1.4" strokeOpacity="0.75" />
-                <line x1="60" y1="60" x2="260" y2="50" stroke="#4ADE80" strokeWidth="0.75" strokeOpacity="0.3" strokeDasharray="3 4" />
-
-                {/* Radiant Constellation Nodes */}
-                <circle cx="160" cy="30" r="4" fill="#4ADE80" filter="drop-shadow(0 0 8px #4ADE80)" />
-                <circle cx="160" cy="30" r="1.8" fill="#FFFFFF" />
-                <circle cx="130" cy="140" r="5" fill="#86EFAC" filter="drop-shadow(0 0 10px #86EFAC)" />
-                <circle cx="130" cy="140" r="2.2" fill="#FFFFFF" />
-                <circle cx="220" cy="150" r="3.5" fill="#4ADE80" />
-                <circle cx="260" cy="50" r="3" fill="#8E9B91" />
-                <circle cx="60" cy="60" r="3" fill="#8E9B91" />
-                <circle cx="170" cy="210" r="3" fill="#8E9B91" />
-              </svg>
-            </div>
-          </div>
-
-          {/* =========================================================================
-              EPILOGUE: Final Resonant Editorial Statement
-             ========================================================================= */}
-          <div className="flex flex-col justify-center shrink-0 pl-12 pr-32 max-w-[580px] sm:max-w-[720px] whitespace-normal">
-            <h2 className="font-sans font-extrabold text-5xl sm:text-7xl lg:text-[84px] text-white tracking-[-0.04em] uppercase leading-[0.92]">
-              TOTAL SOVEREIGNTY. <br />
-              <span className="text-[#4ADE80]">ZERO COMPROMISE.</span>
-            </h2>
           </div>
         </div>
       </div>
