@@ -1,0 +1,16 @@
+# Unifolio
+
+Unifolio is a free mutual fund portfolio tracker for India. It imports a user's
+CAS (Consolidated Account Statement) from CAMS or KFintech and shows holdings,
+XIRR, gains, and cost transparency (fees and commissions) in one dashboard —
+positioned as a free alternative to Mprofit.
+
+Unifolio is a tracking and analytics product. It is not a conversational AI
+assistant or chatbot.
+
+Core pages:
+- https://unifolio.in/ — product overview and core pitch
+- https://unifolio.in/features — Import, See, Understand, Track
+- https://unifolio.in/pricing — free-forever pricing
+- https://unifolio.in/about — company background
+- https://unifolio.in/get-started — signup / demo funnel
