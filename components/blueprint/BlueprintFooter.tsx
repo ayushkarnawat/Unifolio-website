@@ -25,7 +25,7 @@ export function BlueprintFooter() {
           {
             opacity: 1,
             y: 0,
-            duration: 1.25,
+            duration: 1.45,
             ease: "power3.out",
             scrollTrigger: {
               trigger: containerRef.current,
@@ -40,7 +40,7 @@ export function BlueprintFooter() {
           {
             opacity: 1,
             scale: 1,
-            duration: 1.5,
+            duration: 1.7,
             ease: "power2.out",
             scrollTrigger: {
               trigger: containerRef.current,
@@ -53,15 +53,15 @@ export function BlueprintFooter() {
         gsap.to(".footer-aperture-ring", {
           rotation: 360,
           transformOrigin: "center center",
-          duration: 180,
+          duration: 240,
           repeat: -1,
           ease: "none",
         });
 
         gsap.to(".footer-pulse-dot", {
-          scale: 1.3,
+          scale: 1.25,
           opacity: 0.9,
-          duration: 3.5,
+          duration: 5.0,
           repeat: -1,
           yoyo: true,
           ease: "sine.inOut",
@@ -110,10 +110,10 @@ export function BlueprintFooter() {
     <footer
       id="site-footer"
       ref={containerRef}
-      className="relative w-full bg-[#020403] text-[#FAF8F5] select-none overflow-hidden"
+      className="relative w-full bg-[#F5F3EE] text-[#121915] select-none overflow-hidden"
     >
       {/* Seamless Top Blend from Contact */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#030604] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#FAF8F5] to-transparent z-10" />
 
       {/* =========================================================================
           UPPER PORTION: CINEMATIC MONUMENTAL CTA SECTION
@@ -121,8 +121,8 @@ export function BlueprintFooter() {
       <div className="relative w-full min-h-[520px] sm:min-h-[580px] lg:min-h-[640px] flex items-center px-6 sm:px-12 lg:px-20 py-20 sm:py-28 overflow-hidden">
         
         {/* Subtle Ambient Radial Lighting */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(34,197,94,0.06)_0%,transparent_60%)] z-0" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(74,222,128,0.03)_0%,transparent_50%)] z-0" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(30,107,62,0.06)_0%,transparent_60%)] z-0" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(30,107,62,0.03)_0%,transparent_50%)] z-0" />
 
         {/* =========================================================================
             RIGHT SIDE: RESTRAINED APERTURE / ORBITAL WIREFRAME ARTWORK
@@ -140,10 +140,10 @@ export function BlueprintFooter() {
             <defs>
               {/* Soft Atmospheric Haze */}
               <radialGradient id="footerApertureGlow" cx="450" cy="450" r="300" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#22C55E" stopOpacity="0.22" />
-                <stop offset="45%" stopColor="#15803D" stopOpacity="0.08" />
-                <stop offset="75%" stopColor="#041409" stopOpacity="0.02" />
-                <stop offset="100%" stopColor="#020403" stopOpacity="0" />
+                <stop offset="0%" stopColor="#1E6B3E" stopOpacity="0.18" />
+                <stop offset="45%" stopColor="#1E6B3E" stopOpacity="0.08" />
+                <stop offset="75%" stopColor="#1E6B3E" stopOpacity="0.02" />
+                <stop offset="100%" stopColor="#F5F3EE" stopOpacity="0" />
               </radialGradient>
 
               {/* Rim Light Blur Filter */}
@@ -163,12 +163,12 @@ export function BlueprintFooter() {
 
             {/* Concentric / Intersecting Delicate Orbital Ellipse Trajectories with slow rotation */}
             <g className="footer-aperture-ring" style={{ transformOrigin: "450px 450px" }}>
-              <ellipse cx="450" cy="450" rx="380" ry="240" stroke="#4ADE80" strokeWidth="0.5" strokeOpacity="0.15" transform="rotate(-15 450 450)" />
-              <ellipse cx="450" cy="450" rx="350" ry="210" stroke="#4ADE80" strokeWidth="0.6" strokeOpacity="0.2" transform="rotate(10 450 450)" />
-              <ellipse cx="450" cy="450" rx="300" ry="170" stroke="#4ADE80" strokeWidth="0.75" strokeOpacity="0.28" transform="rotate(-30 450 450)" />
-              <ellipse cx="450" cy="450" rx="260" ry="140" stroke="#4ADE80" strokeWidth="0.8" strokeOpacity="0.32" transform="rotate(25 450 450)" strokeDasharray="3 6" />
-              <ellipse cx="450" cy="450" rx="220" ry="110" stroke="#4ADE80" strokeWidth="0.9" strokeOpacity="0.35" transform="rotate(-8 450 450)" />
-              <ellipse cx="450" cy="450" rx="180" ry="90" stroke="#4ADE80" strokeWidth="0.7" strokeOpacity="0.25" transform="rotate(40 450 450)" strokeDasharray="4 8" />
+              <ellipse cx="450" cy="450" rx="380" ry="240" stroke="#1E6B3E" strokeWidth="0.5" strokeOpacity="0.15" transform="rotate(-15 450 450)" />
+              <ellipse cx="450" cy="450" rx="350" ry="210" stroke="#1E6B3E" strokeWidth="0.6" strokeOpacity="0.2" transform="rotate(10 450 450)" />
+              <ellipse cx="450" cy="450" rx="300" ry="170" stroke="#1E6B3E" strokeWidth="0.75" strokeOpacity="0.28" transform="rotate(-30 450 450)" />
+              <ellipse cx="450" cy="450" rx="260" ry="140" stroke="#1E6B3E" strokeWidth="0.8" strokeOpacity="0.32" transform="rotate(25 450 450)" strokeDasharray="3 6" />
+              <ellipse cx="450" cy="450" rx="220" ry="110" stroke="#1E6B3E" strokeWidth="0.9" strokeOpacity="0.35" transform="rotate(-8 450 450)" />
+              <ellipse cx="450" cy="450" rx="180" ry="90" stroke="#1E6B3E" strokeWidth="0.7" strokeOpacity="0.25" transform="rotate(40 450 450)" strokeDasharray="4 8" />
             </g>
 
             {/* Primary Glowing Neon Green Focal Ring */}
@@ -176,32 +176,32 @@ export function BlueprintFooter() {
               cx="450"
               cy="450"
               r="135"
-              stroke="#22C55E"
+              stroke="#1E6B3E"
               strokeWidth="4"
-              strokeOpacity="0.4"
+              strokeOpacity="0.25"
               filter="url(#apertureRimGlow)"
             />
             <circle
               cx="450"
               cy="450"
               r="135"
-              stroke="#86EFAC"
+              stroke="#1E6B3E"
               strokeWidth="1.6"
               strokeOpacity="0.85"
             />
 
             {/* Fine Stippled Particles & Nodes along Orbital Intersections */}
-            <circle className="footer-pulse-dot" cx="340" cy="380" r="2.5" fill="#86EFAC" filter="drop-shadow(0 0 6px #4ADE80)" />
-            <circle cx="340" cy="380" r="1.2" fill="#FFFFFF" />
+            <circle className="footer-pulse-dot" cx="340" cy="380" r="2.5" fill="#1E6B3E" />
+            <circle cx="340" cy="380" r="1.2" fill="#121915" />
 
-            <circle className="footer-pulse-dot" cx="560" cy="390" r="3" fill="#86EFAC" filter="drop-shadow(0 0 7px #4ADE80)" />
-            <circle cx="560" cy="390" r="1.5" fill="#FFFFFF" />
+            <circle className="footer-pulse-dot" cx="560" cy="390" r="3" fill="#1E6B3E" />
+            <circle cx="560" cy="390" r="1.5" fill="#121915" />
 
-            <circle className="footer-pulse-dot" cx="490" cy="580" r="2.8" fill="#4ADE80" filter="drop-shadow(0 0 6px #4ADE80)" />
-            <circle cx="490" cy="580" r="1.3" fill="#FFFFFF" />
+            <circle className="footer-pulse-dot" cx="490" cy="580" r="2.8" fill="#1E6B3E" />
+            <circle cx="490" cy="580" r="1.3" fill="#121915" />
 
-            <circle className="footer-pulse-dot" cx="280" cy="490" r="2.2" fill="#86EFAC" filter="drop-shadow(0 0 5px #4ADE80)" />
-            <circle className="footer-pulse-dot" cx="630" cy="470" r="2.6" fill="#86EFAC" filter="drop-shadow(0 0 6px #4ADE80)" />
+            <circle className="footer-pulse-dot" cx="280" cy="490" r="2.2" fill="#1E6B3E" />
+            <circle className="footer-pulse-dot" cx="630" cy="470" r="2.6" fill="#1E6B3E" />
           </svg>
         </div>
 
@@ -214,19 +214,19 @@ export function BlueprintFooter() {
         >
           {/* Eyebrow with Luminous Green Indicator Dot */}
           <div className="flex items-center gap-2.5">
-            <span className="w-2 h-2 rounded-full bg-[#4ADE80] shadow-[0_0_8px_#4ADE80]" />
-            <span className="font-mono text-xs sm:text-sm text-[#4ADE80] uppercase tracking-[0.25em] font-semibold">
+            <span className="w-2 h-2 rounded-full bg-[#1E6B3E] shadow-[0_0_6px_rgba(30,107,62,0.6)]" />
+            <span className="font-mono text-xs sm:text-sm text-[#1E6B3E] uppercase tracking-[0.25em] font-semibold">
               READY FOR A
             </span>
           </div>
 
           {/* Monumental Headline */}
-          <h2 className="font-sans font-light text-5xl sm:text-6xl md:text-7xl lg:text-[84px] text-white tracking-tight leading-[0.95] uppercase">
+          <h2 className="font-sans font-light text-5xl sm:text-6xl md:text-7xl lg:text-[84px] text-[#121915] tracking-tight leading-[0.95] uppercase">
             CLEARER VIEW?
           </h2>
 
           {/* Supporting Copy */}
-          <p className="font-sans font-light text-lg sm:text-xl md:text-2xl text-[#8E9B91] leading-snug max-w-md">
+          <p className="font-sans font-light text-lg sm:text-xl md:text-2xl text-[#525E56] leading-snug max-w-md">
             Let’s bring your finances <br />
             into focus.
           </p>
@@ -235,10 +235,10 @@ export function BlueprintFooter() {
           <div className="pt-2">
             <Link
               href="#contact"
-              className="group inline-flex items-center gap-3 rounded-2xl border border-[#4ADE80]/50 bg-[#07130c]/90 px-8 sm:px-10 py-4 sm:py-4.5 font-mono text-xs sm:text-sm font-semibold text-[#4ADE80] uppercase tracking-[0.22em] shadow-[0_0_30px_rgba(74,222,128,0.12)] hover:bg-[#102a1b] hover:border-[#4ADE80] hover:text-[#86EFAC] hover:shadow-[0_0_40px_rgba(74,222,128,0.25)] transition-all duration-300 active:scale-[0.98]"
+              className="group inline-flex items-center gap-3 rounded-2xl border border-black/10 bg-white/80 px-8 sm:px-10 py-4 sm:py-4.5 font-mono text-xs sm:text-sm font-semibold text-[#121915] uppercase tracking-[0.22em] shadow-[0_2px_15px_rgba(0,0,0,0.03)] hover:bg-[#EDF7EF] hover:border-[#1E6B3E]/40 hover:text-[#1E6B3E] transition-all duration-300 active:scale-[0.98]"
             >
               <span>REQUEST ACCESS</span>
-              <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform text-[#1E6B3E]" />
             </Link>
           </div>
         </div>
@@ -248,7 +248,7 @@ export function BlueprintFooter() {
       {/* =========================================================================
           LOWER PORTION: FOOTER NAVIGATION & BRANDING GRID
          ========================================================================= */}
-      <div className="relative z-10 border-t border-white/[0.06] bg-[#020403] px-6 sm:px-12 lg:px-20 py-16 sm:py-20">
+      <div className="relative z-10 border-t border-black/[0.06] bg-[#F5F3EE] px-6 sm:px-12 lg:px-20 py-16 sm:py-20">
         <div
           ref={footerGridRef}
           className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 sm:gap-16 items-start"
@@ -261,54 +261,54 @@ export function BlueprintFooter() {
                   cx="20"
                   cy="20"
                   r="16"
-                  stroke="#FAF8F5"
+                  stroke="#121915"
                   strokeWidth="3.5"
-                  strokeOpacity="0.25"
+                  strokeOpacity="0.2"
                   fill="none"
                 />
                 <path
                   d="M 20 4 A 16 16 0 0 1 36 20"
-                  stroke="#4ADE80"
+                  stroke="#1E6B3E"
                   strokeWidth="4"
                   strokeLinecap="round"
                   fill="none"
-                  filter="drop-shadow(0px 0px 8px rgba(74, 222, 128, 0.9))"
+                  filter="drop-shadow(0px 0px 4px rgba(30, 107, 62, 0.4))"
                 />
               </svg>
-              <span className="font-sans font-black text-base sm:text-lg tracking-[0.16em] text-[#FAF8F5]">
+              <span className="font-sans font-black text-base sm:text-lg tracking-[0.16em] text-[#121915]">
                 UNIFOLIO<sup className="text-[9px] font-normal ml-0.5 opacity-80">®</sup>
               </span>
             </Link>
 
-            <p className="font-sans text-sm text-[#8E9B91] font-normal leading-relaxed">
+            <p className="font-sans text-sm text-[#525E56] font-normal leading-relaxed">
               One view. Complete clarity.
             </p>
           </div>
 
           {/* Column 2 (Center): Navigation Links */}
-          <div className="md:col-span-3 space-y-3.5 font-mono text-xs tracking-[0.25em] text-[#8E9B91] uppercase">
+          <div className="md:col-span-3 space-y-3.5 font-mono text-xs tracking-[0.25em] text-[#525E56] uppercase">
             <div>
-              <Link href="#hero" className="hover:text-white transition-colors">
+              <Link href="#hero" className="hover:text-[#121915] transition-colors">
                 HOME
               </Link>
             </div>
             <div>
-              <Link href="#statement" className="hover:text-white transition-colors">
+              <Link href="#statement" className="hover:text-[#121915] transition-colors">
                 PRODUCT
               </Link>
             </div>
             <div>
-              <Link href="#offerings" className="hover:text-white transition-colors">
+              <Link href="#offerings" className="hover:text-[#121915] transition-colors">
                 OFFERINGS
               </Link>
             </div>
             <div>
-              <Link href="#about" className="hover:text-white transition-colors">
+              <Link href="#about" className="hover:text-[#121915] transition-colors">
                 ABOUT
               </Link>
             </div>
             <div>
-              <Link href="#contact" className="hover:text-white transition-colors">
+              <Link href="#contact" className="hover:text-[#121915] transition-colors">
                 CONTACT
               </Link>
             </div>
@@ -318,27 +318,27 @@ export function BlueprintFooter() {
           <div className="md:col-span-4 space-y-6">
             {/* Contact Header */}
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] shadow-[0_0_6px_#4ADE80]" />
-              <span className="font-mono text-xs text-[#4ADE80] uppercase tracking-[0.25em] font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#1E6B3E] shadow-[0_0_6px_rgba(30,107,62,0.6)]" />
+              <span className="font-mono text-xs text-[#1E6B3E] uppercase tracking-[0.25em] font-semibold">
                 CONTACT
               </span>
             </div>
 
             {/* Email Row */}
             <div className="flex items-center gap-3.5 group">
-              <div className="w-9 h-9 rounded-full border border-white/15 bg-white/[0.03] flex items-center justify-center text-[#4ADE80] group-hover:border-[#4ADE80] group-hover:bg-[#122418] transition-all duration-300">
+              <div className="w-9 h-9 rounded-full border border-black/10 bg-black/[0.03] flex items-center justify-center text-[#1E6B3E] group-hover:border-[#1E6B3E] group-hover:bg-[#EDF7EF] transition-all duration-300">
                 <Mail className="w-4 h-4" />
               </div>
               <a
                 href="mailto:hello@unifolio.in"
-                className="font-sans text-sm font-medium text-[#FAF8F5] group-hover:text-[#4ADE80] transition-colors"
+                className="font-sans text-sm font-medium text-[#121915] group-hover:text-[#1E6B3E] transition-colors"
               >
                 hello@unifolio.in
               </a>
             </div>
 
             {/* Divider */}
-            <div className="w-full h-[1px] bg-white/[0.06]" />
+            <div className="w-full h-[1px] bg-black/[0.06]" />
 
             {/* Social Outlined Circular Icons */}
             <div className="flex items-center gap-3">
@@ -348,7 +348,7 @@ export function BlueprintFooter() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Instagram"
-                className="w-9 h-9 rounded-full border border-white/15 bg-white/[0.03] flex items-center justify-center text-[#4ADE80] hover:border-[#4ADE80] hover:bg-[#122418] hover:scale-105 transition-all duration-300"
+                className="w-9 h-9 rounded-full border border-black/10 bg-black/[0.03] flex items-center justify-center text-[#1E6B3E] hover:border-[#1E6B3E] hover:bg-[#EDF7EF] hover:scale-105 transition-all duration-300"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
@@ -362,7 +362,7 @@ export function BlueprintFooter() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="LinkedIn"
-                className="w-9 h-9 rounded-full border border-white/15 bg-white/[0.03] flex items-center justify-center text-[#4ADE80] hover:border-[#4ADE80] hover:bg-[#122418] hover:scale-105 transition-all duration-300"
+                className="w-9 h-9 rounded-full border border-black/10 bg-black/[0.03] flex items-center justify-center text-[#1E6B3E] hover:border-[#1E6B3E] hover:bg-[#EDF7EF] hover:scale-105 transition-all duration-300"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
@@ -376,37 +376,34 @@ export function BlueprintFooter() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Twitter / X"
-                className="w-9 h-9 rounded-full border border-white/15 bg-white/[0.03] flex items-center justify-center text-[#4ADE80] hover:border-[#4ADE80] hover:bg-[#122418] hover:scale-105 transition-all duration-300"
+                className="w-9 h-9 rounded-full border border-black/10 bg-black/[0.03] flex items-center justify-center text-[#1E6B3E] hover:border-[#1E6B3E] hover:bg-[#EDF7EF] hover:scale-105 transition-all duration-300"
               >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4l11.733 16h4.267l-11.733 -16z"/>
+                  <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/>
                 </svg>
               </a>
             </div>
           </div>
 
         </div>
-      </div>
 
-      {/* =========================================================================
-          BOTTOM BAR: COPYRIGHT, PRIVACY & TERMS
-         ========================================================================= */}
-      <div
-        ref={bottomBarRef}
-        className="relative z-10 border-t border-white/[0.06] bg-[#010302] px-6 sm:px-12 lg:px-20 py-6"
-      >
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-[#8E9B91]/80 tracking-wider">
-          <div>
-            © 2026 UNIFOLIO. All rights reserved.
-          </div>
+        {/* Bottom Bar: Copyright & Legal Policies */}
+        <div
+          ref={bottomBarRef}
+          className="max-w-7xl mx-auto pt-12 mt-12 border-t border-black/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px] text-[#525E56]"
+        >
+          <p>© {new Date().getFullYear()} UNIFOLIO TECHNOLOGIES PVT. LTD. ALL RIGHTS RESERVED.</p>
 
-          <div className="flex items-center gap-6">
-            <Link href="/privacy" className="hover:text-white transition-colors">
-              PRIVACY POLICY
+          <div className="flex items-center gap-6 uppercase tracking-wider">
+            <Link href="/privacy" className="hover:text-[#121915] transition-colors">
+              Privacy Policy
             </Link>
-            <span className="text-white/20">|</span>
-            <Link href="/terms" className="hover:text-white transition-colors">
-              TERMS OF SERVICE
+            <Link href="/terms" className="hover:text-[#121915] transition-colors">
+              Terms of Service
+            </Link>
+            <Link href="/security" className="hover:text-[#121915] transition-colors">
+              Security
             </Link>
           </div>
         </div>

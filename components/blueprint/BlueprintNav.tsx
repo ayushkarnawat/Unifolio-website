@@ -19,7 +19,7 @@ export function BlueprintNav() {
     <nav
       className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-16 py-4 select-none transition-all duration-500 ease-out ${
         scrolled
-          ? "bg-[#040705]/85 border-b border-white/[0.08] backdrop-blur-xl shadow-[0_12px_32px_rgba(0,0,0,0.6)] py-3.5"
+          ? "bg-[#FAF8F5]/85 border-b border-black/[0.06] backdrop-blur-xl shadow-[0_12px_32px_rgba(0,0,0,0.05)] py-3.5"
           : "bg-transparent border-b border-transparent py-5"
       }`}
     >
@@ -30,27 +30,27 @@ export function BlueprintNav() {
             cx="20"
             cy="20"
             r="16"
-            stroke="#FAF8F5"
+            stroke="#121915"
             strokeWidth="3"
-            strokeOpacity="0.25"
+            strokeOpacity="0.2"
             fill="none"
           />
           <path
             d="M 20 4 A 16 16 0 0 1 36 20"
-            stroke="#4ADE80"
+            stroke="#1E6B3E"
             strokeWidth="3.5"
             strokeLinecap="round"
             fill="none"
-            filter="drop-shadow(0px 0px 8px rgba(74, 222, 128, 0.9))"
+            filter="drop-shadow(0px 0px 4px rgba(30, 107, 62, 0.4))"
           />
         </svg>
-        <span className="font-sans font-black text-sm sm:text-base tracking-[0.18em] text-[#FAF8F5] group-hover:text-white transition-colors">
+        <span className="font-sans font-black text-sm sm:text-base tracking-[0.18em] text-[#121915] group-hover:text-[#1E6B3E] transition-colors">
           UNIFOLIO<sup className="text-[9px] font-normal ml-0.5 opacity-70">®</sup>
         </span>
       </Link>
 
       {/* Center Navigation Links */}
-      <div className="hidden md:flex items-center gap-7 lg:gap-10 font-mono text-[11px] lg:text-xs tracking-[0.25em] text-[#8E9B91] uppercase">
+      <div className="hidden md:flex items-center gap-7 lg:gap-10 font-mono text-[11px] lg:text-xs tracking-[0.25em] text-[#525E56] uppercase">
         {[
           { label: "HOME", href: "#hero" },
           { label: "PRODUCT", href: "#statement" },
@@ -61,10 +61,10 @@ export function BlueprintNav() {
           <Link
             key={item.label}
             href={item.href}
-            className="relative py-1 hover:text-[#FAF8F5] transition-colors duration-200 group"
+            className="relative py-1 hover:text-[#121915] transition-colors duration-200 group"
           >
             <span>{item.label}</span>
-            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-[#4ADE80] transition-all duration-300 ease-out group-hover:w-full opacity-80" />
+            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-[#1E6B3E] transition-all duration-300 ease-out group-hover:w-full opacity-80" />
           </Link>
         ))}
       </div>
@@ -72,10 +72,10 @@ export function BlueprintNav() {
       {/* Right Request Access CTA */}
       <Link
         href="#contact"
-        className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/15 bg-white/[0.03] hover:border-[#4ADE80]/60 hover:bg-[#0f2418] font-mono text-[11px] lg:text-xs tracking-[0.22em] text-[#FAF8F5] uppercase transition-all duration-300 group shadow-[0_0_15px_rgba(74,222,128,0.06)] active:scale-95"
+        className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-black/10 bg-black/[0.03] hover:border-[#1E6B3E]/40 hover:bg-[#EDF7EF] font-mono text-[11px] lg:text-xs tracking-[0.22em] text-[#121915] uppercase transition-all duration-300 group shadow-[0_2px_10px_rgba(0,0,0,0.03)] active:scale-95"
       >
-        <span className="group-hover:text-[#4ADE80] transition-colors">REQUEST ACCESS</span>
-        <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] shadow-[0_0_6px_#4ADE80] group-hover:scale-125 transition-transform" />
+        <span className="group-hover:text-[#1E6B3E] transition-colors">REQUEST ACCESS</span>
+        <span className="w-1.5 h-1.5 rounded-full bg-[#1E6B3E] shadow-[0_0_6px_rgba(30,107,62,0.6)] group-hover:scale-125 transition-transform" />
       </Link>
     </nav>
   );

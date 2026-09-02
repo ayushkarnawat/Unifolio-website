@@ -5,7 +5,7 @@
 @layer base {
   html {
     background-color: #FAF8F5;
-    color: #1C241E;
+    color: #121915;
     scroll-behavior: smooth;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -14,15 +14,20 @@
 
   body {
     background-color: #FAF8F5;
-    color: #1C241E;
+    color: #121915;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
   }
 
+  ::selection {
+    background-color: #1E6B3E;
+    color: #FAF8F5;
+  }
+
   :focus-visible {
-    outline: 2px solid #2E7D4E;
+    outline: 2px solid #1E6B3E;
     outline-offset: 2px;
   }
 }
@@ -83,7 +88,7 @@
   }
 
   .animate-marquee {
-    animation: marquee 48s linear infinite;
+    animation: marquee 64s linear infinite;
   }
 
   @keyframes spin-slow {
@@ -96,7 +101,7 @@
   }
 
   .animate-spin-slow {
-    animation: spin-slow 24s linear infinite;
+    animation: spin-slow 36s linear infinite;
   }
 
   @keyframes pulse-subtle {
@@ -106,12 +111,12 @@
     }
     50% {
       opacity: 1;
-      transform: scale(1.05);
+      transform: scale(1.04);
     }
   }
 
   .animate-pulse-subtle {
-    animation: pulse-subtle 4s ease-in-out infinite;
+    animation: pulse-subtle 6s ease-in-out infinite;
   }
 
   @keyframes float-idle {
@@ -119,11 +124,11 @@
       transform: translateY(0px);
     }
     50% {
-      transform: translateY(-6px);
+      transform: translateY(-5px);
     }
   }
 
   .animate-float-idle {
-    animation: float-idle 6s ease-in-out infinite;
+    animation: float-idle 8s ease-in-out infinite;
   }
 }

@@ -26,33 +26,56 @@ export function BlueprintStackingCards() {
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: () => `+=${Math.max(1600, (track.scrollWidth - window.innerWidth) * 1.5 + 800)}`,
+          end: () => `+=${Math.max(2000, (track.scrollWidth - window.innerWidth) * 2.0 + 1000)}`,
           pin: stageRef.current,
-          scrub: 1.4,
+          scrub: 1.6,
           invalidateOnRefresh: true,
           anticipatePin: 1,
         },
       });
 
-      // 1. Continuous horizontal translation across the pinned viewport
-      tl.to(track, {
-        x: getScrollAmount,
-        ease: "none",
-      });
+      // 1. Gentle cinematic entrance (t: 0.0 -> 0.14)
+      tl.fromTo(
+        track,
+        {
+          opacity: 0.15,
+          filter: "blur(6px)",
+          scale: 0.98,
+        },
+        {
+          opacity: 1,
+          filter: "blur(0px)",
+          scale: 1.0,
+          duration: 0.14,
+          ease: "power2.out",
+        },
+        0
+      );
 
-      // 2. Parallax micro-rotations on colorful sticker badges
-      const badges = gsap.utils.toArray<HTMLElement>(".floating-badge");
-      badges.forEach((badge, idx) => {
-        tl.to(
-          badge,
-          {
-            rotation: (idx % 2 === 0 ? 1 : -1) * (6 + idx * 2),
-            y: idx % 2 === 0 ? -14 : 14,
-            ease: "none",
-          },
-          0
-        );
-      });
+      // 2. Continuous horizontal translation across the pinned viewport (t: 0.0 -> 1.0)
+      tl.to(
+        track,
+        {
+          x: getScrollAmount,
+          ease: "none",
+          duration: 1.0,
+        },
+        0
+      );
+
+      // 3. Gentle cinematic exit dissolve (t: 0.86 -> 1.00)
+      tl.to(
+        track,
+        {
+          opacity: 0.15,
+          scale: 0.97,
+          y: -20,
+          filter: "blur(6px)",
+          ease: "power2.inOut",
+          duration: 0.14,
+        },
+        0.86
+      );
     },
     { scope: containerRef }
   );
@@ -61,221 +84,266 @@ export function BlueprintStackingCards() {
     <section
       id="offerings"
       ref={containerRef}
-      className="relative w-full bg-[#0E1310] select-none"
-      style={{ height: "480vh" }}
+      className="relative w-full bg-[#F5F3EE] select-none"
+      style={{ height: "580vh" }}
     >
       {/* Seamless Top Blend from Hero */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[#040705] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-[#FAF8F5] via-[#FAF8F5]/60 to-transparent z-10" />
 
       {/* Pinned Fullscreen Stage */}
       <div
         ref={stageRef}
-        className="relative h-screen w-full overflow-hidden flex items-center bg-[#0E1310]"
+        className="relative h-screen w-full overflow-hidden flex items-center bg-[#F5F3EE]"
       >
-        {/* Subtle Ambient Background Gradients */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,rgba(34,197,94,0.06)_0%,transparent_60%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_60%,rgba(56,189,248,0.05)_0%,transparent_60%)]" />
+        {/* Subtle Ambient Background Lighting */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_25%_45%,rgba(30,107,62,0.06)_0%,transparent_60%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_75%_55%,rgba(30,107,62,0.04)_0%,transparent_60%)]" />
 
         {/* Continuous Horizontal Panoramic Ribbon */}
         <div
           ref={trackRef}
-          className="flex items-center gap-12 sm:gap-20 md:gap-28 px-8 sm:px-16 md:px-24 w-max whitespace-nowrap will-change-transform"
+          className="flex items-center gap-24 sm:gap-36 lg:gap-48 px-12 sm:px-20 lg:px-32 w-max whitespace-nowrap will-change-transform"
         >
           {/* =========================================================================
-              PROLOGUE: Monumental Section Intro
+              PROLOGUE: Bold Section Opening Statement
              ========================================================================= */}
-          <div className="flex flex-col justify-center space-y-4 shrink-0 pr-8">
-            <div className="flex items-center gap-3">
-              <span className="w-2 h-2 rounded-full bg-[#4ADE80] shadow-[0_0_8px_#4ADE80]" />
-              <span className="font-mono text-xs sm:text-sm text-[#4ADE80] uppercase tracking-[0.25em] font-bold">
-                [ 03 / CAPABILITY SUITE ]
-              </span>
-            </div>
-            <h2 className="font-sans font-black text-5xl sm:text-7xl lg:text-8xl text-[#FAF8F5] tracking-[-0.04em] uppercase leading-[0.9]">
-              ENGINEERED FOR <br />
-              <span className="inline-flex items-center gap-3 mt-2">
-                <span>TOTAL</span>
-                <span className="floating-badge px-4 sm:px-6 py-1 sm:py-2 rounded-2xl bg-[#4ADE80] text-black font-mono text-2xl sm:text-4xl font-extrabold shadow-[6px_6px_0px_rgba(0,0,0,1)] rotate-[-3deg] inline-block">
-                  PRECISION
-                </span>
-              </span>
+          <div className="flex flex-col justify-center shrink-0 pr-12">
+            <h2 className="font-sans font-black text-6xl sm:text-8xl lg:text-[104px] text-[#121915] tracking-[-0.04em] uppercase leading-[0.90]">
+              ENGINEERED <br />
+              FOR TOTAL <br />
+              <span className="text-[#1E6B3E]">CLARITY.</span>
             </h2>
-            <p className="font-mono text-xs sm:text-sm text-[#8E9B91] tracking-wider uppercase">
-              SCROLL HORIZONTALLY TO EXPLORE THE ENGINE →
-            </p>
           </div>
 
           {/* =========================================================================
-              CHAPTER 1: Consolidated Ledger
+              CHAPTER 1: One View. Nothing Hidden.
              ========================================================================= */}
-          <div className="flex items-center gap-8 shrink-0">
-            {/* Story Headline Phrase */}
-            <div className="flex items-center gap-4 text-4xl sm:text-6xl lg:text-7xl font-sans font-black text-[#FAF8F5] tracking-tight uppercase">
-              <span>CONSOLIDATED</span>
-              <span className="floating-badge px-5 py-2 rounded-2xl bg-[#FBCFE8] text-black font-extrabold text-3xl sm:text-5xl shadow-[6px_6px_0px_rgba(0,0,0,1)] rotate-3 inline-block">
-                LEDGER
-              </span>
+          <div className="flex items-center gap-14 sm:gap-20 shrink-0">
+            {/* Editorial Statement */}
+            <div className="flex flex-col justify-center shrink-0">
+              <h3 className="font-sans font-black text-5xl sm:text-7xl lg:text-[84px] text-[#121915] tracking-[-0.035em] uppercase leading-[0.92]">
+                ONE VIEW. <br />
+                <span className="text-[#1E6B3E]">NOTHING HIDDEN.</span>
+              </h3>
             </div>
 
-            {/* Feature Story Card 1 */}
-            <div className="group w-[380px] sm:w-[460px] md:w-[520px] rounded-[36px] bg-[#141C17]/95 border-2 border-white/15 hover:border-white/30 p-8 sm:p-10 shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.14)] hover:shadow-[0_30px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(74,222,128,0.08)] transition-all duration-300 flex flex-col justify-between whitespace-normal shrink-0 gap-6">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <span className="font-mono text-xs font-bold text-[#4ADE80] tracking-widest uppercase">
-                  [ 01 / 03 ] • MASTER AGGREGATION
-                </span>
-                <span className="px-3 py-1 rounded-full bg-[#4ADE80]/20 text-[#4ADE80] font-mono text-xs font-bold">
-                  44+ AMCs
-                </span>
-              </div>
+            {/* Abstract Atmospheric Visual 1: Converging Concentric Singularity */}
+            <div className="w-[300px] sm:w-[380px] lg:w-[440px] h-[300px] sm:h-[380px] lg:h-[440px] relative flex items-center justify-center shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-tr from-[#1E6B3E]/10 via-transparent to-transparent rounded-full blur-3xl opacity-60" />
+              <svg
+                viewBox="0 0 400 400"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-full h-full relative z-10 drop-shadow-[0_4px_20px_rgba(30,107,62,0.12)]"
+              >
+                <defs>
+                  <linearGradient id="orbitGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#1E6B3E" stopOpacity="0.8" />
+                    <stop offset="50%" stopColor="#2E7D4E" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#16A34A" stopOpacity="0.05" />
+                  </linearGradient>
+                  <linearGradient id="streamGrad1" x1="0%" y1="50%" x2="100%" y2="50%">
+                    <stop offset="0%" stopColor="#1E6B3E" stopOpacity="0" />
+                    <stop offset="50%" stopColor="#1E6B3E" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="#1E6B3E" stopOpacity="0" />
+                  </linearGradient>
+                  <radialGradient id="coreGlow1" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#1E6B3E" stopOpacity="0.8" />
+                    <stop offset="40%" stopColor="#2E7D4E" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#F5F3EE" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
 
-              <div className="space-y-3">
-                <h3 className="font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight group-hover:text-[#4ADE80] transition-colors">
-                  Single Source of Truth
-                </h3>
-                <p className="font-sans text-sm sm:text-base text-[#8E9B91] leading-relaxed">
-                  Building clarity from scattered statements across 44+ AMCs, depositories & brokerages into a unified, resolved ledger.
-                </p>
-              </div>
+                {/* Concentric Elliptical Resonances */}
+                <ellipse cx="200" cy="200" rx="170" ry="110" stroke="url(#orbitGrad1)" strokeWidth="1.2" strokeDasharray="4 6" opacity="0.4" />
+                <ellipse cx="200" cy="200" rx="130" ry="160" stroke="url(#orbitGrad1)" strokeWidth="1.5" strokeDasharray="8 4" opacity="0.6" transform="rotate(-25 200 200)" />
+                <ellipse cx="200" cy="200" rx="90" ry="90" stroke="#1E6B3E" strokeWidth="1.2" strokeOpacity="0.5" />
+                <ellipse cx="200" cy="200" rx="45" ry="45" stroke="#1E6B3E" strokeWidth="1.8" strokeOpacity="0.8" />
 
-              {/* Card Graphic / Badge */}
-              <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#FBCFE8] border-2 border-black flex items-center justify-center font-mono text-black font-bold text-sm shadow-[2px_2px_0px_rgba(0,0,0,1)]">
-                    MF
-                  </div>
-                  <span className="font-mono text-xs text-white/80">CAMS + KFintech Auto-Sync</span>
-                </div>
-                <span className="font-mono text-xs text-[#4ADE80] font-bold">100% RESOLVED</span>
-              </div>
-            </div>
-          </div>
+                {/* Radiating Precision Laser Axes */}
+                <line x1="20" y1="200" x2="380" y2="200" stroke="url(#streamGrad1)" strokeWidth="1" opacity="0.5" />
+                <line x1="200" y1="20" x2="200" y2="380" stroke="url(#streamGrad1)" strokeWidth="1" opacity="0.5" />
+                <line x1="70" y1="70" x2="330" y2="330" stroke="url(#streamGrad1)" strokeWidth="0.8" opacity="0.3" />
 
-          {/* =========================================================================
-              INTERLUDE 1: Connecting Banner
-             ========================================================================= */}
-          <div className="flex items-center gap-4 text-3xl sm:text-5xl lg:text-6xl font-sans font-black text-[#8E9B91]/60 tracking-tight uppercase shrink-0 px-4">
-            <span>EVERY</span>
-            <span className="floating-badge px-4 py-1.5 rounded-2xl bg-[#7DD3FC] text-black font-mono text-xl sm:text-3xl font-extrabold shadow-[4px_4px_0px_rgba(0,0,0,1)] -rotate-3 inline-block">
-              FEE UNMASKED
-            </span>
-            <span>DOWN TO 1 BPS</span>
-          </div>
+                {/* Central Luminous Singularity */}
+                <circle cx="200" cy="200" r="32" fill="url(#coreGlow1)" />
+                <circle cx="200" cy="200" r="4.5" fill="#121915" />
 
-          {/* =========================================================================
-              CHAPTER 2: Fee Dissection
-             ========================================================================= */}
-          <div className="flex items-center gap-8 shrink-0">
-            {/* Story Headline Phrase */}
-            <div className="flex items-center gap-4 text-4xl sm:text-6xl lg:text-7xl font-sans font-black text-[#FAF8F5] tracking-tight uppercase">
-              <span>FEE</span>
-              <span className="floating-badge px-5 py-2 rounded-2xl bg-[#F472B6] text-black font-extrabold text-3xl sm:text-5xl shadow-[6px_6px_0px_rgba(0,0,0,1)] rotate-[-4deg] inline-block">
-                DISSECTION
-              </span>
-            </div>
-
-            {/* Feature Story Card 2 */}
-            <div className="group w-[380px] sm:w-[460px] md:w-[520px] rounded-[36px] bg-[#141C17]/95 border-2 border-white/15 hover:border-white/30 p-8 sm:p-10 shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.14)] hover:shadow-[0_30px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(244,114,182,0.08)] transition-all duration-300 flex flex-col justify-between whitespace-normal shrink-0 gap-6">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <span className="font-mono text-xs font-bold text-[#F472B6] tracking-widest uppercase">
-                  [ 02 / 03 ] • COST TRANSPARENCY
-                </span>
-                <span className="px-3 py-1 rounded-full bg-[#F472B6]/20 text-[#F472B6] font-mono text-xs font-bold">
-                  TER AUDIT
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                <h3 className="font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight group-hover:text-[#F472B6] transition-colors">
-                  Protect Your Compounding
-                </h3>
-                <p className="font-sans text-sm sm:text-base text-[#8E9B91] leading-relaxed">
-                  Keeping wealth compounding, whether it&apos;s unmasking a 15bps expense ratio or a 1.5% regular plan trail commission eating your returns.
-                </p>
-              </div>
-
-              {/* Card Graphic / Badge */}
-              <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#F472B6] border-2 border-black flex items-center justify-center font-mono text-black font-bold text-sm shadow-[2px_2px_0px_rgba(0,0,0,1)]">
-                    ₹
-                  </div>
-                  <span className="font-mono text-xs text-white/80">Direct vs Regular Delta</span>
-                </div>
-                <span className="font-mono text-xs text-[#F472B6] font-bold">₹4.2L RECLAIMED</span>
-              </div>
+                {/* Orbital Beacon Nodes */}
+                <circle cx="318" cy="132" r="3.5" fill="#1E6B3E" />
+                <circle cx="82" cy="268" r="3.5" fill="#1E6B3E" />
+                <circle cx="200" cy="40" r="3" fill="#121915" opacity="0.8" />
+                <circle cx="200" cy="360" r="3" fill="#121915" opacity="0.8" />
+              </svg>
             </div>
           </div>
 
           {/* =========================================================================
-              INTERLUDE 2: Connecting Banner
+              CHAPTER 2: See What Your Money Leaves Behind.
              ========================================================================= */}
-          <div className="flex items-center gap-4 text-3xl sm:text-5xl lg:text-6xl font-sans font-black text-[#8E9B91]/60 tracking-tight uppercase shrink-0 px-4">
-            <span>MULTI-PAN</span>
-            <span className="floating-badge px-4 py-1.5 rounded-2xl bg-[#FACC15] text-black font-mono text-xl sm:text-3xl font-extrabold shadow-[4px_4px_0px_rgba(0,0,0,1)] rotate-2 inline-block">
-              SYNCHRONIZED
-            </span>
-            <span>FOR FAMILIES</span>
+          <div className="flex items-center gap-14 sm:gap-20 shrink-0">
+            {/* Editorial Statement */}
+            <div className="flex flex-col justify-center shrink-0">
+              <h3 className="font-sans font-black text-5xl sm:text-7xl lg:text-[84px] text-[#121915] tracking-[-0.035em] uppercase leading-[0.92]">
+                SEE WHAT YOUR <br />
+                MONEY <span className="text-[#1E6B3E]">LEAVES BEHIND.</span>
+              </h3>
+            </div>
+
+            {/* Abstract Atmospheric Visual 2: Flowing Harmonic Refraction Strata */}
+            <div className="w-[300px] sm:w-[380px] lg:w-[440px] h-[300px] sm:h-[380px] lg:h-[440px] relative flex items-center justify-center shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#1E6B3E]/10 via-[#0284C7]/08 to-transparent rounded-full blur-3xl opacity-60" />
+              <svg
+                viewBox="0 0 400 400"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-full h-full relative z-10 drop-shadow-[0_4px_20px_rgba(30,107,62,0.12)]"
+              >
+                <defs>
+                  <linearGradient id="waveGradA" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#1E6B3E" stopOpacity="0.1" />
+                    <stop offset="50%" stopColor="#1E6B3E" stopOpacity="0.85" />
+                    <stop offset="100%" stopColor="#0284C7" stopOpacity="0.1" />
+                  </linearGradient>
+                  <linearGradient id="waveGradB" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#0284C7" stopOpacity="0.1" />
+                    <stop offset="50%" stopColor="#1E6B3E" stopOpacity="0.6" />
+                    <stop offset="100%" stopColor="#1E6B3E" stopOpacity="0.05" />
+                  </linearGradient>
+                </defs>
+
+                {/* Layered Flowing Ribbon Strata */}
+                <path
+                  d="M 30 280 C 110 320, 160 140, 240 180 C 300 210, 340 120, 370 100"
+                  stroke="url(#waveGradA)"
+                  strokeWidth="2"
+                  fill="none"
+                />
+                <path
+                  d="M 30 250 C 110 290, 160 110, 240 150 C 300 180, 340 90, 370 70"
+                  stroke="url(#waveGradA)"
+                  strokeWidth="1.2"
+                  strokeDasharray="6 6"
+                  opacity="0.6"
+                  fill="none"
+                />
+                <path
+                  d="M 30 210 C 120 160, 170 270, 250 230 C 310 200, 330 260, 370 280"
+                  stroke="url(#waveGradB)"
+                  strokeWidth="1.6"
+                  fill="none"
+                />
+                <path
+                  d="M 30 170 C 120 120, 170 230, 250 190 C 310 160, 330 220, 370 240"
+                  stroke="url(#waveGradB)"
+                  strokeWidth="1"
+                  strokeDasharray="4 8"
+                  opacity="0.4"
+                  fill="none"
+                />
+
+                {/* Topographic Vertical Field Splines */}
+                {[80, 140, 200, 260, 320].map((x, idx) => (
+                  <line
+                    key={idx}
+                    x1={x}
+                    y1="60"
+                    x2={x}
+                    y2="340"
+                    stroke="#1E6B3E"
+                    strokeWidth="0.8"
+                    strokeDasharray="2 6"
+                    opacity={0.15 + (idx % 2) * 0.15}
+                  />
+                ))}
+
+                {/* Harmonic Crest Point Beacons */}
+                <circle cx="240" cy="180" r="4" fill="#1E6B3E" />
+                <circle cx="160" cy="140" r="3" fill="#121915" />
+                <circle cx="250" cy="230" r="3.5" fill="#0284C7" />
+              </svg>
+            </div>
           </div>
 
           {/* =========================================================================
-              CHAPTER 3: Household Wealth
+              CHAPTER 3: Many Investments. One System.
              ========================================================================= */}
-          <div className="flex items-center gap-8 shrink-0">
-            {/* Story Headline Phrase */}
-            <div className="flex items-center gap-4 text-4xl sm:text-6xl lg:text-7xl font-sans font-black text-[#FAF8F5] tracking-tight uppercase">
-              <span>HOUSEHOLD</span>
-              <span className="floating-badge px-5 py-2 rounded-2xl bg-[#E11D48] text-white font-extrabold text-3xl sm:text-5xl shadow-[6px_6px_0px_rgba(0,0,0,1)] rotate-3 inline-block">
-                WEALTH
-              </span>
+          <div className="flex items-center gap-14 sm:gap-20 shrink-0">
+            {/* Editorial Statement */}
+            <div className="flex flex-col justify-center shrink-0">
+              <h3 className="font-sans font-black text-5xl sm:text-7xl lg:text-[84px] text-[#121915] tracking-[-0.035em] uppercase leading-[0.92]">
+                MANY INVESTMENTS. <br />
+                <span className="text-[#1E6B3E]">ONE SYSTEM.</span>
+              </h3>
             </div>
 
-            {/* Feature Story Card 3 */}
-            <div className="group w-[380px] sm:w-[460px] md:w-[520px] rounded-[36px] bg-[#141C17]/95 border-2 border-white/15 hover:border-white/30 p-8 sm:p-10 shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.14)] hover:shadow-[0_30px_70px_rgba(0,0,0,0.9),0_0_30px_rgba(225,29,72,0.08)] transition-all duration-300 flex flex-col justify-between whitespace-normal shrink-0 gap-6">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <span className="font-mono text-xs font-bold text-[#E11D48] tracking-widest uppercase">
-                  [ 03 / 03 ] • MULTI-ENTITY
-                </span>
-                <span className="px-3 py-1 rounded-full bg-[#E11D48]/20 text-[#E11D48] font-mono text-xs font-bold">
-                  FAMILY VIEW
-                </span>
-              </div>
+            {/* Abstract Atmospheric Visual 3: Interconnected Geodesic Wealth Matrix */}
+            <div className="w-[300px] sm:w-[380px] lg:w-[440px] h-[300px] sm:h-[380px] lg:h-[440px] relative flex items-center justify-center shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-tl from-[#1E6B3E]/10 via-transparent to-transparent rounded-full blur-3xl opacity-60" />
+              <svg
+                viewBox="0 0 400 400"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-full h-full relative z-10 drop-shadow-[0_4px_20px_rgba(30,107,62,0.12)]"
+              >
+                <defs>
+                  <linearGradient id="polyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#1E6B3E" stopOpacity="0.7" />
+                    <stop offset="50%" stopColor="#2E7D4E" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#16A34A" stopOpacity="0.05" />
+                  </linearGradient>
+                </defs>
 
-              <div className="space-y-3">
-                <h3 className="font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight group-hover:text-[#E11D48] transition-colors">
-                  Unified Family Portfolios
-                </h3>
-                <p className="font-sans text-sm sm:text-base text-[#8E9B91] leading-relaxed">
-                  If you&apos;re enjoying tracking your own folios, you&apos;re going to love unifying your family&apos;s PAN entities with cross-asset asset allocation.
-                </p>
-              </div>
+                {/* Interlinked Geodesic Polygon Matrix */}
+                <polygon
+                  points="200,60 320,130 320,270 200,340 80,270 80,130"
+                  stroke="url(#polyGrad)"
+                  strokeWidth="1.4"
+                  fill="none"
+                />
+                <polygon
+                  points="200,110 280,160 280,240 200,290 120,240 120,160"
+                  stroke="#1E6B3E"
+                  strokeWidth="1"
+                  strokeDasharray="4 4"
+                  opacity="0.5"
+                  fill="none"
+                />
 
-              {/* Card Graphic / Badge */}
-              <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#E11D48] border-2 border-black flex items-center justify-center font-mono text-white font-bold text-sm shadow-[2px_2px_0px_rgba(0,0,0,1)]">
-                    PAN
-                  </div>
-                  <span className="font-mono text-xs text-white/80">Cross-Entity Wealth View</span>
-                </div>
-                <span className="font-mono text-xs text-[#E11D48] font-bold">MULTI-TIERED</span>
-              </div>
+                {/* Internal Cross-Linking Chords */}
+                <line x1="200" y1="60" x2="200" y2="340" stroke="#1E6B3E" strokeWidth="0.8" opacity="0.3" />
+                <line x1="80" y1="130" x2="320" y2="270" stroke="#1E6B3E" strokeWidth="0.8" opacity="0.3" />
+                <line x1="80" y1="270" x2="320" y2="130" stroke="#1E6B3E" strokeWidth="0.8" opacity="0.3" />
+
+                {/* Interconnected Node Beacons */}
+                <circle cx="200" cy="60" r="4.5" fill="#1E6B3E" />
+                <circle cx="320" cy="130" r="4.5" fill="#1E6B3E" />
+                <circle cx="320" cy="270" r="4.5" fill="#1E6B3E" />
+                <circle cx="200" cy="340" r="4.5" fill="#1E6B3E" />
+                <circle cx="80" cy="270" r="4.5" fill="#1E6B3E" />
+                <circle cx="80" cy="130" r="4.5" fill="#1E6B3E" />
+
+                {/* Center Nexus Beacon */}
+                <circle cx="200" cy="200" r="7" fill="#1E6B3E" fillOpacity="0.15" stroke="#1E6B3E" strokeWidth="1.5" />
+                <circle cx="200" cy="200" r="2.5" fill="#121915" />
+              </svg>
             </div>
           </div>
 
           {/* =========================================================================
-              EPILOGUE: Final Release Banner
+              EPILOGUE: Final Confident Statement
              ========================================================================= */}
-          <div className="flex items-center gap-6 text-4xl sm:text-6xl lg:text-7xl font-sans font-black text-white uppercase tracking-tight shrink-0 pl-8 pr-16">
-            <span>NO GAPS.</span>
-            <span className="floating-badge px-6 py-2 rounded-2xl bg-[#4ADE80] text-black font-mono text-3xl sm:text-5xl font-extrabold shadow-[6px_6px_0px_rgba(0,0,0,1)] rotate-[-2deg] inline-block">
-              JUST CLARITY.
-            </span>
+          <div className="flex flex-col justify-center shrink-0 pl-12 pr-28">
+            <h3 className="font-sans font-black text-6xl sm:text-8xl lg:text-[104px] text-[#121915] uppercase tracking-[-0.04em] leading-[0.90]">
+              NO GAPS. <br />
+              <span className="text-[#1E6B3E]">JUST CLARITY.</span>
+            </h3>
           </div>
         </div>
       </div>
 
       {/* Seamless Bottom Blend into About */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#030604] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#FAF8F5] via-[#FAF8F5]/60 to-transparent z-10" />
     </section>
   );
 }

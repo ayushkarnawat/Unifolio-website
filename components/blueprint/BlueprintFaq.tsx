@@ -26,7 +26,7 @@ export function BlueprintFaq() {
 
       gsap.to(track, {
         scrollLeft: targetScroll,
-        duration: 0.85,
+        duration: 1.1,
         ease: "power3.out",
       });
     }
@@ -55,8 +55,8 @@ export function BlueprintFaq() {
         },
         y: 35,
         opacity: 0,
-        stagger: 0.16,
-        duration: 1.1,
+        stagger: 0.18,
+        duration: 1.4,
         ease: "power3.out",
       });
 
@@ -67,7 +67,7 @@ export function BlueprintFaq() {
         },
         y: 40,
         opacity: 0,
-        duration: 1.25,
+        duration: 1.5,
         ease: "power3.out",
       });
     },
@@ -82,10 +82,10 @@ export function BlueprintFaq() {
     <section
       id="faq"
       ref={containerRef}
-      className="relative w-full bg-[#030604] py-24 sm:py-32 lg:py-36 px-6 sm:px-12 lg:px-20 text-[#FAF8F5] select-none overflow-hidden"
+      className="relative w-full bg-[#F5F3EE] py-24 sm:py-32 lg:py-36 px-6 sm:px-12 lg:px-20 text-[#121915] select-none overflow-hidden"
     >
       {/* Seamless Top Blend from About */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#030604] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#FAF8F5] to-transparent z-10" />
       {/* =========================================================================
           ATMOSPHERIC BACKGROUND VISUALS
          ========================================================================= */}
@@ -107,10 +107,10 @@ export function BlueprintFaq() {
               fx="50%"
               fy="50%"
             >
-              <stop offset="0%" stopColor="#4ADE80" stopOpacity="0.4" />
-              <stop offset="35%" stopColor="#22C55E" stopOpacity="0.18" />
-              <stop offset="70%" stopColor="#166534" stopOpacity="0.04" />
-              <stop offset="100%" stopColor="#030604" stopOpacity="0" />
+              <stop offset="0%" stopColor="#1E6B3E" stopOpacity="0.20" />
+              <stop offset="35%" stopColor="#1E6B3E" stopOpacity="0.08" />
+              <stop offset="70%" stopColor="#1E6B3E" stopOpacity="0.02" />
+              <stop offset="100%" stopColor="#F5F3EE" stopOpacity="0" />
             </radialGradient>
             <filter id="crescentSoftGlow" x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur stdDeviation="16" result="blurWide" />
@@ -134,27 +134,27 @@ export function BlueprintFaq() {
 
           <path
             d="M 220 100 C 450 140, 680 340, 780 620"
-            stroke="#15803D"
+            stroke="#1E6B3E"
             strokeWidth="8"
-            strokeOpacity="0.22"
+            strokeOpacity="0.12"
             strokeLinecap="round"
             filter="url(#crescentSoftGlow)"
           />
 
           <path
             d="M 230 100 C 460 140, 680 340, 780 610"
-            stroke="#22C55E"
+            stroke="#1E6B3E"
             strokeWidth="3"
-            strokeOpacity="0.5"
+            strokeOpacity="0.3"
             strokeLinecap="round"
             filter="url(#crescentSoftGlow)"
           />
 
           <path
             d="M 240 100 C 470 142, 680 340, 780 600"
-            stroke="#86EFAC"
+            stroke="#1E6B3E"
             strokeWidth="1.2"
-            strokeOpacity="0.8"
+            strokeOpacity="0.5"
             strokeLinecap="round"
           />
         </svg>
@@ -170,22 +170,22 @@ export function BlueprintFaq() {
         >
           <defs>
             <radialGradient id="orbitalCoreGlow" cx="0" cy="600" r="400" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#22C55E" stopOpacity="0.15" />
-              <stop offset="60%" stopColor="#052010" stopOpacity="0.04" />
-              <stop offset="100%" stopColor="#030604" stopOpacity="0" />
+              <stop offset="0%" stopColor="#1E6B3E" stopOpacity="0.10" />
+              <stop offset="60%" stopColor="#1E6B3E" stopOpacity="0.02" />
+              <stop offset="100%" stopColor="#F5F3EE" stopOpacity="0" />
             </radialGradient>
           </defs>
 
           <circle cx="0" cy="600" r="380" fill="url(#orbitalCoreGlow)" />
-          <circle cx="0" cy="600" r="140" stroke="#4ADE80" strokeWidth="0.75" strokeOpacity="0.15" strokeDasharray="3 6" />
-          <circle cx="0" cy="600" r="220" stroke="#4ADE80" strokeWidth="0.8" strokeOpacity="0.2" />
-          <circle cx="0" cy="600" r="300" stroke="#4ADE80" strokeWidth="0.75" strokeOpacity="0.16" />
-          <circle cx="0" cy="600" r="380" stroke="#4ADE80" strokeWidth="0.6" strokeOpacity="0.1" strokeDasharray="4 8" />
+          <circle cx="0" cy="600" r="140" stroke="#1E6B3E" strokeWidth="0.75" strokeOpacity="0.15" strokeDasharray="3 6" />
+          <circle cx="0" cy="600" r="220" stroke="#1E6B3E" strokeWidth="0.8" strokeOpacity="0.2" />
+          <circle cx="0" cy="600" r="300" stroke="#1E6B3E" strokeWidth="0.75" strokeOpacity="0.16" />
+          <circle cx="0" cy="600" r="380" stroke="#1E6B3E" strokeWidth="0.6" strokeOpacity="0.1" strokeDasharray="4 8" />
 
-          <circle cx="155" cy="445" r="3" fill="#86EFAC" filter="drop-shadow(0 0 6px #4ADE80)" />
-          <circle cx="155" cy="445" r="1.5" fill="#FFFFFF" />
-          <circle cx="270" cy="470" r="3.5" fill="#86EFAC" filter="drop-shadow(0 0 8px #4ADE80)" />
-          <circle cx="270" cy="470" r="1.8" fill="#FFFFFF" />
+          <circle cx="155" cy="445" r="3" fill="#1E6B3E" />
+          <circle cx="155" cy="445" r="1.5" fill="#121915" />
+          <circle cx="270" cy="470" r="3.5" fill="#1E6B3E" />
+          <circle cx="270" cy="470" r="1.8" fill="#121915" />
         </svg>
       </div>
 
@@ -194,17 +194,17 @@ export function BlueprintFaq() {
         {/* =========================================================================
             HEADER SECTION (Matching "FAQ Inspiration" Structure & Editorial Pacing)
            ========================================================================= */}
-        <div className="faq-header-elem flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-2 border-b border-white/[0.06]">
+        <div className="faq-header-elem flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-2 border-b border-black/[0.06]">
           
           {/* Left: Eyebrow + Large Editorial Headline */}
           <div className="space-y-4 max-w-xl">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs sm:text-sm text-[#4ADE80] uppercase tracking-[0.25em] font-semibold">
+              <span className="font-mono text-xs sm:text-sm text-[#1E6B3E] uppercase tracking-[0.25em] font-semibold">
                 FAQ —
               </span>
             </div>
 
-            <h2 className="font-sans font-light md:font-normal text-4xl sm:text-5xl lg:text-[58px] text-[#FAF8F5] tracking-tight leading-[1.06]">
+            <h2 className="font-sans font-light md:font-normal text-4xl sm:text-5xl lg:text-[58px] text-[#121915] tracking-tight leading-[1.06]">
               Frequently <br />
               Asked Questions
             </h2>
@@ -212,7 +212,7 @@ export function BlueprintFaq() {
 
           {/* Right: Description & Carousel Navigation Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center lg:items-end justify-between lg:justify-end gap-6 sm:gap-10 max-w-md">
-            <p className="font-sans text-xs sm:text-sm text-[#8E9B91] leading-relaxed max-w-xs">
+            <p className="font-sans text-xs sm:text-sm text-[#525E56] leading-relaxed max-w-xs">
               Find answers to common questions about Unifolio&apos;s portfolio intelligence, fee dissection, security protocols, and direct migration.
             </p>
 
@@ -225,8 +225,8 @@ export function BlueprintFaq() {
                 aria-label="Previous question"
                 className={`w-11 h-11 rounded-full border flex items-center justify-center transition-all duration-300 ${
                   activeIdx === 0
-                    ? "border-white/10 text-white/20 cursor-not-allowed bg-transparent"
-                    : "border-white/20 bg-white/[0.04] text-white hover:border-[#4ADE80] hover:text-[#4ADE80] hover:bg-[#102217] active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(74,222,128,0.1)]"
+                    ? "border-black/10 text-black/20 cursor-not-allowed bg-transparent"
+                    : "border-black/15 bg-white/70 text-[#121915] hover:border-[#1E6B3E] hover:text-[#1E6B3E] hover:bg-[#EDF7EF] active:scale-95 cursor-pointer shadow-[0_2px_10px_rgba(0,0,0,0.03)]"
                 }`}
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -239,8 +239,8 @@ export function BlueprintFaq() {
                 aria-label="Next question"
                 className={`w-11 h-11 rounded-full border flex items-center justify-center transition-all duration-300 ${
                   activeIdx === faqContent.length - 1
-                    ? "border-white/10 text-white/20 cursor-not-allowed bg-transparent"
-                    : "border-white/20 bg-white/[0.04] text-white hover:border-[#4ADE80] hover:text-[#4ADE80] hover:bg-[#102217] active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(74,222,128,0.1)]"
+                    ? "border-black/10 text-black/20 cursor-not-allowed bg-transparent"
+                    : "border-black/15 bg-white/70 text-[#121915] hover:border-[#1E6B3E] hover:text-[#1E6B3E] hover:bg-[#EDF7EF] active:scale-95 cursor-pointer shadow-[0_2px_10px_rgba(0,0,0,0.03)]"
                 }`}
               >
                 <ArrowRight className="w-4 h-4" />
@@ -271,32 +271,32 @@ export function BlueprintFaq() {
                   onClick={() => scrollToActive(idx)}
                   className={`group relative rounded-[28px] sm:rounded-[32px] border transition-all duration-500 ease-out cursor-pointer flex flex-col justify-between overflow-hidden select-none ${
                     isActive
-                      ? "w-[340px] sm:w-[460px] md:w-[540px] lg:w-[580px] bg-gradient-to-br from-[#0c2317] via-[#091a11] to-[#040c07] border-[#4ADE80]/50 shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_40px_rgba(74,222,128,0.14),inset_0_1px_1px_rgba(74,222,128,0.3)] p-7 sm:p-9 md:p-10 min-h-[380px] sm:min-h-[420px]"
-                      : "w-[220px] sm:w-[260px] md:w-[280px] bg-[#070c09]/85 border-white/[0.08] hover:border-white/25 hover:bg-[#0b140e] p-6 sm:p-8 min-h-[380px] sm:min-h-[420px]"
+                      ? "w-[340px] sm:w-[460px] md:w-[540px] lg:w-[580px] bg-gradient-to-br from-white via-[#F7F5F0] to-[#EAE6DD] border-[#1E6B3E]/50 shadow-[0_20px_50px_rgba(0,0,0,0.08),0_0_30px_rgba(30,107,62,0.08),inset_0_1px_1px_rgba(255,255,255,0.9)] p-7 sm:p-9 md:p-10 min-h-[380px] sm:min-h-[420px]"
+                      : "w-[220px] sm:w-[260px] md:w-[280px] bg-white/60 border-black/[0.08] hover:border-black/25 hover:bg-white/90 p-6 sm:p-8 min-h-[380px] sm:min-h-[420px]"
                   }`}
                 >
                   {/* Active Specular Rim Gradient */}
                   {isActive && (
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#86EFAC]/40 to-transparent" />
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#1E6B3E]/30 to-transparent" />
                   )}
 
                   {/* Card Header: Index & Status Indicator */}
                   <div className="flex items-center justify-between gap-2">
                     <span
                       className={`font-mono text-xs sm:text-sm font-semibold tracking-widest transition-colors ${
-                        isActive ? "text-[#4ADE80]" : "text-[#8E9B91]/70 group-hover:text-[#4ADE80]"
+                        isActive ? "text-[#1E6B3E]" : "text-[#525E56]/70 group-hover:text-[#1E6B3E]"
                       }`}
                     >
                       {item.id}
                     </span>
 
                     {isActive ? (
-                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#122b1c] border border-[#4ADE80]/40 text-[#4ADE80] font-mono text-[10px] uppercase tracking-wider shadow-[0_0_10px_rgba(74,222,128,0.2)]">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] shadow-[0_0_6px_#4ADE80] animate-pulse" />
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EDF7EF] border border-[#1E6B3E]/40 text-[#1E6B3E] font-mono text-[10px] uppercase tracking-wider shadow-[0_0_10px_rgba(30,107,62,0.15)]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#1E6B3E] shadow-[0_0_6px_rgba(30,107,62,0.6)] animate-pulse" />
                         Active
                       </div>
                     ) : (
-                      <div className="w-2 h-2 rounded-full bg-white/20 group-hover:bg-[#4ADE80]/60 transition-colors" />
+                      <div className="w-2 h-2 rounded-full bg-black/20 group-hover:bg-[#1E6B3E]/60 transition-colors" />
                     )}
                   </div>
 
@@ -305,8 +305,8 @@ export function BlueprintFaq() {
                     <h3
                       className={`font-sans transition-all leading-snug ${
                         isActive
-                          ? "text-2xl sm:text-3xl lg:text-[32px] text-white font-light sm:font-normal tracking-tight"
-                          : "text-lg sm:text-xl text-[#FAF8F5]/80 group-hover:text-white font-light leading-snug"
+                          ? "text-2xl sm:text-3xl lg:text-[32px] text-[#121915] font-light sm:font-normal tracking-tight"
+                          : "text-lg sm:text-xl text-[#121915]/80 group-hover:text-[#121915] font-light leading-snug"
                       }`}
                     >
                       {item.question}
@@ -314,36 +314,30 @@ export function BlueprintFaq() {
 
                     {/* Detailed Answer - Rendered with smooth transition when active */}
                     {isActive && (
-                      <div className="pt-3 border-t border-white/[0.08] animate-fadeIn">
-                        <p className="font-sans text-xs sm:text-sm md:text-base text-[#8E9B91] leading-relaxed font-normal">
+                      <div className="pt-3 border-t border-black/[0.08] animate-fadeIn">
+                        <p className="font-sans text-xs sm:text-sm md:text-base text-[#525E56] leading-relaxed font-normal">
                           {item.answer}
                         </p>
                       </div>
                     )}
                   </div>
 
-                  {/* Card Bottom Accent Indicator */}
-                  <div className="flex items-center justify-between pt-2">
-                    {isActive ? (
-                      <div className="flex items-center gap-2 font-mono text-[11px] text-[#4ADE80] tracking-widest uppercase">
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Insight</span>
-                      </div>
-                    ) : (
-                      <span className="font-mono text-[11px] text-[#8E9B91]/50 group-hover:text-[#4ADE80] transition-colors uppercase tracking-wider">
-                        Expand →
-                      </span>
-                    )}
+                  {/* Card Footer: Metadata Tag & Interaction Hint */}
+                  <div className="pt-4 border-t border-black/[0.06] flex items-center justify-between text-xs">
+                    <span className="font-mono text-[10px] sm:text-[11px] text-[#1E6B3E] uppercase tracking-wider">
+                      {isActive ? "Insight" : "Question"}
+                    </span>
 
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
-                        isActive
-                          ? "bg-[#142e1e] border border-[#4ADE80]/60 text-[#4ADE80]"
-                          : "bg-white/[0.04] border border-white/10 text-white/40 group-hover:border-white/30 group-hover:text-white"
-                      }`}
-                    >
-                      <span className="text-xs font-mono font-bold">{idx + 1}</span>
-                    </div>
+                    <span className="font-mono text-[10px] sm:text-[11px] text-[#525E56] flex items-center gap-1.5">
+                      {isActive ? (
+                        <>
+                          <Sparkles className="w-3 h-3 text-[#1E6B3E]" />
+                          Resolved
+                        </>
+                      ) : (
+                        "Click to expand"
+                      )}
+                    </span>
                   </div>
                 </div>
               );
@@ -351,27 +345,33 @@ export function BlueprintFaq() {
           </div>
         </div>
 
-        {/* Bottom Pagination Dots Indicator */}
-        <div className="flex items-center justify-center gap-2 pt-2">
-          {faqContent.map((item, idx) => (
-            <button
-              key={`dot-${item.id}`}
-              type="button"
-              onClick={() => scrollToActive(idx)}
-              aria-label={`Go to slide ${idx + 1}`}
-              className={`transition-all duration-300 rounded-full ${
-                activeIdx === idx
-                  ? "w-8 h-1.5 bg-[#4ADE80] shadow-[0_0_8px_#4ADE80]"
-                  : "w-2 h-1.5 bg-white/20 hover:bg-white/40"
-              }`}
-            />
-          ))}
+        {/* Carousel Pagination Progress Indicator */}
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center gap-2">
+            {faqContent.map((item, idx) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => scrollToActive(idx)}
+                aria-label={`Go to question ${idx + 1}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  activeIdx === idx
+                    ? "w-8 bg-[#1E6B3E]"
+                    : "w-2 bg-black/15 hover:bg-black/30"
+                }`}
+              />
+            ))}
+          </div>
+
+          <div className="font-mono text-xs text-[#525E56] tracking-widest">
+            <span className="text-[#1E6B3E] font-semibold">{String(activeIdx + 1).padStart(2, "0")}</span> / {String(faqContent.length).padStart(2, "0")}
+          </div>
         </div>
 
       </div>
 
       {/* Seamless Bottom Section Blend into Contact */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#030604] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#F5F3EE] to-transparent z-10" />
     </section>
   );
 }
