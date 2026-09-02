@@ -24,6 +24,9 @@ export function BlueprintNav() {
     if (!href.startsWith("#")) return;
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
+    if (href === "#hero") {
+      window.dispatchEvent(new CustomEvent("unifolio-reset-hero"));
+    }
     smoothScrollTo(href);
   };
 
@@ -31,7 +34,7 @@ export function BlueprintNav() {
     <nav
       className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-16 py-4 select-none transition-all duration-500 ease-out ${
         scrolled
-          ? "bg-[#040705]/85 border-b border-white/[0.08] backdrop-blur-xl shadow-[0_12px_32px_rgba(0,0,0,0.6)] py-3.5"
+          ? "bg-[#000000]/85 border-b border-white/[0.08] backdrop-blur-xl shadow-[0_12px_32px_rgba(0,0,0,0.6)] py-3.5"
           : "bg-transparent border-b border-transparent py-5"
       }`}
     >
@@ -67,7 +70,7 @@ export function BlueprintNav() {
             className="relative py-1 hover:text-[#FAF8F5] transition-colors duration-200 group"
           >
             <span>{item.label}</span>
-            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-[#4ADE80] transition-all duration-300 ease-out group-hover:w-full opacity-80" />
+            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-[#22C55E] transition-all duration-300 ease-out group-hover:w-full opacity-80" />
           </Link>
         ))}
       </div>
@@ -76,10 +79,10 @@ export function BlueprintNav() {
       <Link
         href="#contact"
         onClick={(e) => handleAnchorClick(e, "#contact")}
-        className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/15 bg-white/[0.03] hover:border-[#4ADE80]/60 hover:bg-[#0f2418] font-mono text-[11px] lg:text-xs tracking-[0.22em] text-[#FAF8F5] uppercase transition-all duration-300 group shadow-[0_0_15px_rgba(74,222,128,0.06)] active:scale-95"
+        className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/15 bg-white/[0.03] hover:border-[#22C55E]/60 hover:bg-[#22C55E]/10 font-mono text-[11px] lg:text-xs tracking-[0.22em] text-[#FAF8F5] uppercase transition-all duration-300 group shadow-[0_0_15px_rgba(34,197,94,0.06)] active:scale-95"
       >
-        <span className="group-hover:text-[#4ADE80] transition-colors">REQUEST ACCESS</span>
-        <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] shadow-[0_0_6px_#4ADE80] group-hover:scale-125 transition-transform" />
+        <span className="group-hover:text-[#22C55E] transition-colors">REQUEST ACCESS</span>
+        <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_6px_#22C55E] group-hover:scale-125 transition-transform" />
       </Link>
     </nav>
   );
