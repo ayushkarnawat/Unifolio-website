@@ -5,7 +5,6 @@ import { BlueprintStackingCards } from "@/components/blueprint/BlueprintStacking
 import { BlueprintAboutMetrics } from "@/components/blueprint/BlueprintAboutMetrics";
 import { BlueprintFaq } from "@/components/blueprint/BlueprintFaq";
 import { BlueprintContact } from "@/components/blueprint/BlueprintContact";
-import { BlueprintFooter } from "@/components/blueprint/BlueprintFooter";
 import { buildSoftwareApplicationSchema } from "@/lib/schema";
 
 export const metadata: Metadata = {
@@ -40,11 +39,8 @@ export default function HomePage() {
       {/* Section 5: FAQ Accordion */}
       <BlueprintFaq />
 
-      {/* Section 6: Contact & Direct Ingestion Form */}
+      {/* Section 6: Unified Full-Screen Contact & Closing Experience */}
       <BlueprintContact />
-
-      {/* Section 7: Sky Blue Monumental Footer */}
-      <BlueprintFooter />
     </main>
   );
 }

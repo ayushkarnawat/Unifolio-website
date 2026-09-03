@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Flip } from "gsap/Flip";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+import { Observer } from "gsap/Observer";
 
 /**
  * Check if the user has requested reduced motion
@@ -15,7 +16,7 @@ export function prefersReducedMotion(): boolean {
 
 // Register GSAP plugins safely on the client side
 if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger, Flip, ScrollToPlugin);
+  gsap.registerPlugin(ScrollTrigger, Flip, ScrollToPlugin, Observer);
 
   // Configure smooth default ease
   gsap.defaults({
@@ -48,11 +49,25 @@ if (typeof window !== "undefined") {
  * already uses, so anchor navigation and pinned sections never fight.
  */
 export function smoothScrollTo(
-  target: string | Element,
-  options: { offset?: number; duration?: number } = {}
+  target: string | Element | number,
+  options: { offset?: number; duration?: number; ease?: string } = {}
 ) {
   if (typeof window === "undefined") return;
-  const { offset = 0, duration = 1.1 } = options;
+  const { offset = 0, duration = 0.85, ease = "power2.inOut" } = options;
+
+  if (typeof target === "number") {
+    if (prefersReducedMotion()) {
+      window.scrollTo({ top: target, behavior: "auto" });
+      return;
+    }
+    gsap.to(window, {
+      duration,
+      ease,
+      scrollTo: { y: target, autoKill: true },
+      overwrite: "auto",
+    });
+    return;
+  }
 
   const el = typeof target === "string" ? document.querySelector(target) : target;
   if (!el) return;
@@ -64,7 +79,7 @@ export function smoothScrollTo(
 
   gsap.to(window, {
     duration,
-    ease: "power2.inOut",
+    ease,
     scrollTo: { y: el, offsetY: offset, autoKill: true },
     overwrite: "auto",
   });
@@ -116,4 +131,4 @@ export function createMagneticEffect(
   };
 }
 
-export { gsap, ScrollTrigger, Flip };
+export { gsap, ScrollTrigger, Flip, Observer };

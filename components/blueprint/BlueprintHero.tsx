@@ -831,8 +831,9 @@ export function BlueprintHero() {
         }
       };
 
-      // Custom Event listener for Home navigation from any component
+      // Custom Event listener for Home navigation and Hero expansion
       window.addEventListener("unifolio-reset-hero", resetHeroState);
+      window.addEventListener("unifolio-trigger-hero", triggerAutoplay);
 
       window.addEventListener("wheel", handleWheel, { passive: false });
       window.addEventListener("touchstart", handleTouchStart, { passive: true });
@@ -851,6 +852,7 @@ export function BlueprintHero() {
       // Cleanup on unmount
       return () => {
         window.removeEventListener("unifolio-reset-hero", resetHeroState);
+        window.removeEventListener("unifolio-trigger-hero", triggerAutoplay);
         window.removeEventListener("wheel", handleWheel);
         window.removeEventListener("touchstart", handleTouchStart);
         window.removeEventListener("touchmove", handleTouchMove);
@@ -1027,11 +1029,11 @@ export function BlueprintHero() {
             ].map((pos, i) => (
               <div
                 key={i}
-                className="illustration-shimmer pointer-events-none absolute w-1.5 h-1.5 rounded-full bg-[#4ADE80] opacity-0 will-change-transform"
+                className="illustration-shimmer pointer-events-none absolute w-1.5 h-1.5 rounded-full bg-[#22C55E] opacity-0 will-change-transform"
                 style={{
                   left: pos.left,
                   top: pos.top,
-                  boxShadow: "0 0 6px 1px rgba(74,222,128,0.55)",
+                  boxShadow: "0 0 6px 1px rgba(34,197,94,0.55)",
                 }}
               />
             ))}
