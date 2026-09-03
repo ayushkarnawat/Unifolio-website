@@ -1,435 +1,985 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Mail, Phone, MapPin, ArrowUpRight, Check, Lock } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Mail, ArrowRight, ArrowLeft, X, Check, Sparkles, ChevronRight } from "lucide-react";
 import { useGSAP } from "@gsap/react";
-import { gsap, prefersReducedMotion } from "@/lib/gsap";
+import { gsap, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
+
+interface FormData {
+  name: string;
+  organization: string;
+  focusArea: string;
+  primaryGoal: string;
+  email: string;
+}
+
+const FOCUS_PILLS = [
+  "CAS & CAMS Direct Import",
+  "Hidden Fee Dissection",
+  "Portfolio Sovereign Intelligence",
+  "Institutional Demo",
+];
+
+const GOAL_PILLS = [
+  "Audit Portfolio Costs",
+  "Unify Multi-Broker Accounts",
+  "Family Office Clarity",
+  "Direct Wealth Migration",
+];
 
 export function BlueprintContact() {
   const containerRef = useRef<HTMLElement | null>(null);
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    subject: "",
-    message: "",
-  });
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const introViewRef = useRef<HTMLDivElement | null>(null);
+  const interactiveViewRef = useRef<HTMLDivElement | null>(null);
+  const stepContainerRef = useRef<HTMLDivElement | null>(null);
+  const orbLayerRef = useRef<HTMLDivElement | null>(null);
+  const parallaxBgRef = useRef<HTMLDivElement | null>(null);
+  const cursorGlowRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const inputMagneticRef = useRef<HTMLDivElement | null>(null);
+  const nextBtnRef = useRef<HTMLButtonElement | null>(null);
 
+  const [mode, setMode] = useState<"intro" | "interactive" | "completed">("intro");
+  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [inputFocused, setInputFocused] = useState<boolean>(false);
+  const [formData, setFormData] = useState<FormData>({
+    name: "",
+    organization: "",
+    focusArea: "",
+    primaryGoal: "",
+    email: "",
+  });
+
+  const totalSteps = 5;
+
+  // Validation to conditionally reveal the next button
+  const canProceed = () => {
+    switch (currentStep) {
+      case 0:
+        return formData.name.trim().length > 0;
+      case 1:
+        return formData.organization.trim().length > 0;
+      case 2:
+        return formData.focusArea.trim().length > 0;
+      case 3:
+        return formData.primaryGoal.trim().length > 0;
+      case 4:
+        return formData.email.trim().length > 0;
+      default:
+        return false;
+    }
+  };
+
+  const handleAnchorClick = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    href: string
+  ) => {
+    if (!href.startsWith("#")) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    if (href === "#hero") {
+      window.dispatchEvent(new CustomEvent("unifolio-reset-hero"));
+    }
+    smoothScrollTo(href);
+  };
+
+  // Auto-focus input on step change
+  useEffect(() => {
+    if (mode === "interactive") {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, mode]);
+
+  // Initial scroll entrance animation for Intro View
   useGSAP(
     () => {
       if (prefersReducedMotion() || !containerRef.current) return;
 
-      gsap.from(".contact-info-col", {
+      gsap.from(".contact-hero-left", {
         scrollTrigger: {
           trigger: containerRef.current,
-          start: "top 80%",
+          start: "top 75%",
         },
-        y: 24,
+        y: 35,
         opacity: 0,
         duration: 1.2,
         ease: "power2.out",
       });
 
-      gsap.from(".contact-form-card", {
+      gsap.from(".contact-hero-right", {
         scrollTrigger: {
           trigger: containerRef.current,
-          start: "top 78%",
+          start: "top 75%",
         },
-        y: 28,
+        y: 35,
         opacity: 0,
-        duration: 1.3,
-        delay: 0.1,
+        duration: 1.2,
+        delay: 0.15,
+        ease: "power2.out",
+      });
+
+      gsap.from(".contact-footer-bar", {
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 65%",
+        },
+        opacity: 0,
+        duration: 1.2,
+        delay: 0.3,
         ease: "power2.out",
       });
     },
     { scope: containerRef }
   );
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  // Subtle ambient cursor glow & background parallax tracking
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    if (prefersReducedMotion() || !containerRef.current) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // 1. Smooth ambient cursor radial glow tracking
+    if (cursorGlowRef.current) {
+      gsap.to(cursorGlowRef.current, {
+        x: x - 170,
+        y: y - 170,
+        opacity: 0.85,
+        duration: 0.7,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+    }
+
+    // 2. Subtle background parallax response
+    if (parallaxBgRef.current) {
+      const normX = (x / rect.width - 0.5) * 2;
+      const normY = (y / rect.height - 0.5) * 2;
+
+      gsap.to(parallaxBgRef.current, {
+        x: normX * 14,
+        y: normY * 10,
+        duration: 1.2,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+    }
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (cursorGlowRef.current) {
+      gsap.to(cursorGlowRef.current, {
+        opacity: 0,
+        duration: 0.8,
+        ease: "power2.out",
+      });
+    }
+    if (parallaxBgRef.current) {
+      gsap.to(parallaxBgRef.current, {
+        x: 0,
+        y: 0,
+        duration: 1.4,
+        ease: "power2.out",
+      });
+    }
+  }, []);
+
+  // Magnetic interaction for input capsule
+  const handleInputMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (prefersReducedMotion() || !inputMagneticRef.current) return;
+    const rect = inputMagneticRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+
+    gsap.to(inputMagneticRef.current, {
+      x: x * 0.05,
+      y: y * 0.05,
+      duration: 0.4,
+      ease: "power2.out",
+      overwrite: "auto",
+    });
+  }, []);
+
+  const handleInputMouseLeave = useCallback(() => {
+    if (!inputMagneticRef.current) return;
+    gsap.to(inputMagneticRef.current, {
+      x: 0,
+      y: 0,
+      duration: 0.6,
+      ease: "power3.out",
+    });
+  }, []);
+
+  // Magnetic interaction for refined continue button
+  const handleBtnMouseMove = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    if (prefersReducedMotion() || !nextBtnRef.current) return;
+    const rect = nextBtnRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+
+    gsap.to(nextBtnRef.current, {
+      x: x * 0.18,
+      y: y * 0.18,
+      duration: 0.35,
+      ease: "power2.out",
+      overwrite: "auto",
+    });
+  }, []);
+
+  const handleBtnMouseLeave = useCallback(() => {
+    if (nextBtnRef.current) {
+      gsap.to(nextBtnRef.current, {
+        x: 0,
+        y: 0,
+        duration: 0.6,
+        ease: "elastic.out(1, 0.4)",
+      });
+    }
+  }, []);
+
+  // Transition from Intro to Interactive Conversational Mode
+  const startConversation = useCallback(() => {
+    if (prefersReducedMotion()) {
+      setMode("interactive");
+      setCurrentStep(0);
+      return;
+    }
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        setMode("interactive");
+        setCurrentStep(0);
+      },
+    });
+
+    if (orbLayerRef.current) {
+      tl.to(
+        orbLayerRef.current,
+        {
+          scale: 1.4,
+          opacity: 0.9,
+          duration: 0.8,
+          ease: "power3.inOut",
+        },
+        0
+      );
+    }
+
+    if (introViewRef.current) {
+      tl.to(
+        introViewRef.current,
+        {
+          opacity: 0,
+          y: -20,
+          scale: 0.98,
+          duration: 0.5,
+          ease: "power2.inOut",
+        },
+        0
+      );
+    }
+  }, []);
+
+  // Exit Interactive Mode back to Editorial Intro
+  const closeConversation = useCallback(() => {
+    if (prefersReducedMotion()) {
+      setMode("intro");
+      return;
+    }
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        setMode("intro");
+        setCurrentStep(0);
+      },
+    });
+
+    if (interactiveViewRef.current) {
+      tl.to(interactiveViewRef.current, {
+        opacity: 0,
+        y: 20,
+        duration: 0.45,
+        ease: "power2.inOut",
+      });
+    }
+
+    if (orbLayerRef.current) {
+      tl.to(
+        orbLayerRef.current,
+        {
+          scale: 1,
+          opacity: 0.75,
+          duration: 0.8,
+          ease: "power3.out",
+        },
+        0.1
+      );
+    }
+  }, []);
+
+  // Transition between steps
+  const goToStep = useCallback(
+    (nextStep: number) => {
+      if (nextStep < 0 || nextStep >= totalSteps) return;
+
+      if (prefersReducedMotion() || !stepContainerRef.current) {
+        setCurrentStep(nextStep);
+        return;
+      }
+
+      const isForward = nextStep > currentStep;
+
+      gsap.to(stepContainerRef.current, {
+        opacity: 0,
+        y: isForward ? -24 : 24,
+        scale: 0.98,
+        duration: 0.3,
+        ease: "power2.inOut",
+        onComplete: () => {
+          setCurrentStep(nextStep);
+          gsap.fromTo(
+            stepContainerRef.current,
+            {
+              opacity: 0,
+              y: isForward ? 24 : -24,
+              scale: 0.98,
+            },
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.45,
+              ease: "power3.out",
+            }
+          );
+        },
+      });
+    },
+    [currentStep]
+  );
+
+  const handleNext = () => {
+    if (!canProceed()) return;
+
+    if (currentStep < totalSteps - 1) {
+      goToStep(currentStep + 1);
+    } else {
+      setLoading(true);
+      setTimeout(() => {
+        setLoading(false);
+        setMode("completed");
+      }, 800);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
-    }, 600);
+  const handlePrev = () => {
+    if (currentStep > 0) {
+      goToStep(currentStep - 1);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (canProceed()) {
+        handleNext();
+      }
+    }
   };
 
   return (
     <section
       id="contact"
       ref={containerRef}
-      className="relative w-full bg-[#000000] py-24 sm:py-32 lg:py-36 px-6 sm:px-12 lg:px-20 text-[#FAF8F5] select-none overflow-hidden"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className={`relative w-full ${
+        mode === "intro"
+          ? "min-h-screen flex flex-col justify-between"
+          : "min-h-[680px] sm:min-h-[740px] lg:min-h-[820px] py-20 sm:py-28 lg:py-32 px-6 sm:px-12 lg:px-16 xl:px-20 flex items-center justify-center"
+      } bg-[#000000] text-[#FAF8F5] select-none overflow-hidden border-t border-white/[0.08]`}
     >
       {/* Seamless Top Blend from FAQ */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#000000] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#000000] to-transparent z-20" />
+
       {/* =========================================================================
-          ATMOSPHERIC BACKGROUND VISUALS & ORBITAL TUNNEL LINEWORK
+          SUBTLE AMBIENT RADIAL CURSOR GLOW (Soft Green Accent at Low Opacity)
          ========================================================================= */}
+      <div
+        ref={cursorGlowRef}
+        className="pointer-events-none absolute w-[340px] h-[340px] rounded-full bg-gradient-to-br from-[#22C55E]/10 via-[#06B6D4]/6 to-transparent blur-[75px] opacity-0 z-0 will-change-transform"
+      />
 
-      {/* Center/Left-Leaning Luminous Orbital Tunnel & Particle Nodes */}
-      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-[62%] sm:-translate-x-[55%] -translate-y-1/2 w-[700px] sm:w-[950px] lg:w-[1200px] h-[700px] sm:h-[950px] lg:h-[1200px] z-0 overflow-visible">
-        <svg
-          viewBox="0 0 1000 1000"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-full opacity-85"
-        >
-          <defs>
-            <radialGradient
-              id="contactCoreGlow"
-              cx="500"
-              cy="500"
-              r="400"
-              gradientUnits="userSpaceOnUse"
-            >
-              <stop offset="0%" stopColor="#22C55E" stopOpacity="0.22" />
-              <stop offset="40%" stopColor="#22C55E" stopOpacity="0.06" />
-              <stop offset="100%" stopColor="#000000" stopOpacity="0" />
-            </radialGradient>
-            <filter id="tunnelArcGlow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="14" result="blurWide" />
-              <feGaussianBlur stdDeviation="5" result="blurMid" />
-              <feMerge>
-                <feMergeNode in="blurWide" />
-                <feMergeNode in="blurMid" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
+      {/* =========================================================================
+          ATMOSPHERIC CELESTIAL ORB & PARALLAX BACKGROUND LAYER
+         ========================================================================= */}
+      <div
+        ref={orbLayerRef}
+        className="pointer-events-none absolute inset-0 w-full h-full flex items-center justify-center z-0 transition-all duration-1000 overflow-hidden"
+      >
+        <div ref={parallaxBgRef} className="absolute inset-0 w-full h-full will-change-transform">
+          {/* Large Glowing Planetary Sphere on Left */}
+          <div className="absolute -left-[18%] sm:-left-[12%] lg:-left-[8%] top-[15%] sm:top-[12%] lg:top-[10%] w-[520px] sm:w-[720px] md:w-[880px] lg:w-[1020px] h-[520px] sm:h-[720px] md:h-[880px] lg:h-[1020px] rounded-full bg-gradient-to-br from-[#06B6D4]/30 via-[#22C55E]/20 to-transparent blur-[110px] sm:blur-[140px] opacity-75 animate-pulse will-change-transform" />
 
-          {/* Central Atmospheric Glow */}
-          <circle cx="500" cy="500" r="320" fill="url(#contactCoreGlow)" />
+          {/* Secondary Deep Atmospheric Orbs on Right & Center */}
+          <div className="absolute right-[-10%] top-[20%] w-[580px] h-[580px] rounded-full bg-[#22C55E]/10 blur-[130px] opacity-50" />
+          <div className="absolute right-[15%] bottom-[10%] w-[480px] h-[480px] rounded-full bg-[#06B6D4]/10 blur-[120px] opacity-40" />
 
-          {/* Concentric Elliptical Orbital Ring Lines (Tunnel Effect) */}
-          <ellipse cx="500" cy="500" rx="90" ry="170" stroke="#22C55E" strokeWidth="0.75" strokeOpacity="0.15" />
-          <ellipse cx="500" cy="500" rx="120" ry="220" stroke="#22C55E" strokeWidth="0.85" strokeOpacity="0.22" />
-          <ellipse cx="500" cy="500" rx="155" ry="275" stroke="#22C55E" strokeWidth="0.9" strokeOpacity="0.28" />
-          <ellipse cx="500" cy="500" rx="195" ry="335" stroke="#22C55E" strokeWidth="1" strokeOpacity="0.32" />
-          <ellipse cx="500" cy="500" rx="245" ry="400" stroke="#22C55E" strokeWidth="0.8" strokeOpacity="0.25" />
-          <ellipse cx="500" cy="500" rx="300" ry="470" stroke="#22C55E" strokeWidth="0.7" strokeOpacity="0.18" strokeDasharray="4 8" />
-          <ellipse cx="500" cy="500" rx="365" ry="540" stroke="#22C55E" strokeWidth="0.55" strokeOpacity="0.12" />
-
-          {/* Radiant Neon Green Core Arc (Focal Luminous Rim) */}
-          <path
-            d="M 445 280 C 490 340, 508 420, 508 500 C 508 580, 490 660, 445 720"
-            stroke="#22C55E"
-            strokeWidth="5"
-            strokeOpacity="0.35"
-            strokeLinecap="round"
-            filter="url(#tunnelArcGlow)"
-          />
-          <path
-            d="M 445 280 C 490 340, 508 420, 508 500 C 508 580, 490 660, 445 720"
-            stroke="#22C55E"
-            strokeWidth="1.6"
-            strokeOpacity="0.9"
-            strokeLinecap="round"
-          />
-
-          {/* Luminous Node Particles along the Tunnel Ellipses */}
-          {/* Top Node */}
-          <circle cx="515" cy="180" r="3" fill="#22C55E" filter="drop-shadow(0 0 6px #22C55E)" />
-          <circle cx="515" cy="180" r="1.5" fill="#FFFFFF" />
-
-          {/* Upper Right Node */}
-          <circle cx="410" cy="285" r="3.5" fill="#22C55E" filter="drop-shadow(0 0 7px #22C55E)" />
-          <circle cx="410" cy="285" r="1.6" fill="#FFFFFF" />
-
-          {/* Middle Left Node */}
-          <circle cx="335" cy="485" r="2.8" fill="#22C55E" filter="drop-shadow(0 0 6px #22C55E)" />
-          <circle cx="335" cy="485" r="1.3" fill="#FFFFFF" />
-
-          {/* Bottom Center Node */}
-          <circle cx="508" cy="815" r="3.5" fill="#22C55E" filter="drop-shadow(0 0 8px #22C55E)" />
-          <circle cx="508" cy="815" r="1.8" fill="#FFFFFF" />
-        </svg>
+          {/* Fine Star Dust & Micro Particle Flecks */}
+          <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:48px_48px] opacity-30" />
+        </div>
       </div>
 
-      {/* Subtle Top Border Hairline */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-
       {/* =========================================================================
-          MAIN CONTACT CONTENT GRID (Two-Column Layout)
+          STATE A: UNIFIED FULL-SCREEN CLOSING EXPERIENCE
          ========================================================================= */}
-      <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-        
-        {/* Left Column: Eyebrow, Statement, Description & Contact Details */}
-        <div className="contact-info-col lg:col-span-5 space-y-10 lg:sticky lg:top-28">
-          
-          <div className="space-y-6">
-            {/* Eyebrow */}
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs sm:text-sm text-[#22C55E] uppercase tracking-[0.25em] font-semibold">
-                CONTACT US —
-              </span>
+      {mode === "intro" && (
+        <div
+          ref={introViewRef}
+          className="relative z-10 w-full flex-1 flex flex-col justify-between px-6 sm:px-12 lg:px-20 xl:px-24 pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-10 max-w-[1520px] mx-auto"
+        >
+          {/* Main Visual Center Stage */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-24 items-center my-auto py-8">
+            
+            {/* Left Column: Oversized Monumental Headline & Interactive CTA */}
+            <div className="contact-hero-left lg:col-span-7 space-y-9 sm:space-y-11">
+              <div className="space-y-4">
+                <h2 className="font-sans font-light md:font-normal text-5xl sm:text-7xl lg:text-[84px] xl:text-[96px] text-white tracking-tight leading-[0.98]">
+                  Challenge us <br />
+                  with your brief.
+                </h2>
+
+                <p className="font-sans text-sm sm:text-base text-[#8E9B91] leading-relaxed max-w-lg font-light pt-2">
+                  Share your portfolio goals through our interactive briefing flow, and explore how Unifolio brings absolute clarity to your assets.
+                </p>
+              </div>
+
+              {/* Glowing Interactive CTA Button */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={startConversation}
+                  className="group relative inline-flex items-center gap-4 rounded-full border border-white/20 bg-white/[0.04] hover:bg-white/[0.09] hover:border-[#22C55E]/80 backdrop-blur-xl px-7 sm:px-9 py-4 sm:py-4.5 font-sans text-sm sm:text-base font-normal text-white tracking-wide transition-all duration-300 cursor-pointer shadow-[0_0_30px_rgba(34,197,94,0.12)] hover:shadow-[0_0_45px_rgba(34,197,94,0.35)] active:scale-[0.98]"
+                >
+                  <span>Let’s start a conversation</span>
+                  <div className="w-8 h-8 rounded-full bg-[#22C55E] text-black flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                    <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                  </div>
+                </button>
+              </div>
             </div>
 
-            {/* Monumental Editorial Statement */}
-            <h2 className="font-sans font-light md:font-normal text-4xl sm:text-5xl lg:text-[54px] text-[#FAF8F5] tracking-tight leading-[1.08]">
-              You’ve got portfolios. <br />
-              We’ve got clarity. <br />
-              <span className="text-[#22C55E] font-normal">Let’s connect.</span>
-            </h2>
-
-            {/* Supporting Copy */}
-            <p className="font-sans text-xs sm:text-sm text-[#8E9B91] leading-relaxed max-w-md">
-              Whether you have a question, need a demo, or want to explore how Unifolio can help — our team is here for you.
-            </p>
-          </div>
-
-          {/* Minimal Outlined Contact Detail List */}
-          <div className="space-y-6 pt-2">
-            
-            {/* Email */}
-            <div className="flex items-center gap-4 group">
-              <div className="w-11 h-11 rounded-full border border-white/15 bg-white/[0.03] flex items-center justify-center text-[#22C55E] group-hover:border-[#22C55E] group-hover:bg-[#22C55E]/10 transition-all duration-300 shadow-[0_0_12px_rgba(34,197,94,0.06)]">
-                <Mail className="w-4 h-4" />
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[11px] font-mono text-[#8E9B91] uppercase tracking-wider">
-                  Email us at
+            {/* Right Column: Clean Structured Editorial Contact Info & Socials */}
+            <div className="contact-hero-right lg:col-span-5 space-y-10 sm:space-y-12 lg:pl-6 xl:pl-10">
+              
+              {/* Email Block */}
+              <div className="space-y-2">
+                <p className="font-mono text-[11px] text-[#8E9B91] uppercase tracking-[0.24em] font-medium">
+                  EMAIL
                 </p>
                 <a
                   href="mailto:hello@unifolio.in"
-                  className="font-sans text-sm font-medium text-white group-hover:text-[#22C55E] transition-colors"
+                  className="font-sans text-xl sm:text-2xl text-white hover:text-[#22C55E] transition-colors duration-200 block"
                 >
                   hello@unifolio.in
                 </a>
               </div>
-            </div>
 
-            {/* Phone */}
-            <div className="flex items-center gap-4 group">
-              <div className="w-11 h-11 rounded-full border border-white/15 bg-white/[0.03] flex items-center justify-center text-[#22C55E] group-hover:border-[#22C55E] group-hover:bg-[#22C55E]/10 transition-all duration-300 shadow-[0_0_12px_rgba(34,197,94,0.06)]">
-                <Phone className="w-4 h-4" />
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[11px] font-mono text-[#8E9B91] uppercase tracking-wider">
-                  Call us at
-                </p>
-                <a
-                  href="tel:+919876543210"
-                  className="font-sans text-sm font-medium text-white group-hover:text-[#22C55E] transition-colors"
-                >
-                  +91 98765 43210
-                </a>
-              </div>
-            </div>
-
-            {/* Location */}
-            <div className="flex items-center gap-4 group">
-              <div className="w-11 h-11 rounded-full border border-white/15 bg-white/[0.03] flex items-center justify-center text-[#22C55E] group-hover:border-[#22C55E] group-hover:bg-[#22C55E]/10 transition-all duration-300 shadow-[0_0_12px_rgba(34,197,94,0.06)]">
-                <MapPin className="w-4 h-4" />
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[11px] font-mono text-[#8E9B91] uppercase tracking-wider">
-                  Visit us
-                </p>
-                <p className="font-sans text-sm font-medium text-white">
-                  Bengaluru, India
-                </p>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* Right Column: Premium Dark Rounded Contact Form Panel */}
-        <div className="contact-form-card lg:col-span-7">
-          <div className="relative rounded-[32px] sm:rounded-[36px] border border-white/[0.1] bg-[#000000]/95 backdrop-blur-2xl p-7 sm:p-10 shadow-[0_24px_60px_rgba(0,0,0,0.85),0_0_50px_rgba(34,197,94,0.06)] overflow-hidden">
-            
-            {/* Specular Top Border Sheen */}
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
-            {submitted ? (
-              <div className="py-16 text-center space-y-5">
-                <div className="w-16 h-16 rounded-full bg-[#22C55E]/20 border border-[#22C55E] text-[#22C55E] flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(34,197,94,0.3)]">
-                  <Check className="w-8 h-8" />
-                </div>
+              {/* Direct Channels Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-2">
+                {/* Location */}
                 <div className="space-y-2">
-                  <h3 className="font-sans font-light text-2xl sm:text-3xl text-white">
-                    Message Received
-                  </h3>
-                  <p className="font-sans text-sm text-[#8E9B91] max-w-md mx-auto leading-relaxed">
-                    Thank you, {formData.firstName || "there"}. A portfolio intelligence specialist will reach out to you within 24 hours.
+                  <p className="font-mono text-[11px] text-[#8E9B91] uppercase tracking-[0.24em] font-medium">
+                    LOCATION
+                  </p>
+                  <p className="font-sans text-sm sm:text-base text-white/90 leading-relaxed">
+                    Bengaluru, India
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSubmitted(false);
-                    setFormData({
-                      firstName: "",
-                      lastName: "",
-                      email: "",
-                      phone: "",
-                      subject: "",
-                      message: "",
-                    });
-                  }}
-                  className="mt-4 font-mono text-xs text-[#22C55E] uppercase tracking-widest hover:underline cursor-pointer"
-                >
-                  Send another message
-                </button>
+
+                {/* Direct Line */}
+                <div className="space-y-2">
+                  <p className="font-mono text-[11px] text-[#8E9B91] uppercase tracking-[0.24em] font-medium">
+                    DIRECT LINE
+                  </p>
+                  <a
+                    href="tel:+919876543210"
+                    className="font-sans text-sm sm:text-base text-white/90 hover:text-[#22C55E] transition-colors duration-200 block"
+                  >
+                    +91 98765 43210
+                  </a>
+                </div>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
-                
-                {/* Row 1: First Name & Last Name */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      htmlFor="firstName"
-                      className="block font-sans text-xs text-[#8E9B91] mb-1.5 font-medium"
-                    >
-                      First Name <span className="text-[#22C55E]">*</span>
-                    </label>
-                    <input
-                      id="firstName"
-                      name="firstName"
-                      type="text"
-                      required
-                      placeholder="e.g. John"
-                      value={formData.firstName}
-                      onChange={handleChange}
-                      className="w-full rounded-xl bg-[#000000] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/40 transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="lastName"
-                      className="block font-sans text-xs text-[#8E9B91] mb-1.5 font-medium"
-                    >
-                      Last Name
-                    </label>
-                    <input
-                      id="lastName"
-                      name="lastName"
-                      type="text"
-                      placeholder="e.g. Doe"
-                      value={formData.lastName}
-                      onChange={handleChange}
-                      className="w-full rounded-xl bg-[#000000] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/40 transition-all duration-200"
-                    />
-                  </div>
-                </div>
 
-                {/* Row 2: Email Address & Phone Number */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block font-sans text-xs text-[#8E9B91] mb-1.5 font-medium"
-                    >
-                      Email Address <span className="text-[#22C55E]">*</span>
-                    </label>
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      required
-                      placeholder="e.g. john@example.com"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full rounded-xl bg-[#000000] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/40 transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="phone"
-                      className="block font-sans text-xs text-[#8E9B91] mb-1.5 font-medium"
-                    >
-                      Phone Number
-                    </label>
-                    <input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="e.g. +91 98765 43210"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="w-full rounded-xl bg-[#000000] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/40 transition-all duration-200"
-                    />
-                  </div>
-                </div>
-
-                {/* Row 3: Subject */}
-                <div>
-                  <label
-                    htmlFor="subject"
-                    className="block font-sans text-xs text-[#8E9B91] mb-1.5 font-medium"
+              {/* Follow Us / Social Links */}
+              <div className="space-y-3 pt-2">
+                <p className="font-mono text-[11px] text-[#8E9B91] uppercase tracking-[0.24em] font-medium">
+                  FOLLOW US
+                </p>
+                <div className="flex items-center gap-4">
+                  {/* LinkedIn */}
+                  <a
+                    href="https://linkedin.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="LinkedIn"
+                    className="w-9 h-9 rounded-full border border-white/15 bg-white/[0.02] flex items-center justify-center text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 transition-all duration-300"
                   >
-                    Subject
-                  </label>
-                  <input
-                    id="subject"
-                    name="subject"
-                    type="text"
-                    placeholder="e.g. Portfolio Audit / CAS Import Support"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    className="w-full rounded-xl bg-[#000000] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/40 transition-all duration-200"
-                  />
-                </div>
+                    <span className="font-sans font-bold text-xs">in</span>
+                  </a>
 
-                {/* Row 4: Message */}
-                <div>
-                  <label
-                    htmlFor="message"
-                    className="block font-sans text-xs text-[#8E9B91] mb-1.5 font-medium"
+                  {/* Twitter / X */}
+                  <a
+                    href="https://twitter.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Twitter / X"
+                    className="w-9 h-9 rounded-full border border-white/15 bg-white/[0.02] flex items-center justify-center text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 transition-all duration-300"
                   >
-                    Your Message <span className="text-[#22C55E]">*</span>
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={4}
-                    required
-                    placeholder="How can we help you?"
-                    value={formData.message}
-                    onChange={handleChange}
-                    className="w-full rounded-xl bg-[#000000] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/40 transition-all duration-200 resize-none"
-                  />
-                </div>
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                  </a>
 
-                {/* Premium Send Button */}
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full group rounded-xl border border-[#22C55E]/50 bg-gradient-to-r from-[#22C55E]/15 via-[#22C55E]/25 to-[#22C55E]/15 px-8 py-4 font-mono font-semibold text-xs sm:text-sm text-[#22C55E] tracking-[0.22em] uppercase shadow-[0_0_25px_rgba(34,197,94,0.12)] hover:bg-[#22C55E]/30 hover:border-[#22C55E] hover:text-white hover:shadow-[0_0_35px_rgba(34,197,94,0.25)] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+                  {/* Email Channel */}
+                  <a
+                    href="mailto:hello@unifolio.in"
+                    aria-label="Email"
+                    className="w-9 h-9 rounded-full border border-white/15 bg-white/[0.02] flex items-center justify-center text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 transition-all duration-300"
                   >
-                    <span>{loading ? "SENDING..." : "SEND MESSAGE"}</span>
-                    <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                  </button>
+                    <Mail className="w-3.5 h-3.5" />
+                  </a>
                 </div>
+              </div>
 
-                {/* Privacy Assurance */}
-                <div className="flex items-center justify-center gap-1.5 text-xs text-[#8E9B91] pt-1">
-                  <Lock className="w-3.5 h-3.5 text-[#22C55E]/80" />
-                  <span>We respect your privacy. Your information is safe with us.</span>
-                </div>
-
-              </form>
-            )}
+            </div>
 
           </div>
+
+          {/* Bottom Integrated Footer Bar: Seamless Minimal Strip */}
+          <div className="contact-footer-bar pt-10 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 font-sans text-xs text-[#8E9B91]/80">
+            <div>
+              Copyright © 2025 Unifolio. All Rights Reserved.
+            </div>
+
+            <div className="flex items-center gap-6 sm:gap-8 font-mono text-[11px] uppercase tracking-wider">
+              <Link href="/privacy" className="hover:text-white transition-colors duration-200">
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="hover:text-white transition-colors duration-200">
+                Terms of Service
+              </Link>
+              <Link
+                href="#hero"
+                onClick={(e) => handleAnchorClick(e, "#hero")}
+                className="hover:text-white transition-colors duration-200 hidden sm:inline-block"
+              >
+                Back to Top ↑
+              </Link>
+            </div>
+          </div>
         </div>
+      )}
 
-      </div>
+      {/* =========================================================================
+          STATE B: FULL INTERACTIVE CONVERSATIONAL FLOW
+         ========================================================================= */}
+      {mode === "interactive" && (
+        <div
+          ref={interactiveViewRef}
+          className="relative z-10 w-full max-w-4xl mx-auto flex flex-col justify-between min-h-[560px] sm:min-h-[620px] py-4 -translate-y-4 sm:-translate-y-6 md:-translate-y-8"
+        >
+          {/* Top Bar: Previous Button + Official Unifolio Wordmark Logo + Close Button */}
+          <div className="flex items-center justify-between w-full pb-8 sm:pb-10">
+            {/* Previous Button */}
+            <button
+              type="button"
+              onClick={handlePrev}
+              disabled={currentStep === 0}
+              className={`inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] transition-all duration-300 cursor-pointer ${
+                currentStep === 0
+                  ? "opacity-0 pointer-events-none"
+                  : "text-[#8E9B91] hover:text-white"
+              }`}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>PREVIOUS</span>
+            </button>
 
-      {/* Seamless Bottom Section Blend into Footer */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#000000] to-transparent z-10" />
+            {/* Official Logo Asset */}
+            <div className="flex items-center justify-center">
+              <Image
+                src="/Logo/unifolio-wordmark-white.png"
+                alt="Unifolio"
+                width={125}
+                height={28}
+                className="h-6 sm:h-7 w-auto object-contain select-none opacity-90 transition-opacity hover:opacity-100"
+              />
+            </div>
+
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={closeConversation}
+              className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.2em] text-[#8E9B91] hover:text-white transition-colors cursor-pointer"
+            >
+              <span>CLOSE</span>
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Center Step Question & Integrated Animated Input Area */}
+          <div
+            ref={stepContainerRef}
+            className="flex-1 flex flex-col items-center justify-center text-center px-4 space-y-7 sm:space-y-8 my-auto"
+          >
+            {/* Minimal Premium Segmented Progress Bar */}
+            <div className="w-full max-w-[180px] sm:max-w-[220px] mx-auto flex items-center gap-1.5 pb-2">
+              {Array.from({ length: totalSteps }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="h-[2px] flex-1 rounded-full overflow-hidden bg-white/10 relative transition-all duration-500"
+                >
+                  <div
+                    className={`h-full w-full rounded-full transition-all duration-500 ease-out ${
+                      idx < currentStep
+                        ? "bg-[#22C55E]/60"
+                        : idx === currentStep
+                        ? "bg-[#22C55E] shadow-[0_0_10px_#22C55E]"
+                        : "bg-transparent"
+                    }`}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Step 1: Name */}
+            {currentStep === 0 && (
+              <div className="space-y-6 w-full max-w-xl">
+                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-white tracking-tight leading-tight">
+                  Hi, my name is
+                </h3>
+                <div
+                  ref={inputMagneticRef}
+                  onMouseMove={handleInputMouseMove}
+                  onMouseLeave={handleInputMouseLeave}
+                  className="relative w-full max-w-md mx-auto group/input will-change-transform"
+                >
+                  {/* Subtle Border Light Shimmer on Hover/Focus */}
+                  <div
+                    className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
+                      inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
+                    }`}
+                  />
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={formData.name}
+                    onFocus={() => setInputFocused(true)}
+                    onBlur={() => setInputFocused(false)}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onKeyDown={handleKeyDown}
+                    placeholder="John Doe"
+                    className="relative w-full text-center bg-white/[0.05] border border-white/15 focus:border-[#22C55E] focus:bg-white/[0.09] rounded-2xl px-6 py-4 text-xl sm:text-2xl text-white placeholder-white/25 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Organization / Portfolio Type */}
+            {currentStep === 1 && (
+              <div className="space-y-6 w-full max-w-xl">
+                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-white tracking-tight leading-tight">
+                  I represent / invest as
+                </h3>
+                <div
+                  ref={inputMagneticRef}
+                  onMouseMove={handleInputMouseMove}
+                  onMouseLeave={handleInputMouseLeave}
+                  className="relative w-full max-w-md mx-auto group/input will-change-transform"
+                >
+                  {/* Subtle Border Light Shimmer on Hover/Focus */}
+                  <div
+                    className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
+                      inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
+                    }`}
+                  />
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={formData.organization}
+                    onFocus={() => setInputFocused(true)}
+                    onBlur={() => setInputFocused(false)}
+                    onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Family Office / Fund / Private Portfolio"
+                    className="relative w-full text-center bg-white/[0.05] border border-white/15 focus:border-[#22C55E] focus:bg-white/[0.09] rounded-2xl px-6 py-4 text-lg sm:text-xl text-white placeholder-white/25 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Focus Area with Refined Tactile Option Buttons */}
+            {currentStep === 2 && (
+              <div className="space-y-6 w-full max-w-2xl">
+                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-white tracking-tight leading-tight">
+                  I would like to explore
+                </h3>
+                <div
+                  ref={inputMagneticRef}
+                  onMouseMove={handleInputMouseMove}
+                  onMouseLeave={handleInputMouseLeave}
+                  className="relative w-full max-w-md mx-auto group/input will-change-transform"
+                >
+                  {/* Subtle Border Light Shimmer on Hover/Focus */}
+                  <div
+                    className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
+                      inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
+                    }`}
+                  />
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={formData.focusArea}
+                    onFocus={() => setInputFocused(true)}
+                    onBlur={() => setInputFocused(false)}
+                    onChange={(e) => setFormData({ ...formData, focusArea: e.target.value })}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Choose below or type custom..."
+                    className="relative w-full text-center bg-white/[0.05] border border-white/15 focus:border-[#22C55E] focus:bg-white/[0.09] rounded-2xl px-6 py-4 text-base sm:text-lg text-white placeholder-white/25 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
+                  />
+                </div>
+
+                {/* Tactile Response Option Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto pt-2">
+                  {FOCUS_PILLS.map((pill) => {
+                    const isSelected = formData.focusArea === pill;
+                    return (
+                      <button
+                        key={pill}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, focusArea: pill })}
+                        className={`group relative flex items-center gap-3 px-5 py-3.5 rounded-xl border transition-all duration-300 cursor-pointer active:scale-[0.98] ${
+                          isSelected
+                            ? "bg-[#09170E]/90 border-[#22C55E] text-white shadow-[0_0_24px_rgba(34,197,94,0.28)] -translate-y-0.5"
+                            : "bg-white/[0.03] text-[#FAF8F5]/75 border-white/[0.09] hover:border-[#22C55E]/50 hover:bg-white/[0.06] hover:text-white hover:-translate-y-0.5 hover:shadow-[0_0_18px_rgba(34,197,94,0.12)]"
+                        }`}
+                      >
+                        <div
+                          className={`w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-300 ${
+                            isSelected
+                              ? "border-[#22C55E] bg-[#22C55E] text-black"
+                              : "border-white/20 group-hover:border-[#22C55E]/60"
+                          }`}
+                        >
+                          {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                        </div>
+                        <span className="font-sans text-xs sm:text-[13px] font-light tracking-wide text-left">
+                          {pill}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Primary Goal with Refined Tactile Option Buttons */}
+            {currentStep === 3 && (
+              <div className="space-y-6 w-full max-w-2xl">
+                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-white tracking-tight leading-tight">
+                  My primary goal is
+                </h3>
+                <div
+                  ref={inputMagneticRef}
+                  onMouseMove={handleInputMouseMove}
+                  onMouseLeave={handleInputMouseLeave}
+                  className="relative w-full max-w-md mx-auto group/input will-change-transform"
+                >
+                  {/* Subtle Border Light Shimmer on Hover/Focus */}
+                  <div
+                    className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
+                      inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
+                    }`}
+                  />
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={formData.primaryGoal}
+                    onFocus={() => setInputFocused(true)}
+                    onBlur={() => setInputFocused(false)}
+                    onChange={(e) => setFormData({ ...formData, primaryGoal: e.target.value })}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Choose below or type custom..."
+                    className="relative w-full text-center bg-white/[0.05] border border-white/15 focus:border-[#22C55E] focus:bg-white/[0.09] rounded-2xl px-6 py-4 text-base sm:text-lg text-white placeholder-white/25 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
+                  />
+                </div>
+
+                {/* Tactile Response Option Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto pt-2">
+                  {GOAL_PILLS.map((pill) => {
+                    const isSelected = formData.primaryGoal === pill;
+                    return (
+                      <button
+                        key={pill}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, primaryGoal: pill })}
+                        className={`group relative flex items-center gap-3 px-5 py-3.5 rounded-xl border transition-all duration-300 cursor-pointer active:scale-[0.98] ${
+                          isSelected
+                            ? "bg-[#09170E]/90 border-[#22C55E] text-white shadow-[0_0_24px_rgba(34,197,94,0.28)] -translate-y-0.5"
+                            : "bg-white/[0.03] text-[#FAF8F5]/75 border-white/[0.09] hover:border-[#22C55E]/50 hover:bg-white/[0.06] hover:text-white hover:-translate-y-0.5 hover:shadow-[0_0_18px_rgba(34,197,94,0.12)]"
+                        }`}
+                      >
+                        <div
+                          className={`w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-300 ${
+                            isSelected
+                              ? "border-[#22C55E] bg-[#22C55E] text-black"
+                              : "border-white/20 group-hover:border-[#22C55E]/60"
+                          }`}
+                        >
+                          {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                        </div>
+                        <span className="font-sans text-xs sm:text-[13px] font-light tracking-wide text-left">
+                          {pill}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Step 5: Email & Final Submission */}
+            {currentStep === 4 && (
+              <div className="space-y-6 w-full max-w-xl">
+                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-white tracking-tight leading-tight">
+                  You can reach me at
+                </h3>
+                <div
+                  ref={inputMagneticRef}
+                  onMouseMove={handleInputMouseMove}
+                  onMouseLeave={handleInputMouseLeave}
+                  className="relative w-full max-w-md mx-auto group/input will-change-transform"
+                >
+                  {/* Subtle Border Light Shimmer on Hover/Focus */}
+                  <div
+                    className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
+                      inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
+                    }`}
+                  />
+                  <input
+                    ref={inputRef}
+                    type="email"
+                    value={formData.email}
+                    onFocus={() => setInputFocused(true)}
+                    onBlur={() => setInputFocused(false)}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onKeyDown={handleKeyDown}
+                    placeholder="hello@example.com"
+                    className="relative w-full text-center bg-white/[0.05] border border-white/15 focus:border-[#22C55E] focus:bg-white/[0.09] rounded-2xl px-6 py-4 text-lg sm:text-xl text-white placeholder-white/25 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Navigation Control Action (Matching Reference Circular Chevron Button) */}
+          <div className="flex flex-col items-center justify-center pt-6 sm:pt-8 min-h-[72px]">
+            <div
+              className={`flex flex-col items-center transition-all duration-500 ease-out will-change-transform ${
+                canProceed()
+                  ? "opacity-100 translate-y-0 pointer-events-auto scale-100"
+                  : "opacity-0 translate-y-3 pointer-events-none scale-90"
+              }`}
+            >
+              {currentStep === totalSteps - 1 ? (
+                <button
+                  ref={nextBtnRef}
+                  type="button"
+                  onClick={handleNext}
+                  onMouseMove={handleBtnMouseMove}
+                  onMouseLeave={handleBtnMouseLeave}
+                  disabled={loading || !canProceed()}
+                  aria-label="Get Started"
+                  className="group relative inline-flex items-center gap-3 px-8 sm:px-10 py-3.5 sm:py-4 rounded-full bg-[#22C55E] hover:bg-[#22C55E]/90 text-black font-sans font-medium text-sm sm:text-base tracking-wide transition-all duration-300 shadow-[0_0_30px_rgba(34,197,94,0.4)] hover:shadow-[0_0_45px_rgba(34,197,94,0.65)] active:scale-95 cursor-pointer will-change-transform"
+                >
+                  <span>{loading ? "Transmitting..." : "Get Started"}</span>
+                  <div className="w-7 h-7 rounded-full bg-black text-[#22C55E] flex items-center justify-center group-hover:translate-x-1 transition-transform duration-300">
+                    <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                  </div>
+                </button>
+              ) : (
+                <>
+                  <button
+                    ref={nextBtnRef}
+                    type="button"
+                    onClick={handleNext}
+                    onMouseMove={handleBtnMouseMove}
+                    onMouseLeave={handleBtnMouseLeave}
+                    disabled={loading || !canProceed()}
+                    aria-label="Next Step"
+                    className="group relative w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/[0.06] hover:bg-[#22C55E] border border-white/20 hover:border-[#22C55E] backdrop-blur-xl flex items-center justify-center text-white hover:text-black transition-all duration-300 shadow-[0_0_20px_rgba(0,0,0,0.4)] hover:shadow-[0_0_35px_rgba(34,197,94,0.55)] active:scale-90 cursor-pointer will-change-transform"
+                  >
+                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.8] text-white group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
+                  </button>
+
+                  {/* Minimal Bottom Pill Indicator Under Button */}
+                  <div className="w-7 h-1 rounded-full bg-white/10 mt-3" />
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          STATE C: REFINED CONFIRMATION & THANK YOU STATE
+         ========================================================================= */}
+      {mode === "completed" && (
+        <div className="relative z-10 max-w-xl mx-auto text-center space-y-6 py-12">
+          {/* Luminous Pulsing Badge */}
+          <div className="w-20 h-20 rounded-full bg-[#22C55E]/15 border border-[#22C55E] text-[#22C55E] flex items-center justify-center mx-auto shadow-[0_0_40px_rgba(34,197,94,0.35)] animate-pulse">
+            <Check className="w-10 h-10 stroke-[2.5]" />
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="font-sans font-light text-3xl sm:text-4xl text-white tracking-tight">
+              Brief received, {formData.name || "friend"}.
+            </h3>
+            <p className="font-sans text-sm sm:text-base text-[#8E9B91] leading-relaxed max-w-md mx-auto font-light">
+              Thank you for sharing your portfolio brief. Our intelligence specialist will review your details and connect within 24 hours.
+            </p>
+          </div>
+
+          <div className="pt-4">
+            <button
+              type="button"
+              onClick={() => {
+                setMode("intro");
+                setCurrentStep(0);
+                setFormData({
+                  name: "",
+                  organization: "",
+                  focusArea: "",
+                  primaryGoal: "",
+                  email: "",
+                });
+              }}
+              className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#22C55E] hover:text-white transition-colors cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>START ANOTHER CONVERSATION</span>
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
