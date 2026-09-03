@@ -322,7 +322,7 @@ export function MagneticCanvas({
         ctx.stroke();
 
         // Pill text
-        ctx.fillStyle = node.color === "#22C55E" ? "#16A34A" : "#111111";
+        ctx.fillStyle = node.color === "#22C55E" ? "#22C55E" : "#111111";
         ctx.fillText(text, pillX + 8, pillY + 15);
       });
 

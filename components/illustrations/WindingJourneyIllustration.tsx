@@ -62,8 +62,8 @@ export function WindingJourneyIllustration({
           />
 
           {/* Road Hatching / Stepping stones along the path */}
-          <path d="M102 308 L122 318 M125 295 L148 307 M158 278 L184 290 M182 258 L206 268" stroke="#16A34A" strokeWidth="1.2" strokeOpacity="0.7" />
-          <path d="M185 230 L205 235 M160 202 L180 208 M145 175 L165 178 M146 148 L166 150 M158 120 L175 120" stroke="#16A34A" strokeWidth="1.2" strokeOpacity="0.7" />
+          <path d="M102 308 L122 318 M125 295 L148 307 M158 278 L184 290 M182 258 L206 268" stroke="#22C55E" strokeWidth="1.2" strokeOpacity="0.7" />
+          <path d="M185 230 L205 235 M160 202 L180 208 M145 175 L165 178 M146 148 L166 150 M158 120 L175 120" stroke="#22C55E" strokeWidth="1.2" strokeOpacity="0.7" />
         </motion.g>
 
         {/* Illustrated Elements along the journey */}
@@ -76,7 +76,7 @@ export function WindingJourneyIllustration({
           {/* Door */}
           <rect x="221" y="223" width="8" height="10" fill="#22C55E" stroke="#11181C" strokeWidth="1.4" />
           {/* Roof Hatching */}
-          <path d="M216 211 L220 206 M222 211 L226 206 M228 211 L232 206" stroke="#16A34A" strokeWidth="1" strokeOpacity="0.6" />
+          <path d="M216 211 L220 206 M222 211 L226 206 M228 211 L232 206" stroke="#22C55E" strokeWidth="1" strokeOpacity="0.6" />
         </motion.g>
 
         {/* Sprouting Tree 1 (Bottom Left) */}

@@ -65,7 +65,7 @@ export function SketchFolderIllustration({
           <rect x="168" y="180" width="36" height="8" rx="2" fill="#22C55E" stroke="#11181C" strokeWidth="1.4" />
 
           {/* Folder Hatching Texture */}
-          <path d="M102 180 L115 175 M104 195 L118 190 M106 210 L120 205" stroke="#16A34A" strokeWidth="0.9" strokeOpacity="0.5" />
+          <path d="M102 180 L115 175 M104 195 L118 190 M106 210 L120 205" stroke="#22C55E" strokeWidth="0.9" strokeOpacity="0.5" />
         </motion.g>
 
         {/* Hand slipping CAS Card into Folder (Screenshot 5 signature) */}

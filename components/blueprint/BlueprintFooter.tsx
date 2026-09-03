@@ -3,14 +3,12 @@
 import { useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { gsap, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
 
 export function BlueprintFooter() {
   const containerRef = useRef<HTMLElement | null>(null);
-  const ctaContentRef = useRef<HTMLDivElement | null>(null);
-  const orbitalArtRef = useRef<HTMLDivElement | null>(null);
   const footerGridRef = useRef<HTMLDivElement | null>(null);
   const bottomBarRef = useRef<HTMLDivElement | null>(null);
 
@@ -31,59 +29,6 @@ export function BlueprintFooter() {
     () => {
       if (prefersReducedMotion() || !containerRef.current) return;
 
-      // Scroll-triggered reveal animation for the CTA section
-      if (ctaContentRef.current && orbitalArtRef.current) {
-        gsap.fromTo(
-          ctaContentRef.current,
-          { opacity: 0, y: 24 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 1.3,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: containerRef.current,
-              start: "top 80%",
-            },
-          }
-        );
-
-        gsap.fromTo(
-          orbitalArtRef.current,
-          { opacity: 0, scale: 0.95 },
-          {
-            opacity: 1,
-            scale: 1,
-            duration: 1.5,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: containerRef.current,
-              start: "top 80%",
-            },
-          }
-        );
-
-        // Subtle ambient continuous breathing on the wireframe aperture core
-        gsap.to(".footer-aperture-ring", {
-          rotation: 360,
-          transformOrigin: "center center",
-          duration: 180,
-          repeat: -1,
-          ease: "none",
-        });
-
-        gsap.to(".footer-pulse-dot", {
-          scale: 1.25,
-          opacity: 0.9,
-          duration: 3.5,
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          stagger: 0.5,
-        });
-      }
-
-      // Scroll-triggered reveal for footer navigation & bottom bar
       if (footerGridRef.current) {
         gsap.fromTo(
           footerGridRef.current,
@@ -95,7 +40,7 @@ export function BlueprintFooter() {
             ease: "power2.out",
             scrollTrigger: {
               trigger: footerGridRef.current,
-              start: "top 90%",
+              start: "top 85%",
             },
           }
         );
@@ -111,7 +56,7 @@ export function BlueprintFooter() {
             ease: "power2.out",
             scrollTrigger: {
               trigger: bottomBarRef.current,
-              start: "top 96%",
+              start: "top 95%",
             },
           }
         );
@@ -124,147 +69,30 @@ export function BlueprintFooter() {
     <footer
       id="site-footer"
       ref={containerRef}
-      className="relative w-full bg-[#000000] text-[#FAF8F5] select-none overflow-hidden"
+      className="relative w-full bg-[#000000] text-[#FAF8F5] select-none overflow-hidden border-t border-white/[0.08]"
     >
-      {/* Seamless Top Blend from Contact */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#000000] to-transparent z-10" />
-
       {/* =========================================================================
-          UPPER PORTION: CINEMATIC MONUMENTAL CTA SECTION
+          LARGE DECORATIVE FOOTER ILLUSTRATION (Bottom-Right Area & Cropped Bleed)
          ========================================================================= */}
-      <div className="relative w-full min-h-[520px] sm:min-h-[580px] lg:min-h-[640px] flex items-center px-6 sm:px-12 lg:px-20 py-20 sm:py-28 overflow-hidden">
-
-        {/* =========================================================================
-            RIGHT SIDE: RESTRAINED APERTURE / ORBITAL WIREFRAME ARTWORK
-           ========================================================================= */}
-        <div
-          ref={orbitalArtRef}
-          className="pointer-events-none absolute top-1/2 right-[-10%] sm:right-[0%] lg:right-[4%] -translate-y-1/2 w-[520px] sm:w-[700px] md:w-[840px] lg:w-[960px] h-[520px] sm:h-[700px] md:h-[840px] lg:h-[960px] z-0 overflow-visible opacity-90"
-        >
-          <svg
-            viewBox="0 0 900 900"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-full h-full"
-          >
-            <defs>
-              {/* Soft Atmospheric Haze */}
-              <radialGradient id="footerApertureGlow" cx="450" cy="450" r="300" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#22C55E" stopOpacity="0.22" />
-                <stop offset="45%" stopColor="#22C55E" stopOpacity="0.06" />
-                <stop offset="100%" stopColor="#000000" stopOpacity="0" />
-              </radialGradient>
-
-              {/* Rim Light Blur Filter */}
-              <filter id="apertureRimGlow" x="-30%" y="-30%" width="160%" height="160%">
-                <feGaussianBlur stdDeviation="12" result="blurWide" />
-                <feGaussianBlur stdDeviation="4" result="blurMid" />
-                <feMerge>
-                  <feMergeNode in="blurWide" />
-                  <feMergeNode in="blurMid" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-
-            {/* Core Atmospheric Glow */}
-            <circle cx="450" cy="450" r="260" fill="url(#footerApertureGlow)" />
-
-            {/* Concentric / Intersecting Delicate Orbital Ellipse Trajectories with slow rotation */}
-            <g className="footer-aperture-ring" style={{ transformOrigin: "450px 450px" }}>
-              <ellipse cx="450" cy="450" rx="380" ry="240" stroke="#22C55E" strokeWidth="0.5" strokeOpacity="0.15" transform="rotate(-15 450 450)" />
-              <ellipse cx="450" cy="450" rx="350" ry="210" stroke="#22C55E" strokeWidth="0.6" strokeOpacity="0.2" transform="rotate(10 450 450)" />
-              <ellipse cx="450" cy="450" rx="300" ry="170" stroke="#22C55E" strokeWidth="0.75" strokeOpacity="0.28" transform="rotate(-30 450 450)" />
-              <ellipse cx="450" cy="450" rx="260" ry="140" stroke="#22C55E" strokeWidth="0.8" strokeOpacity="0.32" transform="rotate(25 450 450)" strokeDasharray="3 6" />
-              <ellipse cx="450" cy="450" rx="220" ry="110" stroke="#22C55E" strokeWidth="0.9" strokeOpacity="0.35" transform="rotate(-8 450 450)" />
-              <ellipse cx="450" cy="450" rx="180" ry="90" stroke="#22C55E" strokeWidth="0.7" strokeOpacity="0.25" transform="rotate(40 450 450)" strokeDasharray="4 8" />
-            </g>
-
-            {/* Primary Glowing Neon Green Focal Ring */}
-            <circle
-              cx="450"
-              cy="450"
-              r="135"
-              stroke="#22C55E"
-              strokeWidth="4"
-              strokeOpacity="0.4"
-              filter="url(#apertureRimGlow)"
-            />
-            <circle
-              cx="450"
-              cy="450"
-              r="135"
-              stroke="#22C55E"
-              strokeWidth="1.6"
-              strokeOpacity="0.85"
-            />
-
-            {/* Fine Stippled Particles & Nodes along Orbital Intersections */}
-            <circle className="footer-pulse-dot" cx="340" cy="380" r="2.5" fill="#22C55E" filter="drop-shadow(0 0 6px #22C55E)" />
-            <circle cx="340" cy="380" r="1.2" fill="#FFFFFF" />
-
-            <circle className="footer-pulse-dot" cx="560" cy="390" r="3" fill="#22C55E" filter="drop-shadow(0 0 7px #22C55E)" />
-            <circle cx="560" cy="390" r="1.5" fill="#FFFFFF" />
-
-            <circle className="footer-pulse-dot" cx="490" cy="580" r="2.8" fill="#22C55E" filter="drop-shadow(0 0 6px #22C55E)" />
-            <circle cx="490" cy="580" r="1.3" fill="#FFFFFF" />
-
-            <circle className="footer-pulse-dot" cx="280" cy="490" r="2.2" fill="#22C55E" filter="drop-shadow(0 0 5px #22C55E)" />
-            <circle className="footer-pulse-dot" cx="630" cy="470" r="2.6" fill="#22C55E" filter="drop-shadow(0 0 6px #22C55E)" />
-          </svg>
-        </div>
-
-        {/* =========================================================================
-            LEFT SIDE: CTA HEADLINE, COPY & REQUEST ACCESS BUTTON
-           ========================================================================= */}
-        <div
-          ref={ctaContentRef}
-          className="relative z-10 max-w-7xl mx-auto w-full flex flex-col justify-center items-start space-y-6 sm:space-y-8"
-        >
-          {/* Eyebrow with Luminous Green Indicator Dot */}
-          <div className="flex items-center gap-2.5">
-            <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E]" />
-            <span className="font-mono text-xs sm:text-sm text-[#22C55E] uppercase tracking-[0.25em] font-semibold">
-              READY FOR A
-            </span>
-          </div>
-
-          {/* Monumental Headline */}
-          <h2 className="font-sans font-light text-5xl sm:text-6xl md:text-7xl lg:text-[84px] text-white tracking-tight leading-[0.95] uppercase">
-            CLEARER VIEW?
-          </h2>
-
-          {/* Supporting Copy */}
-          <p className="font-sans font-light text-lg sm:text-xl md:text-2xl text-[#8E9B91] leading-snug max-w-md">
-            Let’s bring your finances <br />
-            into focus.
-          </p>
-
-          {/* Request Access Button */}
-          <div className="pt-2">
-            <Link
-              href="#contact"
-              onClick={(e) => handleAnchorClick(e, "#contact")}
-              className="group inline-flex items-center gap-3 rounded-2xl border border-[#22C55E]/50 bg-[#000000] px-8 sm:px-10 py-4 sm:py-4.5 font-mono text-xs sm:text-sm font-semibold text-[#22C55E] uppercase tracking-[0.22em] shadow-[0_0_30px_rgba(34,197,94,0.12)] hover:bg-[#22C55E]/20 hover:border-[#22C55E] hover:text-white hover:shadow-[0_0_40px_rgba(34,197,94,0.25)] transition-all duration-300 active:scale-[0.98]"
-            >
-              <span>REQUEST ACCESS</span>
-              <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </Link>
-          </div>
-        </div>
-
+      <div className="pointer-events-none absolute bottom-0 right-[-10%] sm:right-[-6%] md:right-[-2%] lg:right-[0%] xl:right-[1%] w-[440px] sm:w-[580px] md:w-[720px] lg:w-[860px] xl:w-[980px] h-[340px] sm:h-[450px] md:h-[560px] lg:h-[660px] xl:h-[720px] z-0 overflow-visible opacity-90">
+        <Image
+          src="/footer illustration.png"
+          alt="Unifolio Footer Artwork"
+          fill
+          className="object-contain object-bottom-right select-none pointer-events-none drop-shadow-[0_0_60px_rgba(34,197,94,0.18)]"
+        />
       </div>
 
       {/* =========================================================================
-          LOWER PORTION: FOOTER NAVIGATION & BRANDING GRID
+          MAIN EDITORIAL NAVIGATION & BRANDING GRID
          ========================================================================= */}
-      <div className="relative z-10 border-t border-white/[0.06] bg-[#000000] px-6 sm:px-12 lg:px-20 py-16 sm:py-20">
+      <div className="relative z-10 px-6 sm:px-12 lg:px-20 pt-16 sm:pt-20 pb-20 sm:pb-28">
         <div
           ref={footerGridRef}
-          className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 sm:gap-16 items-start"
+          className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-14 items-start"
         >
-          {/* Column 1 (Left): Logo Glyph + Logotype + Tagline */}
-          <div className="md:col-span-5 space-y-4">
+          {/* Column 1 (Left): Brand Logo, Tagline & Green Dot */}
+          <div className="md:col-span-12 lg:col-span-3 space-y-4">
             <Link
               href="#hero"
               onClick={(e) => handleAnchorClick(e, "#hero")}
@@ -273,113 +101,233 @@ export function BlueprintFooter() {
               <Image
                 src="/Logo/unifolio-wordmark-white.png"
                 alt="Unifolio"
-                width={145}
-                height={33}
+                width={140}
+                height={32}
                 className="h-7 sm:h-8 w-auto object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
               />
             </Link>
 
-            <p className="font-sans text-sm text-[#8E9B91] font-normal leading-relaxed">
-              One view. Complete clarity.
-            </p>
-          </div>
+            <div className="space-y-1 pt-1">
+              <p className="font-sans text-xs sm:text-sm text-[#8E9B91] leading-relaxed">
+                Unifolio brings clarity to complexity.
+              </p>
+              <p className="font-sans text-xs sm:text-sm text-[#8E9B91] leading-relaxed">
+                One view. Complete clarity.
+              </p>
+            </div>
 
-          {/* Column 2 (Center): Navigation Links */}
-          <div className="md:col-span-3 space-y-3.5 font-mono text-xs tracking-[0.25em] text-[#8E9B91] uppercase">
-            <div>
-              <Link href="#hero" onClick={(e) => handleAnchorClick(e, "#hero")} className="hover:text-white transition-colors">
-                HOME
-              </Link>
-            </div>
-            <div>
-              <Link href="#statement" onClick={(e) => handleAnchorClick(e, "#statement")} className="hover:text-white transition-colors">
-                PRODUCT
-              </Link>
-            </div>
-            <div>
-              <Link href="#offerings" onClick={(e) => handleAnchorClick(e, "#offerings")} className="hover:text-white transition-colors">
-                OFFERINGS
-              </Link>
-            </div>
-            <div>
-              <Link href="#about" onClick={(e) => handleAnchorClick(e, "#about")} className="hover:text-white transition-colors">
-                ABOUT
-              </Link>
-            </div>
-            <div>
-              <Link href="#contact" onClick={(e) => handleAnchorClick(e, "#contact")} className="hover:text-white transition-colors">
-                CONTACT
-              </Link>
+            <div className="pt-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_6px_#22C55E] inline-block" />
             </div>
           </div>
 
-          {/* Column 3 (Right): Contact Header, Email Row & Social Outlined Buttons */}
-          <div className="md:col-span-4 space-y-6">
-            {/* Contact Header */}
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_6px_#22C55E]" />
-              <span className="font-mono text-xs text-[#22C55E] uppercase tracking-[0.25em] font-semibold">
-                CONTACT
-              </span>
+          {/* Center Columns: Structured Navigation Columns */}
+          <div className="md:col-span-8 lg:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-6">
+            
+            {/* PLATFORM Column */}
+            <div className="space-y-3.5">
+              <h4 className="font-mono text-xs font-semibold text-[#8E9B91] uppercase tracking-[0.22em]">
+                PLATFORM
+              </h4>
+              <ul className="space-y-2.5 font-sans text-xs sm:text-sm text-[#FAF8F5]/70">
+                <li>
+                  <Link
+                    href="#statement"
+                    onClick={(e) => handleAnchorClick(e, "#statement")}
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    Product
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#offerings"
+                    onClick={(e) => handleAnchorClick(e, "#offerings")}
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    Features
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#about"
+                    onClick={(e) => handleAnchorClick(e, "#about")}
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    Security
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#offerings"
+                    onClick={(e) => handleAnchorClick(e, "#offerings")}
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    Integrations
+                  </Link>
+                </li>
+              </ul>
             </div>
 
-            {/* Email Row */}
-            <div className="flex items-center gap-3.5 group">
-              <div className="w-9 h-9 rounded-full border border-white/15 bg-white/[0.03] flex items-center justify-center text-[#22C55E] group-hover:border-[#22C55E] group-hover:bg-[#22C55E]/10 transition-all duration-300">
-                <Mail className="w-4 h-4" />
-              </div>
-              <a
-                href="mailto:hello@unifolio.in"
-                className="font-sans text-sm font-medium text-[#FAF8F5] group-hover:text-[#22C55E] transition-colors"
-              >
-                hello@unifolio.in
-              </a>
+            {/* COMPANY Column */}
+            <div className="space-y-3.5">
+              <h4 className="font-mono text-xs font-semibold text-[#8E9B91] uppercase tracking-[0.22em]">
+                COMPANY
+              </h4>
+              <ul className="space-y-2.5 font-sans text-xs sm:text-sm text-[#FAF8F5]/70">
+                <li>
+                  <Link
+                    href="#about"
+                    onClick={(e) => handleAnchorClick(e, "#about")}
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#contact"
+                    onClick={(e) => handleAnchorClick(e, "#contact")}
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    Careers
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#about"
+                    onClick={(e) => handleAnchorClick(e, "#about")}
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#contact"
+                    onClick={(e) => handleAnchorClick(e, "#contact")}
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    Press
+                  </Link>
+                </li>
+              </ul>
             </div>
 
-            {/* Divider */}
-            <div className="w-full h-[1px] bg-white/[0.06]" />
+            {/* RESOURCES Column */}
+            <div className="space-y-3.5">
+              <h4 className="font-mono text-xs font-semibold text-[#8E9B91] uppercase tracking-[0.22em]">
+                RESOURCES
+              </h4>
+              <ul className="space-y-2.5 font-sans text-xs sm:text-sm text-[#FAF8F5]/70">
+                <li>
+                  <Link
+                    href="#statement"
+                    onClick={(e) => handleAnchorClick(e, "#statement")}
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    Documentation
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#faq"
+                    onClick={(e) => handleAnchorClick(e, "#faq")}
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    Help Center
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#contact"
+                    onClick={(e) => handleAnchorClick(e, "#contact")}
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    API
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#hero"
+                    onClick={(e) => handleAnchorClick(e, "#hero")}
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    Status
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-            {/* Social Outlined Circular Icons */}
-            <div className="flex items-center gap-3">
-              {/* Instagram */}
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Instagram"
-                className="w-9 h-9 rounded-full border border-white/15 bg-white/[0.03] flex items-center justify-center text-[#22C55E] hover:border-[#22C55E] hover:bg-[#22C55E]/10 hover:scale-105 transition-all duration-300"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-                </svg>
-              </a>
+            {/* LEGAL Column */}
+            <div className="space-y-3.5">
+              <h4 className="font-mono text-xs font-semibold text-[#8E9B91] uppercase tracking-[0.22em]">
+                LEGAL
+              </h4>
+              <ul className="space-y-2.5 font-sans text-xs sm:text-sm text-[#FAF8F5]/70">
+                <li>
+                  <Link href="/privacy" className="hover:text-white transition-colors duration-200">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="hover:text-white transition-colors duration-200">
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="hover:text-white transition-colors duration-200">
+                    Data Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="hover:text-white transition-colors duration-200">
+                    Compliance
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+
+          {/* Column 3 (Right): Stay Connected Social Outlined Icons */}
+          <div className="md:col-span-4 lg:col-span-3 space-y-4">
+            <h4 className="font-mono text-xs font-semibold text-[#8E9B91] uppercase tracking-[0.22em]">
+              STAY CONNECTED
+            </h4>
+
+            <div className="flex items-center gap-3 pt-1">
               {/* LinkedIn */}
               <a
                 href="https://linkedin.com"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="LinkedIn"
-                className="w-9 h-9 rounded-full border border-white/15 bg-white/[0.03] flex items-center justify-center text-[#22C55E] hover:border-[#22C55E] hover:bg-[#22C55E]/10 hover:scale-105 transition-all duration-300"
+                className="w-9 h-9 rounded-full border border-white/15 bg-white/[0.02] flex items-center justify-center text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 transition-all duration-300"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-                  <rect width="4" height="12" x="2" y="9"/>
-                  <circle cx="4" cy="4" r="2"/>
-                </svg>
+                <span className="font-sans font-bold text-xs">in</span>
               </a>
+
               {/* Twitter / X */}
               <a
                 href="https://twitter.com"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Twitter / X"
-                className="w-9 h-9 rounded-full border border-white/15 bg-white/[0.03] flex items-center justify-center text-[#22C55E] hover:border-[#22C55E] hover:bg-[#22C55E]/10 hover:scale-105 transition-all duration-300"
+                className="w-9 h-9 rounded-full border border-white/15 bg-white/[0.02] flex items-center justify-center text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 transition-all duration-300"
               >
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                 </svg>
+              </a>
+
+              {/* Email */}
+              <a
+                href="mailto:hello@unifolio.in"
+                aria-label="Email"
+                className="w-9 h-9 rounded-full border border-white/15 bg-white/[0.02] flex items-center justify-center text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 transition-all duration-300"
+              >
+                <Mail className="w-3.5 h-3.5" />
               </a>
             </div>
           </div>
@@ -388,25 +336,20 @@ export function BlueprintFooter() {
       </div>
 
       {/* =========================================================================
-          BOTTOM BAR: COPYRIGHT, PRIVACY & TERMS
+          BOTTOM BAR: Clean Editorial Strip (Copyright + Brand Statement)
          ========================================================================= */}
       <div
         ref={bottomBarRef}
-        className="relative z-10 border-t border-white/[0.06] bg-[#000000] px-6 sm:px-12 lg:px-20 py-6"
+        className="relative z-10 border-t border-white/[0.08] bg-[#000000] px-6 sm:px-12 lg:px-20 py-6"
       >
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-[#8E9B91]/80 tracking-wider">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-[#8E9B91]/80">
           <div>
-            © 2026 UNIFOLIO. All rights reserved.
+            © 2025 Unifolio. All rights reserved.
           </div>
 
-          <div className="flex items-center gap-6">
-            <Link href="/privacy" className="hover:text-white transition-colors">
-              PRIVACY POLICY
-            </Link>
-            <span className="text-white/20">|</span>
-            <Link href="/terms" className="hover:text-white transition-colors">
-              TERMS OF SERVICE
-            </Link>
+          <div className="flex items-center gap-2">
+            <span>Built for clarity. Designed for better decisions.</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_6px_#22C55E] inline-block ml-1" />
           </div>
         </div>
       </div>

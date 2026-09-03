@@ -125,9 +125,9 @@ export function HeroBloomIllustration({
           {/* Bar 1 */}
           <rect x="195" y="152" width="10" height="22" rx="2" fill="#22C55E" stroke="#11181C" strokeWidth="1.5" />
           {/* Bar 2 */}
-          <rect x="210" y="140" width="10" height="34" rx="2" fill="#16A34A" stroke="#11181C" strokeWidth="1.5" />
+          <rect x="210" y="140" width="10" height="34" rx="2" fill="#22C55E" stroke="#11181C" strokeWidth="1.5" />
           {/* Bar 3 */}
-          <rect x="225" y="158" width="10" height="16" rx="2" fill="#86EFAC" stroke="#11181C" strokeWidth="1.5" />
+          <rect x="225" y="158" width="10" height="16" rx="2" fill="#22C55E" stroke="#11181C" strokeWidth="1.5" />
           {/* Text lines */}
           <line x1="242" y1="148" x2="268" y2="148" stroke="#11181C" strokeWidth="1.6" strokeLinecap="round" />
           <line x1="242" y1="156" x2="264" y2="156" stroke="#11181C" strokeWidth="1.6" strokeLinecap="round" />
@@ -164,7 +164,7 @@ export function HeroBloomIllustration({
           {/* Slice 1 (Emerald) */}
           <path d="M330 92 L330 70 A22 22 0 0 1 350 82 Z" fill="#22C55E" stroke="#11181C" strokeWidth="1.4" />
           {/* Slice 2 (Mint) */}
-          <path d="M330 92 L350 82 A22 22 0 0 1 344 108 Z" fill="#86EFAC" stroke="#11181C" strokeWidth="1.4" />
+          <path d="M330 92 L350 82 A22 22 0 0 1 344 108 Z" fill="#22C55E" stroke="#11181C" strokeWidth="1.4" />
           {/* Metric lines */}
           <line x1="360" y1="84" x2="384" y2="84" stroke="#11181C" strokeWidth="1.8" strokeLinecap="round" />
           <line x1="360" y1="92" x2="380" y2="92" stroke="#11181C" strokeWidth="1.8" strokeLinecap="round" />
@@ -260,8 +260,8 @@ export function HeroBloomIllustration({
 
         {/* Pencil Hatching Texture Accents */}
         <g id="pencil-hatching">
-          <path d="M260 360L268 375M266 358L274 373M272 357L280 372" stroke="#16A34A" strokeWidth="1" strokeOpacity="0.5" />
-          <path d="M215 365L222 378M220 363L227 376" stroke="#16A34A" strokeWidth="1" strokeOpacity="0.5" />
+          <path d="M260 360L268 375M266 358L274 373M272 357L280 372" stroke="#22C55E" strokeWidth="1" strokeOpacity="0.5" />
+          <path d="M215 365L222 378M220 363L227 376" stroke="#22C55E" strokeWidth="1" strokeOpacity="0.5" />
         </g>
       </motion.svg>
     </div>

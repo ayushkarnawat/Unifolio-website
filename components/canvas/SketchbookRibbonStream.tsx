@@ -38,7 +38,7 @@ export function SketchbookRibbonStream({
         {/* Wavy primary hand-drawn dashed path */}
         <motion.path
           d="M-50 180 C320 220 540 80 720 180 C920 280 1140 120 1500 240"
-          stroke="#86EFAC"
+          stroke="#22C55E"
           strokeWidth="2.5"
           strokeDasharray="8 8"
           strokeLinecap="round"

@@ -1,64 +1,144 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { faqContent } from "@/content/faq";
-import { gsap, Flip, prefersReducedMotion } from "@/lib/gsap";
+import { gsap, prefersReducedMotion } from "@/lib/gsap";
 
 export function BlueprintFaq() {
   const [activeIdx, setActiveIdx] = useState<number>(0);
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const activeIdxRef = useRef<number>(0);
+
+  const containerRef = useRef<HTMLElement | null>(null);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const flipStateRef = useRef<Flip.FlipState | null>(null);
+  const answerRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Computes the scroll position that centers a given card within the
-  // visible track, bounded to a valid scroll range. Pure read — no side effects.
-  const computeCenteredScroll = useCallback((idx: number) => {
-    const track = trackRef.current;
-    const activeCard = cardRefs.current[idx];
-    if (!track || !activeCard) return null;
-
-    const cardLeft = activeCard.offsetLeft;
-    const cardWidth = activeCard.offsetWidth;
-    const trackWidth = track.clientWidth;
-    const maxScroll = Math.max(0, track.scrollWidth - trackWidth);
-
-    return Math.max(0, Math.min(maxScroll, cardLeft - (trackWidth - cardWidth) / 2));
+  // Responsive dimensions helper
+  const getDimensions = useCallback(() => {
+    if (typeof window === "undefined") {
+      return { wActive: 560, wInactive: 270, gap: 20, peekOffset: 120 };
+    }
+    const width = window.innerWidth;
+    if (width < 640) {
+      const wActive = Math.min(360, width - 48);
+      return { wActive, wInactive: 200, gap: 14, peekOffset: 0 };
+    }
+    if (width < 1024) {
+      return { wActive: 460, wInactive: 240, gap: 16, peekOffset: 60 };
+    }
+    return { wActive: 560, wInactive: 270, gap: 20, peekOffset: 120 };
   }, []);
 
-  const scrollToActive = useCallback(
-    (idx: number) => {
-      if (idx === activeIdx) return;
+  // Fluid transition to target slide
+  const goToSlide = useCallback(
+    (targetIdx: number, isInitial = false) => {
+      if (targetIdx < 0 || targetIdx >= faqContent.length) return;
 
-      // Capture every card's current width/position before the active index
-      // changes. The layout effect below applies the resulting DOM change
-      // (new widths via CSS classes + the new scroll offset) and then Flips
-      // from this captured state into it as one coordinated animation —
-      // replacing the old competing CSS-width-transition + GSAP-scrollLeft-tween.
-      if (!prefersReducedMotion() && trackRef.current) {
-        const cardEls = gsap.utils.toArray<HTMLElement>(".faq-card", trackRef.current);
-        flipStateRef.current = Flip.getState(cardEls);
+      activeIdxRef.current = targetIdx;
+      setActiveIdx(targetIdx);
+
+      const { wActive, wInactive, gap, peekOffset } = getDimensions();
+      const targetTrackX =
+        targetIdx === 0 ? 0 : -(targetIdx * (wInactive + gap)) + peekOffset;
+
+      const duration = isInitial ? 0 : prefersReducedMotion() ? 0.01 : 0.65;
+      const ease = "power3.out";
+
+      // 1. Animate Track Translation
+      if (trackRef.current) {
+        gsap.to(trackRef.current, {
+          x: targetTrackX,
+          duration,
+          ease,
+          overwrite: "auto",
+        });
       }
 
-      setActiveIdx(idx);
+      // 2. Animate Individual Card Widths
+      cardRefs.current.forEach((cardEl, i) => {
+        if (!cardEl) return;
+        const isActive = i === targetIdx;
+        const targetWidth = isActive ? wActive : wInactive;
+
+        gsap.to(cardEl, {
+          width: targetWidth,
+          duration,
+          ease,
+          overwrite: "auto",
+        });
+
+        // 3. Smoothly fade/reveal answer text
+        const answerEl = answerRefs.current[i];
+        if (answerEl) {
+          if (isActive) {
+            gsap.to(answerEl, {
+              maxHeight: 240,
+              opacity: 1,
+              y: 0,
+              duration: isInitial ? 0 : 0.5,
+              delay: isInitial ? 0 : 0.12,
+              ease: "power2.out",
+              overwrite: "auto",
+            });
+          } else {
+            gsap.to(answerEl, {
+              maxHeight: 0,
+              opacity: 0,
+              y: 6,
+              duration: isInitial ? 0 : 0.3,
+              ease: "power2.inOut",
+              overwrite: "auto",
+            });
+          }
+        }
+      });
     },
-    [activeIdx]
+    [getDimensions]
   );
 
   const handlePrev = useCallback(() => {
-    if (activeIdx > 0) {
-      scrollToActive(activeIdx - 1);
+    if (activeIdxRef.current > 0) {
+      goToSlide(activeIdxRef.current - 1);
     }
-  }, [activeIdx, scrollToActive]);
+  }, [goToSlide]);
 
   const handleNext = useCallback(() => {
-    if (activeIdx < faqContent.length - 1) {
-      scrollToActive(activeIdx + 1);
+    if (activeIdxRef.current < faqContent.length - 1) {
+      goToSlide(activeIdxRef.current + 1);
     }
-  }, [activeIdx, scrollToActive]);
+  }, [goToSlide]);
 
+  // Initial layout and resize sync
+  useEffect(() => {
+    goToSlide(0, true);
+
+    const handleResize = () => {
+      goToSlide(activeIdxRef.current, false);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [goToSlide]);
+
+  // Touch swipe support on track
+  const touchStartX = useRef<number>(0);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+    if (diff > 45) {
+      handleNext();
+    } else if (diff < -45) {
+      handlePrev();
+    }
+  };
+
+  // Scroll entrance animation for the whole FAQ section
   useGSAP(
     () => {
       if (prefersReducedMotion() || !containerRef.current) return;
@@ -89,40 +169,7 @@ export function BlueprintFaq() {
     { scope: containerRef }
   );
 
-  // Runs after every activeIdx change (including the initial mount, to center
-  // card 0). Applies the new scroll position instantly so Flip measures the
-  // true final layout, then — if a "before" state was captured — animates the
-  // width and position deltas of every card in one unified GSAP tween.
-  useGSAP(
-    () => {
-      const targetScroll = computeCenteredScroll(activeIdx);
-      if (targetScroll !== null && trackRef.current) {
-        trackRef.current.scrollLeft = targetScroll;
-      }
-
-      const state = flipStateRef.current;
-      flipStateRef.current = null;
-      if (!state) return;
-
-      Flip.from(state, {
-        duration: 0.65,
-        ease: "power2.out",
-        scale: false,
-        absolute: true,
-      });
-    },
-    { scope: containerRef, dependencies: [activeIdx] }
-  );
-
-  // Smooth GSAP reveal for answer content when active card changes
-  useEffect(() => {
-    if (prefersReducedMotion()) return;
-    gsap.fromTo(
-      ".faq-active-answer",
-      { opacity: 0, y: 10 },
-      { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }
-    );
-  }, [activeIdx]);
+  const { wActive, wInactive } = getDimensions();
 
   return (
     <section
@@ -292,14 +339,19 @@ export function BlueprintFaq() {
         </div>
 
         {/* =========================================================================
-            HORIZONTAL ACCORDION SLIDER TRACK
+            FLUID HORIZONTAL ACCORDION SLIDER TRACK
            ========================================================================= */}
         <div
-          ref={trackRef}
-          className="faq-track-elem relative w-full overflow-x-auto no-scrollbar py-4 -my-4"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          ref={viewportRef}
+          className="faq-track-elem relative w-full overflow-hidden py-4 -my-4"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
-          <div className="flex items-stretch gap-4 sm:gap-5 w-max min-w-full pb-2">
+          <div
+            ref={trackRef}
+            className="flex items-stretch gap-4 sm:gap-5 w-max will-change-transform pb-2"
+            style={{ transform: "translateX(0px)" }}
+          >
             {faqContent.map((item, idx) => {
               const isActive = activeIdx === idx;
 
@@ -309,38 +361,51 @@ export function BlueprintFaq() {
                   ref={(el) => {
                     cardRefs.current[idx] = el;
                   }}
-                  onClick={() => scrollToActive(idx)}
-                  className={`faq-card group relative rounded-[28px] sm:rounded-[32px] border transition-[background-color,border-color,box-shadow] duration-500 ease-out cursor-pointer flex flex-col justify-between overflow-hidden select-none ${
+                  onClick={() => goToSlide(idx)}
+                  style={{
+                    width: isActive ? wActive : wInactive,
+                    flexShrink: 0,
+                  }}
+                  className={`faq-card group relative rounded-[28px] sm:rounded-[32px] border transition-[background-color,border-color,box-shadow] duration-500 ease-out cursor-pointer flex flex-col justify-between overflow-hidden select-none min-h-[360px] sm:min-h-[400px] ${
                     isActive
-                      ? "w-[340px] sm:w-[460px] md:w-[540px] lg:w-[580px] bg-[#000000] border-[#22C55E]/40 shadow-[0_24px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(34,197,94,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] p-7 sm:p-9 md:p-10 min-h-[360px] sm:min-h-[400px]"
-                      : "w-[220px] sm:w-[260px] md:w-[280px] bg-[#000000]/80 border-white/[0.08] hover:border-white/20 hover:bg-[#000000] p-6 sm:p-8 min-h-[360px] sm:min-h-[400px]"
+                      ? "bg-[#0A0D0B] border-[#22C55E]/40 shadow-[0_24px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(34,197,94,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] p-7 sm:p-9 md:p-10"
+                      : "bg-[#0A0C0B]/80 border-white/[0.08] hover:border-white/20 hover:bg-[#0A0D0B] p-6 sm:p-8"
                   }`}
                 >
-                  {/* Active Top Specular Edge */}
+                  {/* Active Top Specular Highlight Edge */}
                   {isActive && (
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent" />
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#22C55E]/50 to-transparent" />
                   )}
 
-                  {/* Card Body: Question & (if active) Answer text */}
-                  <div className="space-y-4 my-auto py-2">
+                  {/* Question Title & (if active) Smooth Answer Content */}
+                  <div className="my-auto py-2 flex flex-col justify-center space-y-4">
                     <h3
-                      className={`font-sans transition-all leading-snug ${
+                      className={`font-sans transition-colors duration-300 leading-snug ${
                         isActive
-                          ? "text-2xl sm:text-3xl lg:text-[32px] text-white font-light sm:font-normal tracking-tight"
-                          : "text-lg sm:text-xl text-[#FAF8F5]/80 group-hover:text-white font-light leading-snug"
+                          ? "text-2xl sm:text-3xl lg:text-[30px] text-white font-normal tracking-tight"
+                          : "text-lg sm:text-xl text-[#FAF8F5]/60 group-hover:text-white font-light leading-snug"
                       }`}
                     >
                       {item.question}
                     </h3>
 
-                    {/* Detailed Answer */}
-                    {isActive && (
-                      <div className="faq-active-answer pt-4 border-t border-white/[0.08]">
+                    {/* Answer Reveal Container */}
+                    <div
+                      ref={(el) => {
+                        answerRefs.current[idx] = el;
+                      }}
+                      style={{
+                        maxHeight: isActive ? 240 : 0,
+                        opacity: isActive ? 1 : 0,
+                      }}
+                      className="overflow-hidden transition-all duration-300"
+                    >
+                      <div className="pt-4 border-t border-white/[0.08]">
                         <p className="font-sans text-xs sm:text-sm md:text-base text-[#8E9B91] leading-relaxed font-normal">
                           {item.answer}
                         </p>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               );
@@ -354,7 +419,7 @@ export function BlueprintFaq() {
             <button
               key={`dot-${item.id}`}
               type="button"
-              onClick={() => scrollToActive(idx)}
+              onClick={() => goToSlide(idx)}
               aria-label={`Go to slide ${idx + 1}`}
               className={`transition-all duration-300 rounded-full ${
                 activeIdx === idx
