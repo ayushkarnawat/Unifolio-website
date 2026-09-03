@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import Image from "next/image";
 import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger, prefersReducedMotion } from "@/lib/gsap";
@@ -14,158 +14,307 @@ export function BlueprintAboutMetrics() {
   const state3Ref = useRef<HTMLDivElement | null>(null);
   const contourLayerRef = useRef<HTMLDivElement | null>(null);
 
-  useGSAP(
-    () => {
-      if (prefersReducedMotion() || !containerRef.current || !stageRef.current) return;
+  const currentStep = useRef<number>(0);
+  const isAnimating = useRef<boolean>(false);
+  const lastStepTime = useRef<number>(0);
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top top",
-          end: "+=480%",
-          pin: stageRef.current,
-          scrub: 1,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          // Settle a fast flick onto one of the readable states instead of
-          // letting momentum carry the viewer mid-transition or straight
-          // through the final panel hold.
-          snap: {
-            snapTo: [0, 0.2, 0.42, 0.58, 0.8, 1],
-            duration: { min: 0.2, max: 0.6 },
-            ease: "power1.inOut",
-          },
-        },
-      });
+  // Controlled, discrete step animator
+  const animateToStep = (targetStep: number) => {
+    isAnimating.current = true;
+    lastStepTime.current = Date.now();
+    currentStep.current = targetStep;
 
-      // =========================================================================
-      // 1. BEACON SPATIAL MORPHING & TRANSLATION (Harmonized with 3 distinct states)
-      // Center (Phase 1) -> Left anchor (Phase 2) -> Fades softly as 3-panel landscape rises
-      // =========================================================================
-      tl.fromTo(
+    const tl = gsap.timeline({
+      onComplete: () => {
+        isAnimating.current = false;
+      },
+    });
+
+    if (targetStep === 0) {
+      // State 0: Intro ("About us" & "Creating clarity...")
+      tl.to(
         beaconRef.current,
         {
           x: 0,
           y: 0,
           scale: 1,
           opacity: 0.95,
-        },
-        {
-          keyframes: [
-            // Phase 1 -> Phase 2: Glide to the left with smooth continuous acceleration
-            {
-              x: -280,
-              y: -20,
-              scale: 0.88,
-              opacity: 1,
-              duration: 0.40,
-              ease: "power2.inOut",
-            },
-            // Phase 2 -> Phase 3: Fades softly as the 3-panel landscape rises
-            {
-              x: -120,
-              y: 60,
-              scale: 1.1,
-              opacity: 0.15,
-              duration: 0.60,
-              ease: "power2.inOut",
-            },
-          ],
+          duration: 0.55,
+          ease: "power2.inOut",
         },
         0
       );
-
-      // =========================================================================
-      // 2. STATE 1: INTRO (About us + Our Mission + Subtitle)
-      // Holds steadily (t: 0.0 -> 0.22) then glides up
-      // =========================================================================
-      tl.fromTo(
+      tl.to(
         state1Ref.current,
-        { opacity: 1, y: 0 },
-        {
-          opacity: 0,
-          y: -30,
-          duration: 0.14,
-          ease: "power2.inOut",
-        },
-        0.2
-      );
-
-      // =========================================================================
-      // 3. STATE 2: MISSION STATEMENT & PHILOSOPHY
-      // Glides into center-right (t: 0.28 -> 0.42), reading pause (t: 0.42 -> 0.58), then recedes
-      // (opacity/x only — filter: blur() is non-GPU-composited and was forcing
-      // a repaint on every scrub frame during this transition)
-      // =========================================================================
-      tl.fromTo(
-        state2Ref.current,
-        {
-          opacity: 0,
-          x: 40,
-        },
         {
           opacity: 1,
-          x: 0,
-          duration: 0.14,
+          y: 0,
+          duration: 0.45,
           ease: "power2.out",
         },
-        0.28
+        0
       );
-
       tl.to(
         state2Ref.current,
         {
           opacity: 0,
-          y: -40,
-          duration: 0.12,
+          x: 40,
+          y: 0,
+          duration: 0.35,
           ease: "power2.in",
         },
-        0.58
+        0
       );
-
-      // =========================================================================
-      // 4. STATE 3: 3-PILLAR PANELS & TOPOGRAPHIC CONTOUR PARALLAX
-      // Glides in (t: 0.68 -> 0.80), extended review pause (t: 0.80 -> 1.00 = ~20%
-      // of the 480vh pin, roughly double the previous hold) so the 3 panels are
-      // actually readable instead of scrolling past in a fraction of a second.
-      // =========================================================================
-      tl.fromTo(
+      tl.to(
         state3Ref.current,
         {
           opacity: 0,
           y: 40,
+          duration: 0.35,
+          ease: "power2.in",
         },
+        0
+      );
+      tl.to(
+        contourLayerRef.current,
+        {
+          opacity: 0,
+          duration: 0.35,
+        },
+        0
+      );
+    } else if (targetStep === 1) {
+      // State 1: Mission statement & Philosophy
+      tl.to(
+        beaconRef.current,
+        {
+          x: -280,
+          y: -20,
+          scale: 0.88,
+          opacity: 1,
+          duration: 0.55,
+          ease: "power2.inOut",
+        },
+        0
+      );
+      tl.to(
+        state1Ref.current,
+        {
+          opacity: 0,
+          y: -30,
+          duration: 0.35,
+          ease: "power2.in",
+        },
+        0
+      );
+      tl.to(
+        state2Ref.current,
+        {
+          opacity: 1,
+          x: 0,
+          y: 0,
+          duration: 0.45,
+          ease: "power2.out",
+        },
+        0.1
+      );
+      tl.to(
+        state3Ref.current,
+        {
+          opacity: 0,
+          y: 40,
+          duration: 0.35,
+          ease: "power2.in",
+        },
+        0
+      );
+      tl.to(
+        contourLayerRef.current,
+        {
+          opacity: 0,
+          duration: 0.35,
+        },
+        0
+      );
+    } else if (targetStep === 2) {
+      // State 2: 3 Capability Pillar Cards & Contours
+      tl.to(
+        beaconRef.current,
+        {
+          x: -120,
+          y: 60,
+          scale: 1.1,
+          opacity: 0.15,
+          duration: 0.55,
+          ease: "power2.inOut",
+        },
+        0
+      );
+      tl.to(
+        state1Ref.current,
+        {
+          opacity: 0,
+          y: -30,
+          duration: 0.35,
+          ease: "power2.in",
+        },
+        0
+      );
+      tl.to(
+        state2Ref.current,
+        {
+          opacity: 0,
+          x: 0,
+          y: -40,
+          duration: 0.35,
+          ease: "power2.in",
+        },
+        0
+      );
+      tl.to(
+        state3Ref.current,
         {
           opacity: 1,
           y: 0,
-          duration: 0.12,
+          duration: 0.5,
           ease: "power2.out",
         },
-        0.68
+        0.1
       );
-
-      // Subtle slow parallax shift across the flowing organic contour landscape
-      tl.fromTo(
+      tl.to(
         contourLayerRef.current,
-        { y: 40, x: -15, opacity: 0 },
-        { y: -25, x: 15, opacity: 1, duration: 0.3, ease: "none" },
-        0.68
+        {
+          opacity: 1,
+          y: -25,
+          x: 15,
+          duration: 0.55,
+          ease: "power2.out",
+        },
+        0.1
       );
+    }
+  };
 
-      // Final extended holding interval for reading all 3 panels comfortably
-      tl.to({}, { duration: 0.2 }, 0.8);
+  // Pinned viewport stage setup
+  useGSAP(
+    () => {
+      if (prefersReducedMotion() || !containerRef.current || !stageRef.current) return;
+
+      ScrollTrigger.create({
+        trigger: containerRef.current,
+        start: "top top",
+        end: "+=260%",
+        pin: stageRef.current,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onEnter: () => {
+          if (currentStep.current !== 0) {
+            animateToStep(0);
+          }
+        },
+        onEnterBack: () => {
+          if (currentStep.current !== 2) {
+            animateToStep(2);
+          }
+        },
+      });
     },
     { scope: containerRef }
   );
+
+  // Wheel & Trackpad gesture normalization & step clamp
+  useEffect(() => {
+    if (prefersReducedMotion()) return;
+
+    const sectionEl = containerRef.current;
+    if (!sectionEl) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      const rect = sectionEl.getBoundingClientRect();
+      const inView = rect.top <= 10 && rect.bottom >= window.innerHeight - 10;
+      if (!inView) return;
+
+      const now = Date.now();
+      const delta = e.deltaY;
+
+      if (Math.abs(delta) < 15) return;
+
+      // Intercept and clamp gesture during transition or active lock
+      if (isAnimating.current || now - lastStepTime.current < 650) {
+        e.preventDefault();
+        return;
+      }
+
+      if (delta > 0) {
+        // Forward scroll: advance exactly one state
+        if (currentStep.current < 2) {
+          e.preventDefault();
+          animateToStep(currentStep.current + 1);
+        }
+        // At final step (2), allow natural downward scroll into FAQ
+      } else {
+        // Backward scroll: retreat exactly one state
+        if (currentStep.current > 0) {
+          e.preventDefault();
+          animateToStep(currentStep.current - 1);
+        }
+        // At initial step (0), allow natural upward scroll into Offerings
+      }
+    };
+
+    let touchStartY = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const rect = sectionEl.getBoundingClientRect();
+      const inView = rect.top <= 10 && rect.bottom >= window.innerHeight - 10;
+      if (!inView) return;
+
+      const touchY = e.touches[0].clientY;
+      const delta = touchStartY - touchY;
+      const now = Date.now();
+
+      if (Math.abs(delta) < 25) return;
+
+      if (isAnimating.current || now - lastStepTime.current < 650) {
+        e.preventDefault();
+        return;
+      }
+
+      if (delta > 0) {
+        if (currentStep.current < 2) {
+          e.preventDefault();
+          touchStartY = touchY;
+          animateToStep(currentStep.current + 1);
+        }
+      } else {
+        if (currentStep.current > 0) {
+          e.preventDefault();
+          touchStartY = touchY;
+          animateToStep(currentStep.current - 1);
+        }
+      }
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, []);
 
   return (
     <section
       id="about"
       ref={containerRef}
       className="relative w-full bg-[#000000] select-none"
-      // Height must equal the ScrollTrigger's pin distance (end: "+=480%" = 480vh)
-      // so the pinned stage hands off directly into FAQ with no dead scroll gap.
-      style={{ height: "480vh" }}
+      style={{ height: "360vh" }}
     >
       {/* Fullscreen Pinned Stage */}
       <div
@@ -245,7 +394,7 @@ export function BlueprintAboutMetrics() {
             {/* ABSTRACT ILLUMINATED TOPOGRAPHIC & AMBIENT FIELD (Harmonized System Aura) */}
             <div
               ref={contourLayerRef}
-              className="pointer-events-none absolute inset-0 w-full h-full overflow-hidden will-change-transform z-0"
+              className="pointer-events-none absolute inset-0 w-full h-full overflow-hidden will-change-transform z-0 opacity-0"
             >
               <svg
                 viewBox="0 0 1200 600"
