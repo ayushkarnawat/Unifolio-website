@@ -269,6 +269,90 @@ export function BlueprintHero() {
       const wrapWidth = cardsWrapRef.current?.clientWidth || 640;
       const stepX = Math.min(68, wrapWidth * 0.125);
 
+      // =========================================================================
+      // CONTINUOUS CARD SHUFFLE STEP
+      //
+      // The current front card (slot 0) lifts clear, arcs over, and settles
+      // in behind the deck at the back (slot 5) — never disappearing —
+      // while the other five slide forward one slot each. Slot N maps to
+      // x = N*stepX, scale = 1-N*0.045 (the existing docked-fan geometry)
+      // and z-index = 30-N*4 (matching each card's static resting z-index
+      // set in JSX), so DOM paint order always agrees with visual position.
+      //
+      // z-index is re-synced for all six cards in ONE batched .set(), timed
+      // to the instant the shuffled card's lift finishes: at that moment it
+      // is elevated and off to the side, and the other five are still
+      // mid-slide toward their new slots — nothing overlaps anything else,
+      // which is the only instant a z-index change is truly invisible. Do
+      // it anywhere else (e.g. once the card has already arced into its
+      // tightly-packed final position) and the correction would visibly pop.
+      //
+      // Reusable across both the one-time reveal (masterTl) and the
+      // indefinite loop (shuffleLoopTl) — same motion, either place.
+      // =========================================================================
+      const slotX = (slot: number) => slot * stepX;
+      const slotScale = (slot: number) => 1 - slot * 0.045;
+      const slotZ = (slot: number) => 30 - slot * 4;
+
+      const shuffleStepFor = (tl: gsap.core.Timeline, frontIndex: number) => {
+        const LIFT = 0.32;
+        const ARC = 0.78;
+        const frontCard = cardEls[frontIndex];
+
+        // The front card lifts and peels up first — clear of every other
+        // card, nothing to overlap yet.
+        tl.to(frontCard, {
+          y: -56,
+          scale: 0.9,
+          rotationZ: -4,
+          duration: LIFT,
+          ease: "power2.out",
+        });
+
+        // Every other card starts sliding into its new (one-closer-to-
+        // front) slot at that same instant, at a longer, gentler pace so
+        // the whole step reads as one continuous, unhurried motion.
+        cardEls.forEach((card, i) => {
+          if (i === frontIndex) return;
+          const newSlot = (i - frontIndex - 1 + 6) % 6;
+          tl.to(
+            card,
+            {
+              x: slotX(newSlot),
+              scale: slotScale(newSlot),
+              duration: LIFT + ARC,
+              ease: "power2.inOut",
+            },
+            "<"
+          );
+        });
+
+        // Batched z-index re-sync — see the block comment above.
+        tl.set(
+          cardEls,
+          {
+            zIndex: (i: number) =>
+              slotZ(i === frontIndex ? 5 : (i - frontIndex - 1 + 6) % 6),
+          },
+          `<+=${LIFT}`
+        );
+
+        // The shuffled card arcs the rest of the way over and down into
+        // its new back slot.
+        tl.to(
+          frontCard,
+          {
+            x: slotX(5),
+            y: 0,
+            scale: slotScale(5),
+            rotationZ: 0,
+            duration: ARC,
+            ease: "power2.inOut",
+          },
+          "<"
+        );
+      };
+
       const lockScroll = () => {
         window.scrollTo(0, 0);
         document.documentElement.style.overflow = "hidden";
@@ -287,32 +371,6 @@ export function BlueprintHero() {
         if (!prefersReducedMotion()) {
           ScrollTrigger.normalizeScroll(true);
         }
-      };
-
-      // A hard trackpad flick (or several impatient wheel notches) made
-      // *during* the ~9s lock keeps generating wheel/touch events the whole
-      // time — every single one gets preventDefault()'d, but that doesn't
-      // stop the browser's own momentum simulation from continuing to
-      // produce them. Unlocking scroll the instant masterTl completes lets
-      // whatever's still queued apply all at once, overshooting past the
-      // docked deck's correct framing and cropping its top edge — exactly
-      // the "faster scroll cuts off the top of the cards" symptom. Fix:
-      // once the entrance finishes, keep absorbing scroll input for a short
-      // settle window, re-extending it on every additional input received
-      // (so a long momentum tail drains completely instead of a fixed
-      // guess sometimes being too short), then explicitly re-land at the
-      // exact target position before finally releasing control.
-      let isSettling = false;
-      let settleTimeoutId: number | null = null;
-      const finishSettle = () => {
-        settleTimeoutId = null;
-        isSettling = false;
-        window.scrollTo(0, 0);
-        unlockScroll();
-      };
-      const scheduleSettle = () => {
-        if (settleTimeoutId !== null) window.clearTimeout(settleTimeoutId);
-        settleTimeoutId = window.setTimeout(finishSettle, 220);
       };
 
       // Master time-based GSAP timeline
@@ -340,20 +398,23 @@ export function BlueprintHero() {
           });
         },
         onComplete: () => {
+          isSequenceRunning = false;
           hasSequenceCompleted = true;
+          // Release scroll the instant the cards are docked — no settle
+          // window, no delay. Scroll was pinned at exactly 0 for the whole
+          // locked duration (overflow:hidden has no scrollable area to
+          // drift from), so there's nothing to "land" or clean up; the
+          // moment the deck is stacked, bidirectional document scrolling
+          // is immediately enabled.
+          unlockScroll();
           illustrationAmbientTweens.forEach((t) => t.play());
           if (illuOverlayEl) illuOverlayEl.style.opacity = "";
-          // Hand off into the indefinite deck-shuffle loop instead of
-          // fading out / auto-navigating — see shuffleLoopTl below.
+          // Hand off into the indefinite deck-shuffle loop — it only ever
+          // touches the cards' own transform/opacity/zIndex, never scroll,
+          // overflow, or any event listener, so it can never block or
+          // delay navigation away from this section at any point in its
+          // cycle.
           shuffleLoopTl.play(0);
-          // Don't unlock immediately — enter the settle window (see
-          // scheduleSettle/finishSettle above) so any residual scroll
-          // momentum drains before control is actually handed back.
-          // isSettling keeps handleWheel/handleTouchMove/handleKeydown
-          // absorbing input exactly the way isSequenceRunning did.
-          isSequenceRunning = false;
-          isSettling = true;
-          scheduleSettle();
         },
       });
 
@@ -539,102 +600,28 @@ export function BlueprintHero() {
         lastCardSettleTime
       );
 
-      // 3. INTENTIONAL ABSORPTION DWELL PAUSE (1.5s)
-      masterTl.to({}, { duration: 1.5 });
-
-      // 4. AUTOMATED SEQUENTIAL CARD PEEL / REVEAL PROGRESSION
-      // Card 0 (Scattered) peels up -> reveals Card 1 (Collected)
-      masterTl.to(cardEls[0], {
-        y: -950,
-        opacity: 0,
-        duration: 0.7,
-        ease: "power2.inOut",
-      });
-      masterTl.to({}, { duration: 1.0 }); // Reading Dwell for Card 1
-
-      // Card 1 (Collected) peels up -> reveals Card 2 (Organized)
-      masterTl.to(cardEls[1], {
-        y: -950,
-        opacity: 0,
-        duration: 0.7,
-        ease: "power2.inOut",
-      });
-      masterTl.to({}, { duration: 1.0 }); // Reading Dwell for Card 2
-
-      // Card 2 (Organized) peels up -> reveals Card 3 (Revealed)
-      masterTl.to(cardEls[2], {
-        y: -950,
-        opacity: 0,
-        duration: 0.7,
-        ease: "power2.inOut",
-      });
-      masterTl.to({}, { duration: 1.0 }); // Reading Dwell for Card 3
-
-      // Card 3 (Revealed) peels up -> reveals Card 4 (Connected)
-      masterTl.to(cardEls[3], {
-        y: -950,
-        opacity: 0,
-        duration: 0.7,
-        ease: "power2.inOut",
-      });
-      masterTl.to({}, { duration: 1.0 }); // Reading Dwell for Card 4
-
-      // Card 4 (Connected) peels up -> reveals Card 5 (Clear)
-      masterTl.to(cardEls[4], {
-        y: -950,
-        opacity: 0,
-        duration: 0.7,
-        ease: "power2.inOut",
-      });
-      masterTl.to({}, { duration: 1.4 }); // Climax Reading Dwell for Card 5 (Clear)
-
       // =========================================================================
-      // 5. CONTINUOUS DECK-SHUFFLE LOOP
+      // 3. CONTINUOUS DECK-SHUFFLE LOOP (INDEPENDENT OF SCROLL)
       //
-      // The previous ending faded the cards/text/lasers to opacity:0 and
-      // auto-scrolled into #offerings once Card 5 (Clear) settled. Replaced
-      // with an indefinite loop that never hides the cards or headline:
-      // gather all six back into the full stacked deck, then replay a
-      // lighter version of the same peel-through — no rotation/materialize,
-      // that 360° reveal only needs to read as "new" once — forever, until
-      // the visitor scrolls away on their own.
+      // masterTl handles ONLY the initial hero aperture zoom, headline reveal,
+      // and the 6 cards materializing + spinning into their docked stacked state.
+      // As soon as the cards dock (lastCardSettleTime), masterTl completes,
+      // releasing all scroll locks, removing event listeners, and handing off
+      // directly to this independent shuffle loop.
       //
-      // A separate timeline from masterTl (not appended to it) so it can
-      // repeat indefinitely without masterTl itself ever "completing" more
-      // than once, and built entirely from plain .to() calls, never
-      // .fromTo(): a .to() tween's start value is whatever the target is
-      // actually rendered at the moment that tween begins, including the
-      // instant this timeline wraps from its last repeat back to its first
-      // tween. That is what makes the "gather the deck back together" step
-      // double as the seamless loop boundary — it always animates from
-      // wherever the cards currently sit (peeled away) back to the docked
-      // deck, so the wrap point is itself a real, moving transition, never
-      // a hard reset or a flash.
+      // This loop runs independently on GSAP's ticker without any scroll locks,
+      // preventDefault handlers, or pinning. The user can freely scroll away
+      // at any moment (whether stationary, midway through a shuffle arc, or
+      // starting a new cycle). The loop is paused/resumed by the visibility
+      // ScrollTrigger when the section enters or leaves the viewport.
       //
-      // shuffleLoopTl itself (empty, paused, repeat:-1) was already created
-      // near the top of this setup function — see the comment there — so
-      // only its content is appended here, once cardEls/stepX are ready.
+      // Starting from the docked stack (Card 0 in front slot 0):
+      // Cycle: Card 0 -> Card 1 -> Card 2 -> Card 3 -> Card 4 -> Card 5 -> (repeats)
       // =========================================================================
-      shuffleLoopTl.to(cardEls, {
-        x: (i: number) => i * stepX,
-        y: 0,
-        scale: (i: number) => 1 - i * 0.045,
-        opacity: 1,
-        duration: 0.9,
-        ease: "power2.out",
-        stagger: 0.06,
-        force3D: true,
-      });
-      shuffleLoopTl.to({}, { duration: 0.9 }); // Full-deck dwell
-
-      cardEls.slice(0, 5).forEach((card, i) => {
-        shuffleLoopTl.to(card, {
-          y: -950,
-          opacity: 0,
-          duration: 0.7,
-          ease: "power2.inOut",
-        });
-        shuffleLoopTl.to({}, { duration: i === 4 ? 1.3 : 0.8 }); // longer climax dwell on the last reveal
+      shuffleLoopTl.to({}, { duration: 1.2 }); // Initial reading dwell for Card 0 (Scattered)
+      [0, 1, 2, 3, 4, 5].forEach((frontIndex, step) => {
+        shuffleStepFor(shuffleLoopTl, frontIndex);
+        shuffleLoopTl.to({}, { duration: step === 5 ? 1.4 : 1.0 }); // Reading dwell after each shuffle
       });
 
       // =========================================================================
@@ -652,15 +639,102 @@ export function BlueprintHero() {
         }
       };
 
+      const returnToHero = () => {
+        if (isSequenceRunning || !hasSequenceCompleted) return;
+        if (window.scrollY > 15) return;
+
+        isSequenceRunning = true;
+        shuffleLoopTl.pause();
+        illustrationAmbientTweens.forEach((t) => t.pause());
+
+        lockScroll();
+
+        const returnTl = gsap.timeline({
+          onComplete: () => {
+            isSequenceRunning = false;
+            hasSequenceCompleted = false;
+            unlockScroll();
+            illustrationAmbientTweens.forEach((t) => t.play());
+            if (illuOverlayEl) illuOverlayEl.style.opacity = "";
+            masterTl.pause(0);
+            shuffleLoopTl.pause(0);
+            gsap.set(heroIntroRef.current, { opacity: 1, y: 0, clearProps: "all" });
+            gsap.set(heroVisualRef.current, { scale: 1, opacity: 1, clearProps: "all" });
+            gsap.set(heroGlowRef.current, { scale: 1, opacity: 0 });
+            gsap.set(lasersRef.current, { x: 260, opacity: 0 });
+            gsap.set(textWrapRef.current, { opacity: 0, y: 35, scale: 0.98, filter: "blur(0px)" });
+            gsap.set(cardEls, {
+              x: 0,
+              y: 0,
+              rotationZ: 0,
+              scale: 1,
+              opacity: 0,
+              zIndex: (i: number) => slotZ(i),
+            });
+            cardEls.forEach((card) => {
+              card.style.backdropFilter = "";
+              card.style.boxShadow = "";
+              const img = card.querySelector("img");
+              if (img) img.style.filter = "";
+            });
+          },
+        });
+
+        // Dissolve cards and stage 2 text out cleanly
+        returnTl.to(
+          cardEls,
+          {
+            opacity: 0,
+            y: 20,
+            scale: 0.9,
+            duration: 0.5,
+            stagger: 0.03,
+            ease: "power2.in",
+          },
+          0
+        );
+
+        returnTl.to(
+          textWrapRef.current,
+          {
+            opacity: 0,
+            y: 20,
+            duration: 0.4,
+            ease: "power2.in",
+          },
+          0
+        );
+
+        returnTl.to(
+          lasersRef.current,
+          {
+            opacity: 0,
+            duration: 0.4,
+          },
+          0
+        );
+
+        // Bring back hero visual & aperture ring
+        returnTl.fromTo(
+          heroVisualRef.current,
+          { scale: 2.5, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.7, ease: "power2.out" },
+          0.15
+        );
+
+        // Bring back hero intro text ("SEE WHAT YOU ACTUALLY OWN")
+        returnTl.fromTo(
+          heroIntroRef.current,
+          { opacity: 0, y: -20 },
+          { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
+          0.25
+        );
+      };
+
       const resetHeroState = () => {
         masterTl.pause(0);
         shuffleLoopTl.pause(0);
         isSequenceRunning = false;
-        isSettling = false;
-        if (settleTimeoutId !== null) {
-          window.clearTimeout(settleTimeoutId);
-          settleTimeoutId = null;
-        }
         hasSequenceCompleted = false;
         unlockScroll();
         illustrationAmbientTweens.forEach((t) => t.play());
@@ -670,7 +744,18 @@ export function BlueprintHero() {
         gsap.set(heroGlowRef.current, { scale: 1, opacity: 0 });
         gsap.set(lasersRef.current, { x: 260, opacity: 0 });
         gsap.set(textWrapRef.current, { opacity: 0, y: 35, scale: 0.98, filter: "blur(0px)" });
-        gsap.set(cardEls, { x: 0, y: 0, rotationZ: 0, scale: 1, opacity: 0 });
+        gsap.set(cardEls, {
+          x: 0,
+          y: 0,
+          rotationZ: 0,
+          scale: 1,
+          opacity: 0,
+          // z-index is now driven by the shuffle's current rotation state —
+          // restore each card's original identity-order z-index (matching
+          // its static JSX value) so a reset mid-shuffle doesn't leave a
+          // stale, rotated stacking order behind.
+          zIndex: (i: number) => slotZ(i),
+        });
         // If reset happens mid-rotation, a card's backdrop-filter/box-shadow/
         // drop-shadow suppression (see the entrance tweens above) may not
         // have reached its batched restore yet — clear the inline overrides
@@ -685,14 +770,16 @@ export function BlueprintHero() {
       };
 
       const handleWheel = (e: WheelEvent) => {
-        if (isSequenceRunning || isSettling) {
+        if (isSequenceRunning) {
           e.preventDefault();
-          if (isSettling) scheduleSettle();
           return;
         }
         if (window.scrollY < 80 && e.deltaY > 0 && !hasSequenceCompleted) {
           e.preventDefault();
           triggerAutoplay();
+        } else if (window.scrollY <= 15 && e.deltaY < 0 && hasSequenceCompleted) {
+          e.preventDefault();
+          returnToHero();
         }
       };
 
@@ -702,29 +789,25 @@ export function BlueprintHero() {
       };
 
       const handleTouchMove = (e: TouchEvent) => {
-        if (isSequenceRunning || isSettling) {
+        if (isSequenceRunning) {
           e.preventDefault();
-          if (isSettling) scheduleSettle();
           return;
         }
         const touchCurrentY = e.touches[0].clientY;
-        if (window.scrollY < 80 && touchStartY - touchCurrentY > 20 && !hasSequenceCompleted) {
+        const deltaY = touchStartY - touchCurrentY;
+
+        if (window.scrollY < 80 && deltaY > 20 && !hasSequenceCompleted) {
           e.preventDefault();
           triggerAutoplay();
+        } else if (window.scrollY <= 15 && deltaY < -20 && hasSequenceCompleted) {
+          e.preventDefault();
+          returnToHero();
         }
       };
 
-      // Wheel and touch are both caught proactively above — preventDefault()
-      // runs before the browser ever moves the page, so scroll position
-      // literally never changes for those two input methods. Keyboard
-      // scrolling (Page Down, Space, End, arrows) wasn't covered by either
-      // handler, so it only got caught reactively by the fallback
-      // ScrollTrigger below once the page had already moved — a hard Page
-      // Down could visibly jump before snapping back. Same pattern as
-      // handleWheel, just for keydown: block every scroll-intent key outright
-      // while the sequence is running, and proactively trigger (before the
-      // browser acts on the key) on a downward-intent key near the top.
+      // Handle keyboard navigation bidirectionally
       const DOWN_KEYS = new Set(["ArrowDown", "PageDown", " ", "End"]);
+      const UP_KEYS = new Set(["ArrowUp", "PageUp", "Home"]);
       const SCROLL_KEYS = new Set(["ArrowDown", "PageDown", " ", "End", "ArrowUp", "PageUp", "Home"]);
       const isTypingTarget = (el: Element | null) =>
         !!el &&
@@ -734,20 +817,17 @@ export function BlueprintHero() {
           el.tagName === "BUTTON" ||
           (el as HTMLElement).isContentEditable);
       const handleKeydown = (e: KeyboardEvent) => {
-        // Don't hijack Space/arrows away from a focused form field or
-        // button — Space types a space or activates a focused button in
-        // the browser's default behavior, which this must not break.
         if (isTypingTarget(document.activeElement)) return;
-        if (isSequenceRunning || isSettling) {
-          if (SCROLL_KEYS.has(e.key)) {
-            e.preventDefault();
-            if (isSettling) scheduleSettle();
-          }
+        if (isSequenceRunning) {
+          if (SCROLL_KEYS.has(e.key)) e.preventDefault();
           return;
         }
         if (window.scrollY < 80 && DOWN_KEYS.has(e.key) && !hasSequenceCompleted) {
           e.preventDefault();
           triggerAutoplay();
+        } else if (window.scrollY <= 15 && UP_KEYS.has(e.key) && hasSequenceCompleted) {
+          e.preventDefault();
+          returnToHero();
         }
       };
 
@@ -776,7 +856,6 @@ export function BlueprintHero() {
         window.removeEventListener("touchmove", handleTouchMove);
         window.removeEventListener("keydown", handleKeydown);
         window.removeEventListener("resize", updateRingAnchor);
-        if (settleTimeoutId !== null) window.clearTimeout(settleTimeoutId);
       };
     },
     { scope: containerRef }
@@ -805,33 +884,18 @@ export function BlueprintHero() {
         // unambiguous way to vertically center this content in the viewport.
         className="relative h-screen w-full overflow-hidden bg-[#000000] flex flex-col justify-center p-6 sm:p-10 lg:p-16"
       >
-        {/* Landing State Hero Intro Content (Matching Reference) */}
+        {/* Landing State Hero Intro Content */}
         <div
           ref={heroIntroRef}
-          className="absolute inset-x-0 top-0 bottom-0 z-20 flex flex-col justify-between px-6 sm:px-10 lg:px-16 pt-24 pb-8 max-w-7xl mx-auto w-full pointer-events-none"
+          className="absolute inset-0 z-20 flex flex-col justify-between px-6 sm:px-10 lg:px-16 pt-20 pb-8 max-w-7xl mx-auto w-full pointer-events-none"
         >
-          {/* Top Left: Kicker & Headline & Subtitle */}
-          <div className="space-y-5 max-w-lg">
-            {/* Kicker Badge */}
-            <div className="flex items-center gap-2 font-mono text-[11px] sm:text-xs tracking-[0.22em] text-[#8E9B91] uppercase">
-              <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E]" />
-              <span>UNIFOLIO SYSTEM // APERTURE</span>
-            </div>
-
-            {/* Monumental Headline */}
+          {/* Main Headline aligned naturally with the central axis of the aperture illustration, offset left and upwards */}
+          <div className="flex-1 flex flex-col justify-center max-w-lg -translate-x-6 sm:-translate-x-10 lg:-translate-x-14 -translate-y-4 sm:-translate-y-6 lg:-translate-y-8">
             <h1 className="font-sans font-black text-4xl sm:text-5xl md:text-6xl lg:text-[62px] xl:text-[70px] text-white tracking-[-0.03em] uppercase leading-[0.92]">
               SEE WHAT <br />
               YOU ACTUALLY <br />
               OWN.
             </h1>
-
-            {/* Divider Line */}
-            <div className="w-8 h-[1.5px] bg-[#22C55E]" />
-
-            {/* Tagline */}
-            <p className="font-mono text-xs sm:text-[13px] tracking-[0.25em] text-[#22C55E] uppercase font-bold">
-              ONE VIEW. COMPLETE CLARITY.
-            </p>
           </div>
 
           {/* Bottom Left: Scroll to Enter Indicator */}
@@ -870,7 +934,7 @@ export function BlueprintHero() {
           <div
             ref={illustrationWrapperRef}
             className="pointer-events-none absolute inset-0 w-full h-full"
-            style={{ transform: "translateX(9%)" }}
+            style={{ transform: "translate(9%, 3.5%)" }}
           >
             <Image
               src="/Landing Page Illustration.png"
@@ -895,7 +959,7 @@ export function BlueprintHero() {
             id="illustrationWaveOverlay"
             className="pointer-events-none absolute inset-0 w-full h-full"
             style={{
-              transform: "translateX(9%)",
+              transform: "translate(9%, 3.5%)",
               filter: "url(#illustrationWaveFlowFilter)",
               WebkitMaskImage:
                 "linear-gradient(to bottom, transparent 0%, transparent 38%, black 62%, black 100%)",
@@ -952,7 +1016,7 @@ export function BlueprintHero() {
               the illustration's position exactly. */}
           <div
             className="pointer-events-none absolute inset-0 w-full h-full"
-            style={{ transform: "translateX(9%)" }}
+            style={{ transform: "translate(9%, 3.5%)" }}
           >
             {[
               { left: "38%", top: "58%" },
