@@ -89,21 +89,21 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
       clipPath: "inset(0% 0% 0% 100%)",
       opacity: 0,
     });
-    gsap.set(unifInner, { x: 35 });
+    gsap.set(unifInner, { x: 70 });
 
     // LIO clipPath inset completely from right (hidden against ring)
     gsap.set(lioWrapper, {
       clipPath: "inset(0% 100% 0% 0%)",
       opacity: 0,
     });
-    gsap.set(lioInner, { x: -25 });
+    gsap.set(lioInner, { x: -50 });
 
     // 1. Ring alone in center: subtle living emerald pulse (0.0s -> 0.75s)
     if (ringHalo) {
       masterTl.to(
         ringHalo,
         {
-          scale: 1.15,
+          scale: 1.18,
           opacity: 0.95,
           duration: 0.38,
           yoyo: true,
@@ -116,16 +116,27 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
     // Brief hold on ring alone before expansion
     masterTl.to({}, { duration: 0.75 });
 
-    // 2. Expand outward: letters emerge from behind the stationary ring (0.75s -> 1.70s)
+    // 2. Expand outward: letters emerge from behind the stationary ring (0.75s -> 1.80s)
     const expandTime = 0.75;
-    const expandDuration = 0.95;
+    const expandDuration = 1.05;
+
+    // Smoothly shift the whole logo to true viewport center (x: 0) as letters expand outward
+    masterTl.to(
+      movingLogo,
+      {
+        x: 0,
+        duration: expandDuration,
+        ease: "power3.out",
+      },
+      expandTime
+    );
 
     // UNIF: reveals smoothly towards the left
     masterTl.to(
       unifWrapper,
       {
         opacity: 1,
-        duration: 0.15,
+        duration: 0.18,
         ease: "power2.out",
       },
       expandTime
@@ -154,7 +165,7 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
       lioWrapper,
       {
         opacity: 1,
-        duration: 0.15,
+        duration: 0.18,
         ease: "power2.out",
       },
       expandTime
@@ -183,9 +194,9 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
       masterTl.to(
         ringHalo,
         {
-          scale: 1.25,
+          scale: 1.3,
           opacity: 1,
-          duration: 0.45,
+          duration: 0.5,
           yoyo: true,
           repeat: 1,
           ease: "sine.inOut",
@@ -194,11 +205,11 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
       );
     }
 
-    // 3. Brief hold on the completed centered logo (1.70s -> 2.55s)
-    masterTl.to({}, { duration: 0.85 });
+    // 3. Hold this large, monumental logo moment for deep visual impact (1.80s -> 2.90s)
+    masterTl.to({}, { duration: 1.1 });
 
-    // 4. Slowly moves and scales down into the top-left navbar position (2.55s -> 4.0s)
-    const flightDuration = 1.45;
+    // 4. Deliberate, cinematic flight: gradually travels and scales down simultaneously into the navbar position
+    const flightDuration = 1.95;
 
     masterTl.call(() => {
       // Find navbar brand logo
@@ -254,13 +265,13 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
       const finalX = currentGsapX + (targetCenterX - currentCenterX);
       const finalY = currentGsapY + (targetCenterY - currentCenterY);
 
-      // Slower, smoother, more deliberate gliding tween: move diagonally + scale down simultaneously
+      // Continuous, visible transformation: moves diagonally and elegantly reduces in scale across space
       gsap.to(movingLogo, {
         x: finalX,
         y: finalY,
         scale: targetScale,
         duration: flightDuration,
-        ease: "power3.inOut",
+        ease: "power2.inOut",
         onComplete: () => {
           // Logo has reached top-left navbar position!
           window.dispatchEvent(new CustomEvent("unifolio-logo-docked"));
@@ -295,14 +306,14 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
       ref={overlayRef}
       className="fixed inset-0 z-[100] flex items-center justify-center bg-[#FAF8F5] dark:bg-[#000000] pointer-events-none select-none overflow-hidden"
     >
-      {/* Moving Brand Container: Refined balanced size with breathing room */}
+      {/* Moving Brand Container: Cinematic monumental centerpiece scale */}
       <div
         ref={movingLogoRef}
         style={{
           transform: "translate3d(-10.7545%, 0, 0)",
           transformOrigin: "50% 50%",
         }}
-        className="relative flex flex-row items-center justify-center will-change-transform aspect-[2041/463] w-[230px] sm:w-[280px] md:w-[325px]"
+        className="relative flex flex-row items-center justify-center will-change-transform aspect-[2041/463] w-[340px] sm:w-[500px] md:w-[640px] lg:w-[760px] xl:w-[840px] max-w-[88vw]"
       >
         {/* Left Letters: UNIF (emerges expanding towards the left - completely hidden at initial load) */}
         <div
