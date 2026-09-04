@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { gsap, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 interface NavItem {
   label: string;
@@ -20,8 +22,26 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export function BlueprintNav() {
+  const { theme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [activeId, setActiveId] = useState<string>("hero");
+  const [isLogoDocked, setIsLogoDocked] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (prefersReducedMotion()) {
+        setIsLogoDocked(true);
+      }
+    }
+
+    const handleDocked = () => setIsLogoDocked(true);
+    window.addEventListener("unifolio-logo-docked", handleDocked);
+    window.addEventListener("unifolio-intro-complete", handleDocked);
+    return () => {
+      window.removeEventListener("unifolio-logo-docked", handleDocked);
+      window.removeEventListener("unifolio-intro-complete", handleDocked);
+    };
+  }, []);
 
   const navContainerRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
@@ -150,31 +170,48 @@ export function BlueprintNav() {
   return (
     <nav
       className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-16 select-none transition-all duration-500 ease-out ${
+        isLogoDocked ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+      } ${
         scrolled
-          ? "bg-[#000000]/85 border-b border-white/[0.08] backdrop-blur-xl shadow-[0_12px_32px_rgba(0,0,0,0.6)] py-3.5"
+          ? "bg-[#FAF8F5]/85 dark:bg-[#000000]/85 border-b border-black/[0.06] dark:border-white/[0.08] backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.6)] py-3.5"
           : "bg-transparent border-b border-transparent py-5"
       }`}
     >
-      {/* Left Brand Logo */}
+      {/* Left Brand Logo: Seamlessly swaps dark vs white wordmark */}
       <Link
+        id="navbar-brand-logo"
         href="#hero"
         onClick={(e) => handleAnchorClick(e, "#hero", "hero")}
-        className="flex items-center group transition-transform duration-300 hover:opacity-95"
+        className={`flex items-center group transition-opacity duration-300 hover:opacity-95 ${
+          isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
       >
+        {/* Dark theme logo */}
         <Image
           src="/Logo/unifolio-wordmark-white.png"
           alt="Unifolio"
           width={132}
           height={30}
           priority
-          className="h-6 sm:h-7 w-auto object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
+          className="hidden dark:block h-6 sm:h-7 w-auto object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
+        />
+        {/* Light theme logo */}
+        <Image
+          src="/Logo/unifolio-wordmark-dark.png"
+          alt="Unifolio"
+          width={132}
+          height={30}
+          priority
+          className="block dark:hidden h-6 sm:h-7 w-auto object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
         />
       </Link>
 
       {/* Center Navigation Links with Smooth Gliding Active Indicator */}
       <div
         ref={navContainerRef}
-        className="hidden md:flex relative items-center gap-7 lg:gap-9 py-1"
+        className={`hidden md:flex relative items-center gap-7 lg:gap-9 py-1 transition-all duration-700 delay-100 ${
+          isLogoDocked ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+        }`}
       >
         {NAV_ITEMS.map((item) => {
           const isActive = activeId === item.id;
@@ -188,8 +225,8 @@ export function BlueprintNav() {
               onClick={(e) => handleAnchorClick(e, item.href, item.id)}
               className={`relative py-1 font-sans text-[13px] sm:text-[14px] tracking-[0.03em] transition-colors duration-200 cursor-pointer ${
                 isActive
-                  ? "text-white font-medium"
-                  : "text-[#8E9B91]/80 hover:text-white font-normal"
+                  ? "text-[#111613] dark:text-white font-medium"
+                  : "text-[#5A685D] dark:text-[#8E9B91]/80 hover:text-[#111613] dark:hover:text-white font-normal"
               }`}
             >
               <span
@@ -211,15 +248,22 @@ export function BlueprintNav() {
         />
       </div>
 
-      {/* Right Navigation Actions: Login + Sign Up */}
-      <div className="flex items-center gap-2 sm:gap-2.5">
+      {/* Right Navigation Actions: 3D Theme Toggle + Login + Sign Up */}
+      <div
+        className={`flex items-center gap-2 sm:gap-3 transition-all duration-700 delay-200 ${
+          isLogoDocked ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+        }`}
+      >
+        {/* Sculptural 3D Theme Toggle */}
+        <ThemeToggle className="mr-0.5 sm:mr-1" />
+
         {/* Login: Quieter Secondary Action */}
         <Link
           href="#contact"
           onClick={(e) => handleAnchorClick(e, "#contact", "contact")}
-          className="group relative flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-white/[0.09] bg-white/[0.03] text-[#FAF8F5]/80 hover:text-white hover:border-[#22C55E]/50 hover:bg-white/[0.06] hover:-translate-y-0.5 hover:shadow-[0_0_16px_rgba(34,197,94,0.12)] font-sans text-xs sm:text-[13px] font-light tracking-wide transition-all duration-300 active:scale-[0.97]"
+          className="group relative flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-black/[0.08] dark:border-white/[0.09] bg-black/[0.03] dark:bg-white/[0.03] text-[#111613]/80 dark:text-[#FAF8F5]/80 hover:text-[#111613] dark:hover:text-white hover:border-[#22C55E]/60 dark:hover:border-[#22C55E]/50 hover:bg-black/[0.05] dark:hover:bg-white/[0.06] hover:-translate-y-0.5 hover:shadow-[0_0_16px_rgba(34,197,94,0.12)] font-sans text-xs sm:text-[13px] font-light tracking-wide transition-all duration-300 active:scale-[0.97]"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-white/25 group-hover:bg-[#22C55E]/70 transition-colors" />
+          <span className="w-1.5 h-1.5 rounded-full bg-black/20 dark:bg-white/25 group-hover:bg-[#22C55E]/70 transition-colors" />
           <span>Login</span>
         </Link>
 
@@ -227,7 +271,7 @@ export function BlueprintNav() {
         <Link
           href="#contact"
           onClick={(e) => handleAnchorClick(e, "#contact", "contact")}
-          className="group relative flex items-center gap-2 px-4 sm:px-4.5 py-1.5 sm:py-2 rounded-xl border border-[#22C55E]/50 bg-[#09170E]/85 text-white hover:border-[#22C55E] hover:bg-[#0E2416] hover:-translate-y-0.5 hover:shadow-[0_0_22px_rgba(34,197,94,0.3)] font-sans text-xs sm:text-[13px] font-normal tracking-wide transition-all duration-300 active:scale-[0.97]"
+          className="group relative flex items-center gap-2 px-4 sm:px-4.5 py-1.5 sm:py-2 rounded-xl border border-[#22C55E]/60 dark:border-[#22C55E]/50 bg-[#22C55E]/15 dark:bg-[#09170E]/85 text-[#0E351A] dark:text-white hover:border-[#22C55E] hover:bg-[#22C55E]/25 dark:hover:bg-[#0E2416] hover:-translate-y-0.5 hover:shadow-[0_0_22px_rgba(34,197,94,0.25)] dark:hover:shadow-[0_0_22px_rgba(34,197,94,0.3)] font-sans text-xs sm:text-[13px] font-normal tracking-wide transition-all duration-300 active:scale-[0.97]"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E] group-hover:scale-125 transition-transform" />
           <span>Sign Up</span>
