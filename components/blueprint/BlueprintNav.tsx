@@ -6,6 +6,7 @@ import Image from "next/image";
 import { gsap, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { LinkButton } from "@/components/ui/Button";
 
 interface NavItem {
   label: string;
@@ -268,25 +269,27 @@ export function BlueprintNav() {
         {/* Sculptural 3D Theme Toggle */}
         <ThemeToggle className="mr-0.5 sm:mr-1" />
 
-        {/* Login: Quieter Secondary Action */}
-        <Link
+        {/* Login: Secondary Physical Iridescent Glass Button */}
+        <LinkButton
           href="#contact"
+          size="sm"
+          variant="secondary"
           onClick={(e) => handleAnchorClick(e, "#contact", "contact")}
-          className="group relative flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-black/[0.08] dark:border-white/[0.09] bg-black/[0.03] dark:bg-white/[0.03] text-[#111613]/80 dark:text-[#FAF8F5]/80 hover:text-[#111613] dark:hover:text-white hover:border-[#22C55E]/60 dark:hover:border-[#22C55E]/50 hover:bg-black/[0.05] dark:hover:bg-white/[0.06] hover:-translate-y-0.5 hover:shadow-[0_0_16px_rgba(34,197,94,0.12)] font-sans text-xs sm:text-[13px] font-light tracking-wide transition-all duration-300 active:scale-[0.97]"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-black/20 dark:bg-white/25 group-hover:bg-[#22C55E]/70 transition-colors" />
+          <span className="w-1.5 h-1.5 rounded-full bg-black/20 dark:bg-white/30 group-hover:bg-[#22C55E]/80 transition-colors" />
           <span>Login</span>
-        </Link>
+        </LinkButton>
 
-        {/* Sign Up: Primary Action (Soft Glow & Hairline Tint) */}
-        <Link
+        {/* Sign Up: Primary Physical Iridescent Glass Button */}
+        <LinkButton
           href="#contact"
+          size="sm"
+          variant="primary"
           onClick={(e) => handleAnchorClick(e, "#contact", "contact")}
-          className="group relative flex items-center gap-2 px-4 sm:px-4.5 py-1.5 sm:py-2 rounded-xl border border-[#22C55E]/60 dark:border-[#22C55E]/50 bg-[#22C55E]/15 dark:bg-[#09170E]/85 text-[#0E351A] dark:text-white hover:border-[#22C55E] hover:bg-[#22C55E]/25 dark:hover:bg-[#0E2416] hover:-translate-y-0.5 hover:shadow-[0_0_22px_rgba(34,197,94,0.25)] dark:hover:shadow-[0_0_22px_rgba(34,197,94,0.3)] font-sans text-xs sm:text-[13px] font-normal tracking-wide transition-all duration-300 active:scale-[0.97]"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E] group-hover:scale-125 transition-transform" />
           <span>Sign Up</span>
-        </Link>
+        </LinkButton>
       </div>
     </nav>
   );

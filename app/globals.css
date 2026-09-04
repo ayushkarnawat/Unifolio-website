@@ -211,4 +211,88 @@ html.dark {
   .animate-ambient-spin-slow {
     animation: ambient-radar-spin 28s linear infinite;
   }
+
+  /* =========================================================================
+     PHYSICAL IRIDESCENT BUTTON DESIGN SYSTEM (From Reference Video)
+     ========================================================================= */
+  @keyframes iridescent-spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-iridescent-spin {
+    animation: iridescent-spin 4.5s linear infinite;
+  }
+
+  .group:hover .animate-iridescent-spin,
+  .hover\:animate-iridescent-fast:hover {
+    animation-duration: 2.5s;
+  }
+
+  /* Emerald Green Running Border Beams (#22C55E) */
+  .bg-iridescent-conic,
+  .bg-running-border-green {
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      transparent 0deg,
+      transparent 35deg,
+      rgba(34, 197, 94, 0.15) 55deg,
+      rgba(34, 197, 94, 0.85) 75deg,
+      rgba(74, 222, 128, 1) 90deg,      /* Luminous emerald #22C55E core */
+      rgba(255, 255, 255, 1) 98deg,     /* Specular white glint */
+      rgba(34, 197, 94, 0.9) 115deg,
+      transparent 145deg,
+      transparent 215deg,
+      rgba(34, 197, 94, 0.15) 235deg,
+      rgba(34, 197, 94, 0.85) 255deg,
+      rgba(74, 222, 128, 1) 270deg,     /* Symmetrical running beam on opposite edge */
+      rgba(255, 255, 255, 1) 278deg,    /* Specular white glint */
+      rgba(34, 197, 94, 0.9) 295deg,
+      transparent 325deg,
+      transparent 360deg
+    );
+  }
+
+  .bg-iridescent-subtle,
+  .bg-running-border-green-subtle {
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      transparent 0deg,
+      transparent 45deg,
+      rgba(34, 197, 94, 0.3) 70deg,
+      rgba(74, 222, 128, 0.9) 95deg,
+      rgba(255, 255, 255, 0.95) 105deg,
+      rgba(34, 197, 94, 0.7) 120deg,
+      transparent 150deg,
+      transparent 225deg,
+      rgba(34, 197, 94, 0.3) 250deg,
+      rgba(74, 222, 128, 0.9) 275deg,
+      rgba(255, 255, 255, 0.95) 285deg,
+      rgba(34, 197, 94, 0.7) 300deg,
+      transparent 330deg,
+      transparent 360deg
+    );
+  }
+
+  /* Physical Button Dimensional Inset Highlights & Ambient Depth */
+  .btn-physical-surface-light {
+    box-shadow: 
+      0 1px 3px rgba(0, 0, 0, 0.04),
+      0 6px 20px rgba(0, 0, 0, 0.05),
+      inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
+      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.04);
+  }
+
+  .btn-physical-surface-dark {
+    box-shadow: 
+      0 2px 6px rgba(0, 0, 0, 0.5),
+      0 10px 30px rgba(0, 0, 0, 0.7),
+      inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.5);
+  }
 }
+

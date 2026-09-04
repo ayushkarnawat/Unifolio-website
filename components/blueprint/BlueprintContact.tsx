@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Mail, ArrowRight, ArrowLeft, X, Check, Sparkles, ChevronRight } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { gsap, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
+import { Button } from "@/components/ui/Button";
 
 interface FormData {
   name: string;
@@ -461,18 +462,20 @@ export function BlueprintContact() {
                 </p>
               </div>
 
-              {/* Glowing Interactive CTA Button */}
+              {/* Glowing Interactive Physical Iridescent CTA Button */}
               <div className="pt-2">
-                <button
+                <Button
                   type="button"
+                  size="lg"
+                  variant="primary"
                   onClick={startConversation}
-                  className="group relative inline-flex items-center gap-4 rounded-full border border-black/15 dark:border-white/20 bg-black/[0.03] dark:bg-white/[0.04] hover:bg-black/[0.06] dark:hover:bg-white/[0.09] hover:border-[#22C55E]/80 backdrop-blur-xl px-7 sm:px-9 py-4 sm:py-4.5 font-sans text-sm sm:text-base font-normal text-[#111613] dark:text-white tracking-wide transition-all duration-300 cursor-pointer shadow-[0_0_30px_rgba(34,197,94,0.12)] hover:shadow-[0_0_45px_rgba(34,197,94,0.35)] active:scale-[0.98]"
+                  className="shadow-[0_4px_30px_rgba(34,197,94,0.18)]"
                 >
                   <span>Let’s start a conversation</span>
                   <div className="w-8 h-8 rounded-full bg-[#22C55E] text-black flex items-center justify-center group-hover:translate-x-1 transition-transform">
                     <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                   </div>
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -773,14 +776,21 @@ export function BlueprintContact() {
                         key={pill}
                         type="button"
                         onClick={() => setFormData({ ...formData, focusArea: pill })}
-                        className={`group relative flex items-center gap-3 px-5 py-3.5 rounded-xl border transition-all duration-300 cursor-pointer active:scale-[0.98] ${
+                        className={`group relative flex items-center gap-3.5 px-5 py-3.5 rounded-2xl border transition-all duration-300 cursor-pointer active:scale-[0.98] overflow-hidden ${
                           isSelected
-                            ? "bg-[#22C55E]/15 dark:bg-[#09170E]/90 border-[#22C55E] text-[#0E351A] dark:text-white shadow-[0_0_24px_rgba(34,197,94,0.25)] -translate-y-0.5"
-                            : "bg-black/[0.02] dark:bg-white/[0.03] text-[#111613]/75 dark:text-[#FAF8F5]/75 border-black/[0.08] dark:border-white/[0.09] hover:border-[#22C55E]/50 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-[#111613] dark:hover:text-white hover:-translate-y-0.5 hover:shadow-[0_0_18px_rgba(34,197,94,0.12)]"
+                            ? "border-[#22C55E]/60 bg-[#22C55E]/10 dark:bg-[#0B150E]/85 text-[#0A2E14] dark:text-white shadow-[0_4px_24px_rgba(34,197,94,0.22)] -translate-y-0.5"
+                            : "border-black/[0.08] dark:border-white/[0.1] bg-white/60 dark:bg-white/[0.03] text-[#111613]/80 dark:text-white/80 hover:border-black/20 dark:hover:border-white/25 hover:bg-white/90 dark:hover:bg-white/[0.06] hover:text-[#111613] dark:hover:text-white hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
                         }`}
                       >
                         <div
-                          className={`w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-300 ${
+                          className={`pointer-events-none absolute -inset-[150%] m-auto w-[400%] h-[400%] transition-opacity duration-500 will-change-transform ${
+                            isSelected
+                              ? "bg-iridescent-conic animate-iridescent-spin opacity-45"
+                              : "bg-iridescent-subtle animate-iridescent-spin opacity-0 group-hover:opacity-35"
+                          }`}
+                        />
+                        <div
+                          className={`relative z-10 w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-300 ${
                             isSelected
                               ? "border-[#22C55E] bg-[#22C55E] text-black"
                               : "border-black/20 dark:border-white/20 group-hover:border-[#22C55E]/60"
@@ -788,7 +798,7 @@ export function BlueprintContact() {
                         >
                           {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                         </div>
-                        <span className="font-sans text-xs sm:text-[13px] font-light tracking-wide text-left">
+                        <span className="relative z-10 font-sans text-xs sm:text-[13px] font-medium tracking-wide text-left">
                           {pill}
                         </span>
                       </button>
@@ -838,14 +848,21 @@ export function BlueprintContact() {
                         key={pill}
                         type="button"
                         onClick={() => setFormData({ ...formData, primaryGoal: pill })}
-                        className={`group relative flex items-center gap-3 px-5 py-3.5 rounded-xl border transition-all duration-300 cursor-pointer active:scale-[0.98] ${
+                        className={`group relative flex items-center gap-3.5 px-5 py-3.5 rounded-2xl border transition-all duration-300 cursor-pointer active:scale-[0.98] overflow-hidden ${
                           isSelected
-                            ? "bg-[#22C55E]/15 dark:bg-[#09170E]/90 border-[#22C55E] text-[#0E351A] dark:text-white shadow-[0_0_24px_rgba(34,197,94,0.25)] -translate-y-0.5"
-                            : "bg-black/[0.02] dark:bg-white/[0.03] text-[#111613]/75 dark:text-[#FAF8F5]/75 border-black/[0.08] dark:border-white/[0.09] hover:border-[#22C55E]/50 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-[#111613] dark:hover:text-white hover:-translate-y-0.5 hover:shadow-[0_0_18px_rgba(34,197,94,0.12)]"
+                            ? "border-[#22C55E]/60 bg-[#22C55E]/10 dark:bg-[#0B150E]/85 text-[#0A2E14] dark:text-white shadow-[0_4px_24px_rgba(34,197,94,0.22)] -translate-y-0.5"
+                            : "border-black/[0.08] dark:border-white/[0.1] bg-white/60 dark:bg-white/[0.03] text-[#111613]/80 dark:text-white/80 hover:border-black/20 dark:hover:border-white/25 hover:bg-white/90 dark:hover:bg-white/[0.06] hover:text-[#111613] dark:hover:text-white hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
                         }`}
                       >
                         <div
-                          className={`w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-300 ${
+                          className={`pointer-events-none absolute -inset-[150%] m-auto w-[400%] h-[400%] transition-opacity duration-500 will-change-transform ${
+                            isSelected
+                              ? "bg-iridescent-conic animate-iridescent-spin opacity-45"
+                              : "bg-iridescent-subtle animate-iridescent-spin opacity-0 group-hover:opacity-35"
+                          }`}
+                        />
+                        <div
+                          className={`relative z-10 w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-300 ${
                             isSelected
                               ? "border-[#22C55E] bg-[#22C55E] text-black"
                               : "border-black/20 dark:border-white/20 group-hover:border-[#22C55E]/60"
@@ -853,7 +870,7 @@ export function BlueprintContact() {
                         >
                           {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                         </div>
-                        <span className="font-sans text-xs sm:text-[13px] font-light tracking-wide text-left">
+                        <span className="relative z-10 font-sans text-xs sm:text-[13px] font-medium tracking-wide text-left">
                           {pill}
                         </span>
                       </button>
@@ -907,35 +924,43 @@ export function BlueprintContact() {
               }`}
             >
               {currentStep === totalSteps - 1 ? (
-                <button
+                <Button
                   ref={nextBtnRef}
                   type="button"
+                  size="lg"
+                  variant="primary"
                   onClick={handleNext}
                   onMouseMove={handleBtnMouseMove}
                   onMouseLeave={handleBtnMouseLeave}
                   disabled={loading || !canProceed()}
                   aria-label="Get Started"
-                  className="group relative inline-flex items-center gap-3 px-8 sm:px-10 py-3.5 sm:py-4 rounded-full bg-[#22C55E] hover:bg-[#22C55E]/90 text-black font-sans font-medium text-sm sm:text-base tracking-wide transition-all duration-300 shadow-[0_0_30px_rgba(34,197,94,0.4)] hover:shadow-[0_0_45px_rgba(34,197,94,0.65)] active:scale-95 cursor-pointer will-change-transform"
+                  className="shadow-[0_4px_30px_rgba(34,197,94,0.3)]"
                 >
                   <span>{loading ? "Transmitting..." : "Get Started"}</span>
-                  <div className="w-7 h-7 rounded-full bg-black text-[#22C55E] flex items-center justify-center group-hover:translate-x-1 transition-transform duration-300">
+                  <div className="w-7 h-7 rounded-full bg-[#22C55E] text-black flex items-center justify-center group-hover:translate-x-1 transition-transform duration-300">
                     <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
                   </div>
-                </button>
+                </Button>
               ) : (
                 <>
-                  <button
-                    ref={nextBtnRef}
-                    type="button"
-                    onClick={handleNext}
-                    onMouseMove={handleBtnMouseMove}
-                    onMouseLeave={handleBtnMouseLeave}
-                    disabled={loading || !canProceed()}
-                    aria-label="Next Step"
-                    className="group relative w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-black/[0.04] dark:bg-white/[0.06] hover:bg-[#22C55E] border border-black/15 dark:border-white/20 hover:border-[#22C55E] backdrop-blur-xl flex items-center justify-center text-[#111613] dark:text-white hover:text-black transition-all duration-300 shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:shadow-[0_0_20px_rgba(0,0,0,0.4)] hover:shadow-[0_0_35px_rgba(34,197,94,0.55)] active:scale-90 cursor-pointer will-change-transform"
+                  <div
+                    className="relative group inline-flex rounded-full p-[1.5px] overflow-hidden transition-all duration-300 will-change-transform active:scale-90 hover:-translate-y-0.5 cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.6)]"
                   >
-                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.8] text-[#111613] dark:text-white group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
-                  </button>
+                    <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin opacity-80 group-hover:opacity-100 will-change-transform" />
+                    <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin blur-[2.5px] opacity-50 group-hover:opacity-80 will-change-transform" />
+                    <button
+                      ref={nextBtnRef}
+                      type="button"
+                      onClick={handleNext}
+                      onMouseMove={handleBtnMouseMove}
+                      onMouseLeave={handleBtnMouseLeave}
+                      disabled={loading || !canProceed()}
+                      aria-label="Next Step"
+                      className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/80 hover:bg-white/95 dark:bg-[#0B0F0D]/85 dark:hover:bg-[#101612]/95 backdrop-blur-xl flex items-center justify-center text-[#111613] dark:text-white transition-all duration-300 btn-physical-surface-light dark:btn-physical-surface-dark cursor-pointer"
+                    >
+                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.8] text-[#111613] dark:text-white group-hover:translate-x-0.5 transition-all duration-200" />
+                    </button>
+                  </div>
 
                   {/* Minimal Bottom Pill Indicator Under Button */}
                   <div className="w-7 h-1 rounded-full bg-black/10 dark:bg-white/10 mt-3" />

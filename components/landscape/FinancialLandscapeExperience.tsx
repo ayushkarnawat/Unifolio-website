@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { LinkButton } from "@/components/ui/Button";
 import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger, prefersReducedMotion } from "@/lib/gsap";
 import { FinancialLandscapeCanvas } from "./FinancialLandscapeCanvas";
@@ -270,13 +271,15 @@ export function FinancialLandscapeExperience() {
                 Every account, every fund, every rupee, in one place, finally clear.
               </p>
               <div className="mt-8">
-                <Link
+                <LinkButton
                   href="#contact"
-                  className="group inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-[#22C55E] text-[#0A2412] font-sans text-sm font-semibold tracking-wide hover:bg-[#1ea750] transition-all duration-300 shadow-[0_4px_24px_rgba(34,197,94,0.35)]"
+                  size="md"
+                  variant="primary"
+                  className="shadow-[0_4px_24px_rgba(34,197,94,0.25)]"
                 >
                   <span>Join the waitlist</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
+                </LinkButton>
               </div>
             </div>
             {/* Visual breathes cleanly on the right half with over 200px gap */}
@@ -541,13 +544,15 @@ export function FinancialLandscapeExperience() {
               <span className="inline-block sm:whitespace-nowrap">Now you&apos;ll actually understand it.</span>
             </h3>
             <div className="mt-8 sm:mt-10 flex items-center justify-center">
-              <Link
+              <LinkButton
                 href="#contact"
-                className="group inline-flex items-center gap-2.5 px-8 py-4 rounded-xl bg-[#22C55E] text-[#0A2412] font-sans text-base font-semibold tracking-wide hover:bg-[#1ea750] transition-all duration-300 shadow-[0_4px_30px_rgba(34,197,94,0.4)] hover:scale-[1.02]"
+                size="lg"
+                variant="primary"
+                className="shadow-[0_4px_30px_rgba(34,197,94,0.25)]"
               >
                 <span>Join the waitlist</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              </LinkButton>
             </div>
           </div>
         </div>

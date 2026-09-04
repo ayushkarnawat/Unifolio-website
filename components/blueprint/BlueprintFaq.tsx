@@ -311,13 +311,27 @@ export function BlueprintFaq() {
                 onClick={handlePrev}
                 disabled={activeIdx === 0}
                 aria-label="Previous question"
-                className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all duration-300 ${
+                className={`relative group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 overflow-hidden ${
                   activeIdx === 0
-                    ? "border-black/10 dark:border-white/10 text-black/20 dark:text-white/20 cursor-not-allowed bg-transparent"
-                    : "border-black/15 dark:border-white/20 bg-black/[0.03] dark:bg-white/[0.04] text-[#111613] dark:text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(34,197,94,0.1)]"
+                    ? "opacity-30 border border-black/10 dark:border-white/10 text-black/40 dark:text-white/40 cursor-not-allowed bg-transparent"
+                    : "p-[1.25px] active:scale-95 cursor-pointer hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
                 }`}
               >
-                <ArrowLeft className="w-4 h-4" />
+                {activeIdx !== 0 && (
+                  <>
+                    <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin opacity-60 group-hover:opacity-100 will-change-transform" />
+                    <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin blur-[2px] opacity-35 group-hover:opacity-75 will-change-transform" />
+                  </>
+                )}
+                <div
+                  className={`relative z-10 w-full h-full rounded-full flex items-center justify-center transition-colors ${
+                    activeIdx === 0
+                      ? ""
+                      : "bg-white/80 dark:bg-[#0B0F0D]/85 hover:bg-white dark:hover:bg-[#111713] text-[#111613] dark:text-white backdrop-blur-xl btn-physical-surface-light dark:btn-physical-surface-dark"
+                  }`}
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </div>
               </button>
 
               <button
@@ -325,13 +339,27 @@ export function BlueprintFaq() {
                 onClick={handleNext}
                 disabled={activeIdx === faqContent.length - 1}
                 aria-label="Next question"
-                className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all duration-300 ${
+                className={`relative group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 overflow-hidden ${
                   activeIdx === faqContent.length - 1
-                    ? "border-black/10 dark:border-white/10 text-black/20 dark:text-white/20 cursor-not-allowed bg-transparent"
-                    : "border-black/15 dark:border-white/20 bg-black/[0.03] dark:bg-white/[0.04] text-[#111613] dark:text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(34,197,94,0.1)]"
+                    ? "opacity-30 border border-black/10 dark:border-white/10 text-black/40 dark:text-white/40 cursor-not-allowed bg-transparent"
+                    : "p-[1.25px] active:scale-95 cursor-pointer hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
                 }`}
               >
-                <ArrowRight className="w-4 h-4" />
+                {activeIdx !== faqContent.length - 1 && (
+                  <>
+                    <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin opacity-60 group-hover:opacity-100 will-change-transform" />
+                    <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin blur-[2px] opacity-35 group-hover:opacity-75 will-change-transform" />
+                  </>
+                )}
+                <div
+                  className={`relative z-10 w-full h-full rounded-full flex items-center justify-center transition-colors ${
+                    activeIdx === faqContent.length - 1
+                      ? ""
+                      : "bg-white/80 dark:bg-[#0B0F0D]/85 hover:bg-white dark:hover:bg-[#111713] text-[#111613] dark:text-white backdrop-blur-xl btn-physical-surface-light dark:btn-physical-surface-dark"
+                  }`}
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </div>
               </button>
             </div>
           </div>
