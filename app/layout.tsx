@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { siteConfig } from "@/content/site";
 import { buildOrganizationSchema } from "@/lib/schema";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -72,17 +73,38 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en-IN"
-      className={`${fraunces.variable} ${dmSans.variable} ${caveat.variable} ${jetBrainsMono.variable}`}
+      suppressHydrationWarning
+      className={`light ${fraunces.variable} ${dmSans.variable} ${caveat.variable} ${jetBrainsMono.variable}`}
     >
-      <body className="flex min-h-screen flex-col font-sans bg-[#000000] text-[#FAF8F5] selection:bg-[#22C55E]/40 selection:text-white overflow-x-hidden antialiased">
+      <head>
         <script
-          type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          dangerouslySetInnerHTML={{
+            __html: `(function() {
+              try {
+                var t = localStorage.getItem('unifolio-theme');
+                if (t === 'dark') {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.classList.remove('light');
+                } else {
+                  document.documentElement.classList.add('light');
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch(e) {}
+            })()`,
+          }}
         />
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
+      </head>
+      <body className="flex min-h-screen flex-col font-sans bg-[#FAF8F5] dark:bg-[#000000] text-[#111613] dark:text-[#FAF8F5] selection:bg-[#22C55E]/40 selection:text-white overflow-x-hidden antialiased transition-colors duration-500">
+        <ThemeProvider>
+          <script
+            type="application/ld+json"
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          />
+          <SiteHeader />
+          <main className="flex-1">{children}</main>
+          <SiteFooter />
+        </ThemeProvider>
       </body>
     </html>
   );

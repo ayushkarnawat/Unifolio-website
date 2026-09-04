@@ -2,22 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg-primary: #FAF8F5;
+  --bg-secondary: #F4F1EC;
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --text-primary: #111613;
+  --text-secondary: #5A685D;
+  --border-subtle: rgba(28, 36, 30, 0.08);
+  --border-card: rgba(28, 36, 30, 0.12);
+  --nav-bg: rgba(250, 248, 245, 0.85);
+  --accent: #22C55E;
+}
+
+html.dark {
+  --bg-primary: #000000;
+  --bg-secondary: #0A0D0B;
+  --bg-card: rgba(10, 13, 11, 0.95);
+  --text-primary: #FAF8F5;
+  --text-secondary: #8E9B91;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-card: rgba(255, 255, 255, 0.14);
+  --nav-bg: rgba(0, 0, 0, 0.85);
+  --accent: #22C55E;
+}
+
 @layer base {
   html {
-    background-color: #000000;
-    color: #FAF8F5;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.45s cubic-bezier(0.16, 1, 0.3, 1), color 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   body {
-    background-color: #000000;
-    color: #FAF8F5;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
+    transition: background-color 0.45s cubic-bezier(0.16, 1, 0.3, 1), color 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   :focus-visible {
