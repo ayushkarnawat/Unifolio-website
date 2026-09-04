@@ -100,13 +100,12 @@ export function HeroApertureVisual({
             preload="auto"
             className="w-full h-full object-cover object-[66%_48%] select-none pointer-events-none"
           >
-            <source src="/hero-aperture.mp4" type="video/mp4" />
-            <source src="/HERO%20Apeture.mp4" type="video/mp4" />
+            <source src="/Final%20Hero%20Apeture%20Light.mp4" type="video/mp4" />
           </video>
         </div>
 
         {/* Dark Mode Video Asset (True Black Background with Enhanced Obsidian Sculptural Ring) */}
-        <div className="absolute inset-0 w-full h-full transition-opacity duration-700 opacity-0 dark:opacity-100 pointer-events-none">
+        <div className="absolute inset-0 w-full h-full transition-opacity duration-700 opacity-0 dark:opacity-100 pointer-events-none [mask-image:radial-gradient(ellipse_94%_92%_at_66.5%_48%,black_65%,rgba(0,0,0,0.92)_85%,transparent_100%)] [-webkit-mask-image:radial-gradient(ellipse_94%_92%_at_66.5%_48%,black_65%,rgba(0,0,0,0.92)_85%,transparent_100%)]">
           <video
             ref={videoDarkRef}
             autoPlay
@@ -116,7 +115,7 @@ export function HeroApertureVisual({
             preload="auto"
             className="w-full h-full object-cover object-[66%_48%] select-none pointer-events-none"
           >
-            <source src="/hero-aperture-dark.mp4" type="video/mp4" />
+            <source src="/Final%20Hero%20Apeture%20Dark.mp4" type="video/mp4" />
           </video>
         </div>
       </div>
