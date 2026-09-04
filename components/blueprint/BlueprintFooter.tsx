@@ -132,8 +132,8 @@ export function BlueprintFooter() {
               <ul className="space-y-2.5 font-sans text-xs sm:text-sm text-[#FAF8F5]/70">
                 <li>
                   <Link
-                    href="#statement"
-                    onClick={(e) => handleAnchorClick(e, "#statement")}
+                    href="#product"
+                    onClick={(e) => handleAnchorClick(e, "#product")}
                     className="hover:text-white transition-colors duration-200"
                   >
                     Product
@@ -141,11 +141,11 @@ export function BlueprintFooter() {
                 </li>
                 <li>
                   <Link
-                    href="#offerings"
-                    onClick={(e) => handleAnchorClick(e, "#offerings")}
+                    href="#security"
+                    onClick={(e) => handleAnchorClick(e, "#security")}
                     className="hover:text-white transition-colors duration-200"
                   >
-                    Features
+                    Security
                   </Link>
                 </li>
                 <li>
@@ -154,16 +154,16 @@ export function BlueprintFooter() {
                     onClick={(e) => handleAnchorClick(e, "#about")}
                     className="hover:text-white transition-colors duration-200"
                   >
-                    Security
+                    About
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="#offerings"
-                    onClick={(e) => handleAnchorClick(e, "#offerings")}
+                    href="#contact"
+                    onClick={(e) => handleAnchorClick(e, "#contact")}
                     className="hover:text-white transition-colors duration-200"
                   >
-                    Integrations
+                    Contact
                   </Link>
                 </li>
               </ul>

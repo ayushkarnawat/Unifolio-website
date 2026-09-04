@@ -14,9 +14,8 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Home", href: "#hero", id: "hero" },
-  { label: "Product", href: "#statement", id: "statement" },
-  { label: "Offerings", href: "#offerings", id: "offerings" },
+  { label: "Product", href: "#product", id: "product" },
+  { label: "Security", href: "#security", id: "security" },
   { label: "About", href: "#about", id: "about" },
   { label: "Contact", href: "#contact", id: "contact" },
 ];
@@ -24,12 +23,12 @@ const NAV_ITEMS: NavItem[] = [
 export function BlueprintNav() {
   const { theme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
-  const [activeId, setActiveId] = useState<string>("hero");
+  const [activeId, setActiveId] = useState<string>("product");
   const [isLogoDocked, setIsLogoDocked] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      if (prefersReducedMotion()) {
+      if (prefersReducedMotion() || window.location.pathname !== "/") {
         setIsLogoDocked(true);
       }
     }
@@ -68,13 +67,15 @@ export function BlueprintNav() {
       }
 
       // 3. Middle Section Thresholds
-      const offeringsEl = document.getElementById("offerings");
-      const aboutEl = document.getElementById("about");
       const contactEl = document.getElementById("contact");
+      const aboutEl = document.getElementById("about");
+      const securityEl = document.getElementById("security");
+      const productEl = document.getElementById("product") || document.getElementById("statement");
 
       const contactTop = contactEl ? contactEl.offsetTop : Infinity;
       const aboutTop = aboutEl ? aboutEl.offsetTop : Infinity;
-      const offeringsTop = offeringsEl ? offeringsEl.offsetTop : Infinity;
+      const securityTop = securityEl ? securityEl.offsetTop : Infinity;
+      const productTop = productEl ? productEl.offsetTop : Infinity;
 
       const triggerPos = scrollY + window.innerHeight * 0.35;
 
@@ -82,10 +83,12 @@ export function BlueprintNav() {
         setActiveId("contact");
       } else if (triggerPos >= aboutTop) {
         setActiveId("about");
-      } else if (triggerPos >= offeringsTop) {
-        setActiveId("offerings");
+      } else if (triggerPos >= securityTop) {
+        setActiveId("security");
+      } else if (triggerPos >= productTop) {
+        setActiveId("product");
       } else {
-        setActiveId("statement"); // Product
+        setActiveId("hero");
       }
     };
 
@@ -180,8 +183,16 @@ export function BlueprintNav() {
       {/* Left Brand Logo: Seamlessly swaps dark vs white wordmark */}
       <Link
         id="navbar-brand-logo"
-        href="#hero"
-        onClick={(e) => handleAnchorClick(e, "#hero", "hero")}
+        href="/"
+        onClick={(e) => {
+          if (typeof window !== "undefined") {
+            if (window.location.pathname === "/" || window.location.pathname === "") {
+              e.preventDefault();
+              window.dispatchEvent(new CustomEvent("unifolio-reset-hero"));
+              smoothScrollTo(0, { duration: 0.85, ease: "power2.inOut" });
+            }
+          }
+        }}
         className={`flex items-center group transition-opacity duration-300 hover:opacity-95 ${
           isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}

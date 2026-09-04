@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { HeroIntroLogo } from "@/components/hero/HeroIntroLogo";
 import { BlueprintNav } from "@/components/blueprint/BlueprintNav";
 import { BlueprintHero } from "@/components/blueprint/BlueprintHero";
-import { BlueprintStackingCards } from "@/components/blueprint/BlueprintStackingCards";
+import { FinancialLandscapeExperience } from "@/components/landscape/FinancialLandscapeExperience";
+import { SecurityExperience } from "@/components/security/SecurityExperience";
 import { BlueprintAboutMetrics } from "@/components/blueprint/BlueprintAboutMetrics";
 import { BlueprintFaq } from "@/components/blueprint/BlueprintFaq";
 import { BlueprintContact } from "@/components/blueprint/BlueprintContact";
@@ -31,11 +32,14 @@ export default function HomePage() {
       {/* Floating Pill Navigation Bar */}
       <BlueprintNav />
 
-      {/* Section 1 & 2: Hero Aperture Zoom → Continuous 3D Orbital Cards → Text Reveal → Marquee */}
+      {/* Section 1: Hero Aperture Landing & Expansion */}
       <BlueprintHero />
 
-      {/* Section 3: Horizontal Storytelling Capability Suite */}
-      <BlueprintStackingCards />
+      {/* Section 2: The 3D Financial Landscape (Product Narrative) */}
+      <FinancialLandscapeExperience />
+
+      {/* Section 3: Cinematic Spatial Security Narrative */}
+      <SecurityExperience />
 
       {/* Section 4: About Unifolio + Statistics Metrics Grid */}
       <BlueprintAboutMetrics />
