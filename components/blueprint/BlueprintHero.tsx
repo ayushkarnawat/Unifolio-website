@@ -11,6 +11,7 @@ export function BlueprintHero() {
   const heroVisualRef = useRef<HTMLDivElement | null>(null);
   const heroIntroRef = useRef<HTMLDivElement | null>(null);
   const heroGlowRef = useRef<HTMLDivElement | null>(null);
+  const cursorBadgeRef = useRef<HTMLDivElement | null>(null);
 
   const [isPortalPaused, setIsPortalPaused] = useState(false);
 
@@ -42,6 +43,72 @@ export function BlueprintHero() {
       // Sequence control flags
       let isSequenceRunning = false;
       let hasSequenceCompleted = false;
+
+      // =========================================================================
+      // CURSOR-FOLLOWING "SCROLL TO ENTER" BADGE (Active in initial hero state)
+      // =========================================================================
+      const hasFinePointer = typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches;
+      let isBadgeActive = hasFinePointer && !prefersReducedMotion();
+
+      // Fluid trailing lag setters via GSAP quickTo (offset beside original cursor)
+      const setBadgeX = cursorBadgeRef.current
+        ? gsap.quickTo(cursorBadgeRef.current, "x", { duration: 0.14, ease: "power3.out" })
+        : () => {};
+      const setBadgeY = cursorBadgeRef.current
+        ? gsap.quickTo(cursorBadgeRef.current, "y", { duration: 0.14, ease: "power3.out" })
+        : () => {};
+
+      let isBadgeVisible = false;
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!isBadgeActive || isSequenceRunning || hasSequenceCompleted) return;
+
+        // Hide when near top navbar so it doesn't collide with navigation buttons
+        if (e.clientY < 65) {
+          if (isBadgeVisible && cursorBadgeRef.current) {
+            isBadgeVisible = false;
+            gsap.to(cursorBadgeRef.current, { opacity: 0, scale: 0.85, duration: 0.15, ease: "power2.in" });
+          }
+          return;
+        }
+
+        // Float smoothly right beside the user's original cursor pointer
+        setBadgeX(e.clientX + 18);
+        setBadgeY(e.clientY + 2);
+
+        if (!isBadgeVisible && cursorBadgeRef.current) {
+          isBadgeVisible = true;
+          gsap.to(cursorBadgeRef.current, { opacity: 1, scale: 1, duration: 0.2, ease: "power2.out" });
+        }
+      };
+
+      const handleMouseLeave = () => {
+        if (cursorBadgeRef.current) {
+          isBadgeVisible = false;
+          gsap.to(cursorBadgeRef.current, { opacity: 0, scale: 0.85, duration: 0.2, ease: "power2.in" });
+        }
+      };
+
+      if (isBadgeActive) {
+        window.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("mouseleave", handleMouseLeave);
+      }
+
+      const disableBadge = () => {
+        isBadgeActive = false;
+        if (cursorBadgeRef.current) {
+          gsap.to(cursorBadgeRef.current, {
+            opacity: 0,
+            scale: 0.7,
+            duration: 0.25,
+            ease: "power2.in",
+            onComplete: () => {
+              if (cursorBadgeRef.current) {
+                gsap.set(cursorBadgeRef.current, { display: "none" });
+              }
+            },
+          });
+        }
+      };
 
       // Initially hide hero text ("SEE WHAT YOU ACTUALLY OWN") and hero aperture video
       // until the logo has completely slid to its docked position at the top-left
@@ -94,9 +161,7 @@ export function BlueprintHero() {
       };
 
       // =========================================================================
-      // RESTORED MASTER UNIFOLIO RING ENLARGEMENT TIMELINE
-      // Matches the exact timing, scale, and visual parameters from original build:
-      // scale: 1 -> 8.5 over 1.4s, text fadeout over 0.8s, green bloom pulse
+      // MASTER UNIFOLIO RING ENLARGEMENT TIMELINE
       // =========================================================================
       const masterTl = gsap.timeline({
         paused: true,
@@ -110,7 +175,6 @@ export function BlueprintHero() {
           unlockScroll();
 
           // Immediately and seamlessly transition into the Financial Landscape product section
-          // eliminating any dead space or empty scroll gap
           smoothScrollTo("#product", { duration: 0.55, ease: "power2.out" });
         },
       });
@@ -126,6 +190,20 @@ export function BlueprintHero() {
         },
         0
       );
+
+      // Instantly dismiss cursor-following badge
+      if (cursorBadgeRef.current) {
+        masterTl.to(
+          cursorBadgeRef.current,
+          {
+            opacity: 0,
+            scale: 0.7,
+            duration: 0.25,
+            ease: "power2.in",
+          },
+          0
+        );
+      }
 
       // 1. HERO APERTURE EXPANSION & CENTRAL VOID DISSOLVE (1.4s, scale: 1 -> 8.5)
       masterTl.fromTo(
@@ -154,6 +232,7 @@ export function BlueprintHero() {
       const triggerAutoplay = () => {
         if (!hasSequenceCompleted && !isSequenceRunning) {
           lockScroll();
+          disableBadge();
           masterTl.play();
         }
       };
@@ -177,6 +256,14 @@ export function BlueprintHero() {
             gsap.set(heroIntroRef.current, { opacity: 1, y: 0, clearProps: "all" });
             gsap.set(heroVisualRef.current, { scale: 1, opacity: 1, clearProps: "all" });
             gsap.set(heroGlowRef.current, { scale: 1, opacity: 0 });
+
+            // Restore badge for initial hero state
+            if (hasFinePointer && !prefersReducedMotion()) {
+              isBadgeActive = true;
+              if (cursorBadgeRef.current) {
+                gsap.set(cursorBadgeRef.current, { display: "block", opacity: 0 });
+              }
+            }
           },
         });
 
@@ -206,6 +293,14 @@ export function BlueprintHero() {
         hasSequenceCompleted = false;
         setIsPortalPaused(false);
         unlockScroll();
+
+        if (hasFinePointer && !prefersReducedMotion()) {
+          isBadgeActive = true;
+          if (cursorBadgeRef.current) {
+            gsap.set(cursorBadgeRef.current, { display: "block", opacity: 0 });
+          }
+        }
+
         gsap.set(heroIntroRef.current, { opacity: 1, y: 0, clearProps: "all" });
         gsap.set(heroVisualRef.current, { scale: 1, opacity: 1, clearProps: "all" });
         gsap.set(heroGlowRef.current, { scale: 1, opacity: 0 });
@@ -273,6 +368,9 @@ export function BlueprintHero() {
         window.removeEventListener("touchstart", handleTouchStart);
         window.removeEventListener("touchmove", handleTouchMove);
         window.removeEventListener("resize", updateRingAnchor);
+
+        window.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseleave", handleMouseLeave);
       };
     },
     { scope: containerRef }
@@ -284,6 +382,20 @@ export function BlueprintHero() {
       ref={containerRef}
       className="relative w-full h-screen bg-[#FAF8F5] dark:bg-[#000000] select-none transition-colors duration-500 overflow-hidden"
     >
+      {/* Floating Badge: Tracks beside the user's original cursor in initial hero state */}
+      <div
+        ref={cursorBadgeRef}
+        aria-hidden="true"
+        className="pointer-events-none fixed top-0 left-0 z-50 opacity-0 select-none will-change-transform"
+        style={{ transform: "translate3d(-100px, -100px, 0)" }}
+      >
+        <div className="flex items-center px-3.5 py-1.5 rounded-full bg-[#3F4245]/95 text-white border border-white/10 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+          <span className="font-sans text-[12px] sm:text-[13px] font-medium tracking-tight text-white whitespace-nowrap">
+            Scroll to enter
+          </span>
+        </div>
+      </div>
+
       {/* Anchor for Section 2 Nav Link */}
       <div id="statement" className="absolute top-[35%] pointer-events-none" />
 
@@ -295,7 +407,7 @@ export function BlueprintHero() {
         {/* Landing State Hero Intro Content */}
         <div
           ref={heroIntroRef}
-          className="absolute inset-0 z-20 flex flex-col justify-between px-6 sm:px-10 lg:px-16 pt-20 pb-8 max-w-7xl mx-auto w-full pointer-events-none"
+          className="absolute inset-0 z-20 flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-20 pb-8 max-w-7xl mx-auto w-full pointer-events-none"
         >
           {/* Main Headline aligned naturally with the central axis of the aperture illustration */}
           <div className="flex-1 flex flex-col justify-center max-w-lg -translate-x-6 sm:-translate-x-10 lg:-translate-x-14 -translate-y-4 sm:-translate-y-6 lg:-translate-y-8">
@@ -304,12 +416,6 @@ export function BlueprintHero() {
               YOU ACTUALLY <br />
               OWN.
             </h1>
-          </div>
-
-          {/* Bottom Left: Scroll to Enter Indicator */}
-          <div className="flex flex-col items-start gap-2.5 font-mono text-[10px] sm:text-[11px] tracking-[0.25em] text-[#5A685D] dark:text-[#8E9B91] uppercase pb-2">
-            <span>SCROLL TO ENTER</span>
-            <div className="w-[1px] h-7 bg-gradient-to-b from-[#5A685D]/50 dark:from-[#8E9B91]/50 to-transparent ml-2" />
           </div>
         </div>
 
