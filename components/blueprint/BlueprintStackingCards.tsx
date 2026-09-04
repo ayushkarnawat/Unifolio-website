@@ -98,21 +98,21 @@ export function BlueprintStackingCards() {
     <section
       id="offerings"
       ref={containerRef}
-      className="relative w-full bg-[#000000] select-none"
+      className="relative w-full bg-[#FAF8F5] dark:bg-[#000000] select-none transition-colors duration-500"
       // Pre-hydration fallback only; useGSAP overwrites this with the exact
       // pin distance (getEndDistance + one viewport height) once mounted.
       style={{ height: "640vh" }}
     >
       {/* Seamless Top Gradient Handoff from Hero */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-[#000000] via-[#000000]/70 to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-[#FAF8F5] via-[#FAF8F5]/70 dark:from-[#000000] dark:via-[#000000]/70 to-transparent z-10 transition-colors duration-500" />
 
       {/* Pinned Fullscreen Stage */}
       <div
         ref={stageRef}
-        className="relative h-screen w-full overflow-hidden flex items-center bg-[#000000]"
+        className="relative h-screen w-full overflow-hidden flex items-center bg-[#FAF8F5] dark:bg-[#000000] transition-colors duration-500"
       >
         {/* Subtle Horizon Strata */}
-        <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1px] bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1px] bg-gradient-to-r from-transparent via-black/[0.04] dark:via-white/[0.04] to-transparent" />
 
         {/* Continuous Horizontal Panoramic Ribbon */}
         <div
@@ -123,7 +123,7 @@ export function BlueprintStackingCards() {
               PROLOGUE: Monumental Editorial Statement
              ========================================================================= */}
           <div className="flex flex-col justify-center shrink-0 pr-12 sm:pr-24 max-w-[580px] sm:max-w-[720px] whitespace-normal">
-            <h2 className="font-sans font-extrabold text-5xl sm:text-7xl lg:text-[84px] text-white tracking-[-0.04em] uppercase leading-[0.92]">
+            <h2 className="font-sans font-extrabold text-5xl sm:text-7xl lg:text-[84px] text-[#111613] dark:text-white tracking-[-0.04em] uppercase leading-[0.92]">
               BUILT TO UNIFY. <br />
               <span className="text-[#22C55E]">DESIGNED TO CLARIFY.</span>
             </h2>
@@ -135,9 +135,9 @@ export function BlueprintStackingCards() {
           <div className="flex items-center gap-16 sm:gap-24 shrink-0">
             {/* Primary Editorial Heading */}
             <div className="flex flex-col justify-center shrink-0 whitespace-normal max-w-[480px]">
-              <h3 className="font-sans font-extrabold text-4xl sm:text-6xl lg:text-7xl text-white tracking-[-0.035em] uppercase leading-[0.95]">
+              <h3 className="font-sans font-extrabold text-4xl sm:text-6xl lg:text-7xl text-[#111613] dark:text-white tracking-[-0.035em] uppercase leading-[0.95]">
                 ONE VIEW. <br />
-                <span className="text-[#8E9B91]/80">NOTHING HIDDEN.</span>
+                <span className="text-[#5A685D] dark:text-[#8E9B91]/80">NOTHING HIDDEN.</span>
               </h3>
             </div>
 
@@ -159,7 +159,7 @@ export function BlueprintStackingCards() {
           <div className="flex items-center gap-16 sm:gap-24 shrink-0">
             {/* Primary Editorial Heading */}
             <div className="flex flex-col justify-center shrink-0 whitespace-normal max-w-[500px]">
-              <h3 className="font-sans font-extrabold text-4xl sm:text-6xl lg:text-7xl text-white tracking-[-0.035em] uppercase leading-[0.95]">
+              <h3 className="font-sans font-extrabold text-4xl sm:text-6xl lg:text-7xl text-[#111613] dark:text-white tracking-[-0.035em] uppercase leading-[0.95]">
                 SEE WHAT <br />
                 <span className="text-[#22C55E]">YOUR MONEY</span> <br />
                 LEAVES BEHIND.
@@ -181,7 +181,7 @@ export function BlueprintStackingCards() {
       </div>
 
       {/* Seamless Bottom Blend into About */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#000000] via-[#000000]/80 to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#FAF8F5] via-[#FAF8F5]/80 dark:from-[#000000] dark:via-[#000000]/80 to-transparent z-10 transition-colors duration-500" />
     </section>
   );
 }

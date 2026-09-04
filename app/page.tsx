@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { HeroIntroLogo } from "@/components/hero/HeroIntroLogo";
 import { BlueprintNav } from "@/components/blueprint/BlueprintNav";
 import { BlueprintHero } from "@/components/blueprint/BlueprintHero";
 import { BlueprintStackingCards } from "@/components/blueprint/BlueprintStackingCards";
@@ -17,12 +18,15 @@ export default function HomePage() {
   const softwareSchema = buildSoftwareApplicationSchema();
 
   return (
-    <main className="relative bg-[#000000]">
+    <main className="relative bg-[#FAF8F5] dark:bg-[#000000] transition-colors duration-500">
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
       />
+
+      {/* Cinematic Initial Brand Logo Intro & Navbar Flight */}
+      <HeroIntroLogo />
 
       {/* Floating Pill Navigation Bar */}
       <BlueprintNav />

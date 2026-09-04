@@ -8,6 +8,8 @@ import { Menu, X } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger, createMagneticEffect, prefersReducedMotion } from "@/lib/gsap";
 
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
+
 export function SiteHeader() {
   const pathname = usePathname();
   const isHomepage = pathname === "/";
@@ -31,7 +33,7 @@ export function SiteHeader() {
             gsap.to(headerRef.current, {
               yPercent: 0,
               opacity: 1,
-              duration: 0.4,
+              duration: 0.5,
               ease: "power2.out",
             });
           },
@@ -39,7 +41,7 @@ export function SiteHeader() {
             gsap.to(headerRef.current, {
               yPercent: -100,
               opacity: 0,
-              duration: 0.3,
+              duration: 0.4,
               ease: "power2.in",
             });
           },
@@ -49,9 +51,19 @@ export function SiteHeader() {
         gsap.set(headerRef.current, { yPercent: 0, opacity: 1 });
       }
 
+      // Subtle scale-down of logo on scroll past 100px
+      ScrollTrigger.create({
+        start: "top -100px",
+        end: 99999,
+        toggleClass: {
+          targets: headerRef.current,
+          className: "is-scrolled",
+        },
+      });
+
       // Magnetic hover physics on CTA button
       if (ctaRef.current) {
-        return createMagneticEffect(ctaRef.current, { strength: 0.3, radius: 50 });
+        createMagneticEffect(ctaRef.current, { strength: 0.2 });
       }
     },
     { scope: headerRef, dependencies: [isHomepage] }
@@ -60,7 +72,7 @@ export function SiteHeader() {
   return (
     <header
       ref={headerRef}
-      className="fixed top-0 inset-x-0 z-50 w-full bg-[#FAF8F5]/95 backdrop-blur-md transition-all py-3.5 shadow-[0_4px_20px_-2px_rgba(28,36,30,0.04)]"
+      className="fixed top-0 inset-x-0 z-50 w-full bg-[#FAF8F5]/95 dark:bg-[#000000]/90 backdrop-blur-md transition-all py-3.5 shadow-[0_4px_20px_-2px_rgba(28,36,30,0.04)] dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.5)] border-b border-black/[0.06] dark:border-white/[0.08]"
     >
       <div className="mx-auto flex max-w-content items-center justify-between px-6 sm:px-8">
         {/* Brand Logo */}
@@ -74,32 +86,42 @@ export function SiteHeader() {
             width={132}
             height={30}
             priority
-            className="h-6 sm:h-7 w-auto object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
+            className="block dark:hidden h-6 sm:h-7 w-auto object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
+          />
+          <Image
+            src="/Logo/unifolio-wordmark-white.png"
+            alt="Unifolio"
+            width={132}
+            height={30}
+            priority
+            className="hidden dark:block h-6 sm:h-7 w-auto object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
           />
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-8 md:flex font-sans text-sm text-[#525E55]">
-          <Link href="/features" className="hover:text-[#1C241E] transition-colors">
+        <nav className="hidden items-center gap-8 md:flex font-sans text-sm text-[#525E55] dark:text-[#8E9B91]">
+          <Link href="/features" className="hover:text-[#1C241E] dark:hover:text-[#FAF8F5] transition-colors">
             Product
           </Link>
-          <Link href="/pricing" className="hover:text-[#1C241E] transition-colors">
+          <Link href="/pricing" className="hover:text-[#1C241E] dark:hover:text-[#FAF8F5] transition-colors">
             Pricing
           </Link>
-          <Link href="/about" className="hover:text-[#1C241E] transition-colors">
+          <Link href="/about" className="hover:text-[#1C241E] dark:hover:text-[#FAF8F5] transition-colors">
             About
           </Link>
-          <Link href="/contact" className="hover:text-[#1C241E] transition-colors">
+          <Link href="/contact" className="hover:text-[#1C241E] dark:hover:text-[#FAF8F5] transition-colors">
             Contact
           </Link>
         </nav>
 
-        {/* Right CTA Button & Hamburger */}
-        <div className="flex items-center gap-4">
+        {/* Right CTA Button, Theme Toggle & Hamburger */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          <ThemeToggle />
+
           <Link
             ref={ctaRef}
             href="/get-started"
-            className="inline-flex items-center justify-center rounded-full bg-[#8CD49E] px-5 py-2 font-sans text-xs font-semibold text-[#1C241E] border border-[#1C241E]/80 shadow-xs hover:bg-[#79C68C] transition-all active:scale-95"
+            className="inline-flex items-center justify-center rounded-full bg-[#22C55E] dark:bg-[#22C55E] px-4 sm:px-5 py-2 font-sans text-xs font-semibold text-black border border-black/10 dark:border-white/10 shadow-xs hover:bg-[#16A34A] transition-all active:scale-95"
           >
             Get early access
           </Link>
@@ -107,7 +129,7 @@ export function SiteHeader() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1 text-[#1C241E] md:hidden"
+            className="p-1 text-[#1C241E] dark:text-[#FAF8F5] md:hidden"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}

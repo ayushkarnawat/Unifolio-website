@@ -313,17 +313,17 @@ export function BlueprintAboutMetrics() {
     <section
       id="about"
       ref={containerRef}
-      className="relative w-full bg-[#000000] select-none"
+      className="relative w-full bg-[#FAF8F5] dark:bg-[#000000] select-none transition-colors duration-500"
       style={{ height: "360vh" }}
     >
       {/* Fullscreen Pinned Stage */}
       <div
         ref={stageRef}
-        className="relative h-screen w-full overflow-hidden bg-[#000000] flex items-center justify-center p-6 sm:p-12 lg:p-20 text-[#FAF8F5]"
+        className="relative h-screen w-full overflow-hidden bg-[#FAF8F5] dark:bg-[#000000] flex items-center justify-center p-6 sm:p-12 lg:p-20 text-[#111613] dark:text-[#FAF8F5] transition-colors duration-500"
       >
         {/* Ambient Top & Bottom Grid Hairlines */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" />
 
         {/* =========================================================================
             THE LUMINOUS ORGANIC EMERALD BEACON (Central Atmospheric Core)
@@ -352,14 +352,14 @@ export function BlueprintAboutMetrics() {
           className="absolute inset-0 p-8 sm:p-14 lg:p-20 flex flex-col justify-between z-10 pointer-events-none will-change-transform max-w-7xl mx-auto"
         >
           <div className="space-y-2">
-            <h2 className="font-sans font-light text-5xl sm:text-7xl lg:text-8xl tracking-tight text-white">
+            <h2 className="font-sans font-light text-5xl sm:text-7xl lg:text-8xl tracking-tight text-[#111613] dark:text-white">
               About us
             </h2>
           </div>
 
           <div className="flex items-end justify-end pb-4">
             <div className="max-w-md text-left sm:text-right space-y-1">
-              <p className="font-sans font-light text-2xl sm:text-3xl lg:text-4xl text-[#FAF8F5] leading-tight tracking-tight">
+              <p className="font-sans font-light text-2xl sm:text-3xl lg:text-4xl text-[#111613] dark:text-[#FAF8F5] leading-tight tracking-tight">
                 Creating clarity <br />
                 with sovereign intelligence
               </p>
@@ -375,7 +375,7 @@ export function BlueprintAboutMetrics() {
           className="absolute inset-0 p-8 sm:p-14 lg:p-20 flex items-center justify-end z-10 pointer-events-none opacity-0 will-change-transform max-w-7xl mx-auto"
         >
           <div className="max-w-2xl lg:max-w-3xl space-y-6 text-left">
-            <h3 className="font-sans font-light text-3xl sm:text-5xl lg:text-6xl text-[#FAF8F5] tracking-tight leading-[1.18]">
+            <h3 className="font-sans font-light text-3xl sm:text-5xl lg:text-6xl text-[#111613] dark:text-[#FAF8F5] tracking-tight leading-[1.18]">
               Our mission is to build absolute transparency and sovereign clarity across every folio, fund, and asset.
             </h3>
           </div>
@@ -389,7 +389,7 @@ export function BlueprintAboutMetrics() {
           className="absolute inset-0 p-6 sm:p-12 lg:p-20 flex items-center justify-center z-10 pointer-events-none opacity-0 will-change-transform max-w-7xl mx-auto"
         >
           {/* Panoramic Container Holding the 3 Panels */}
-          <div className="relative w-full rounded-[40px] overflow-hidden border border-white/[0.08] bg-[#000000] shadow-[0_24px_60px_rgba(0,0,0,0.95)] pointer-events-auto">
+          <div className="relative w-full rounded-[40px] overflow-hidden border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#000000] shadow-[0_20px_45px_rgba(0,0,0,0.06)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.95)] pointer-events-auto transition-colors duration-500">
             
             {/* ABSTRACT ILLUMINATED TOPOGRAPHIC & AMBIENT FIELD (Harmonized System Aura) */}
             <div
@@ -405,7 +405,7 @@ export function BlueprintAboutMetrics() {
                   {/* Subtle Organic Film Grain Filter */}
                   <filter id="subtleSurfaceGrain" x="0%" y="0%" width="100%" height="100%">
                     <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch" result="noise" />
-                    <feColorMatrix type="matrix" values="0 0 0 0 0.13  0 0 0 0 0.77  0 0 0 0 0.37  0 0 0 0.04 0" result="coloredGrain" />
+                    <feColorMatrix type="matrix" values="0 0 0 0 0.13  0 0 0 0 0.77  0 0 0 0 0.37  0 0 0 0 0.04 0" result="coloredGrain" />
                     <feComposite in="coloredGrain" in2="SourceGraphic" operator="in" />
                   </filter>
 
@@ -460,44 +460,44 @@ export function BlueprintAboutMetrics() {
             </div>
 
             {/* 3 CAPABILITY PANELS WITH MINIMAL EDITORIAL REFINEMENT */}
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/[0.06] p-6 sm:p-10 lg:p-12">
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-black/[0.06] dark:divide-white/[0.06] p-6 sm:p-10 lg:p-12">
               
               {/* Panel 1: Autonomous Ledger */}
-              <div className="group p-6 sm:p-8 lg:p-10 space-y-12 flex flex-col justify-between min-h-[300px] sm:min-h-[360px] rounded-2xl hover:bg-white/[0.02] transition-colors duration-300">
+              <div className="group p-6 sm:p-8 lg:p-10 space-y-12 flex flex-col justify-between min-h-[300px] sm:min-h-[360px] rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors duration-300">
                 <div>
-                  <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight group-hover:text-[#22C55E] transition-colors">
+                  <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-[#111613] dark:text-white tracking-tight leading-tight group-hover:text-[#22C55E] transition-colors">
                     Autonomous Ledger
                   </h4>
                 </div>
 
-                <div className="pt-6 border-t border-white/[0.06] font-mono text-3xl sm:text-4xl text-white font-bold tracking-tight">
-                  ₹420Cr+ <span className="text-xs font-normal text-[#8E9B91] block uppercase tracking-wider mt-1">Tracked Asset Base</span>
+                <div className="pt-6 border-t border-black/[0.06] dark:border-white/[0.06] font-mono text-3xl sm:text-4xl text-[#111613] dark:text-white font-bold tracking-tight">
+                  ₹420Cr+ <span className="text-xs font-normal text-[#5A685D] dark:text-[#8E9B91] block uppercase tracking-wider mt-1">Tracked Asset Base</span>
                 </div>
               </div>
 
               {/* Panel 2: Fee Dissection */}
-              <div className="group p-6 sm:p-8 lg:p-10 space-y-12 flex flex-col justify-between min-h-[300px] sm:min-h-[360px] rounded-2xl hover:bg-white/[0.02] transition-colors duration-300">
+              <div className="group p-6 sm:p-8 lg:p-10 space-y-12 flex flex-col justify-between min-h-[300px] sm:min-h-[360px] rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors duration-300">
                 <div>
-                  <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight group-hover:text-[#22C55E] transition-colors">
+                  <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-[#111613] dark:text-white tracking-tight leading-tight group-hover:text-[#22C55E] transition-colors">
                     Fee Dissection
                   </h4>
                 </div>
 
-                <div className="pt-6 border-t border-white/[0.06] font-mono text-3xl sm:text-4xl text-white font-bold tracking-tight">
-                  100% <span className="text-xs font-normal text-[#8E9B91] block uppercase tracking-wider mt-1">TER Transparency</span>
+                <div className="pt-6 border-t border-black/[0.06] dark:border-white/[0.06] font-mono text-3xl sm:text-4xl text-[#111613] dark:text-white font-bold tracking-tight">
+                  100% <span className="text-xs font-normal text-[#5A685D] dark:text-[#8E9B91] block uppercase tracking-wider mt-1">TER Transparency</span>
                 </div>
               </div>
 
               {/* Panel 3: Household Wealth */}
-              <div className="group p-6 sm:p-8 lg:p-10 space-y-12 flex flex-col justify-between min-h-[300px] sm:min-h-[360px] rounded-2xl hover:bg-white/[0.02] transition-colors duration-300">
+              <div className="group p-6 sm:p-8 lg:p-10 space-y-12 flex flex-col justify-between min-h-[300px] sm:min-h-[360px] rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors duration-300">
                 <div>
-                  <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight group-hover:text-[#22C55E] transition-colors">
+                  <h4 className="font-sans font-light text-3xl sm:text-4xl lg:text-5xl text-[#111613] dark:text-white tracking-tight leading-tight group-hover:text-[#22C55E] transition-colors">
                     Household Wealth
                   </h4>
                 </div>
 
-                <div className="pt-6 border-t border-white/[0.06] font-mono text-3xl sm:text-4xl text-white font-bold tracking-tight">
-                  18,000+ <span className="text-xs font-normal text-[#8E9B91] block uppercase tracking-wider mt-1">Active Families</span>
+                <div className="pt-6 border-t border-black/[0.06] dark:border-white/[0.06] font-mono text-3xl sm:text-4xl text-[#111613] dark:text-white font-bold tracking-tight">
+                  18,000+ <span className="text-xs font-normal text-[#5A685D] dark:text-[#8E9B91] block uppercase tracking-wider mt-1">Active Families</span>
                 </div>
               </div>
 
@@ -507,7 +507,7 @@ export function BlueprintAboutMetrics() {
       </div>
 
       {/* Seamless Bottom Section Blend into FAQ */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#000000] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#FAF8F5] dark:from-[#000000] to-transparent z-10 transition-colors duration-500" />
     </section>
   );
 }

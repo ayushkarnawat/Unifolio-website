@@ -175,10 +175,10 @@ export function BlueprintFaq() {
     <section
       id="faq"
       ref={containerRef}
-      className="relative w-full bg-[#000000] py-24 sm:py-32 lg:py-36 px-6 sm:px-12 lg:px-20 text-[#FAF8F5] select-none overflow-hidden"
+      className="relative w-full bg-[#FAF8F5] dark:bg-[#000000] py-24 sm:py-32 lg:py-36 px-6 sm:px-12 lg:px-20 text-[#111613] dark:text-[#FAF8F5] select-none overflow-hidden transition-colors duration-500"
     >
       {/* Seamless Top Blend from About */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#000000] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#FAF8F5] dark:from-[#000000] to-transparent z-10 transition-colors duration-500" />
 
       {/* =========================================================================
           ATMOSPHERIC BACKGROUND VISUALS
@@ -288,11 +288,11 @@ export function BlueprintFaq() {
         {/* =========================================================================
             HEADER SECTION: Split Headline + Description + Navigation Buttons
            ========================================================================= */}
-        <div className="faq-header-elem flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-4 border-b border-white/[0.08]">
+        <div className="faq-header-elem flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-4 border-b border-black/[0.08] dark:border-white/[0.08]">
           
           {/* Left: Headline */}
           <div className="space-y-4 max-w-xl">
-            <h2 className="font-sans font-light md:font-normal text-4xl sm:text-5xl lg:text-[58px] text-[#FAF8F5] tracking-tight leading-[1.06]">
+            <h2 className="font-sans font-light md:font-normal text-4xl sm:text-5xl lg:text-[58px] text-[#111613] dark:text-[#FAF8F5] tracking-tight leading-[1.06]">
               Frequently <br />
               Asked Questions
             </h2>
@@ -300,7 +300,7 @@ export function BlueprintFaq() {
 
           {/* Right: Description & Carousel Navigation Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center lg:items-end justify-between lg:justify-end gap-6 sm:gap-10 max-w-md">
-            <p className="font-sans text-xs sm:text-sm text-[#8E9B91] leading-relaxed max-w-xs">
+            <p className="font-sans text-xs sm:text-sm text-[#5A685D] dark:text-[#8E9B91] leading-relaxed max-w-xs">
               Find answers to common questions about Unifolio&apos;s portfolio intelligence, fee dissection, security protocols, and direct migration.
             </p>
 
@@ -313,8 +313,8 @@ export function BlueprintFaq() {
                 aria-label="Previous question"
                 className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all duration-300 ${
                   activeIdx === 0
-                    ? "border-white/10 text-white/20 cursor-not-allowed bg-transparent"
-                    : "border-white/20 bg-white/[0.04] text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(34,197,94,0.1)]"
+                    ? "border-black/10 dark:border-white/10 text-black/20 dark:text-white/20 cursor-not-allowed bg-transparent"
+                    : "border-black/15 dark:border-white/20 bg-black/[0.03] dark:bg-white/[0.04] text-[#111613] dark:text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(34,197,94,0.1)]"
                 }`}
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -327,8 +327,8 @@ export function BlueprintFaq() {
                 aria-label="Next question"
                 className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all duration-300 ${
                   activeIdx === faqContent.length - 1
-                    ? "border-white/10 text-white/20 cursor-not-allowed bg-transparent"
-                    : "border-white/20 bg-white/[0.04] text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(34,197,94,0.1)]"
+                    ? "border-black/10 dark:border-white/10 text-black/20 dark:text-white/20 cursor-not-allowed bg-transparent"
+                    : "border-black/15 dark:border-white/20 bg-black/[0.03] dark:bg-white/[0.04] text-[#111613] dark:text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(34,197,94,0.1)]"
                 }`}
               >
                 <ArrowRight className="w-4 h-4" />
@@ -368,8 +368,8 @@ export function BlueprintFaq() {
                   }}
                   className={`faq-card group relative rounded-[28px] sm:rounded-[32px] border transition-[background-color,border-color,box-shadow] duration-500 ease-out cursor-pointer flex flex-col justify-between overflow-hidden select-none min-h-[360px] sm:min-h-[400px] ${
                     isActive
-                      ? "bg-[#0A0D0B] border-[#22C55E]/40 shadow-[0_24px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(34,197,94,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] p-7 sm:p-9 md:p-10"
-                      : "bg-[#0A0C0B]/80 border-white/[0.08] hover:border-white/20 hover:bg-[#0A0D0B] p-6 sm:p-8"
+                      ? "bg-white dark:bg-[#0A0D0B] border-[#22C55E]/50 dark:border-[#22C55E]/40 shadow-[0_20px_45px_rgba(0,0,0,0.08),0_0_25px_rgba(34,197,94,0.12)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(34,197,94,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] p-7 sm:p-9 md:p-10"
+                      : "bg-black/[0.03] dark:bg-[#0A0C0B]/80 border-black/[0.08] dark:border-white/[0.08] hover:border-black/20 dark:hover:border-white/20 hover:bg-black/[0.05] dark:hover:bg-[#0A0D0B] p-6 sm:p-8"
                   }`}
                 >
                   {/* Active Top Specular Highlight Edge */}
@@ -382,8 +382,8 @@ export function BlueprintFaq() {
                     <h3
                       className={`font-sans transition-colors duration-300 leading-snug ${
                         isActive
-                          ? "text-2xl sm:text-3xl lg:text-[30px] text-white font-normal tracking-tight"
-                          : "text-lg sm:text-xl text-[#FAF8F5]/60 group-hover:text-white font-light leading-snug"
+                          ? "text-2xl sm:text-3xl lg:text-[30px] text-[#111613] dark:text-white font-normal tracking-tight"
+                          : "text-lg sm:text-xl text-[#5A685D] dark:text-[#FAF8F5]/60 group-hover:text-[#111613] dark:group-hover:text-white font-light leading-snug"
                       }`}
                     >
                       {item.question}
@@ -400,8 +400,8 @@ export function BlueprintFaq() {
                       }}
                       className="overflow-hidden transition-all duration-300"
                     >
-                      <div className="pt-4 border-t border-white/[0.08]">
-                        <p className="font-sans text-xs sm:text-sm md:text-base text-[#8E9B91] leading-relaxed font-normal">
+                      <div className="pt-4 border-t border-black/[0.08] dark:border-white/[0.08]">
+                        <p className="font-sans text-xs sm:text-sm md:text-base text-[#5A685D] dark:text-[#8E9B91] leading-relaxed font-normal">
                           {item.answer}
                         </p>
                       </div>
@@ -424,7 +424,7 @@ export function BlueprintFaq() {
               className={`transition-all duration-300 rounded-full ${
                 activeIdx === idx
                   ? "w-8 h-1.5 bg-[#22C55E] shadow-[0_0_8px_#22C55E]"
-                  : "w-2 h-1.5 bg-white/20 hover:bg-white/40"
+                  : "w-2 h-1.5 bg-black/20 dark:bg-white/20 hover:bg-black/40 dark:hover:bg-white/40"
               }`}
             />
           ))}
@@ -433,7 +433,7 @@ export function BlueprintFaq() {
       </div>
 
       {/* Seamless Bottom Section Blend into Contact */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#000000] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#FAF8F5] dark:from-[#000000] to-transparent z-10 transition-colors duration-500" />
     </section>
   );
 }
