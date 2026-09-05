@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import { useGSAP } from "@gsap/react";
-import { gsap, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
+import { gsap, ScrollTrigger, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
 import { LinkButton } from "@/components/ui/Button";
 import { ArrowRight, Sparkles } from "lucide-react";
 
@@ -353,17 +353,14 @@ export function ProductExperience() {
     () => {
       if (!sectionRef.current || !stageRef.current) return;
 
-      const isStandalone = typeof window !== "undefined" && window.location.pathname === "/product";
-      const reduced = prefersReducedMotion();
-
-      // Standalone / Reduced Motion: display immediately in final resting state
-      if (isStandalone || reduced) {
+      function showProductRestingState() {
         stateRef.current = "product";
+        masterTl.pause(masterTl.duration());
         gsap.set(blackOverlayRef.current, { display: "none", opacity: 0 });
         gsap.set(headlineRef.current, { opacity: 1, y: 0 });
         gsap.set(subheadRef.current, { opacity: 1, y: 0 });
-        gsap.set(ctaRef.current, { opacity: 1, scale: 1 });
-        gsap.set(cardsClusterRef.current, { scale: 1, opacity: 1 });
+        gsap.set(ctaRef.current, { opacity: 1, scale: 1, y: 0 });
+        gsap.set(cardsClusterRef.current, { scaleX: 1, scaleY: 1, opacity: 1 });
 
         PRODUCT_CARDS.forEach((card, i) => {
           const wrapper = cardWrapperRefs.current[i];
@@ -395,57 +392,54 @@ export function ProductExperience() {
           if (defaultEl) gsap.set(defaultEl, { opacity: 1, scale: 1, y: 0 });
           if (hoverEl) gsap.set(hoverEl, { opacity: 0, y: 8 });
         });
-        return;
+        document.documentElement.style.overflow = "";
+        document.body.style.overflow = "";
       }
 
-      // =======================================================================
-      // INITIAL SETUP: PRODUCT STAGE WAITING FOR HERO TRANSITION
-      // =======================================================================
-      gsap.set(blackOverlayRef.current, { opacity: 0, display: "none" });
-      gsap.set(headlineRef.current, { opacity: 0, y: -30 });
-      gsap.set(subheadRef.current, { opacity: 0, y: -18 });
-      gsap.set(ctaRef.current, { opacity: 0, y: -12, scale: 0.92 });
+      function resetToHeroState() {
+        masterTl.pause(0);
+        stateRef.current = "hero";
+        gsap.set(blackOverlayRef.current, { opacity: 0, display: "none" });
+        gsap.set(headlineRef.current, { opacity: 0, y: -30 });
+        gsap.set(subheadRef.current, { opacity: 0, y: -18 });
+        gsap.set(ctaRef.current, { opacity: 0, y: -12, scale: 0.92 });
+        gsap.set(cardsClusterRef.current, { scaleX: 1.35, scaleY: 1.8, opacity: 0 });
 
-      // Cards cluster initially formatted as the unified solid black surface
-      gsap.set(cardsClusterRef.current, {
-        scaleX: 1.35,
-        scaleY: 1.8,
-        opacity: 0,
-      });
+        PRODUCT_CARDS.forEach((_, i) => {
+          const wrapper = cardWrapperRefs.current[i];
+          const flipper = cardFlipperRefs.current[i];
+          const front = cardFrontRefs.current[i];
+          const back = cardBackRefs.current[i];
+          const defaultEl = cardDefaultRefs.current[i];
+          const hoverEl = cardHoverRefs.current[i];
 
-      PRODUCT_CARDS.forEach((_, i) => {
-        const wrapper = cardWrapperRefs.current[i];
-        const flipper = cardFlipperRefs.current[i];
-        const front = cardFrontRefs.current[i];
-        const back = cardBackRefs.current[i];
-        const defaultEl = cardDefaultRefs.current[i];
-        const hoverEl = cardHoverRefs.current[i];
+          if (wrapper) {
+            const initialXOffset = (i - 2) * -16;
+            gsap.set(wrapper, {
+              x: initialXOffset,
+              y: 0,
+              z: 0,
+              rotateY: 0,
+              rotateZ: 0,
+              zIndex: 10 + (2 - Math.abs(i - 2)),
+            });
+          }
 
-        if (wrapper) {
-          const initialXOffset = (i - 2) * -16;
-          gsap.set(wrapper, {
-            x: initialXOffset,
-            y: 0,
-            z: 0,
-            rotateY: 0,
-            rotateZ: 0,
-            zIndex: 10 + (2 - Math.abs(i - 2)),
-          });
-        }
-
-        // Plain black solid card, no grid, square corners
-        if (front) {
-          gsap.set(front, {
-            borderRadius: "0px",
-            borderColor: "rgba(255, 255, 255, 0.12)",
-            boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4)",
-          });
-        }
-        if (back) gsap.set(back, { borderRadius: "0px", borderColor: "transparent" });
-        if (flipper) gsap.set(flipper, { rotateY: 180 });
-        if (defaultEl) gsap.set(defaultEl, { opacity: 1, scale: 1, y: 0 });
-        if (hoverEl) gsap.set(hoverEl, { opacity: 0, y: 8 });
-      });
+          if (front) {
+            gsap.set(front, {
+              borderRadius: "0px",
+              borderColor: "rgba(255, 255, 255, 0.12)",
+              boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4)",
+            });
+          }
+          if (back) gsap.set(back, { borderRadius: "0px", borderColor: "transparent" });
+          if (flipper) gsap.set(flipper, { rotateY: 180 });
+          if (defaultEl) gsap.set(defaultEl, { opacity: 1, scale: 1, y: 0 });
+          if (hoverEl) gsap.set(hoverEl, { opacity: 0, y: 8 });
+        });
+        document.documentElement.style.overflow = "";
+        document.body.style.overflow = "";
+      }
 
       // =======================================================================
       // MASTER GSAP TIMELINE: DELIBERATE LEFT-TO-RIGHT SEQUENTIAL REVEAL
@@ -455,6 +449,7 @@ export function ProductExperience() {
         paused: true,
         defaults: { ease: "power2.inOut" },
         onComplete: () => {
+          showProductRestingState();
           // FINAL RESTING STATE: Ensure viewport is locked precisely at Product top
           if (sectionRef.current) {
             window.scrollTo({
@@ -462,11 +457,20 @@ export function ProductExperience() {
               behavior: "instant" as ScrollBehavior,
             });
           }
-          stateRef.current = "product";
-          document.documentElement.style.overflow = "";
-          document.body.style.overflow = "";
         },
       });
+
+      const isStandalone = typeof window !== "undefined" && window.location.pathname === "/product";
+      const isHashProduct = typeof window !== "undefined" && window.location.hash === "#product";
+      const isScrolledPastHero = typeof window !== "undefined" && window.scrollY > (window.innerHeight * 0.35);
+      const reduced = prefersReducedMotion();
+
+      // Initialize state based on initial conditions (refresh, direct link, or top landing)
+      if (isStandalone || reduced || isHashProduct || isScrolledPastHero) {
+        showProductRestingState();
+      } else {
+        resetToHeroState();
+      }
 
       // -----------------------------------------------------------------------
       // STAGE 1: BLACK OVERLAY TAKES OVER HERO (0.00s -> 0.45s)
@@ -803,6 +807,33 @@ export function ProductExperience() {
       window.addEventListener("touchmove", handleTouchMove, { passive: false });
       window.addEventListener("keydown", handleKeyDown);
       window.addEventListener("scroll", handleScroll, { passive: false });
+      window.addEventListener("unifolio-show-product", showProductRestingState);
+      window.addEventListener("unifolio-reset-hero", resetToHeroState);
+
+      const handleHashChange = () => {
+        if (window.location.hash === "#product") {
+          showProductRestingState();
+        } else if (window.location.hash === "#hero" || window.location.hash === "") {
+          resetToHeroState();
+        }
+      };
+      window.addEventListener("hashchange", handleHashChange);
+
+      // ScrollTrigger fallback for trackpad scrolling, scrollbar drag, or fast scrolling
+      const scrollTriggerInstance = ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top 75%",
+        onEnter: () => {
+          if (stateRef.current === "hero") {
+            showProductRestingState();
+          }
+        },
+        onLeaveBack: () => {
+          if (window.scrollY < 80) {
+            resetToHeroState();
+          }
+        },
+      });
 
       return () => {
         window.removeEventListener("wheel", handleWheel);
@@ -810,6 +841,10 @@ export function ProductExperience() {
         window.removeEventListener("touchmove", handleTouchMove);
         window.removeEventListener("keydown", handleKeyDown);
         window.removeEventListener("scroll", handleScroll);
+        window.removeEventListener("unifolio-show-product", showProductRestingState);
+        window.removeEventListener("unifolio-reset-hero", resetToHeroState);
+        window.removeEventListener("hashchange", handleHashChange);
+        scrollTriggerInstance.kill();
         document.documentElement.style.overflow = "";
         document.body.style.overflow = "";
         masterTl.kill();

@@ -161,6 +161,10 @@ export function BlueprintNav() {
       return;
     }
 
+    if (href === "#product" || id === "product") {
+      window.dispatchEvent(new CustomEvent("unifolio-show-product"));
+    }
+
     // Direct, controlled smooth navigation with sticky navbar offset (75px)
     const navbarOffset = 75;
     smoothScrollTo(href, { offset: navbarOffset, duration: 0.85, ease: "power2.inOut" });
