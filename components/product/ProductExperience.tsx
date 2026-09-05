@@ -172,8 +172,8 @@ export function ProductExperience() {
 
   // GSAP Interactive Card Hover Choreography: Unified, reversible, zero-glitch controller
   const handleCardHover = (idx: number | null) => {
-    // Only active after all cards have reached their final resting state
-    if (stateRef.current !== "product") return;
+    // Only block during active entrance flip sequence
+    if (stateRef.current === "transitioning") return;
     if (currentHoverRef.current === idx) return;
     currentHoverRef.current = idx;
     setHoveredIdx(idx);
@@ -188,24 +188,9 @@ export function ProductExperience() {
     const expandedWidth = isDesktop ? 365 : isTablet ? 315 : 280;
     const compressedWidth = isDesktop ? 190 : isTablet ? 165 : 148;
 
-    // 1. Cleanly kill all in-progress or delayed tweens on all cards before starting new state
-    PRODUCT_CARDS.forEach((_, i) => {
-      const wrapper = cardWrapperRefs.current[i];
-      const defaultEl = cardDefaultRefs.current[i];
-      const hoverEl = cardHoverRefs.current[i];
-      const front = cardFrontRefs.current[i];
-
-      if (wrapper) gsap.killTweensOf(wrapper);
-      if (defaultEl) gsap.killTweensOf(defaultEl);
-      if (hoverEl) gsap.killTweensOf(hoverEl);
-      if (front) gsap.killTweensOf(front);
-    });
-
-    // 2. Smoothly animate all cards toward their precise destination
+    // Smoothly animate all cards toward their destination
     PRODUCT_CARDS.forEach((card, i) => {
       const wrapper = cardWrapperRefs.current[i];
-      const defaultEl = cardDefaultRefs.current[i];
-      const hoverEl = cardHoverRefs.current[i];
       const front = cardFrontRefs.current[i];
       if (!wrapper) return;
 
@@ -221,28 +206,10 @@ export function ProductExperience() {
           rotateZ: card.restRotateZ,
           opacity: 1,
           zIndex: 10 + (2 - Math.abs(i - 2)),
-          duration: 0.45,
+          duration: 0.38,
           ease: "power2.out",
+          overwrite: "auto",
         });
-
-        if (defaultEl) {
-          gsap.to(defaultEl, {
-            opacity: 1,
-            scale: 1,
-            y: 0,
-            duration: 0.35,
-            ease: "power2.out",
-          });
-        }
-
-        if (hoverEl) {
-          gsap.to(hoverEl, {
-            opacity: 0,
-            y: 8,
-            duration: 0.20,
-            ease: "power2.in",
-          });
-        }
 
         if (front) {
           gsap.to(front, {
@@ -251,6 +218,7 @@ export function ProductExperience() {
             borderColor: "rgba(255, 255, 255, 0.12)",
             duration: 0.35,
             ease: "power2.out",
+            overwrite: "auto",
           });
         }
       } else if (i === idx) {
@@ -265,31 +233,10 @@ export function ProductExperience() {
           rotateZ: 0,
           opacity: 1,
           zIndex: 30,
-          duration: 0.45,
+          duration: 0.38,
           ease: "power2.out",
+          overwrite: "auto",
         });
-
-        if (defaultEl) {
-          // Fade out centered default content cleanly
-          gsap.to(defaultEl, {
-            opacity: 0,
-            scale: 0.94,
-            y: -6,
-            duration: 0.22,
-            ease: "power2.inOut",
-          });
-        }
-
-        if (hoverEl) {
-          // Reveal reading layout content with slight delay so expansion breathes
-          gsap.to(hoverEl, {
-            opacity: 1,
-            y: 0,
-            duration: 0.35,
-            delay: 0.08,
-            ease: "power2.out",
-          });
-        }
 
         if (front) {
           gsap.to(front, {
@@ -298,6 +245,7 @@ export function ProductExperience() {
             borderColor: "rgba(16, 185, 129, 0.5)",
             duration: 0.35,
             ease: "power2.out",
+            overwrite: "auto",
           });
         }
       } else {
@@ -312,29 +260,10 @@ export function ProductExperience() {
           rotateZ: card.restRotateZ,
           opacity: 0.70,
           zIndex: 10,
-          duration: 0.45,
+          duration: 0.38,
           ease: "power2.out",
+          overwrite: "auto",
         });
-
-        if (defaultEl) {
-          // Centered default content gently dims
-          gsap.to(defaultEl, {
-            opacity: 0.65,
-            scale: 0.96,
-            y: 0,
-            duration: 0.30,
-            ease: "power2.out",
-          });
-        }
-
-        if (hoverEl) {
-          gsap.to(hoverEl, {
-            opacity: 0,
-            y: 8,
-            duration: 0.18,
-            ease: "power2.in",
-          });
-        }
 
         if (front) {
           gsap.to(front, {
@@ -343,6 +272,7 @@ export function ProductExperience() {
             borderColor: "rgba(255, 255, 255, 0.08)",
             duration: 0.35,
             ease: "power2.out",
+            overwrite: "auto",
           });
         }
       }
@@ -389,8 +319,8 @@ export function ProductExperience() {
           }
           if (back) gsap.set(back, { borderRadius: "20px" });
           if (flipper) gsap.set(flipper, { rotateY: 0 });
-          if (defaultEl) gsap.set(defaultEl, { opacity: 1, scale: 1, y: 0 });
-          if (hoverEl) gsap.set(hoverEl, { opacity: 0, y: 8 });
+          if (defaultEl) gsap.set(defaultEl, { clearProps: "opacity,transform" });
+          if (hoverEl) gsap.set(hoverEl, { clearProps: "opacity,transform" });
         });
         document.documentElement.style.overflow = "";
         document.body.style.overflow = "";
@@ -434,8 +364,8 @@ export function ProductExperience() {
           }
           if (back) gsap.set(back, { borderRadius: "0px", borderColor: "transparent" });
           if (flipper) gsap.set(flipper, { rotateY: 180 });
-          if (defaultEl) gsap.set(defaultEl, { opacity: 1, scale: 1, y: 0 });
-          if (hoverEl) gsap.set(hoverEl, { opacity: 0, y: 8 });
+          if (defaultEl) gsap.set(defaultEl, { clearProps: "opacity,transform" });
+          if (hoverEl) gsap.set(hoverEl, { clearProps: "opacity,transform" });
         });
         document.documentElement.style.overflow = "";
         document.body.style.overflow = "";
@@ -935,13 +865,18 @@ export function ProductExperience() {
           className="w-full flex-1 flex items-center justify-center my-auto relative z-25 py-2"
           style={{ perspective: "1400px" }}
           onMouseLeave={() => handleCardHover(null)}
+          onPointerMove={(e) => {
+            // When moving over stage background outside any card, return cards to resting state
+            if (e.target === cardsStageRef.current) {
+              handleCardHover(null);
+            }
+          }}
         >
-          {/* Transforming Cluster Wrapper */}
+          {/* Transforming Cluster Wrapper: pointer-events-none prevents flex plane from intercepting tilted 3D cards */}
           <div
             ref={cardsClusterRef}
-            className="flex items-center justify-center gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-3.5 xl:gap-4 w-full max-w-[1340px] mx-auto overflow-x-auto lg:overflow-visible py-1.5 px-2 no-scrollbar will-change-transform"
+            className="flex items-center justify-center gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-3.5 xl:gap-4 w-full max-w-[1340px] mx-auto overflow-x-auto lg:overflow-visible py-1.5 px-2 no-scrollbar will-change-transform pointer-events-none"
             style={{ transformStyle: "preserve-3d" }}
-            onMouseLeave={() => handleCardHover(null)}
           >
             {PRODUCT_CARDS.map((card, idx) => {
               const isHovered = hoveredIdx === idx;
@@ -953,7 +888,7 @@ export function ProductExperience() {
                     cardWrapperRefs.current[idx] = el;
                   }}
                   onMouseEnter={() => handleCardHover(idx)}
-                  className="relative shrink-0 w-[175px] sm:w-[190px] md:w-[205px] lg:w-[215px] xl:w-[225px] 2xl:w-[235px] h-[285px] sm:h-[310px] md:h-[330px] lg:h-[345px] xl:h-[360px] 2xl:h-[375px] cursor-pointer will-change-transform"
+                  className="relative shrink-0 w-[175px] sm:w-[190px] md:w-[205px] lg:w-[215px] xl:w-[225px] 2xl:w-[235px] h-[285px] sm:h-[310px] md:h-[330px] lg:h-[345px] xl:h-[360px] 2xl:h-[375px] cursor-pointer will-change-transform pointer-events-auto"
                   style={{
                     transformStyle: "preserve-3d",
                   }}
@@ -975,7 +910,7 @@ export function ProductExperience() {
                       ref={(el) => {
                         cardFrontRefs.current[idx] = el;
                       }}
-                      className="absolute inset-0 w-full h-full rounded-[20px] overflow-hidden bg-[#070908] border border-white/12 shadow-2xl transition-all duration-300 will-change-transform flex flex-col justify-between"
+                      className="absolute inset-0 w-full h-full rounded-[20px] overflow-hidden bg-[#070908] border border-white/12 shadow-2xl will-change-transform flex flex-col justify-between"
                       style={{
                         backfaceVisibility: "hidden",
                         WebkitBackfaceVisibility: "hidden",
@@ -1013,7 +948,16 @@ export function ProductExperience() {
                         ref={(el) => {
                           cardDefaultRefs.current[idx] = el;
                         }}
-                        className="absolute inset-0 z-10 flex flex-col items-center justify-center p-5 sm:p-6 text-center pointer-events-none select-none will-change-transform"
+                        className={`absolute inset-0 z-10 flex flex-col items-center justify-center p-5 sm:p-6 text-center pointer-events-none select-none will-change-transform transition-all duration-300 ease-out ${
+                          isHovered
+                            ? "opacity-0 scale-95 -translate-y-2 pointer-events-none"
+                            : "opacity-100 scale-100 translate-y-0"
+                        }`}
+                        style={{
+                          opacity: isHovered ? 0 : 1,
+                          visibility: isHovered ? "hidden" : "visible",
+                          transition: "opacity 250ms ease, visibility 250ms ease, transform 300ms ease-out",
+                        }}
                       >
                         {/* Centered Heading */}
                         <h3 className="font-sans font-bold text-sm sm:text-base xl:text-[17px] text-white leading-snug tracking-tight max-w-[200px]">
@@ -1028,10 +972,15 @@ export function ProductExperience() {
                         ref={(el) => {
                           cardHoverRefs.current[idx] = el;
                         }}
-                        className="absolute inset-0 z-20 flex flex-col justify-end p-5 sm:p-6 text-left pointer-events-none will-change-transform"
+                        className={`absolute inset-0 z-20 flex flex-col justify-end p-5 sm:p-6 text-left will-change-transform transition-all duration-300 ease-out ${
+                          isHovered
+                            ? "opacity-100 translate-y-0 pointer-events-auto"
+                            : "opacity-0 translate-y-2 pointer-events-none"
+                        }`}
                         style={{
-                          opacity: 0,
-                          transform: "translateY(8px)",
+                          opacity: isHovered ? 1 : 0,
+                          visibility: isHovered ? "visible" : "hidden",
+                          transition: "opacity 250ms ease, visibility 250ms ease, transform 300ms ease-out",
                         }}
                       >
                         {/* Bottom Reading Area: Heading + Extended Copy */}
@@ -1045,7 +994,7 @@ export function ProductExperience() {
                               {card.hoverParagraph}
                             </p>
                           ) : (
-                            <div className="space-y-1.5 max-h-[175px] overflow-y-auto pr-1 no-scrollbar pointer-events-auto">
+                            <div className="space-y-1.5 max-h-[175px] overflow-y-auto pr-1 no-scrollbar">
                               {card.hoverBullets?.map((bullet, bIdx) => (
                                 <div key={bIdx} className="text-[10.5px] sm:text-[11px] leading-snug">
                                   <span className="font-semibold text-emerald-300 mr-1">
