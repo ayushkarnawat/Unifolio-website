@@ -81,6 +81,14 @@ export function FinancialLandscapeCanvas({
 
     let animFrameId = 0;
     let isDisposed = false;
+    // This canvas mounts immediately with the page (well before it scrolls
+    // into view), so without gating it would render continuously at 60fps
+    // - with antialiasing and ACES tone mapping - the entire time someone is
+    // looking at the Hero above it, competing with the Hero video for GPU
+    // time. Pausing the render call while off-screen is invisible to the
+    // user: the idle breathing motion is driven by wall-clock time (THREE.Clock),
+    // so it resumes at the correct phase the instant it's back in view.
+    let isVisible = true;
 
     // --- SCENE SETUP ---
     const scene = new THREE.Scene();
@@ -182,6 +190,8 @@ export function FinancialLandscapeCanvas({
     const animate = () => {
       if (isDisposed) return;
       animFrameId = requestAnimationFrame(animate);
+
+      if (!isVisible) return;
 
       const time = clock.getElapsedTime();
       const p = progressRef.current;
@@ -407,11 +417,21 @@ export function FinancialLandscapeCanvas({
     window.addEventListener("resize", handleResize);
     handleResize();
 
+    // --- VISIBILITY GATING ---
+    const intersectionObserver = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+      },
+      { threshold: 0 }
+    );
+    intersectionObserver.observe(container);
+
     // --- CLEANUP ---
     return () => {
       isDisposed = true;
       cancelAnimationFrame(animFrameId);
       window.removeEventListener("resize", handleResize);
+      intersectionObserver.disconnect();
 
       stageMeshes.forEach((mesh) => {
         mesh.geometry.dispose();
