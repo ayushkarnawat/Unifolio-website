@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { HeroIntroLogo } from "@/components/hero/HeroIntroLogo";
 import { BlueprintNav } from "@/components/blueprint/BlueprintNav";
 import { BlueprintHero } from "@/components/blueprint/BlueprintHero";
-import { FinancialLandscapeExperience } from "@/components/landscape/FinancialLandscapeExperience";
+import { ProductExperience } from "@/components/product/ProductExperience";
 import { SecurityExperience } from "@/components/security/SecurityExperience";
 import { BlueprintAboutMetrics } from "@/components/blueprint/BlueprintAboutMetrics";
 import { BlueprintFaq } from "@/components/blueprint/BlueprintFaq";
@@ -32,11 +32,11 @@ export default function HomePage() {
       {/* Floating Pill Navigation Bar */}
       <BlueprintNav />
 
-      {/* Section 1: Hero Aperture Landing & Expansion */}
+      {/* Section 1: Hero Aperture Landing */}
       <BlueprintHero />
 
-      {/* Section 2: The 3D Financial Landscape (Product Narrative) */}
-      <FinancialLandscapeExperience />
+      {/* Section 2: Product Experience (3D Animated Cards & Capability Dimensions) */}
+      <ProductExperience />
 
       {/* Section 3: Cinematic Spatial Security Narrative */}
       <SecurityExperience />

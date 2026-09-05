@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
 import { BlueprintNav } from "@/components/blueprint/BlueprintNav";
-import { FinancialLandscapeExperience } from "@/components/landscape/FinancialLandscapeExperience";
+import { ProductExperience } from "@/components/product/ProductExperience";
 import { BlueprintContact } from "@/components/blueprint/BlueprintContact";
 
 export const metadata: Metadata = {
-  title: "Product — The 3D Financial Landscape",
+  title: "Product — Understand Your Wealth | Unifolio",
   description:
-    "Explore your wealth as an evolving abstract 3D Financial Landscape. Understand every account, fee, overlap, and risk in one unified sculptural perspective.",
+    "Explore the five core dimensions of wealth intelligence: Ask anything, See everything, Understand what you own, Know your risk, and Plan ahead.",
 };
 
 export default function ProductPage() {
   return (
-    <main className="relative bg-[#FAF8F5] dark:bg-[#000000] transition-colors duration-500">
+    <main className="relative bg-[#FAF8F5] dark:bg-[#000000] transition-colors duration-500 pt-16">
       {/* Floating Pill Navigation Bar */}
       <BlueprintNav />
 
-      {/* Full Dedicated Product Experience: The 3D Financial Landscape */}
-      <FinancialLandscapeExperience />
+      {/* Full Dedicated Product Experience */}
+      <ProductExperience />
 
       {/* Closing Contact & Waitlist */}
       <BlueprintContact />
