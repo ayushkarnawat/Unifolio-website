@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { siteConfig } from "@/content/site";
 import { buildOrganizationSchema } from "@/lib/schema";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { InteractiveFluidBackground } from "@/components/canvas/InteractiveFluidBackground";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -101,6 +102,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             // eslint-disable-next-line react/no-danger
             dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
           />
+          {/* Subtle Ambient Interactive Fluid Hover Background across the entire site */}
+          <InteractiveFluidBackground />
           <SiteHeader />
           <main className="flex-1">{children}</main>
           <SiteFooter />
