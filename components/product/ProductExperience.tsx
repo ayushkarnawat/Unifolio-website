@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
 import { LinkButton } from "@/components/ui/Button";
@@ -165,18 +165,33 @@ export function ProductExperience() {
 
   // Hover tracking ref to prevent duplicate or conflicting animation triggers
   const currentHoverRef = useRef<number | null>(null);
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  // Debounces raw enter/leave events before they're committed to an actual
+  // animation. The cards' widths are animated on hover (see below), which
+  // means the flex row genuinely reflows and sibling card edges shift
+  // slightly under a stationary cursor mid-transition; moving smoothly from
+  // one card to the next also briefly crosses the small flex `gap` between
+  // them. Both cases fire a raw mouseenter/mouseleave that don't reflect a
+  // real change of intent - committing them immediately is what caused
+  // cards to flicker/rapidly toggle. A short async settle window absorbs
+  // that noise without adding perceptible input lag (the resulting tween
+  // itself already runs 350-450ms).
+  const hoverCommitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (hoverCommitTimeoutRef.current) clearTimeout(hoverCommitTimeoutRef.current);
+    };
+  }, []);
 
   // State management: 'hero' | 'transitioning' | 'product'
   const stateRef = useRef<"hero" | "transitioning" | "product">("hero");
 
   // GSAP Interactive Card Hover Choreography: Unified, reversible, zero-glitch controller
-  const handleCardHover = (idx: number | null) => {
-    // Only block during active entrance flip sequence
-    if (stateRef.current === "transitioning") return;
+  const commitCardHover = (idx: number | null) => {
+    // Only active after all cards have reached their final resting state
+    if (stateRef.current !== "product") return;
     if (currentHoverRef.current === idx) return;
     currentHoverRef.current = idx;
-    setHoveredIdx(idx);
 
     const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
     const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
@@ -188,9 +203,24 @@ export function ProductExperience() {
     const expandedWidth = isDesktop ? 365 : isTablet ? 315 : 280;
     const compressedWidth = isDesktop ? 190 : isTablet ? 165 : 148;
 
-    // Smoothly animate all cards toward their destination
+    // 1. Cleanly kill all in-progress or delayed tweens on all cards before starting new state
+    PRODUCT_CARDS.forEach((_, i) => {
+      const wrapper = cardWrapperRefs.current[i];
+      const defaultEl = cardDefaultRefs.current[i];
+      const hoverEl = cardHoverRefs.current[i];
+      const front = cardFrontRefs.current[i];
+
+      if (wrapper) gsap.killTweensOf(wrapper);
+      if (defaultEl) gsap.killTweensOf(defaultEl);
+      if (hoverEl) gsap.killTweensOf(hoverEl);
+      if (front) gsap.killTweensOf(front);
+    });
+
+    // 2. Smoothly animate all cards toward their precise destination
     PRODUCT_CARDS.forEach((card, i) => {
       const wrapper = cardWrapperRefs.current[i];
+      const defaultEl = cardDefaultRefs.current[i];
+      const hoverEl = cardHoverRefs.current[i];
       const front = cardFrontRefs.current[i];
       if (!wrapper) return;
 
@@ -206,10 +236,28 @@ export function ProductExperience() {
           rotateZ: card.restRotateZ,
           opacity: 1,
           zIndex: 10 + (2 - Math.abs(i - 2)),
-          duration: 0.38,
+          duration: 0.45,
           ease: "power2.out",
-          overwrite: "auto",
         });
+
+        if (defaultEl) {
+          gsap.to(defaultEl, {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 0.35,
+            ease: "power2.out",
+          });
+        }
+
+        if (hoverEl) {
+          gsap.to(hoverEl, {
+            opacity: 0,
+            y: 8,
+            duration: 0.20,
+            ease: "power2.in",
+          });
+        }
 
         if (front) {
           gsap.to(front, {
@@ -218,7 +266,6 @@ export function ProductExperience() {
             borderColor: "rgba(255, 255, 255, 0.12)",
             duration: 0.35,
             ease: "power2.out",
-            overwrite: "auto",
           });
         }
       } else if (i === idx) {
@@ -233,10 +280,31 @@ export function ProductExperience() {
           rotateZ: 0,
           opacity: 1,
           zIndex: 30,
-          duration: 0.38,
+          duration: 0.45,
           ease: "power2.out",
-          overwrite: "auto",
         });
+
+        if (defaultEl) {
+          // Fade out centered default content cleanly
+          gsap.to(defaultEl, {
+            opacity: 0,
+            scale: 0.94,
+            y: -6,
+            duration: 0.22,
+            ease: "power2.inOut",
+          });
+        }
+
+        if (hoverEl) {
+          // Reveal reading layout content with slight delay so expansion breathes
+          gsap.to(hoverEl, {
+            opacity: 1,
+            y: 0,
+            duration: 0.35,
+            delay: 0.08,
+            ease: "power2.out",
+          });
+        }
 
         if (front) {
           gsap.to(front, {
@@ -245,7 +313,6 @@ export function ProductExperience() {
             borderColor: "rgba(16, 185, 129, 0.5)",
             duration: 0.35,
             ease: "power2.out",
-            overwrite: "auto",
           });
         }
       } else {
@@ -260,10 +327,29 @@ export function ProductExperience() {
           rotateZ: card.restRotateZ,
           opacity: 0.70,
           zIndex: 10,
-          duration: 0.38,
+          duration: 0.45,
           ease: "power2.out",
-          overwrite: "auto",
         });
+
+        if (defaultEl) {
+          // Centered default content gently dims
+          gsap.to(defaultEl, {
+            opacity: 0.65,
+            scale: 0.96,
+            y: 0,
+            duration: 0.30,
+            ease: "power2.out",
+          });
+        }
+
+        if (hoverEl) {
+          gsap.to(hoverEl, {
+            opacity: 0,
+            y: 8,
+            duration: 0.18,
+            ease: "power2.in",
+          });
+        }
 
         if (front) {
           gsap.to(front, {
@@ -272,11 +358,77 @@ export function ProductExperience() {
             borderColor: "rgba(255, 255, 255, 0.08)",
             duration: 0.35,
             ease: "power2.out",
-            overwrite: "auto",
           });
         }
       }
     });
+  };
+
+  // Determine which card a pointer X position belongs to using the row's
+  // own intended layout (its resting/expanded/compressed slot widths plus
+  // its actual flex `gap`), rather than hit-testing the cards' own DOM
+  // boxes. The cards sit in a tilted 3D "amphitheater" arc (rotateY/rotateZ/
+  // z, with center cards on top via zIndex) which makes their rendered
+  // surfaces overlap on screen - hit-testing an individual card's box means
+  // whichever card is painted on top there wins, silently stealing most of
+  // an outer card's hoverable area (verified: only its outer sliver away
+  // from center is ever actually reachable). Computing a stable left-to-right
+  // band per card from the cluster's own untransformed rect sidesteps that
+  // overlap entirely and gives every card an equal, predictable target.
+  const getHoverBandIndex = (clientX: number): number | null => {
+    const cluster = cardsClusterRef.current;
+    if (!cluster) return null;
+    const rect = cluster.getBoundingClientRect();
+    if (clientX < rect.left || clientX > rect.right) return null;
+
+    const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
+    const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
+    const restingWidth = isDesktop ? 225 : isTablet ? 195 : 175;
+    const expandedWidth = isDesktop ? 365 : isTablet ? 315 : 280;
+    const compressedWidth = isDesktop ? 190 : isTablet ? 165 : 148;
+
+    const hovered = currentHoverRef.current;
+    const widths = PRODUCT_CARDS.map((_, i) =>
+      hovered === null ? restingWidth : i === hovered ? expandedWidth : compressedWidth
+    );
+
+    const gap = parseFloat(window.getComputedStyle(cluster).columnGap || "0") || 0;
+    const totalWidth = widths.reduce((sum, w) => sum + w, 0) + gap * (widths.length - 1);
+
+    // Cards are horizontally centered within the cluster (justify-content: center)
+    let bandStart = rect.left + (rect.width - totalWidth) / 2;
+    for (let i = 0; i < widths.length; i++) {
+      const bandEnd = bandStart + widths[i];
+      if (clientX >= bandStart && clientX < bandEnd) return i;
+      bandStart = bandEnd + gap;
+    }
+    return clientX < rect.left + rect.width / 2 ? 0 : widths.length - 1;
+  };
+
+  // Public hover entry point used by the JSX below. Coalesces bursts of
+  // enter/leave noise into a single committed target: entering a card
+  // commits almost immediately (imperceptible delay), while collapsing back
+  // to resting waits slightly longer so a same-tick re-entry (a different
+  // band, or the same one after a reflow blip) can cancel the collapse
+  // instead of visibly snapping shut and reopening.
+  const handleCardHover = (idx: number | null) => {
+    if (stateRef.current !== "product") return;
+    if (idx === currentHoverRef.current) {
+      if (hoverCommitTimeoutRef.current) {
+        clearTimeout(hoverCommitTimeoutRef.current);
+        hoverCommitTimeoutRef.current = null;
+      }
+      return;
+    }
+    if (hoverCommitTimeoutRef.current) {
+      clearTimeout(hoverCommitTimeoutRef.current);
+      hoverCommitTimeoutRef.current = null;
+    }
+    const delay = idx === null ? 90 : 20;
+    hoverCommitTimeoutRef.current = setTimeout(() => {
+      hoverCommitTimeoutRef.current = null;
+      commitCardHover(idx);
+    }, delay);
   };
 
   useGSAP(
@@ -319,8 +471,8 @@ export function ProductExperience() {
           }
           if (back) gsap.set(back, { borderRadius: "20px" });
           if (flipper) gsap.set(flipper, { rotateY: 0 });
-          if (defaultEl) gsap.set(defaultEl, { clearProps: "opacity,transform" });
-          if (hoverEl) gsap.set(hoverEl, { clearProps: "opacity,transform" });
+          if (defaultEl) gsap.set(defaultEl, { opacity: 1, scale: 1, y: 0 });
+          if (hoverEl) gsap.set(hoverEl, { opacity: 0, y: 8 });
         });
         document.documentElement.style.overflow = "";
         document.body.style.overflow = "";
@@ -364,8 +516,8 @@ export function ProductExperience() {
           }
           if (back) gsap.set(back, { borderRadius: "0px", borderColor: "transparent" });
           if (flipper) gsap.set(flipper, { rotateY: 180 });
-          if (defaultEl) gsap.set(defaultEl, { clearProps: "opacity,transform" });
-          if (hoverEl) gsap.set(hoverEl, { clearProps: "opacity,transform" });
+          if (defaultEl) gsap.set(defaultEl, { opacity: 1, scale: 1, y: 0 });
+          if (hoverEl) gsap.set(hoverEl, { opacity: 0, y: 8 });
         });
         document.documentElement.style.overflow = "";
         document.body.style.overflow = "";
@@ -872,23 +1024,25 @@ export function ProductExperience() {
             }
           }}
         >
-          {/* Transforming Cluster Wrapper: pointer-events-none prevents flex plane from intercepting tilted 3D cards */}
+          {/* Transforming Cluster Wrapper */}
           <div
             ref={cardsClusterRef}
-            className="flex items-center justify-center gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-3.5 xl:gap-4 w-full max-w-[1340px] mx-auto overflow-x-auto lg:overflow-visible py-1.5 px-2 no-scrollbar will-change-transform pointer-events-none"
+            className="flex items-center justify-center gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-3.5 xl:gap-4 w-full max-w-[1340px] mx-auto overflow-x-auto lg:overflow-visible py-1.5 px-2 no-scrollbar will-change-transform"
             style={{ transformStyle: "preserve-3d" }}
+            onMouseMove={(e) => {
+              const band = getHoverBandIndex(e.clientX);
+              handleCardHover(band);
+            }}
+            onMouseLeave={() => handleCardHover(null)}
           >
             {PRODUCT_CARDS.map((card, idx) => {
-              const isHovered = hoveredIdx === idx;
-
               return (
                 <div
                   key={card.id}
                   ref={(el) => {
                     cardWrapperRefs.current[idx] = el;
                   }}
-                  onMouseEnter={() => handleCardHover(idx)}
-                  className="relative shrink-0 w-[175px] sm:w-[190px] md:w-[205px] lg:w-[215px] xl:w-[225px] 2xl:w-[235px] h-[285px] sm:h-[310px] md:h-[330px] lg:h-[345px] xl:h-[360px] 2xl:h-[375px] cursor-pointer will-change-transform pointer-events-auto"
+                  className="relative shrink-0 w-[175px] sm:w-[190px] md:w-[205px] lg:w-[215px] xl:w-[225px] 2xl:w-[235px] h-[285px] sm:h-[310px] md:h-[330px] lg:h-[345px] xl:h-[360px] 2xl:h-[375px] cursor-pointer will-change-transform"
                   style={{
                     transformStyle: "preserve-3d",
                   }}
@@ -914,9 +1068,6 @@ export function ProductExperience() {
                       style={{
                         backfaceVisibility: "hidden",
                         WebkitBackfaceVisibility: "hidden",
-                        boxShadow: isHovered
-                          ? "0 25px 50px -12px rgba(16, 185, 129, 0.35), 0 0 0 1px rgba(16, 185, 129, 0.5)"
-                          : "0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4)",
                       }}
                     >
                       {/* Unified Panoramic Continuous Flowing Gradient Layer */}
@@ -948,16 +1099,7 @@ export function ProductExperience() {
                         ref={(el) => {
                           cardDefaultRefs.current[idx] = el;
                         }}
-                        className={`absolute inset-0 z-10 flex flex-col items-center justify-center p-5 sm:p-6 text-center pointer-events-none select-none will-change-transform transition-all duration-300 ease-out ${
-                          isHovered
-                            ? "opacity-0 scale-95 -translate-y-2 pointer-events-none"
-                            : "opacity-100 scale-100 translate-y-0"
-                        }`}
-                        style={{
-                          opacity: isHovered ? 0 : 1,
-                          visibility: isHovered ? "hidden" : "visible",
-                          transition: "opacity 250ms ease, visibility 250ms ease, transform 300ms ease-out",
-                        }}
+                        className="absolute inset-0 z-10 flex flex-col items-center justify-center p-5 sm:p-6 text-center pointer-events-none select-none will-change-transform"
                       >
                         {/* Centered Heading */}
                         <h3 className="font-sans font-bold text-sm sm:text-base xl:text-[17px] text-white leading-snug tracking-tight max-w-[200px]">
@@ -972,15 +1114,10 @@ export function ProductExperience() {
                         ref={(el) => {
                           cardHoverRefs.current[idx] = el;
                         }}
-                        className={`absolute inset-0 z-20 flex flex-col justify-end p-5 sm:p-6 text-left will-change-transform transition-all duration-300 ease-out ${
-                          isHovered
-                            ? "opacity-100 translate-y-0 pointer-events-auto"
-                            : "opacity-0 translate-y-2 pointer-events-none"
-                        }`}
+                        className="absolute inset-0 z-20 flex flex-col justify-end p-5 sm:p-6 text-left pointer-events-none will-change-transform"
                         style={{
-                          opacity: isHovered ? 1 : 0,
-                          visibility: isHovered ? "visible" : "hidden",
-                          transition: "opacity 250ms ease, visibility 250ms ease, transform 300ms ease-out",
+                          opacity: 0,
+                          transform: "translateY(8px)",
                         }}
                       >
                         {/* Bottom Reading Area: Heading + Extended Copy */}
@@ -994,7 +1131,7 @@ export function ProductExperience() {
                               {card.hoverParagraph}
                             </p>
                           ) : (
-                            <div className="space-y-1.5 max-h-[175px] overflow-y-auto pr-1 no-scrollbar">
+                            <div className="space-y-1.5 max-h-[175px] overflow-y-auto pr-1 no-scrollbar pointer-events-auto">
                               {card.hoverBullets?.map((bullet, bIdx) => (
                                 <div key={bIdx} className="text-[10.5px] sm:text-[11px] leading-snug">
                                   <span className="font-semibold text-emerald-300 mr-1">

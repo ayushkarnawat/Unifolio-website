@@ -445,19 +445,33 @@ export function HeroProductExperience() {
         }
       };
 
+      // Normalize deltaY across input devices: trackpads report pixel deltas
+      // (deltaMode 0) while a physical mouse wheel commonly reports line deltas
+      // (deltaMode 1, e.g. deltaY of just 1-3), which would never clear a
+      // pixel-tuned threshold. Converting line/page units to an equivalent
+      // pixel value keeps the existing trackpad-tuned threshold intact while
+      // letting a single, even slow, mouse-wheel notch trigger reliably.
+      const PIXELS_PER_LINE = 16;
+      const normalizeWheelDelta = (e: WheelEvent) => {
+        if (e.deltaMode === 1) return e.deltaY * PIXELS_PER_LINE; // DOM_DELTA_LINE
+        if (e.deltaMode === 2) return e.deltaY * window.innerHeight; // DOM_DELTA_PAGE
+        return e.deltaY; // DOM_DELTA_PIXEL
+      };
+
       // Native Wheel listener: ONE scroll gesture triggers the full choreographed timeline!
       const handleWheel = (e: WheelEvent) => {
         const scrollY = window.scrollY;
         const containerTop = containerRef.current?.offsetTop || 0;
+        const delta = normalizeWheelDelta(e);
 
         // When user is near the hero (top of page) and scrolls down
-        if (scrollY <= containerTop + 50 && e.deltaY > 15) {
+        if (scrollY <= containerTop + 50 && delta > 15) {
           if (currentSceneRef.current === "hero") {
             triggerForward();
           }
         }
         // When user is at the product section and scrolls back up
-        else if (scrollY <= containerTop + window.innerHeight + 50 && e.deltaY < -15) {
+        else if (scrollY <= containerTop + window.innerHeight + 50 && delta < -15) {
           if (currentSceneRef.current === "product") {
             triggerReverse();
           }
