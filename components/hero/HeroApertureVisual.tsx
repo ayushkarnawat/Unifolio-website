@@ -158,7 +158,7 @@ export function HeroApertureVisual({
         id="hero-ring-portal"
         className="absolute pointer-events-none w-2 h-2"
         style={{
-          left: "66.5%",
+          left: "57.0%",
           top: "48.0%",
           transform: "translate(-50%, -50%)",
         }}
