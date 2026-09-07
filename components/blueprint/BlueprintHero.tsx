@@ -147,6 +147,61 @@ const PRODUCT_CARDS: ProductCardData[] = [
   },
 ];
 
+interface SecurityStateItem {
+  type: "hero" | "principle" | "closing";
+  headline?: string;
+  body?: string;
+}
+
+const SECURITY_STATES: SecurityStateItem[] = [
+  // State 1: Hero
+  {
+    type: "hero",
+    headline: "We take your data as seriously as you take your money.",
+  },
+  // State 2
+  {
+    type: "principle",
+    headline: "Read-only, always",
+    body: "Unifolio can see your accounts. It can never move your money.",
+  },
+  // State 3
+  {
+    type: "principle",
+    headline: "We never see your passwords",
+    body: "Your bank login stays with your bank. We connect through India's RBI-regulated Account Aggregator framework, so your credentials never reach us, by design.",
+  },
+  // State 4
+  {
+    type: "principle",
+    headline: "Locked down, everywhere",
+    body: "Your data is encrypted with AES-256 at rest and TLS in transit, the same standard banks use.",
+  },
+  // State 5
+  {
+    type: "principle",
+    headline: "You control the connection",
+    body: "Every account you link is approved by you and revocable anytime. Revoke it, and data sharing stops instantly.",
+  },
+  // State 6
+  {
+    type: "principle",
+    headline: "Stored in India",
+    body: "Your data stays on secure infrastructure based in India, meeting RBI's data localization requirements.",
+  },
+  // State 7
+  {
+    type: "principle",
+    headline: "We don't sell your data",
+    body: "It's used only to show you your own financial picture, never sold, never used for advertising, only ever with your consent, in line with India's DPDP Act.",
+  },
+  // State 8 — Closing
+  {
+    type: "closing",
+    headline: "Security isn't a feature here. It's the baseline everything else is built on.",
+  },
+];
+
 export function BlueprintHero() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -165,6 +220,14 @@ export function BlueprintHero() {
   const headlineRef = useRef<HTMLHeadingElement | null>(null);
   const subheadRef = useRef<HTMLParagraphElement | null>(null);
   const ctaRef = useRef<HTMLAnchorElement | null>(null);
+  const floorLineRef = useRef<HTMLDivElement | null>(null);
+
+  // Security Pinned Content Stage & Step Refs
+  const securityStageRef = useRef<HTMLDivElement | null>(null);
+  const securityStateRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const currentSecurityStateRef = useRef<number>(0);
+  const isSecurityTransitioningRef = useRef<boolean>(false);
+  const lastSecurityScrollTimeRef = useRef<number>(0);
 
   const cardsStageRef = useRef<HTMLDivElement | null>(null);
   const cardsClusterRef = useRef<HTMLDivElement | null>(null);
@@ -175,6 +238,8 @@ export function BlueprintHero() {
   const cardDefaultRefs = useRef<(HTMLDivElement | null)[]>([]);
   const cardHoverRefs = useRef<(HTMLDivElement | null)[]>([]);
   const cardIllustrationRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const cardGradientBgRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const cardGlassOverlayRefs = useRef<(HTMLDivElement | null)[]>([]);
   const companionCardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const COMPANION_COUNT = 21;
   const productToRingTlRef = useRef<gsap.core.Timeline | null>(null);
@@ -1086,6 +1151,9 @@ export function BlueprintHero() {
             transitionAnimatingRef.current = false;
             transitionCompleteRef.current = true;
             isHoldingProductRef.current = false;
+            currentSecurityStateRef.current = 0;
+            isSecurityTransitioningRef.current = false;
+            lastSecurityScrollTimeRef.current = Date.now();
 
             // Seamlessly continue the slow rotation indefinitely at constant speed
             if (ringRotateTweenRef.current) ringRotateTweenRef.current.kill();
@@ -1097,24 +1165,10 @@ export function BlueprintHero() {
               force3D: true,
             });
 
-            // Drain residual scroll momentum from trackpad/mousewheel before unlocking
-            if (momentumDrainTimeoutRef.current) clearTimeout(momentumDrainTimeoutRef.current);
-            momentumDrainTimeoutRef.current = setTimeout(() => {
-              momentumDrainTimeoutRef.current = null;
-              if (stageRef.current) {
-                stageRef.current.style.position = "";
-                stageRef.current.style.top = "";
-                stageRef.current.style.left = "";
-                stageRef.current.style.width = "";
-                stageRef.current.style.height = "";
-                stageRef.current.style.zIndex = "";
-              }
-              document.documentElement.style.overflow = "";
-              document.body.style.overflow = "";
-              if (lockScrollYRef.current > 0) {
-                window.scrollTo(0, lockScrollYRef.current);
-              }
-            }, 100);
+            // The viewport and stage REMAIN strictly locked and fixed!
+            // stageRef.current stays position: fixed, width: 100%, height: 100vh, zIndex: 40
+            // document overflow stays hidden
+            // Discrete scroll gestures now control Security States 1 to 8!
           },
           onReverseComplete: () => {
             stateRef.current = "product";
@@ -1123,10 +1177,20 @@ export function BlueprintHero() {
             transitionCompleteRef.current = false;
             productCompleteRef.current = true;
             isHoldingProductRef.current = true;
+            currentSecurityStateRef.current = 0;
+            isSecurityTransitioningRef.current = false;
+
             if (ringRotateTweenRef.current) {
               ringRotateTweenRef.current.kill();
               ringRotateTweenRef.current = null;
             }
+
+            if (securityStageRef.current) {
+              gsap.set(securityStageRef.current, { opacity: 0, visibility: "hidden" });
+            }
+            securityStateRefs.current.forEach((el) => {
+              if (el) gsap.set(el, { opacity: 0, visibility: "hidden", y: 0 });
+            });
 
             if (stageRef.current) {
               stageRef.current.style.position = "";
@@ -1143,9 +1207,30 @@ export function BlueprintHero() {
             }
             PRODUCT_CARDS.forEach((card, i) => {
               const wrapper = cardWrapperRefs.current[i];
+              const front = cardFrontRefs.current[i];
               if (wrapper) {
                 gsap.set(wrapper, { zIndex: 10 + (2 - Math.abs(i - 2)) });
               }
+              if (front) {
+                gsap.set(front, {
+                  background: "",
+                  backgroundColor: "#070908",
+                  borderColor: "rgba(255, 255, 255, 0.12)",
+                  boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4)",
+                });
+              }
+            });
+            cardGradientBgRefs.current.forEach((el) => {
+              if (el) gsap.set(el, { opacity: 1 });
+            });
+            cardIllustrationRefs.current.forEach((el) => {
+              if (el) gsap.set(el, { opacity: 0.88 });
+            });
+            cardDefaultRefs.current.forEach((el) => {
+              if (el) gsap.set(el, { opacity: 1, autoAlpha: 1 });
+            });
+            cardGlassOverlayRefs.current.forEach((el) => {
+              if (el) gsap.set(el, { opacity: 0 });
             });
             companionCardRefs.current.forEach((compEl) => {
               if (compEl) gsap.set(compEl, { opacity: 0, visibility: "hidden" });
@@ -1155,9 +1240,10 @@ export function BlueprintHero() {
 
         // -------------------------------------------------------------------------
         // PHASE 0: Product header text & CTA smoothly fade away (0.0s -> 0.22s)
+        // Transform Cards 01-05 into smoked emerald translucent glass matching Cards ring.png
         // -------------------------------------------------------------------------
         tl.to(
-          [headlineRef.current, subheadRef.current, ctaRef.current],
+          [headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
           {
             opacity: 0,
             y: -22,
@@ -1168,16 +1254,54 @@ export function BlueprintHero() {
           0.0
         );
 
-        // Subtly dim product card sketches and text watermark during ring mode
-        cardIllustrationRefs.current.forEach((el) => {
-          if (el) {
-            tl.to(el, { opacity: 0.15, duration: 0.25, ease: "power2.inOut" }, 0.0);
+        // Smoothly transform Cards 01-05 front faces into smoked emerald translucent glass
+        PRODUCT_CARDS.forEach((_, i) => {
+          const front = cardFrontRefs.current[i];
+          const slotK = i; // slots 0 to 4
+          const angleNorm = (slotK / 26) * 2 * Math.PI;
+          const cosA = Math.cos(angleNorm);
+
+          const baseAlpha = 0.26 + 0.08 * cosA;
+          const specularTop = Math.min(Math.max(0.55 + 0.30 * cosA, 0.20), 0.88);
+          const emeraldRefract = 0.20 + 0.10 * Math.sin(angleNorm + Math.PI / 3);
+          const borderAlpha = Math.min(Math.max(0.14 + 0.08 * cosA, 0.09), 0.26);
+
+          if (front) {
+            tl.to(
+              front,
+              {
+                background: `linear-gradient(140deg, rgba(6, 28, 18, ${baseAlpha.toFixed(2)}) 0%, rgba(3, 18, 11, ${(baseAlpha + 0.07).toFixed(2)}) 50%, rgba(1, 10, 6, ${(baseAlpha + 0.14).toFixed(2)}) 100%)`,
+                borderColor: `rgba(255, 255, 255, ${borderAlpha.toFixed(2)})`,
+                boxShadow:
+                  `inset 0 1.5px 1px 0 rgba(255, 255, 255, ${(specularTop * 0.55).toFixed(2)}), ` +
+                  "inset 1px 0 1px 0 rgba(255, 255, 255, 0.20), " +
+                  `inset 0 -1.5px 2px 0 rgba(34, 197, 94, ${(emeraldRefract * 1.1).toFixed(2)}), ` +
+                  "inset -1px 0 1.5px 0 rgba(34, 197, 94, 0.20), " +
+                  "0 12px 26px -6px rgba(0, 0, 0, 0.36), " +
+                  "0 2px 6px -1px rgba(2, 16, 9, 0.22)",
+                duration: 0.32,
+                ease: "power2.inOut",
+              },
+              0.0
+            );
           }
         });
+
+        // Hide opaque background gradient, sketches, and backface so translucent smoked glass shows through
+        cardGradientBgRefs.current.forEach((el) => {
+          if (el) tl.to(el, { opacity: 0, duration: 0.25, ease: "power2.inOut" }, 0.0);
+        });
+        cardIllustrationRefs.current.forEach((el) => {
+          if (el) tl.to(el, { opacity: 0, duration: 0.25, ease: "power2.inOut" }, 0.0);
+        });
+        cardBackRefs.current.forEach((el) => {
+          if (el) tl.to(el, { opacity: 0, duration: 0.25, ease: "power2.inOut" }, 0.0);
+        });
+        cardGlassOverlayRefs.current.forEach((el) => {
+          if (el) tl.to(el, { opacity: 1, duration: 0.30, ease: "power2.inOut" }, 0.0);
+        });
         cardDefaultRefs.current.forEach((el) => {
-          if (el) {
-            tl.to(el, { opacity: 0.22, duration: 0.25, ease: "power2.inOut" }, 0.0);
-          }
+          if (el) tl.to(el, { opacity: 0.90, duration: 0.25, ease: "power2.inOut" }, 0.0);
         });
 
         // -------------------------------------------------------------------------
@@ -1341,12 +1465,15 @@ export function BlueprintHero() {
         });
 
         // -------------------------------------------------------------------------
-        // PHASE 4: SIMULTANEOUS RING ROTATION + SMOOTH TRANSLATION TO THE LEFT
-        // Begins seamlessly right as cards complete formation with zero dead pause
+        // PHASE 4: IMMEDIATE SIMULTANEOUS GLIDE & ROTATION TOWARD LEFT
+        // As soon as the ring formation is complete, it immediately begins moving
+        // toward its final position on the left while simultaneously rotating.
+        // By the time it reaches its final left-side position, the rotation and
+        // horizontal movement finish together as one continuous, cohesive motion.
         // -------------------------------------------------------------------------
-        const ringFormedTime = unfurlBase + 5 * 0.038 + (COMPANION_COUNT - 1) * 0.032 + 0.16; // ~1.45s (seamless handoff)
-        const glideDuration = 1.25; // Responsive, smooth, and cinematic
-        const glideRotDeg = 24; // Noticeable, natural rotation during the translation
+        const ringFormedTime = 1.90; // All cards complete forming the ring in center
+        const glideDuration = 2.10; // Unified cinematic travel & rotation to the left side
+        const ringSettleTime = ringFormedTime + glideDuration; // 4.00s
 
         // 1. Smoothly translate the entire ring towards the left side of the viewport
         tl.to(
@@ -1354,25 +1481,179 @@ export function BlueprintHero() {
           {
             x: targetLeftX,
             duration: glideDuration,
-            ease: "power2.out",
+            ease: "power2.inOut",
             force3D: true,
           },
           ringFormedTime
         );
 
-        // 2. Simultaneously begin rotation in the plane of the ring as one unified object
+        // 2. Simultaneously rotate the ring while travelling left (one full elegant 360° rotation)
         tl.to(
           clusterEl,
           {
-            rotateZ: 16 + glideRotDeg,
+            rotateZ: 16 + 360,
             duration: glideDuration,
-            ease: "power1.out",
+            ease: "power1.inOut",
             force3D: true,
           },
           ringFormedTime
         );
 
+        // 3. SECURITY CONTENT REVEAL (Hero State 1)
+        // As soon as the ring reaches the left, reveal the hero text on the right:
+        // “We take your data as seriously as you take your money.”
+        const heroRevealTime = ringSettleTime - 0.15;
+
+        tl.set(
+          securityStageRef.current,
+          {
+            visibility: "visible",
+            opacity: 1,
+          },
+          heroRevealTime
+        );
+
+        // Reset all security states: State 0 prepared, 1-7 hidden
+        securityStateRefs.current.forEach((el, idx) => {
+          if (el) {
+            tl.set(el, { opacity: 0, visibility: idx === 0 ? "visible" : "hidden", y: 0 }, 0);
+          }
+        });
+
+        const state0El = securityStateRefs.current[0];
+        if (state0El) {
+          tl.set(
+            state0El,
+            {
+              visibility: "visible",
+              opacity: 0,
+              y: 24,
+            },
+            heroRevealTime
+          );
+          tl.to(
+            state0El,
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.50,
+              ease: "power2.out",
+            },
+            heroRevealTime
+          );
+        }
+
         return tl;
+      };
+
+      const goToSecurityState = (nextIdx: number, direction: 1 | -1) => {
+        if (isSecurityTransitioningRef.current) return;
+        if (nextIdx < 0 || nextIdx >= SECURITY_STATES.length) return;
+
+        const prevIdx = currentSecurityStateRef.current;
+        if (prevIdx === nextIdx) return;
+
+        isSecurityTransitioningRef.current = true;
+        lastSecurityScrollTimeRef.current = Date.now();
+        currentSecurityStateRef.current = nextIdx;
+
+        const prevEl = securityStateRefs.current[prevIdx];
+        const nextEl = securityStateRefs.current[nextIdx];
+
+        const tl = gsap.timeline({
+          onComplete: () => {
+            isSecurityTransitioningRef.current = false;
+          },
+        });
+
+        // 1. Current text smoothly fades and moves out subtly
+        if (prevEl) {
+          tl.to(
+            prevEl,
+            {
+              opacity: 0,
+              y: direction === 1 ? -16 : 16,
+              duration: 0.20,
+              ease: "power2.in",
+            },
+            0
+          );
+          tl.set(prevEl, { visibility: "hidden" }, 0.20);
+        }
+
+        // 2. New text smoothly enters with a slight directional movement & subtle stagger
+        if (nextEl) {
+          tl.set(
+            nextEl,
+            {
+              visibility: "visible",
+              opacity: 0,
+              y: direction === 1 ? 16 : -16,
+            },
+            0.10
+          );
+
+          const heading = nextEl.querySelector("h2, h3");
+          const body = nextEl.querySelector("p");
+
+          if (heading && body) {
+            tl.fromTo(
+              heading,
+              { opacity: 0, y: direction === 1 ? 14 : -14 },
+              { opacity: 1, y: 0, duration: 0.28, ease: "power2.out" },
+              0.12
+            );
+            tl.fromTo(
+              body,
+              { opacity: 0, y: direction === 1 ? 14 : -14 },
+              { opacity: 1, y: 0, duration: 0.32, ease: "power2.out" },
+              0.16
+            );
+            tl.to(nextEl, { opacity: 1, y: 0, duration: 0.32, ease: "power2.out" }, 0.12);
+          } else {
+            tl.to(
+              nextEl,
+              {
+                opacity: 1,
+                y: 0,
+                duration: 0.32,
+                ease: "power2.out",
+              },
+              0.12
+            );
+          }
+        }
+      };
+
+      const exitSecurityToAbout = () => {
+        isSecurityTransitioningRef.current = true;
+        lastSecurityScrollTimeRef.current = Date.now();
+
+        // Release locked stage so page can scroll naturally
+        if (stageRef.current) {
+          stageRef.current.style.position = "";
+          stageRef.current.style.top = "";
+          stageRef.current.style.left = "";
+          stageRef.current.style.width = "";
+          stageRef.current.style.height = "";
+          stageRef.current.style.zIndex = "";
+        }
+        document.documentElement.style.overflow = "";
+        document.body.style.overflow = "";
+
+        // Notify Navbar to update active item to "about"
+        window.dispatchEvent(
+          new CustomEvent("unifolio-active-section", { detail: { section: "about" } })
+        );
+
+        const aboutEl = document.getElementById("about");
+        if (aboutEl) {
+          smoothScrollTo(aboutEl.offsetTop, { duration: 1.0, ease: "power2.inOut" });
+        }
+
+        setTimeout(() => {
+          isSecurityTransitioningRef.current = false;
+        }, 1000);
       };
 
       const triggerProductToRing = () => {
@@ -1425,11 +1706,30 @@ export function BlueprintHero() {
         transitionCompleteRef.current = false;
         transitionStartedRef.current = false;
         isHoldingProductRef.current = false;
+        isSecurityTransitioningRef.current = false;
 
         // Stop continuous rotation before reversing timeline back to product
         if (ringRotateTweenRef.current) {
           ringRotateTweenRef.current.kill();
           ringRotateTweenRef.current = null;
+        }
+
+        // Hide Security Stage
+        if (securityStageRef.current) {
+          gsap.to(securityStageRef.current, {
+            opacity: 0,
+            duration: 0.22,
+            ease: "power2.out",
+            onComplete: () => {
+              if (securityStageRef.current) {
+                gsap.set(securityStageRef.current, { visibility: "hidden" });
+              }
+              securityStateRefs.current.forEach((el) => {
+                if (el) gsap.set(el, { opacity: 0, visibility: "hidden", y: 0 });
+              });
+              currentSecurityStateRef.current = 0;
+            },
+          });
         }
 
         // Notify Navbar IMMEDIATELY that we are returning to Product
@@ -1457,18 +1757,41 @@ export function BlueprintHero() {
       };
 
       const handleWheel = (e: WheelEvent) => {
-        // 1. Block all wheel inputs while transition is animating or during post-animation momentum drain
-        if (transitionAnimatingRef.current || momentumDrainTimeoutRef.current !== null) {
+        // 1. Block all wheel inputs while transition is animating
+        if (transitionAnimatingRef.current) {
           e.preventDefault();
           e.stopImmediatePropagation();
           return;
         }
 
-        // 2. Reversal from ring formation back to Product section
-        if (transitionCompleteRef.current && e.deltaY < -8) {
+        // 2. While in Ring state with Security Content experience active:
+        // The viewport/page must remain fixed while progressing through discrete states
+        if (stateRef.current === "ring" && transitionCompleteRef.current) {
           e.preventDefault();
           e.stopImmediatePropagation();
-          triggerRingToProduct();
+
+          if (isSecurityTransitioningRef.current) return;
+          if (Date.now() - lastSecurityScrollTimeRef.current < 420) return;
+
+          if (e.deltaY > 12) {
+            // One intentional downward scroll = exactly one next state
+            if (currentSecurityStateRef.current < SECURITY_STATES.length - 1) {
+              goToSecurityState(currentSecurityStateRef.current + 1, 1);
+            } else {
+              // At State 8 Closing line -> next intentional downward scroll proceeds to About
+              exitSecurityToAbout();
+            }
+            return;
+          } else if (e.deltaY < -12) {
+            // One intentional upward scroll = exactly one previous state
+            if (currentSecurityStateRef.current > 0) {
+              goToSecurityState(currentSecurityStateRef.current - 1, -1);
+            } else {
+              // At State 1 Hero -> scroll up returns to Product cards
+              triggerRingToProduct();
+            }
+            return;
+          }
           return;
         }
 
@@ -1518,20 +1841,41 @@ export function BlueprintHero() {
       };
 
       const handleTouchMove = (e: TouchEvent) => {
-        if (transitionAnimatingRef.current || momentumDrainTimeoutRef.current !== null) {
+        if (transitionAnimatingRef.current) {
           e.preventDefault();
           e.stopImmediatePropagation();
+          return;
+        }
+
+        if (stateRef.current === "ring" && transitionCompleteRef.current) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          if (isSecurityTransitioningRef.current) return;
+          if (Date.now() - lastSecurityScrollTimeRef.current < 420) return;
+
+          const touchDeltaY = touchStartY - e.touches[0].clientY;
+          if (touchDeltaY > 20) {
+            touchStartY = e.touches[0].clientY;
+            if (currentSecurityStateRef.current < SECURITY_STATES.length - 1) {
+              goToSecurityState(currentSecurityStateRef.current + 1, 1);
+            } else {
+              exitSecurityToAbout();
+            }
+            return;
+          } else if (touchDeltaY < -20) {
+            touchStartY = e.touches[0].clientY;
+            if (currentSecurityStateRef.current > 0) {
+              goToSecurityState(currentSecurityStateRef.current - 1, -1);
+            } else {
+              triggerRingToProduct();
+            }
+            return;
+          }
           return;
         }
 
         const touchDeltaY = touchStartY - e.touches[0].clientY;
-
-        if (transitionCompleteRef.current && touchDeltaY < -15) {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          triggerRingToProduct();
-          return;
-        }
 
         if (isHoldingProductRef.current && !transitionStartedRef.current) {
           if (touchDeltaY > 8) {
@@ -1550,17 +1894,38 @@ export function BlueprintHero() {
       };
 
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (transitionAnimatingRef.current || momentumDrainTimeoutRef.current !== null) {
+        if (transitionAnimatingRef.current) {
           e.preventDefault();
           e.stopImmediatePropagation();
           return;
         }
 
-        if (transitionCompleteRef.current && ["ArrowUp", "PageUp"].includes(e.key)) {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          triggerRingToProduct();
-          return;
+        if (stateRef.current === "ring" && transitionCompleteRef.current) {
+          if (["ArrowDown", "PageDown", " "].includes(e.key) && !e.shiftKey) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            if (isSecurityTransitioningRef.current) return;
+            if (Date.now() - lastSecurityScrollTimeRef.current < 350) return;
+
+            if (currentSecurityStateRef.current < SECURITY_STATES.length - 1) {
+              goToSecurityState(currentSecurityStateRef.current + 1, 1);
+            } else {
+              exitSecurityToAbout();
+            }
+            return;
+          } else if (["ArrowUp", "PageUp"].includes(e.key) || (e.key === " " && e.shiftKey)) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            if (isSecurityTransitioningRef.current) return;
+            if (Date.now() - lastSecurityScrollTimeRef.current < 350) return;
+
+            if (currentSecurityStateRef.current > 0) {
+              goToSecurityState(currentSecurityStateRef.current - 1, -1);
+            } else {
+              triggerRingToProduct();
+            }
+            return;
+          }
         }
 
         if (
@@ -1579,7 +1944,10 @@ export function BlueprintHero() {
       };
 
       const handleScrollLock = () => {
-        if (transitionAnimatingRef.current || momentumDrainTimeoutRef.current !== null) {
+        if (
+          transitionAnimatingRef.current ||
+          (stateRef.current === "ring" && transitionCompleteRef.current)
+        ) {
           if (lockScrollYRef.current > 0 && Math.abs(window.scrollY - lockScrollYRef.current) > 1) {
             window.scrollTo(0, lockScrollYRef.current);
           }
@@ -1669,12 +2037,30 @@ export function BlueprintHero() {
               zIndex: 10 + (2 - Math.abs(i - 2)),
             });
           }
-          if (front) gsap.set(front, { borderRadius: "20px" });
+          if (front) {
+            gsap.set(front, {
+              borderRadius: "20px",
+              background: "",
+              backgroundColor: "#070908",
+              borderColor: "rgba(255, 255, 255, 0.12)",
+              boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4)",
+            });
+          }
+          const back = cardBackRefs.current[i];
+          if (back) gsap.set(back, { opacity: 1 });
+          const grad = cardGradientBgRefs.current[i];
+          if (grad) gsap.set(grad, { opacity: 1 });
+          const glass = cardGlassOverlayRefs.current[i];
+          if (glass) gsap.set(glass, { opacity: 0 });
           if (flipper) gsap.set(flipper, { rotateY: 0 });
           const illus = cardIllustrationRefs.current[i];
           if (illus) gsap.set(illus, { opacity: 0.88, scale: 1, filter: "blur(0px)" });
           const defEl = cardDefaultRefs.current[i];
           if (defEl) gsap.set(defEl, { opacity: 1, autoAlpha: 1 });
+        });
+
+        companionCardRefs.current.forEach((compEl) => {
+          if (compEl) gsap.set(compEl, { opacity: 0, visibility: "hidden" });
         });
       };
 
@@ -1757,6 +2143,23 @@ export function BlueprintHero() {
             });
           }
           if (flipper) gsap.set(flipper, { rotateY: 180 });
+          if (front) {
+            gsap.set(front, {
+              borderRadius: "0px",
+              background: "",
+              backgroundColor: "#070908",
+              borderColor: "rgba(255, 255, 255, 0.12)",
+              boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4)",
+            });
+          }
+          const back = cardBackRefs.current[i];
+          if (back) gsap.set(back, { opacity: 1 });
+          const grad = cardGradientBgRefs.current[i];
+          if (grad) gsap.set(grad, { opacity: 1 });
+          const glass = cardGlassOverlayRefs.current[i];
+          if (glass) gsap.set(glass, { opacity: 0 });
+          const illus = cardIllustrationRefs.current[i];
+          if (illus) gsap.set(illus, { opacity: 0.88, scale: 1, filter: "blur(0px)" });
           const defEl = cardDefaultRefs.current[i];
           if (defEl) gsap.set(defEl, { opacity: 1, autoAlpha: 1 });
         });
@@ -1946,8 +2349,13 @@ export function BlueprintHero() {
                             WebkitBackfaceVisibility: "hidden",
                           }}
                         >
-                          {/* Flowing Emerald Panoramic Gradient */}
-                          <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[20px]">
+                          {/* Flowing Emerald Panoramic Gradient (Active during Product Section) */}
+                          <div
+                            ref={(el) => {
+                              cardGradientBgRefs.current[idx] = el;
+                            }}
+                            className="absolute inset-0 overflow-hidden pointer-events-none rounded-[20px] will-change-[opacity]"
+                          >
                             <div
                               className="absolute top-0 bottom-0 h-full will-change-transform unifolio-flowing-gradient"
                               style={{
@@ -1964,6 +2372,39 @@ export function BlueprintHero() {
                             />
                             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/90 pointer-events-none" />
                             <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+                          </div>
+
+                          {/* Smoked Emerald Translucent Glass Overlay (Matching 'Cards ring.png') */}
+                          <div
+                            ref={(el) => {
+                              cardGlassOverlayRefs.current[idx] = el;
+                            }}
+                            className="absolute inset-0 pointer-events-none rounded-[20px] overflow-hidden will-change-[opacity]"
+                            style={{ opacity: 0 }}
+                          >
+                            {/* Internal Volume Refraction Radial Lights */}
+                            <div
+                              className="absolute inset-0 pointer-events-none rounded-[20px]"
+                              style={{
+                                background:
+                                  "radial-gradient(ellipse 75% 60% at 22% 20%, rgba(34, 197, 94, 0.10) 0%, rgba(16, 185, 129, 0.02) 40%, transparent 68%), " +
+                                  "radial-gradient(ellipse 75% 55% at 80% 82%, rgba(34, 197, 94, 0.14) 0%, rgba(74, 222, 128, 0.03) 38%, transparent 65%)",
+                              }}
+                            />
+                            {/* Diagonal Glass Sheen */}
+                            <div
+                              className="absolute inset-0 pointer-events-none rounded-[20px]"
+                              style={{
+                                background:
+                                  "linear-gradient(125deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.01) 25%, transparent 50%, rgba(34, 197, 94, 0.04) 80%, rgba(74, 222, 128, 0.10) 100%)",
+                              }}
+                            />
+                            {/* Top Specular Bevel Highlight Line */}
+                            <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/80 to-emerald-300/50 pointer-events-none rounded-t-[20px]" />
+                            {/* Left Specular Bevel Catch Line */}
+                            <div className="absolute inset-y-0 left-0 w-[1.5px] bg-gradient-to-b from-white/70 via-white/15 to-transparent pointer-events-none rounded-l-[20px]" />
+                            {/* Bottom Emerald Light-Piping Line */}
+                            <div className="absolute inset-x-0 bottom-0 h-[1.5px] bg-gradient-to-r from-emerald-500/20 via-[#22C55E]/80 to-emerald-300/60 pointer-events-none rounded-b-[20px]" />
                           </div>
 
                           {/* 2D Sketch Illustration Asset (Centered, Clean 2D Linework) */}
@@ -2001,12 +2442,12 @@ export function BlueprintHero() {
                             ref={(el) => {
                               cardDefaultRefs.current[idx] = el;
                             }}
-                            className="absolute inset-0 z-15 flex flex-col items-center justify-start pt-7 sm:pt-8 px-4 text-center pointer-events-none select-none will-change-transform"
+                            className="absolute inset-0 z-15 flex flex-col items-start justify-start pt-7 sm:pt-8 px-6 text-left pointer-events-none select-none will-change-transform"
                           >
-                            <span className="font-mono text-[10px] sm:text-xs font-black text-[#22c55e] tracking-widest uppercase mb-2">
+                            <span className="font-mono text-[10px] sm:text-xs font-black text-[#22c55e] tracking-widest uppercase mb-1.5 drop-shadow-[0_0_10px_rgba(34,197,94,0.4)]">
                               {card.num}
                             </span>
-                            <h3 className="font-sans font-black text-sm sm:text-base md:text-lg lg:text-xl xl:text-[22px] text-white leading-[1.18] tracking-tight max-w-[195px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+                            <h3 className="font-sans font-black text-sm sm:text-base md:text-lg lg:text-xl xl:text-[21px] text-white leading-[1.20] tracking-tight max-w-[190px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
                               {card.title}
                             </h3>
                           </div>
@@ -2098,9 +2539,15 @@ export function BlueprintHero() {
                 {Array.from({ length: COMPANION_COUNT }).map((_, cIdx) => {
                   const slotK = 5 + cIdx;
                   const angleNorm = (slotK / 26) * 2 * Math.PI;
-                  const baseOpacity = 0.52 + 0.10 * Math.sin(angleNorm);
-                  const specularTop = 0.75 + 0.20 * Math.cos(angleNorm);
-                  const emeraldRefract = 0.28 + 0.12 * Math.sin(angleNorm + Math.PI / 3);
+                  const cosA = Math.cos(angleNorm);
+                  const sinA = Math.sin(angleNorm);
+
+                  // Calibrated translucency: clear visibility of overlapping cards behind each other
+                  const baseAlpha = 0.26 + 0.08 * cosA;
+                  const specularTop = Math.min(Math.max(0.55 + 0.30 * cosA, 0.20), 0.88);
+                  const specularLeft = Math.min(Math.max(0.40 + 0.25 * sinA, 0.15), 0.70);
+                  const emeraldRefract = 0.20 + 0.10 * Math.sin(angleNorm + Math.PI / 3);
+                  const borderAlpha = Math.min(Math.max(0.14 + 0.08 * cosA, 0.09), 0.26);
 
                   return (
                     <div
@@ -2115,38 +2562,55 @@ export function BlueprintHero() {
                         visibility: "hidden",
                         left: "50%",
                         top: "50%",
-                        background: `linear-gradient(140deg, rgba(6, 34, 21, ${baseOpacity.toFixed(2)}) 0%, rgba(3, 20, 12, ${(baseOpacity + 0.10).toFixed(2)}) 45%, rgba(1, 10, 6, ${(baseOpacity + 0.18).toFixed(2)}) 100%)`,
-                        backdropFilter: "blur(6px) saturate(135%)",
-                        WebkitBackdropFilter: "blur(6px) saturate(135%)",
-                        border: "1px solid rgba(255, 255, 255, 0.20)",
+                        background: `linear-gradient(140deg, rgba(6, 28, 18, ${baseAlpha.toFixed(2)}) 0%, rgba(3, 18, 11, ${(baseAlpha + 0.07).toFixed(2)}) 50%, rgba(1, 10, 6, ${(baseAlpha + 0.14).toFixed(2)}) 100%)`,
+                        border: `1px solid rgba(255, 255, 255, ${borderAlpha.toFixed(2)})`,
                         boxShadow:
-                          `inset 0 1.5px 1px 0 rgba(255, 255, 255, ${specularTop.toFixed(2)}), ` +
-                          "inset 1px 0 1px 0 rgba(255, 255, 255, 0.35), " +
-                          `inset 0 -1.5px 2px 0 rgba(34, 197, 94, ${(emeraldRefract * 2).toFixed(2)}), ` +
-                          "inset -1px 0 1.5px 0 rgba(34, 197, 94, 0.40), " +
-                          "0 14px 32px -6px rgba(0, 0, 0, 0.45), " +
-                          "0 2px 8px -2px rgba(2, 18, 11, 0.35), " +
-                          "0 0 1px 1px rgba(34, 197, 94, 0.20)",
+                          `inset 0 1.5px 1px 0 rgba(255, 255, 255, ${(specularTop * 0.55).toFixed(2)}), ` +
+                          "inset 1px 0 1px 0 rgba(255, 255, 255, 0.20), " +
+                          `inset 0 -1.5px 2px 0 rgba(34, 197, 94, ${(emeraldRefract * 1.1).toFixed(2)}), ` +
+                          "inset -1px 0 1.5px 0 rgba(34, 197, 94, 0.20), " +
+                          "0 12px 26px -6px rgba(0, 0, 0, 0.36), " +
+                          "0 2px 6px -1px rgba(2, 16, 9, 0.22)",
                       }}
                     >
+                      {/* Internal Volume Refraction Radial Lights */}
                       <div
                         className="absolute inset-0 pointer-events-none rounded-[20px]"
                         style={{
                           background:
-                            `radial-gradient(ellipse 80% 65% at 24% 20%, rgba(34, 197, 94, ${(emeraldRefract * 0.9).toFixed(2)}) 0%, rgba(16, 185, 129, 0.08) 45%, transparent 72%), ` +
-                            `radial-gradient(ellipse 75% 55% at 78% 82%, rgba(34, 197, 94, ${(emeraldRefract * 1.1).toFixed(2)}) 0%, rgba(74, 222, 128, 0.14) 42%, transparent 70%)`,
+                            `radial-gradient(ellipse 75% 60% at 22% 20%, rgba(34, 197, 94, ${(emeraldRefract * 0.35).toFixed(2)}) 0%, rgba(16, 185, 129, 0.03) 40%, transparent 68%), ` +
+                            `radial-gradient(ellipse 75% 55% at 80% 82%, rgba(34, 197, 94, ${(emeraldRefract * 0.45).toFixed(2)}) 0%, rgba(74, 222, 128, 0.04) 38%, transparent 65%)`,
                         }}
                       />
+                      {/* Diagonal Glass Sheen */}
                       <div
                         className="absolute inset-0 pointer-events-none rounded-[20px]"
                         style={{
                           background:
-                            "linear-gradient(120deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 22%, transparent 48%, rgba(34, 197, 94, 0.12) 80%, rgba(74, 222, 128, 0.25) 100%)",
+                            "linear-gradient(125deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.01) 25%, transparent 50%, rgba(34, 197, 94, 0.04) 80%, rgba(74, 222, 128, 0.10) 100%)",
                         }}
                       />
-                      <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/85 to-emerald-300/60 pointer-events-none rounded-t-[20px]" />
-                      <div className="absolute inset-y-0 left-0 w-[1.5px] bg-gradient-to-b from-white/75 via-white/20 to-transparent pointer-events-none rounded-l-[20px]" />
-                      <div className="absolute inset-x-0 bottom-0 h-[1.5px] bg-gradient-to-r from-emerald-500/25 via-[#22C55E] to-emerald-300/80 pointer-events-none rounded-b-[20px]" />
+                      {/* Top Specular Bevel Highlight Line */}
+                      <div
+                        className="absolute inset-x-0 top-0 h-[1.5px] pointer-events-none rounded-t-[20px]"
+                        style={{
+                          background: `linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, ${specularTop.toFixed(2)}) 20%, rgba(74, 222, 128, ${(specularTop * 0.7).toFixed(2)}) 65%, transparent 100%)`,
+                        }}
+                      />
+                      {/* Left Specular Bevel Catch Line */}
+                      <div
+                        className="absolute inset-y-0 left-0 w-[1.5px] pointer-events-none rounded-l-[20px]"
+                        style={{
+                          background: `linear-gradient(180deg, rgba(255, 255, 255, ${specularLeft.toFixed(2)}) 0%, rgba(34, 197, 94, ${(specularLeft * 0.6).toFixed(2)}) 45%, transparent 100%)`,
+                        }}
+                      />
+                      {/* Bottom Emerald Light-Piping Line */}
+                      <div
+                        className="absolute inset-x-0 bottom-0 h-[1.5px] pointer-events-none rounded-b-[20px]"
+                        style={{
+                          background: `linear-gradient(90deg, rgba(34, 197, 94, ${(emeraldRefract * 0.4).toFixed(2)}) 0%, rgba(34, 197, 94, ${(emeraldRefract * 1.4).toFixed(2)}) 40%, rgba(74, 222, 128, ${(emeraldRefract * 0.6).toFixed(2)}) 100%)`,
+                        }}
+                      />
                     </div>
                   );
                 })}
@@ -2154,7 +2618,58 @@ export function BlueprintHero() {
             </div>
 
             {/* Ambient Floor Reflection Line */}
-            <div className="w-full max-w-2xl mx-auto h-[1px] bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-800 to-transparent shrink-0 opacity-50 z-20" />
+            <div
+              ref={floorLineRef}
+              className="w-full max-w-2xl mx-auto h-[1px] bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-800 to-transparent shrink-0 opacity-50 z-20"
+            />
+
+            {/* Minimal Editorial Security Content Experience (Right Column) */}
+            <div
+              ref={securityStageRef}
+              id="security"
+              className="absolute right-4 sm:right-8 md:right-10 lg:right-12 xl:right-16 top-0 bottom-0 w-full max-w-md sm:max-w-lg lg:max-w-xl xl:max-w-2xl flex items-center justify-start pointer-events-none z-30 select-none"
+              style={{ opacity: 0, visibility: "hidden" }}
+            >
+              <div className="relative w-full text-left">
+                {SECURITY_STATES.map((item, idx) => (
+                  <div
+                    key={idx}
+                    ref={(el) => {
+                      securityStateRefs.current[idx] = el;
+                    }}
+                    className="absolute top-1/2 -translate-y-1/2 left-0 right-0 will-change-transform pointer-events-none"
+                    style={{
+                      opacity: 0,
+                      visibility: "hidden",
+                    }}
+                  >
+                    {item.type === "hero" ? (
+                      <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] uppercase leading-[1.04]">
+                        We take your data <br />
+                        <span className="text-[#22C55E]">as seriously as you</span> <br />
+                        take your money.
+                      </h2>
+                    ) : item.type === "principle" ? (
+                      <div className="flex flex-col">
+                        <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[40px] xl:text-[46px] text-neutral-950 dark:text-white tracking-[-0.03em] leading-[1.08] mb-3 sm:mb-4">
+                          {item.headline}
+                        </h3>
+                        <p className="font-sans text-base sm:text-lg md:text-xl lg:text-[21px] text-neutral-600 dark:text-[#94A3B8] font-normal leading-relaxed max-w-xl">
+                          {item.body}
+                        </p>
+                      </div>
+                    ) : (
+                      <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] uppercase leading-[1.04]">
+                        Security isn&apos;t a feature here. <br />
+                        <span className="text-[#22C55E]">
+                          It&apos;s the baseline everything else is built on.
+                        </span>
+                      </h2>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { HeroIntroLogo } from "@/components/hero/HeroIntroLogo";
 import { BlueprintNav } from "@/components/blueprint/BlueprintNav";
 import { BlueprintHero } from "@/components/blueprint/BlueprintHero";
-import { SecurityExperience } from "@/components/security/SecurityExperience";
 import { BlueprintAboutMetrics } from "@/components/blueprint/BlueprintAboutMetrics";
 import { BlueprintFaq } from "@/components/blueprint/BlueprintFaq";
 import { BlueprintContact } from "@/components/blueprint/BlueprintContact";
@@ -31,11 +30,8 @@ export default function HomePage() {
       {/* Floating Pill Navigation Bar */}
       <BlueprintNav />
 
-      {/* Section 1 & 2: Hero Aperture Landing + Concept 2 Iris Portal Product World */}
+      {/* Section 1, 2 & 3: Hero Landing, Product World & Cinematic Spatial Security Experience with 3D Ring */}
       <BlueprintHero />
-
-      {/* Section 3: Cinematic Spatial Security Narrative */}
-      <SecurityExperience />
 
       {/* Section 4: About Unifolio + Statistics Metrics Grid */}
       <BlueprintAboutMetrics />
