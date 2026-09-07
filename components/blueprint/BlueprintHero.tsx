@@ -245,6 +245,14 @@ export function BlueprintHero() {
   const productToRingTlRef = useRef<gsap.core.Timeline | null>(null);
   const ringRotateTweenRef = useRef<gsap.core.Tween | null>(null);
 
+  // Typographic Eyes Easter Egg ("Read-only, always")
+  const typoEyesRef = useRef<HTMLSpanElement | null>(null);
+  const typoLeftWordRef = useRef<HTMLSpanElement | null>(null);
+  const typoRightWordRef = useRef<HTMLSpanElement | null>(null);
+  const typoPupilsRef = useRef<(HTMLSpanElement | null)[]>([]);
+  const typoEyelidsRef = useRef<(HTMLSpanElement | null)[]>([]);
+  const typoEyesTlRef = useRef<gsap.core.Timeline | null>(null);
+
   // State management & transition guards
   const stateRef = useRef<"hero" | "product" | "sculpting" | "ring">("hero");
   const productCompleteRef = useRef<boolean>(false);
@@ -1715,6 +1723,243 @@ export function BlueprintHero() {
         return tl;
       };
 
+      // -------------------------------------------------------------------------
+      // TYPOGRAPHIC EYES EASTER EGG: "Read-only, always"
+      // Subtly peeks out from within the headline typography (above/around the comma),
+      // looks around curiously, blinks naturally, then gracefully retreats.
+      // -------------------------------------------------------------------------
+      // TYPOGRAPHIC EYES EASTER EGG: "Read-only, always"
+      // DRAMATIC PHYSICAL INTERACTION:
+      // Eyes struggle and force their way out from behind the headline typography,
+      // physically pushing "Read-only," and "always" apart against subtle resistance,
+      // looking around with curiosity, blinking naturally, and then sinking back down
+      // while the two parts of the headline seamlessly slide back together.
+      // -------------------------------------------------------------------------
+      const playTypoEyesAnimation = () => {
+        const eyesEl = typoEyesRef.current;
+        const leftWord = typoLeftWordRef.current;
+        const rightWord = typoRightWordRef.current;
+        if (!eyesEl) {
+          isSecurityTransitioningRef.current = false;
+          return;
+        }
+
+        const pupils = typoPupilsRef.current.filter(Boolean) as HTMLElement[];
+        const eyelids = typoEyelidsRef.current.filter(Boolean) as HTMLElement[];
+
+        // Dynamic push distance based on screen width
+        const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+        const isTablet = typeof window !== "undefined" && window.innerWidth < 1024;
+        const pushDistance = isMobile ? 32 : isTablet ? 44 : 54;
+
+        // Reset initial state: words closed at rest, eyes compressed tightly behind
+        gsap.set(eyesEl, {
+          y: 28,
+          opacity: 0,
+          scaleX: 0.55,
+          scaleY: 1.35,
+          visibility: "visible",
+        });
+        if (leftWord) gsap.set(leftWord, { x: 0 });
+        if (rightWord) gsap.set(rightWord, { x: 0 });
+        if (eyelids.length > 0) gsap.set(eyelids, { scaleY: 0 });
+        if (pupils.length > 0) gsap.set(pupils, { x: 0, y: 0 });
+
+        if (typoEyesTlRef.current) {
+          typoEyesTlRef.current.kill();
+        }
+
+        const tl = gsap.timeline({
+          onComplete: () => {
+            gsap.set(eyesEl, { opacity: 0, visibility: "hidden" });
+            if (leftWord) gsap.set(leftWord, { x: 0 });
+            if (rightWord) gsap.set(rightWord, { x: 0 });
+            isSecurityTransitioningRef.current = false;
+          },
+        });
+
+        typoEyesTlRef.current = tl;
+
+        // --- STAGE 1: STRAINED AWAKENING & INITIAL RESISTANCE ---
+        // The eyes start pushing up into the seam between the words; words push apart slightly and resist
+        tl.to(
+          eyesEl,
+          {
+            y: 12,
+            opacity: 0.85,
+            scaleX: 0.70,
+            scaleY: 1.25,
+            duration: 0.28,
+            ease: "power1.out",
+          },
+          0.15
+        );
+
+        if (leftWord && rightWord) {
+          tl.to(
+            leftWord,
+            {
+              x: -12,
+              duration: 0.28,
+              ease: "power1.out",
+            },
+            0.15
+          );
+          tl.to(
+            rightWord,
+            {
+              x: 12,
+              duration: 0.28,
+              ease: "power1.out",
+            },
+            0.15
+          );
+
+          // Micro-tension / resistance stutter (words fight back momentarily)
+          tl.to(
+            leftWord,
+            {
+              x: -9,
+              duration: 0.10,
+              ease: "sine.inOut",
+            },
+            0.43
+          );
+          tl.to(
+            rightWord,
+            {
+              x: 9,
+              duration: 0.10,
+              ease: "sine.inOut",
+            },
+            0.43
+          );
+        }
+
+        tl.to(
+          eyesEl,
+          {
+            scaleX: 0.62,
+            scaleY: 1.30,
+            y: 10,
+            duration: 0.10,
+            ease: "sine.inOut",
+          },
+          0.43
+        );
+
+        // --- STAGE 2: THE BREAKTHROUGH & SQUASH-STRETCH POP ---
+        // The eyes force through the resistance; words snap wide open; eyes pop and settle
+        if (leftWord && rightWord) {
+          tl.to(
+            leftWord,
+            {
+              x: -pushDistance,
+              duration: 0.44,
+              ease: "back.out(1.5)",
+            },
+            0.53
+          );
+          tl.to(
+            rightWord,
+            {
+              x: pushDistance,
+              duration: 0.44,
+              ease: "back.out(1.5)",
+            },
+            0.53
+          );
+        }
+
+        tl.to(
+          eyesEl,
+          {
+            y: 0,
+            opacity: 1,
+            scaleX: 1.15,
+            scaleY: 0.88,
+            duration: 0.35,
+            ease: "power2.out",
+          },
+          0.53
+        );
+
+        // Settle from squash/stretch back to perfect 1.0 circle
+        tl.to(
+          eyesEl,
+          {
+            scaleX: 1.0,
+            scaleY: 1.0,
+            duration: 0.25,
+            ease: "elastic.out(1.2, 0.4)",
+          },
+          0.85
+        );
+
+        // --- STAGE 3: DRAMATIC LOOK AROUND ---
+        // Curious glance left
+        if (pupils[0]) {
+          tl.to(pupils[0], { x: -7.5, y: -2.0, duration: 0.28, ease: "power2.inOut" }, 1.05);
+        }
+        if (pupils[1]) {
+          tl.to(pupils[1], { x: -6.5, y: -1.8, duration: 0.28, ease: "power2.inOut" }, 1.05);
+        }
+
+        // Broad sweep across to the right
+        if (pupils[0]) {
+          tl.to(pupils[0], { x: 8.0, y: 1.8, duration: 0.44, ease: "power2.inOut" }, 1.45);
+        }
+        if (pupils[1]) {
+          tl.to(pupils[1], { x: 8.5, y: 2.0, duration: 0.44, ease: "power2.inOut" }, 1.45);
+        }
+
+        // --- STAGE 4: NATURAL BLINKING ---
+        // First crisp blink
+        if (eyelids.length > 0) {
+          tl.to(eyelids, { scaleY: 1, duration: 0.08, ease: "power2.in" }, 2.00);
+          tl.to(eyelids, { scaleY: 0, duration: 0.12, ease: "power2.out" }, 2.08);
+        }
+
+        // Pupils snap directly back to center
+        if (pupils.length > 0) {
+          tl.to(pupils, { x: 0, y: 0, duration: 0.22, ease: "power2.out" }, 2.10);
+        }
+
+        // Playful secondary micro-blink
+        if (eyelids.length > 0) {
+          tl.to(eyelids, { scaleY: 0.80, duration: 0.06, ease: "power1.in" }, 2.45);
+          tl.to(eyelids, { scaleY: 0, duration: 0.09, ease: "power1.out" }, 2.51);
+        }
+
+        // --- STAGE 5: RETREAT & WORDS SLIDING BACK TOGETHER ---
+        // Eyes stretch vertically and sink back down into the gap
+        tl.to(
+          eyesEl,
+          {
+            y: 28,
+            scaleX: 0.60,
+            scaleY: 1.30,
+            opacity: 0,
+            duration: 0.38,
+            ease: "power2.in",
+          },
+          2.80
+        );
+
+        // Words smoothly and magnetically slide back to 0
+        if (leftWord && rightWord) {
+          tl.to(
+            [leftWord, rightWord],
+            {
+              x: 0,
+              duration: 0.40,
+              ease: "power3.inOut",
+            },
+            2.88
+          );
+        }
+      };
+
       const goToSecurityState = (nextIdx: number, direction: 1 | -1) => {
         if (isSecurityTransitioningRef.current) return;
         if (nextIdx < 0 || nextIdx >= SECURITY_STATES.length) return;
@@ -1726,12 +1971,31 @@ export function BlueprintHero() {
         lastSecurityScrollTimeRef.current = Date.now();
         currentSecurityStateRef.current = nextIdx;
 
+        // Clean up typo eyes animation if leaving state 1 mid-animation
+        if (prevIdx === 1 && typoEyesTlRef.current?.isActive()) {
+          typoEyesTlRef.current.kill();
+          typoEyesTlRef.current = null;
+          if (typoEyesRef.current) {
+            gsap.set(typoEyesRef.current, { opacity: 0, visibility: "hidden" });
+          }
+          if (typoLeftWordRef.current) {
+            gsap.set(typoLeftWordRef.current, { x: 0 });
+          }
+          if (typoRightWordRef.current) {
+            gsap.set(typoRightWordRef.current, { x: 0 });
+          }
+        }
+
         const prevEl = securityStateRefs.current[prevIdx];
         const nextEl = securityStateRefs.current[nextIdx];
 
         const tl = gsap.timeline({
           onComplete: () => {
-            isSecurityTransitioningRef.current = false;
+            if (nextIdx === 1) {
+              playTypoEyesAnimation();
+            } else {
+              isSecurityTransitioningRef.current = false;
+            }
           },
         });
 
@@ -1876,6 +2140,17 @@ export function BlueprintHero() {
         transitionStartedRef.current = false;
         isHoldingProductRef.current = false;
         isSecurityTransitioningRef.current = false;
+
+        // Clean up typo eyes animation if active
+        if (typoEyesTlRef.current) {
+          typoEyesTlRef.current.kill();
+          typoEyesTlRef.current = null;
+        }
+        if (typoEyesRef.current) {
+          gsap.set(typoEyesRef.current, { opacity: 0, visibility: "hidden" });
+        }
+        if (typoLeftWordRef.current) gsap.set(typoLeftWordRef.current, { x: 0 });
+        if (typoRightWordRef.current) gsap.set(typoRightWordRef.current, { x: 0 });
 
         // 1. Immediately stop continuous ambient rotation so it cannot fight the reverse timeline
         if (ringRotateTweenRef.current) {
@@ -2376,6 +2651,12 @@ export function BlueprintHero() {
           ringRotateTweenRef.current.kill();
           ringRotateTweenRef.current = null;
         }
+        if (typoEyesTlRef.current) {
+          typoEyesTlRef.current.kill();
+          typoEyesTlRef.current = null;
+        }
+        if (typoLeftWordRef.current) gsap.set(typoLeftWordRef.current, { x: 0 });
+        if (typoRightWordRef.current) gsap.set(typoRightWordRef.current, { x: 0 });
         if (productToRingTlRef.current) {
           productToRingTlRef.current.kill();
         }
@@ -2438,12 +2719,6 @@ export function BlueprintHero() {
             ref={productWorldRef}
             className="relative w-full h-full flex flex-col justify-start items-center px-4 sm:px-6 lg:px-8 pt-14 sm:pt-16 md:pt-18 lg:pt-20 pb-4 sm:pb-6 overflow-hidden select-none will-change-transform"
           >
-            {/* Emerald Ambient Glow for Product Stage */}
-            <div className="absolute top-[32%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-emerald-500/[0.12] dark:bg-emerald-500/[0.18] rounded-full blur-[140px] pointer-events-none -z-10" />
-
-            {/* Core Intense Emerald Portal Light (vibrant inside ring void at rest) */}
-            <div className="absolute top-[36%] left-[55%] -translate-x-1/2 -translate-y-1/2 w-[220px] h-[220px] bg-emerald-400/[0.30] dark:bg-emerald-400/[0.45] rounded-full blur-[50px] pointer-events-none -z-10" />
-
             {/* 3D Perspective Cards Amphitheater Stage - Prominently in upper/middle viewport */}
             <div
               ref={cardsStageRef}
@@ -2849,9 +3124,128 @@ export function BlueprintHero() {
                       </h2>
                     ) : item.type === "principle" ? (
                       <div className="flex flex-col">
-                        <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[40px] xl:text-[46px] text-neutral-950 dark:text-white tracking-[-0.03em] leading-[1.08] mb-3 sm:mb-4">
-                          {item.headline}
-                        </h3>
+                        {idx === 1 ? (
+                          // State 2: "Read-only, always" - focal point, bigger and bolder typography with embedded eyes Easter egg
+                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[52px] xl:text-[60px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.05] mb-4 sm:mb-5 select-none relative inline-flex flex-wrap items-baseline">
+                            {/* Left Word Segment: "Read-only," */}
+                            <span
+                              ref={typoLeftWordRef}
+                              className="inline-block will-change-transform"
+                            >
+                              Read-only,
+                            </span>
+
+                            {/* Center Anchor for the Trapped Living Eyes */}
+                            <span className="relative inline-flex items-center justify-center w-[0.3em] overflow-visible align-baseline">
+                              {/* The Living Eyes - Trapped behind the words, forcing their way out */}
+                              <span
+                                ref={typoEyesRef}
+                                className="absolute -top-[28px] sm:-top-[36px] md:-top-[44px] left-1/2 -translate-x-1/2 pointer-events-none select-none inline-flex items-center gap-2 sm:gap-2.5 md:gap-3 px-2 py-1 z-20"
+                                style={{
+                                  opacity: 0,
+                                  visibility: "hidden",
+                                  transformOrigin: "center bottom",
+                                }}
+                                aria-hidden="true"
+                              >
+                                {/* Radiant ambient emerald aura behind the eyes */}
+                                <span className="absolute inset-0 -m-3 sm:-m-4 bg-emerald-500/35 rounded-full blur-xl -z-10 pointer-events-none" />
+
+                                {/* Left Eye */}
+                                <span className="relative w-[38px] h-[38px] sm:w-[46px] sm:h-[46px] md:w-[54px] md:h-[54px] rounded-full overflow-hidden flex items-center justify-center border-2 border-white/50 dark:border-white/25 shadow-[0_6px_20px_rgba(0,0,0,0.65),inset_0_2px_4px_rgba(0,0,0,0.25)] shrink-0">
+                                  {/* Sclera 3D sphere gradient */}
+                                  <span
+                                    className="absolute inset-0 rounded-full pointer-events-none"
+                                    style={{
+                                      background:
+                                        "radial-gradient(circle at 35% 35%, #FFFFFF 0%, #E2E8F0 55%, #94A3B8 100%)",
+                                    }}
+                                  />
+                                  {/* Pupil & Iris */}
+                                  <span
+                                    ref={(el) => {
+                                      typoPupilsRef.current[0] = el;
+                                    }}
+                                    className="relative w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] md:w-[28px] md:h-[28px] rounded-full bg-[#020603] flex items-center justify-center will-change-transform shadow-[0_0_0_2px_rgba(34,197,94,0.95),0_2px_8px_rgba(0,0,0,0.8)]"
+                                  >
+                                    <span
+                                      className="absolute inset-0 rounded-full pointer-events-none"
+                                      style={{
+                                        background:
+                                          "radial-gradient(circle at 68% 75%, rgba(34, 197, 94, 0.95) 0%, rgba(16, 185, 129, 0.35) 50%, transparent 75%)",
+                                      }}
+                                    />
+                                    <span className="absolute top-[3px] left-[4px] w-[5px] h-[5px] sm:w-[6px] sm:h-[6px] rounded-full bg-white shadow-[0_0_4px_white]" />
+                                    <span className="absolute bottom-[3px] right-[3px] w-[2.5px] h-[2.5px] sm:w-[3px] sm:h-[3px] rounded-full bg-white/85" />
+                                  </span>
+                                  {/* Eyelid for natural blinking */}
+                                  <span
+                                    ref={(el) => {
+                                      typoEyelidsRef.current[0] = el;
+                                    }}
+                                    className="absolute inset-0 bg-[#06180e] dark:bg-[#000000] rounded-full pointer-events-none origin-top will-change-transform"
+                                    style={{
+                                      transform: "scaleY(0)",
+                                      boxShadow: "inset 0 -3px 6px rgba(34, 197, 94, 0.45)",
+                                    }}
+                                  />
+                                </span>
+
+                                {/* Right Eye */}
+                                <span className="relative w-[38px] h-[38px] sm:w-[46px] sm:h-[46px] md:w-[54px] md:h-[54px] rounded-full overflow-hidden flex items-center justify-center border-2 border-white/50 dark:border-white/25 shadow-[0_6px_20px_rgba(0,0,0,0.65),inset_0_2px_4px_rgba(0,0,0,0.25)] shrink-0">
+                                  {/* Sclera 3D sphere gradient */}
+                                  <span
+                                    className="absolute inset-0 rounded-full pointer-events-none"
+                                    style={{
+                                      background:
+                                        "radial-gradient(circle at 35% 35%, #FFFFFF 0%, #E2E8F0 55%, #94A3B8 100%)",
+                                    }}
+                                  />
+                                  {/* Pupil & Iris */}
+                                  <span
+                                    ref={(el) => {
+                                      typoPupilsRef.current[1] = el;
+                                    }}
+                                    className="relative w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] md:w-[28px] md:h-[28px] rounded-full bg-[#020603] flex items-center justify-center will-change-transform shadow-[0_0_0_2px_rgba(34,197,94,0.95),0_2px_8px_rgba(0,0,0,0.8)]"
+                                  >
+                                    <span
+                                      className="absolute inset-0 rounded-full pointer-events-none"
+                                      style={{
+                                        background:
+                                          "radial-gradient(circle at 68% 75%, rgba(34, 197, 94, 0.95) 0%, rgba(16, 185, 129, 0.35) 50%, transparent 75%)",
+                                      }}
+                                    />
+                                    <span className="absolute top-[3px] left-[4px] w-[5px] h-[5px] sm:w-[6px] sm:h-[6px] rounded-full bg-white shadow-[0_0_4px_white]" />
+                                    <span className="absolute bottom-[3px] right-[3px] w-[2.5px] h-[2.5px] sm:w-[3px] sm:h-[3px] rounded-full bg-white/85" />
+                                  </span>
+                                  {/* Eyelid for natural blinking */}
+                                  <span
+                                    ref={(el) => {
+                                      typoEyelidsRef.current[1] = el;
+                                    }}
+                                    className="absolute inset-0 bg-[#06180e] dark:bg-[#000000] rounded-full pointer-events-none origin-top will-change-transform"
+                                    style={{
+                                      transform: "scaleY(0)",
+                                      boxShadow: "inset 0 -3px 6px rgba(34, 197, 94, 0.45)",
+                                    }}
+                                  />
+                                </span>
+                              </span>
+                            </span>
+
+                            {/* Right Word Segment: "always" in Green */}
+                            <span
+                              ref={typoRightWordRef}
+                              className="inline-block text-[#22C55E] will-change-transform"
+                            >
+                              always
+                            </span>
+                          </h3>
+                        ) : (
+                          <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[40px] xl:text-[46px] text-neutral-950 dark:text-white tracking-[-0.03em] leading-[1.08] mb-3 sm:mb-4">
+                            {item.headline}
+                          </h3>
+                        )}
                         <p className="font-sans text-base sm:text-lg md:text-xl lg:text-[21px] text-neutral-600 dark:text-[#94A3B8] font-normal leading-relaxed max-w-xl">
                           {item.body}
                         </p>
