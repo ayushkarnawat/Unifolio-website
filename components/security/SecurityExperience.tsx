@@ -10,7 +10,7 @@ interface SecurityPrinciple {
   body: string;
 }
 
-const PRINCIPLES: SecurityPrinciple[] = [
+export const PRINCIPLES: SecurityPrinciple[] = [
   {
     id: "read-only",
     title: "Read-only, always",

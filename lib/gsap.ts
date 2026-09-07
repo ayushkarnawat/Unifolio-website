@@ -50,14 +50,15 @@ if (typeof window !== "undefined") {
  */
 export function smoothScrollTo(
   target: string | Element | number,
-  options: { offset?: number; duration?: number; ease?: string } = {}
+  options: { offset?: number; duration?: number; ease?: string; onComplete?: () => void } = {}
 ) {
   if (typeof window === "undefined") return;
-  const { offset = 0, duration = 0.85, ease = "power2.inOut" } = options;
+  const { offset = 0, duration = 0.85, ease = "power2.inOut", onComplete } = options;
 
   if (typeof target === "number") {
     if (prefersReducedMotion()) {
       window.scrollTo({ top: target, behavior: "auto" });
+      onComplete?.();
       return;
     }
     gsap.to(window, {
@@ -65,6 +66,7 @@ export function smoothScrollTo(
       ease,
       scrollTo: { y: target, autoKill: true },
       overwrite: "auto",
+      onComplete,
     });
     return;
   }
@@ -74,6 +76,7 @@ export function smoothScrollTo(
 
   if (prefersReducedMotion()) {
     el.scrollIntoView({ behavior: "auto", block: "start" });
+    onComplete?.();
     return;
   }
 
@@ -82,6 +85,7 @@ export function smoothScrollTo(
     ease,
     scrollTo: { y: el, offsetY: offset, autoKill: true },
     overwrite: "auto",
+    onComplete,
   });
 }
 

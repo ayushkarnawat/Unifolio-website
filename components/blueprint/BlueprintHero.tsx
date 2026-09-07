@@ -11,6 +11,7 @@ interface ProductCardData {
   id: string;
   num: string;
   title: string;
+  illustration: string;
   hoverType: "paragraph" | "bullets";
   hoverParagraph?: string;
   hoverBullets?: { label: string; text: string }[];
@@ -26,6 +27,7 @@ const PRODUCT_CARDS: ProductCardData[] = [
     id: "card-ask",
     num: "01",
     title: "Skip the dashboards. Just ask.",
+    illustration: "/product-cards/card-2d-1.png",
     hoverType: "paragraph",
     hoverParagraph:
       "The fastest way to understand your money isn't a chart, it's a question. Ask what's dragging your returns, whether you're overexposed, or if a decision makes sense, and get an answer based on your portfolio.",
@@ -39,6 +41,7 @@ const PRODUCT_CARDS: ProductCardData[] = [
     id: "card-see",
     num: "02",
     title: "See Everything",
+    illustration: "/product-cards/card-2d-2.png",
     hoverType: "paragraph",
     hoverParagraph:
       "From mutual funds and stocks to bank accounts, loans, credit cards, and real estate, every asset and liability you and your family hold, aggregated into a number that's actually accurate.",
@@ -52,6 +55,7 @@ const PRODUCT_CARDS: ProductCardData[] = [
     id: "card-understand",
     num: "03",
     title: "Understand What You Own",
+    illustration: "/product-cards/card-2d-3.png",
     hoverType: "bullets",
     hoverBullets: [
       {
@@ -81,6 +85,7 @@ const PRODUCT_CARDS: ProductCardData[] = [
     id: "card-risk",
     num: "04",
     title: "Know Your Risk",
+    illustration: "/product-cards/card-2d-4.png",
     hoverType: "bullets",
     hoverBullets: [
       {
@@ -110,6 +115,7 @@ const PRODUCT_CARDS: ProductCardData[] = [
     id: "card-plan",
     num: "05",
     title: "Plan Ahead",
+    illustration: "/product-cards/card-2d-5.png",
     hoverType: "bullets",
     hoverBullets: [
       {
@@ -168,6 +174,7 @@ export function BlueprintHero() {
   const cardBackRefs = useRef<(HTMLDivElement | null)[]>([]);
   const cardDefaultRefs = useRef<(HTMLDivElement | null)[]>([]);
   const cardHoverRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const cardIllustrationRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // State management: 'hero' | 'product'
   const stateRef = useRef<"hero" | "product">("hero");
@@ -198,6 +205,7 @@ export function BlueprintHero() {
       const defaultEl = cardDefaultRefs.current[i];
       const hoverEl = cardHoverRefs.current[i];
       const front = cardFrontRefs.current[i];
+      const illus = cardIllustrationRefs.current[i];
       if (!wrapper) return;
 
       if (idx === null) {
@@ -233,6 +241,17 @@ export function BlueprintHero() {
             y: 8,
             duration: 0.12,
             ease: "power2.in",
+            overwrite: "auto",
+          });
+        }
+
+        if (illus) {
+          gsap.to(illus, {
+            opacity: 0.88,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 0.35,
+            ease: "power2.out",
             overwrite: "auto",
           });
         }
@@ -287,6 +306,17 @@ export function BlueprintHero() {
           });
         }
 
+        // Remove sketch completely on hover to avoid cluttering reading layout
+        if (illus) {
+          gsap.to(illus, {
+            opacity: 0,
+            scale: 0.95,
+            duration: 0.25,
+            ease: "power2.out",
+            overwrite: "auto",
+          });
+        }
+
         if (front) {
           gsap.to(front, {
             boxShadow:
@@ -335,6 +365,17 @@ export function BlueprintHero() {
           });
         }
 
+        if (illus) {
+          gsap.to(illus, {
+            opacity: 0.65,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 0.35,
+            ease: "power2.out",
+            overwrite: "auto",
+          });
+        }
+
         if (front) {
           gsap.to(front, {
             boxShadow:
@@ -350,34 +391,26 @@ export function BlueprintHero() {
   };
 
   const getHoverBandIndex = (clientX: number): number | null => {
-    const cluster = cardsClusterRef.current;
-    if (!cluster) return null;
-    const rect = cluster.getBoundingClientRect();
-    if (clientX < rect.left || clientX > rect.right) return null;
-
-    const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
-    const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
-    const restingWidth = isDesktop ? 225 : isTablet ? 195 : 175;
-    const expandedWidth = isDesktop ? 365 : isTablet ? 315 : 280;
-    const compressedWidth = isDesktop ? 190 : isTablet ? 165 : 148;
-
-    const hovered = currentHoverRef.current;
-    const widths = PRODUCT_CARDS.map((_, i) =>
-      hovered === null ? restingWidth : i === hovered ? expandedWidth : compressedWidth
-    );
-
-    const gap = parseFloat(window.getComputedStyle(cluster).columnGap || "0") || 0;
-    const totalWidth = widths.reduce((sum, w) => sum + w, 0) + gap * (widths.length - 1);
-
-    // Continuous unbroken bands with NO dead zones or gap fallback jumps
-    let bandStart = rect.left + (rect.width - totalWidth) / 2;
-    for (let i = 0; i < widths.length; i++) {
-      const isLast = i === widths.length - 1;
-      const bandEnd = isLast ? bandStart + widths[i] : bandStart + widths[i] + gap;
-      if (clientX >= bandStart && clientX <= bandEnd) return i;
-      bandStart = bandEnd;
+    const cardRects = cardWrapperRefs.current.map((el) => el?.getBoundingClientRect());
+    for (let i = 0; i < cardRects.length; i++) {
+      const cr = cardRects[i];
+      if (cr && clientX >= cr.left && clientX <= cr.right) {
+        return i;
+      }
     }
-    return clientX < rect.left + rect.width / 2 ? 0 : widths.length - 1;
+    // Across flex gaps, find the nearest card center
+    let closestIdx = 0;
+    let minDistance = Infinity;
+    cardRects.forEach((cr, i) => {
+      if (!cr) return;
+      const center = cr.left + cr.width / 2;
+      const dist = Math.abs(clientX - center);
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestIdx = i;
+      }
+    });
+    return closestIdx;
   };
 
   const handleCardHover = (idx: number | null) => {
@@ -393,7 +426,7 @@ export function BlueprintHero() {
       clearTimeout(hoverCommitTimeoutRef.current);
       hoverCommitTimeoutRef.current = null;
     }
-    const delay = idx === null ? 70 : 0;
+    const delay = idx === null ? 70 : 10;
     hoverCommitTimeoutRef.current = setTimeout(() => {
       hoverCommitTimeoutRef.current = null;
       commitCardHover(idx);
@@ -523,6 +556,8 @@ export function BlueprintHero() {
         if (flipper) gsap.set(flipper, { rotateY: 180 }); // Back face forward initially
         if (defaultEl) gsap.set(defaultEl, { autoAlpha: 1, scale: 1, y: 0 });
         if (hoverEl) gsap.set(hoverEl, { autoAlpha: 0, y: 8 });
+        const illus = cardIllustrationRefs.current[i];
+        if (illus) gsap.set(illus, { opacity: 0.88, scale: 1, filter: "blur(0px)" });
       });
 
       const revealHeroAfterDocked = () => {
@@ -902,6 +937,8 @@ export function BlueprintHero() {
           }
           if (front) gsap.set(front, { borderRadius: "20px" });
           if (flipper) gsap.set(flipper, { rotateY: 0 });
+          const illus = cardIllustrationRefs.current[i];
+          if (illus) gsap.set(illus, { opacity: 0.88, scale: 1, filter: "blur(0px)" });
         });
       };
 
@@ -1131,14 +1168,47 @@ export function BlueprintHero() {
                             <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
                           </div>
 
+                          {/* 2D Sketch Illustration Asset (Centered, Clean 2D Linework) */}
+                          <div
+                            ref={(el) => {
+                              cardIllustrationRefs.current[idx] = el;
+                            }}
+                            className="absolute inset-0 pointer-events-none select-none z-10 flex flex-col items-center justify-end pb-3 sm:pb-4 will-change-[opacity,transform,filter]"
+                            style={{ opacity: 0.88 }}
+                          >
+                            <div
+                              className={`relative ${
+                                idx === 0
+                                  ? "w-[136px] sm:w-[145px] md:w-[155px] lg:w-[160px] h-[175px] sm:h-[185px] md:h-[195px] mb-2"
+                                  : idx === 1
+                                  ? "w-[168px] sm:w-[178px] md:w-[188px] lg:w-[195px] h-[165px] sm:h-[175px] md:h-[185px] mb-2"
+                                  : idx === 2
+                                  ? "w-[138px] sm:w-[146px] md:w-[156px] lg:w-[162px] h-[175px] sm:h-[185px] md:h-[195px] mb-2"
+                                  : idx === 3
+                                  ? "w-[158px] sm:w-[168px] md:w-[178px] lg:w-[185px] h-[165px] sm:h-[175px] md:h-[185px] mb-2"
+                                  : "w-[136px] sm:w-[145px] md:w-[155px] lg:w-[160px] h-[175px] sm:h-[185px] md:h-[195px] mb-2"
+                              }`}
+                            >
+                              <img
+                                src={card.illustration}
+                                alt={card.title}
+                                className="w-full h-full object-contain object-bottom drop-shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
+                                draggable={false}
+                              />
+                            </div>
+                          </div>
+
                           {/* Default Resting Centered Content */}
                           <div
                             ref={(el) => {
                               cardDefaultRefs.current[idx] = el;
                             }}
-                            className="absolute inset-0 z-10 flex flex-col items-center justify-center p-5 sm:p-6 text-center pointer-events-none select-none will-change-transform"
+                            className="absolute inset-0 z-15 flex flex-col items-center justify-start pt-7 sm:pt-8 px-4 text-center pointer-events-none select-none will-change-transform"
                           >
-                            <h3 className="font-sans font-bold text-sm sm:text-base xl:text-[17px] text-white leading-snug tracking-tight max-w-[200px]">
+                            <span className="font-mono text-[10px] sm:text-xs font-black text-[#22c55e] tracking-widest uppercase mb-2">
+                              {card.num}
+                            </span>
+                            <h3 className="font-sans font-black text-sm sm:text-base md:text-lg lg:text-xl xl:text-[22px] text-white leading-[1.18] tracking-tight max-w-[195px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
                               {card.title}
                             </h3>
                           </div>
@@ -1148,29 +1218,32 @@ export function BlueprintHero() {
                             ref={(el) => {
                               cardHoverRefs.current[idx] = el;
                             }}
-                            className="absolute inset-0 z-20 flex flex-col justify-end p-5 sm:p-6 text-left pointer-events-none will-change-transform"
+                            className="absolute inset-0 z-20 flex flex-col items-center justify-center p-5 sm:p-6 sm:px-7 text-center pointer-events-none will-change-transform"
                             style={{
                               opacity: 0,
                               transform: "translateY(8px)",
                             }}
                           >
-                            <div className="flex flex-col justify-end space-y-2.5">
-                              <h3 className="font-sans font-bold text-sm sm:text-base xl:text-[16px] text-white leading-tight tracking-tight">
+                            <div className="flex flex-col items-center justify-center w-full space-y-2.5 sm:space-y-3">
+                              <span className="font-mono text-[10px] sm:text-xs font-black text-[#22c55e] tracking-widest uppercase">
+                                {card.num}
+                              </span>
+                              <h3 className="font-sans font-extrabold text-base sm:text-lg md:text-xl lg:text-[22px] xl:text-[24px] text-white leading-[1.14] tracking-[-0.035em] text-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
                                 {card.title}
                               </h3>
 
                               {card.hoverType === "paragraph" ? (
-                                <p className="text-[11px] sm:text-xs text-neutral-300 font-normal leading-relaxed">
+                                <p className="text-xs sm:text-[13px] md:text-sm text-neutral-100 font-semibold leading-[1.46] text-center max-w-[280px]">
                                   {card.hoverParagraph}
                                 </p>
                               ) : (
-                                <div className="space-y-1.5 max-h-[175px] overflow-y-auto pr-1 no-scrollbar pointer-events-auto">
+                                <div className="space-y-2 max-h-[190px] overflow-y-auto pr-1 no-scrollbar pointer-events-auto text-center w-full">
                                   {card.hoverBullets?.map((bullet, bIdx) => (
-                                    <div key={bIdx} className="text-[10.5px] sm:text-[11px] leading-snug">
-                                      <span className="font-semibold text-emerald-300 mr-1">
+                                    <div key={bIdx} className="text-[11px] sm:text-xs text-neutral-100 font-semibold leading-[1.38]">
+                                      <span className="font-extrabold text-[#34d399] mr-1 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]">
                                         {bullet.label}
                                       </span>
-                                      <span className="text-neutral-300 font-normal">
+                                      <span className="text-neutral-100 font-semibold">
                                         {bullet.text}
                                       </span>
                                     </div>
