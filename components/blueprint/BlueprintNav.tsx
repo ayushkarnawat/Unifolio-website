@@ -46,8 +46,22 @@ export function BlueprintNav() {
   const navContainerRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
   const linkRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
-
   const textRefs = useRef<Record<string, HTMLSpanElement | null>>({});
+
+  const forcedSectionRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const handleActiveSection = (e: Event) => {
+      const ce = e as CustomEvent<{ section: string }>;
+      if (ce.detail?.section) {
+        forcedSectionRef.current = ce.detail.section;
+        setActiveId(ce.detail.section);
+      }
+    };
+
+    window.addEventListener("unifolio-active-section", handleActiveSection);
+    return () => window.removeEventListener("unifolio-active-section", handleActiveSection);
+  }, []);
 
   // Scroll listener for backdrop styling & active section sync
   useEffect(() => {
@@ -57,8 +71,24 @@ export function BlueprintNav() {
 
       // 1. On landing / near top of page (Home)
       if (scrollY < window.innerHeight * 0.65) {
+        forcedSectionRef.current = null;
         setActiveId("hero");
         return;
+      }
+
+      // If an explicit section was signaled (e.g. at transition trigger to Security), honor it
+      if (forcedSectionRef.current) {
+        const aboutEl = document.getElementById("about");
+        const contactEl = document.getElementById("contact");
+        const triggerPos = scrollY + window.innerHeight * 0.35;
+        if (aboutEl && triggerPos >= aboutEl.offsetTop) {
+          forcedSectionRef.current = null;
+        } else if (contactEl && triggerPos >= contactEl.offsetTop) {
+          forcedSectionRef.current = null;
+        } else {
+          setActiveId(forcedSectionRef.current);
+          return;
+        }
       }
 
       // 2. Near bottom of page (Contact)
@@ -153,6 +183,7 @@ export function BlueprintNav() {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
 
+    forcedSectionRef.current = id;
     setActiveId(id);
 
     if (href === "#hero" || id === "hero") {
