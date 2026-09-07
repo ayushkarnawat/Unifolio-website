@@ -168,7 +168,7 @@ const SECURITY_STATES: SecurityStateItem[] = [
   // State 3
   {
     type: "principle",
-    headline: "We never see your passwords",
+    headline: "We never save your passwords",
     body: "Your bank login stays with your bank. We connect through India's RBI-regulated Account Aggregator framework, so your credentials never reach us, by design.",
   },
   // State 4
@@ -201,6 +201,8 @@ const SECURITY_STATES: SecurityStateItem[] = [
     headline: "Security isn't a feature here. It's the baseline everything else is built on.",
   },
 ];
+
+const PASSWORD_LETTERS = ["p", "a", "s", "s", "w", "o", "r", "d", "s"];
 
 export function BlueprintHero() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -252,6 +254,11 @@ export function BlueprintHero() {
   const typoPupilsRef = useRef<(HTMLSpanElement | null)[]>([]);
   const typoEyelidsRef = useRef<(HTMLSpanElement | null)[]>([]);
   const typoEyesTlRef = useRef<gsap.core.Timeline | null>(null);
+
+  // Password Masking Interaction ("We never save your passwords")
+  const pwdLetterRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const pwdMaskRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const pwdMaskTlRef = useRef<gsap.core.Timeline | null>(null);
 
   // State management & transition guards
   const stateRef = useRef<"hero" | "product" | "sculpting" | "ring">("hero");
@@ -1960,6 +1967,125 @@ export function BlueprintHero() {
         }
       };
 
+      // -------------------------------------------------------------------------
+      // PASSWORD MASKING INTERACTION: "We never save your passwords"
+      // Shows "passwords" normally for a brief moment, then replaces letters
+      // with asterisks (*) one character at a time (passwords -> *asswords -> ... -> *********).
+      // Immediately reverses in reverse order restoring letters one by one (* -> s, * -> d, etc.).
+      // Word layout is rock-solid with zero width jumping, text shifting, or reflow.
+      // -------------------------------------------------------------------------
+      const playPasswordMaskAnimation = () => {
+        const letters = pwdLetterRefs.current.filter(Boolean) as HTMLElement[];
+        const masks = pwdMaskRefs.current.filter(Boolean) as HTMLElement[];
+        if (letters.length === 0 || masks.length === 0) {
+          isSecurityTransitioningRef.current = false;
+          return;
+        }
+
+        if (pwdMaskTlRef.current) {
+          pwdMaskTlRef.current.kill();
+        }
+
+        // Reset to initial clean state: letters visible, masks hidden
+        gsap.set(letters, { opacity: 1, scale: 1, y: 0 });
+        gsap.set(masks, { opacity: 0, scale: 0.35, y: 0 });
+
+        const tl = gsap.timeline({
+          repeat: -1,
+          repeatDelay: 2.4,
+        });
+
+        pwdMaskTlRef.current = tl;
+
+        // 1. Brief hold so user reads the full word "passwords" normally
+        const initialHold = 0.45;
+        const charDuration = 0.11;
+
+        // 2. Sequential masking: replace letters with asterisks one-by-one (0 to 8)
+        letters.forEach((letter, i) => {
+          const t = initialHold + i * charDuration;
+          const mask = masks[i];
+
+          // Letter pops down and fades out
+          tl.to(
+            letter,
+            {
+              opacity: 0,
+              scale: 0.35,
+              duration: 0.13,
+              ease: "power2.in",
+            },
+            t
+          );
+
+          // Asterisk pops in with a crisp, satisfying micro-spring
+          if (mask) {
+            tl.to(
+              mask,
+              {
+                opacity: 1,
+                scale: 1,
+                duration: 0.20,
+                ease: "back.out(2.4)",
+              },
+              t + 0.04
+            );
+          }
+        });
+
+        // 3. As soon as final letter becomes an asterisk, reverse immediately in reverse order
+        const fullMaskTime = initialHold + (letters.length - 1) * charDuration + 0.20;
+        const unmaskStart = fullMaskTime + 0.18;
+
+        // 4. Reverse unmasking: restore original letters one-by-one from right to left (8 down to 0)
+        let passCompleteTime = unmaskStart;
+        for (let j = letters.length - 1; j >= 0; j--) {
+          const stepIndex = (letters.length - 1) - j;
+          const t = unmaskStart + stepIndex * charDuration;
+          const letter = letters[j];
+          const mask = masks[j];
+
+          // Asterisk disappears
+          if (mask) {
+            tl.to(
+              mask,
+              {
+                opacity: 0,
+                scale: 0.35,
+                duration: 0.13,
+                ease: "power2.in",
+              },
+              t
+            );
+          }
+
+          // Letter pops back in
+          tl.to(
+            letter,
+            {
+              opacity: 1,
+              scale: 1,
+              duration: 0.20,
+              ease: "back.out(2.0)",
+            },
+            t + 0.04
+          );
+
+          passCompleteTime = Math.max(passCompleteTime, t + 0.24);
+        }
+
+        // 5. As soon as one pass completes (all letters are restored back to "passwords"),
+        // unlock scrolling so the user can freely scroll to the next state,
+        // while allowing the animation to continue looping continuously.
+        tl.call(
+          () => {
+            isSecurityTransitioningRef.current = false;
+          },
+          undefined,
+          passCompleteTime
+        );
+      };
+
       const goToSecurityState = (nextIdx: number, direction: 1 | -1) => {
         if (isSecurityTransitioningRef.current) return;
         if (nextIdx < 0 || nextIdx >= SECURITY_STATES.length) return;
@@ -1986,6 +2112,16 @@ export function BlueprintHero() {
           }
         }
 
+        // Clean up password mask animation if leaving state 2
+        if (prevIdx === 2 && pwdMaskTlRef.current) {
+          pwdMaskTlRef.current.kill();
+          pwdMaskTlRef.current = null;
+          const letters = pwdLetterRefs.current.filter(Boolean) as HTMLElement[];
+          const masks = pwdMaskRefs.current.filter(Boolean) as HTMLElement[];
+          if (letters.length > 0) gsap.set(letters, { opacity: 1, scale: 1, y: 0 });
+          if (masks.length > 0) gsap.set(masks, { opacity: 0, scale: 0.35 });
+        }
+
         const prevEl = securityStateRefs.current[prevIdx];
         const nextEl = securityStateRefs.current[nextIdx];
 
@@ -1993,6 +2129,8 @@ export function BlueprintHero() {
           onComplete: () => {
             if (nextIdx === 1) {
               playTypoEyesAnimation();
+            } else if (nextIdx === 2) {
+              playPasswordMaskAnimation();
             } else {
               isSecurityTransitioningRef.current = false;
             }
@@ -2014,6 +2152,15 @@ export function BlueprintHero() {
           tl.set(prevEl, { visibility: "hidden" }, 0.20);
         }
 
+        const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
+        const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
+        const vCenterX = (typeof window !== "undefined" ? window.innerWidth : 1440) / 2;
+        const shiftX = isDesk
+          ? Math.round(vCenterX * 0.42)
+          : isTab
+          ? Math.round(vCenterX * 0.30)
+          : Math.round(vCenterX * 0.16);
+
         // 2. New text smoothly enters with a slight directional movement & subtle stagger
         if (nextEl) {
           tl.set(
@@ -2021,6 +2168,7 @@ export function BlueprintHero() {
             {
               visibility: "visible",
               opacity: 0,
+              x: shiftX,
               y: direction === 1 ? 16 : -16,
             },
             0.10
@@ -2151,6 +2299,16 @@ export function BlueprintHero() {
         }
         if (typoLeftWordRef.current) gsap.set(typoLeftWordRef.current, { x: 0 });
         if (typoRightWordRef.current) gsap.set(typoRightWordRef.current, { x: 0 });
+
+        // Clean up password mask animation if active
+        if (pwdMaskTlRef.current) {
+          pwdMaskTlRef.current.kill();
+          pwdMaskTlRef.current = null;
+        }
+        const pwdLetters = pwdLetterRefs.current.filter(Boolean) as HTMLElement[];
+        const pwdMasks = pwdMaskRefs.current.filter(Boolean) as HTMLElement[];
+        if (pwdLetters.length > 0) gsap.set(pwdLetters, { opacity: 1, scale: 1, y: 0 });
+        if (pwdMasks.length > 0) gsap.set(pwdMasks, { opacity: 0, scale: 0.35 });
 
         // 1. Immediately stop continuous ambient rotation so it cannot fight the reverse timeline
         if (ringRotateTweenRef.current) {
@@ -2655,6 +2813,10 @@ export function BlueprintHero() {
           typoEyesTlRef.current.kill();
           typoEyesTlRef.current = null;
         }
+        if (pwdMaskTlRef.current) {
+          pwdMaskTlRef.current.kill();
+          pwdMaskTlRef.current = null;
+        }
         if (typoLeftWordRef.current) gsap.set(typoLeftWordRef.current, { x: 0 });
         if (typoRightWordRef.current) gsap.set(typoRightWordRef.current, { x: 0 });
         if (productToRingTlRef.current) {
@@ -3109,6 +3271,8 @@ export function BlueprintHero() {
                     className={`absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full ${
                       item.type === "hero"
                         ? "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl px-4 sm:px-6 text-center"
+                        : idx === 2
+                        ? "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl px-6 md:pl-16 lg:pl-28 xl:pl-36 text-left"
                         : "max-w-md sm:max-w-lg lg:max-w-xl xl:max-w-2xl px-6 text-left"
                     } will-change-transform pointer-events-none`}
                     style={{
@@ -3239,6 +3403,40 @@ export function BlueprintHero() {
                               className="inline-block text-[#22C55E] will-change-transform"
                             >
                               always
+                            </span>
+                          </h3>
+                        ) : idx === 2 ? (
+                          // State 3: "We never save your passwords" - Password Masking Interaction
+                          <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[46px] xl:text-[52px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.08] whitespace-nowrap mb-4 sm:mb-5 select-none">
+                            <span>We never save your </span>
+                            <span className="text-[#22C55E] inline-flex items-baseline font-black">
+                              {PASSWORD_LETTERS.map((char, charIdx) => (
+                                <span
+                                  key={charIdx}
+                                  className="relative inline-block text-center align-baseline"
+                                >
+                                  {/* Natural character defining the exact slot width */}
+                                  <span
+                                    ref={(el) => {
+                                      pwdLetterRefs.current[charIdx] = el;
+                                    }}
+                                    className="inline-block will-change-transform"
+                                  >
+                                    {char}
+                                  </span>
+                                  {/* Masking asterisk centered exactly over the character slot */}
+                                  <span
+                                    ref={(el) => {
+                                      pwdMaskRefs.current[charIdx] = el;
+                                    }}
+                                    className="absolute inset-0 flex items-center justify-center pointer-events-none will-change-transform text-[1.15em] font-black leading-none text-[#22C55E] drop-shadow-[0_0_8px_rgba(34,197,94,0.45)]"
+                                    style={{ opacity: 0, transform: "scale(0.35)" }}
+                                    aria-hidden="true"
+                                  >
+                                    *
+                                  </span>
+                                </span>
+                              ))}
                             </span>
                           </h3>
                         ) : (
