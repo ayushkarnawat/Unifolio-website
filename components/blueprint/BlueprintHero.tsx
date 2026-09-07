@@ -204,6 +204,7 @@ const SECURITY_STATES: SecurityStateItem[] = [
 
 const PASSWORD_LETTERS = ["p", "a", "s", "s", "w", "o", "r", "d", "s"];
 const LOCKED_LETTERS = ["L", "o", "c", "k", "e", "d"];
+const CONTROL_LETTERS = ["c", "o", "n", "t", "r", "o", "l"];
 
 export function BlueprintHero() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -268,6 +269,14 @@ export function BlueprintHero() {
   const lockBodyRef = useRef<SVGRectElement | null>(null);
   const lockAnimTlRef = useRef<gsap.core.Timeline | null>(null);
   const lockAnimPlayedRef = useRef<boolean>(false);
+
+  // Handshake Typography Transformation Interaction ("You control the connection")
+  const controlCharRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const handshakeWrapperRef = useRef<HTMLSpanElement | null>(null);
+  const handLeftGroupRef = useRef<SVGGElement | null>(null);
+  const handRightGroupRef = useRef<SVGGElement | null>(null);
+  const handshakeSparksRef = useRef<SVGGElement | null>(null);
+  const handshakeAnimTlRef = useRef<gsap.core.Timeline | null>(null);
 
   // Wheel & gesture isolation refs to prevent skipping states
   const wheelGestureActiveRef = useRef<boolean>(false);
@@ -2336,6 +2345,233 @@ export function BlueprintHero() {
         });
       };
 
+      // -------------------------------------------------------------------------
+      // HANDSHAKE TRANSFORMATION INTERACTION: "You control the connection"
+      // Triggers typography transformation animation into a handshake illustration
+      // inspired directly by handshake.mp4 in the public folder.
+      // 1. Full line "You control the connection" appears normally and settles.
+      // 2. Left words ("You control") & right words ("the connection") deconstruct
+      //    and converge into two hands reaching out towards each other from left and right.
+      // 3. The hands meet in the center and clasp firmly into a warm handshake,
+      //    complete with a rhythmic pump recoil and floating celebration sparkles!
+      // 4. Hold clasped handshake proudly for a beat.
+      // 5. Reverse transformation: hands unclasp and dissolve, reconstructing
+      //    back into the exact typographical sentence.
+      // 6. Scrolling unlocks once text is fully restored!
+      // Plays every time the user enters this state.
+      // -------------------------------------------------------------------------
+      const playHandshakeAnimation = () => {
+        const chars = controlCharRefs.current.filter(Boolean) as HTMLElement[];
+        const wrapper = handshakeWrapperRef.current;
+        const leftHand = handLeftGroupRef.current;
+        const rightHand = handRightGroupRef.current;
+        const sparks = handshakeSparksRef.current;
+
+        if (chars.length === 0 || !wrapper || !leftHand || !rightHand) {
+          isSecurityTransitioningRef.current = false;
+          return;
+        }
+
+        if (handshakeAnimTlRef.current) {
+          handshakeAnimTlRef.current.kill();
+        }
+
+        // Reset elements to initial clean typography state
+        gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+        gsap.set(wrapper, { opacity: 0, scale: 0.35 });
+        gsap.set(leftHand, { x: -60, opacity: 0, y: 0 });
+        gsap.set(rightHand, { x: 60, opacity: 0, y: 0 });
+        if (sparks) gsap.set(sparks, { opacity: 0, scale: 0.4 });
+
+        const tl = gsap.timeline({
+          onComplete: () => {
+            gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+            gsap.set(wrapper, { opacity: 0, scale: 0.35 });
+            isSecurityTransitioningRef.current = false;
+            lastSecurityScrollTimeRef.current = Date.now();
+            wheelGestureActiveRef.current = true;
+            if (wheelGestureEndTimerRef.current) clearTimeout(wheelGestureEndTimerRef.current);
+            wheelGestureEndTimerRef.current = setTimeout(() => {
+              wheelGestureActiveRef.current = false;
+            }, 250);
+          },
+        });
+
+        handshakeAnimTlRef.current = tl;
+
+        // 1. Brief settle so user reads "You control the connection" normally
+        const tSettle = 0.40;
+
+        // 2. The 7 letters of "control" (c-o-n-t-r-o-l) deconstruct and converge inward
+        // Left characters c, o, n converge into left green hand:
+        if (chars[0]) tl.to(chars[0], { x: 28, y: 3, scale: 0.25, rotate: 12, opacity: 0, duration: 0.34, ease: "power2.in" }, tSettle);
+        if (chars[1]) tl.to(chars[1], { x: 18, y: 1, scale: 0.3, rotate: 8, opacity: 0, duration: 0.34, ease: "power2.in" }, tSettle + 0.02);
+        if (chars[2]) tl.to(chars[2], { x: 9, y: 0, scale: 0.4, rotate: 4, opacity: 0, duration: 0.34, ease: "power2.in" }, tSettle + 0.03);
+
+        // Center character 't' collapses into center clasp core
+        if (chars[3]) tl.to(chars[3], { scale: 0.2, y: -2, opacity: 0, duration: 0.34, ease: "power2.in" }, tSettle + 0.04);
+
+        // Right characters r, o, l converge into right green hand:
+        if (chars[4]) tl.to(chars[4], { x: -9, y: 0, scale: 0.4, rotate: -4, opacity: 0, duration: 0.34, ease: "power2.in" }, tSettle + 0.03);
+        if (chars[5]) tl.to(chars[5], { x: -18, y: 1, scale: 0.3, rotate: -8, opacity: 0, duration: 0.34, ease: "power2.in" }, tSettle + 0.02);
+        if (chars[6]) tl.to(chars[6], { x: -28, y: 3, scale: 0.25, rotate: -12, opacity: 0, duration: 0.34, ease: "power2.in" }, tSettle);
+
+        // 3. Handshake illustration blooms directly over the word "control"
+        const tHandsEnter = tSettle + 0.18;
+        tl.to(
+          wrapper,
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.32,
+            ease: "back.out(1.8)",
+          },
+          tHandsEnter
+        );
+
+        tl.to(
+          leftHand,
+          {
+            x: 0,
+            opacity: 1,
+            duration: 0.34,
+            ease: "power3.out",
+          },
+          tHandsEnter
+        );
+        tl.to(
+          rightHand,
+          {
+            x: 0,
+            opacity: 1,
+            duration: 0.34,
+            ease: "power3.out",
+          },
+          tHandsEnter
+        );
+
+        // 4. Clasp moment & Handshake pump recoil (inspired by handshake.mp4)
+        const tClasp = tHandsEnter + 0.30;
+
+        // Downward shake pump
+        tl.to(
+          [leftHand, rightHand],
+          {
+            y: 8,
+            duration: 0.10,
+            ease: "power2.out",
+          },
+          tClasp
+        );
+        // Upward recoil
+        tl.to(
+          [leftHand, rightHand],
+          {
+            y: -9,
+            duration: 0.14,
+            ease: "power2.inOut",
+          },
+          tClasp + 0.10
+        );
+        // Secondary soft bounce
+        tl.to(
+          [leftHand, rightHand],
+          {
+            y: 3.5,
+            duration: 0.10,
+            ease: "power2.inOut",
+          },
+          tClasp + 0.24
+        );
+        // Settle to rest
+        tl.to(
+          [leftHand, rightHand],
+          {
+            y: 0,
+            duration: 0.18,
+            ease: "elastic.out(1.4, 0.4)",
+          },
+          tClasp + 0.34
+        );
+
+        // Sparkles pop at clasp moment
+        if (sparks) {
+          tl.to(
+            sparks,
+            {
+              opacity: 1,
+              scale: 1,
+              duration: 0.25,
+              ease: "back.out(2.0)",
+            },
+            tClasp + 0.04
+          );
+          tl.to(
+            sparks,
+            {
+              opacity: 0,
+              scale: 1.25,
+              duration: 0.45,
+              ease: "power2.out",
+            },
+            tClasp + 0.32
+          );
+        }
+
+        // 5. Proud hold in clasped handshake
+        const tHoldEnd = tClasp + 0.34 + 0.75;
+
+        // 6. Reverse transformation: hands unclasp & letters burst back into "control"
+        tl.to(
+          leftHand,
+          {
+            x: -60,
+            opacity: 0,
+            duration: 0.26,
+            ease: "power2.in",
+          },
+          tHoldEnd
+        );
+        tl.to(
+          rightHand,
+          {
+            x: 60,
+            opacity: 0,
+            duration: 0.26,
+            ease: "power2.in",
+          },
+          tHoldEnd
+        );
+        tl.to(
+          wrapper,
+          {
+            opacity: 0,
+            scale: 0.35,
+            duration: 0.24,
+            ease: "power2.in",
+          },
+          tHoldEnd + 0.06
+        );
+
+        // All 7 letters of "control" spring outward from center into exact original positions
+        const tRestore = tHoldEnd + 0.10;
+        chars.forEach((char, i) => {
+          tl.to(
+            char,
+            {
+              opacity: 1,
+              scale: 1,
+              x: 0,
+              y: 0,
+              rotate: 0,
+              duration: 0.32,
+              ease: "back.out(2.0)",
+            },
+            tRestore + i * 0.025
+          );
+        });
+      };
+
       const goToSecurityState = (nextIdx: number, direction: 1 | -1) => {
         if (isSecurityTransitioningRef.current) return;
         if (nextIdx < 0 || nextIdx >= SECURITY_STATES.length) return;
@@ -2383,6 +2619,17 @@ export function BlueprintHero() {
           if (lockIconWrapperRef.current) gsap.set(lockIconWrapperRef.current, { opacity: 0, scale: 0.35 });
         }
 
+        // Clean up handshake animation if leaving state 4
+        if (prevIdx === 4) {
+          if (handshakeAnimTlRef.current) {
+            handshakeAnimTlRef.current.kill();
+            handshakeAnimTlRef.current = null;
+          }
+          const chars = controlCharRefs.current.filter(Boolean) as HTMLElement[];
+          if (chars.length > 0) gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+          if (handshakeWrapperRef.current) gsap.set(handshakeWrapperRef.current, { opacity: 0, scale: 0.35 });
+        }
+
         const prevEl = securityStateRefs.current[prevIdx];
         const nextEl = securityStateRefs.current[nextIdx];
 
@@ -2394,6 +2641,8 @@ export function BlueprintHero() {
               playPasswordMaskAnimation();
             } else if (nextIdx === 3) {
               playLockMorphAnimation();
+            } else if (nextIdx === 4) {
+              playHandshakeAnimation();
             } else {
               isSecurityTransitioningRef.current = false;
             }
@@ -2582,6 +2831,15 @@ export function BlueprintHero() {
         const lockChars = lockCharRefs.current.filter(Boolean) as HTMLElement[];
         if (lockChars.length > 0) gsap.set(lockChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
         if (lockIconWrapperRef.current) gsap.set(lockIconWrapperRef.current, { opacity: 0, scale: 0.35 });
+
+        // Clean up handshake animation if active
+        if (handshakeAnimTlRef.current) {
+          handshakeAnimTlRef.current.kill();
+          handshakeAnimTlRef.current = null;
+        }
+        const controlChars = controlCharRefs.current.filter(Boolean) as HTMLElement[];
+        if (controlChars.length > 0) gsap.set(controlChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+        if (handshakeWrapperRef.current) gsap.set(handshakeWrapperRef.current, { opacity: 0, scale: 0.35 });
 
         // 1. Immediately stop continuous ambient rotation so it cannot fight the reverse timeline
         if (ringRotateTweenRef.current) {
@@ -3123,6 +3381,10 @@ export function BlueprintHero() {
           lockAnimTlRef.current.kill();
           lockAnimTlRef.current = null;
         }
+        if (handshakeAnimTlRef.current) {
+          handshakeAnimTlRef.current.kill();
+          handshakeAnimTlRef.current = null;
+        }
         if (typoLeftWordRef.current) gsap.set(typoLeftWordRef.current, { x: 0 });
         if (typoRightWordRef.current) gsap.set(typoRightWordRef.current, { x: 0 });
         if (productToRingTlRef.current) {
@@ -3577,7 +3839,7 @@ export function BlueprintHero() {
                     className={`absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full ${
                       item.type === "hero"
                         ? "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl px-4 sm:px-6 text-center"
-                        : idx === 2 || idx === 3
+                        : idx === 2 || idx === 3 || idx === 4
                         ? "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl px-6 md:pl-16 lg:pl-28 xl:pl-36 text-left"
                         : "max-w-md sm:max-w-lg lg:max-w-xl xl:max-w-2xl px-6 text-left"
                     } will-change-transform pointer-events-none`}
@@ -3774,15 +4036,15 @@ export function BlueprintHero() {
                               >
                                 <svg
                                   viewBox="0 0 44 48"
-                                  className="w-[1.2em] h-[1.3em] overflow-visible drop-shadow-[0_6px_16px_rgba(245,158,11,0.5)]"
+                                  className="w-[1.2em] h-[1.3em] overflow-visible drop-shadow-[0_6px_16px_rgba(34,197,94,0.5)]"
                                   fill="none"
                                   xmlns="http://www.w3.org/2000/svg"
                                 >
                                   <defs>
-                                    <linearGradient id="unifolioLockGold" x1="0%" y1="0%" x2="100%" y2="100%">
-                                      <stop offset="0%" stopColor="#FDE047" />
-                                      <stop offset="45%" stopColor="#F59E0B" />
-                                      <stop offset="100%" stopColor="#D97706" />
+                                    <linearGradient id="unifolioLockGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+                                      <stop offset="0%" stopColor="#4ADE80" />
+                                      <stop offset="45%" stopColor="#22C55E" />
+                                      <stop offset="100%" stopColor="#16A34A" />
                                     </linearGradient>
                                   </defs>
 
@@ -3796,7 +4058,7 @@ export function BlueprintHero() {
                                     className="text-neutral-900 dark:text-neutral-100 will-change-transform"
                                   />
 
-                                  {/* Lock Body (golden amber rounded squircle) */}
+                                  {/* Lock Body (Unifolio green rounded squircle) */}
                                   <rect
                                     ref={lockBodyRef}
                                     x="6"
@@ -3805,7 +4067,7 @@ export function BlueprintHero() {
                                     height="26"
                                     rx="7.5"
                                     ry="7.5"
-                                    fill="url(#unifolioLockGold)"
+                                    fill="url(#unifolioLockGreen)"
                                     className="will-change-transform"
                                   />
 
@@ -3821,6 +4083,137 @@ export function BlueprintHero() {
                             <span className="text-[#22C55E] inline-block font-black">
                               everywhere
                             </span>
+                          </h3>
+                        ) : idx === 4 ? (
+                          // State 5: "You control the connection" - Typography Transformation into Handshake
+                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.06] mb-4 sm:mb-5 select-none whitespace-normal lg:whitespace-nowrap">
+                            <span>You </span>
+
+                            {/* The entire word "control" transforms into the handshake */}
+                            <span className="relative inline-flex items-center justify-center align-baseline">
+                              {/* The 7 letters of "control" */}
+                              <span className="inline-flex items-baseline text-[#22C55E] font-black">
+                                {CONTROL_LETTERS.map((char, charIdx) => (
+                                  <span
+                                    key={charIdx}
+                                    ref={(el) => {
+                                      controlCharRefs.current[charIdx] = el;
+                                    }}
+                                    className="inline-block will-change-transform"
+                                  >
+                                    {char}
+                                  </span>
+                                ))}
+                              </span>
+
+                              {/* Morphed Handshake SVG Icon (Centered directly over the word "control") */}
+                              <span
+                                ref={handshakeWrapperRef}
+                                className="absolute inset-0 flex items-center justify-center pointer-events-none will-change-transform z-10"
+                                style={{ opacity: 0, transform: "scale(0.35)" }}
+                                aria-hidden="true"
+                              >
+                                <svg
+                                  viewBox="0 0 220 130"
+                                  className="w-[2.8em] h-[1.7em] sm:w-[2.9em] sm:h-[1.75em] overflow-visible drop-shadow-[0_6px_22px_rgba(34,197,94,0.5)]"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <defs>
+                                    <linearGradient id="cuffGreenLeft" x1="32" y1="38" x2="74" y2="86" gradientUnits="userSpaceOnUse">
+                                      <stop offset="0%" stopColor="#4ADE80" />
+                                      <stop offset="60%" stopColor="#22C55E" />
+                                      <stop offset="100%" stopColor="#16A34A" />
+                                    </linearGradient>
+                                    <linearGradient id="cuffGreenRight" x1="144" y1="38" x2="188" y2="86" gradientUnits="userSpaceOnUse">
+                                      <stop offset="0%" stopColor="#4ADE80" />
+                                      <stop offset="60%" stopColor="#22C55E" />
+                                      <stop offset="100%" stopColor="#15803D" />
+                                    </linearGradient>
+                                  </defs>
+
+                                  {/* Handshake Sparks & Celebration Stars (burst upon clasp) */}
+                                  <g ref={handshakeSparksRef} className="will-change-transform origin-center" style={{ opacity: 0 }}>
+                                    {/* Top Left Emerald Star */}
+                                    <path
+                                      d="M 82 20 Q 82 27 75 27 Q 82 27 82 34 Q 82 27 89 27 Q 82 27 82 20 Z"
+                                      fill="#10B981"
+                                    />
+                                    {/* Top Right Golden Star */}
+                                    <path
+                                      d="M 140 18 Q 140 25 133 25 Q 140 25 140 32 Q 140 25 147 25 Q 140 25 140 18 Z"
+                                      fill="#FBBF24"
+                                    />
+                                    {/* Bottom Left Mint Star */}
+                                    <path
+                                      d="M 68 96 Q 68 102 62 102 Q 68 102 68 108 Q 68 102 74 102 Q 68 102 68 96 Z"
+                                      fill="#34D399"
+                                    />
+                                    {/* Bottom Right Lime Star */}
+                                    <path
+                                      d="M 148 94 Q 148 100 142 100 Q 148 100 148 106 Q 148 100 154 100 Q 148 100 148 94 Z"
+                                      fill="#A3E635"
+                                    />
+                                  </g>
+
+                                  {/* Left Hand Group (reaching right) */}
+                                  <g ref={handLeftGroupRef} className="will-change-transform">
+                                    {/* Left Sleeve / Cuff (Unifolio Green #22C55E) */}
+                                    <path
+                                      d="M 52 38 L 74 48 C 76 49 77 52 76 54 L 62 84 C 61 86 58 87 56 86 L 34 76 C 32 75 31 72 32 70 L 46 40 C 47 38 50 37 52 38 Z"
+                                      fill="url(#cuffGreenLeft)"
+                                    />
+                                    {/* White Cuff Button */}
+                                    <circle cx="48" cy="74" r="3.6" fill="#FFFFFF" />
+                                    {/* Star highlight on sleeve */}
+                                    <path
+                                      d="M 58 48 Q 58 44 58 42 Q 58 44 60 45 Q 58 46 58 50 Q 58 46 56 45 Q 58 44 58 42 Z"
+                                      fill="#FFFFFF"
+                                    />
+
+                                    {/* Left Hand / Palm & Fingers */}
+                                    <path
+                                      d="M 68 52 C 78 50 86 44 94 42 C 99 41 104 43 103 48 C 101 54 94 57 88 60 L 118 70 C 122 71 123 76 120 79 C 117 82 112 82 108 80 L 86 72 L 114 82 C 117 83 118 88 115 91 C 112 94 107 94 103 92 L 80 82 L 102 93 C 105 94 106 99 103 102 C 100 105 95 105 91 103 L 64 86 C 58 82 56 74 58 68 Z"
+                                      fill="#FDA4AF"
+                                    />
+                                    {/* Finger Creases */}
+                                    <path d="M 88 68 L 114 77" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" opacity="0.65" />
+                                    <path d="M 84 78 L 108 87" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" opacity="0.65" />
+                                    <path d="M 80 87 L 98 96" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" opacity="0.65" />
+                                  </g>
+
+                                  {/* Right Hand Group (reaching left) */}
+                                  <g ref={handRightGroupRef} className="will-change-transform">
+                                    {/* Right Sleeve / Cuff (Unifolio Green #22C55E) */}
+                                    <path
+                                      d="M 168 38 C 170 37 173 38 174 40 L 188 70 C 189 72 188 75 186 76 L 164 86 C 162 87 159 86 158 84 L 144 54 C 143 52 144 49 146 48 Z"
+                                      fill="url(#cuffGreenRight)"
+                                    />
+                                    {/* White Cuff Button */}
+                                    <circle cx="172" cy="74" r="3.6" fill="#FFFFFF" />
+                                    {/* Curved Highlight */}
+                                    <path
+                                      d="M 160 46 C 164 44 169 46 172 50 C 171 52 168 50 164 51 Z"
+                                      fill="#FFFFFF"
+                                    />
+
+                                    {/* Right Hand Palm & Thumb */}
+                                    <path
+                                      d="M 152 52 C 142 50 134 44 122 43 C 114 42 108 46 110 52 C 113 58 122 62 130 65 L 148 76 C 153 79 156 74 156 68 Z"
+                                      fill="#FED7AA"
+                                    />
+                                    {/* Curled Fingertips visible under clasp */}
+                                    <rect x="74" y="80" width="14" height="22" rx="7" transform="rotate(-20 74 80)" fill="#FDBA74" />
+                                    <rect x="88" y="86" width="14" height="22" rx="7" transform="rotate(-20 88 86)" fill="#FDBA74" />
+                                    <rect x="102" y="91" width="13" height="20" rx="6.5" transform="rotate(-20 102 91)" fill="#FDBA74" />
+                                    {/* Thumb Crease */}
+                                    <path d="M 124 50 C 120 54 122 58 128 62" stroke="#15803D" strokeWidth="2" strokeLinecap="round" opacity="0.55" />
+                                  </g>
+                                </svg>
+                              </span>
+                            </span>
+
+                            <span> the connection</span>
                           </h3>
                         ) : (
                           <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[40px] xl:text-[46px] text-neutral-950 dark:text-white tracking-[-0.03em] leading-[1.08] mb-3 sm:mb-4">
