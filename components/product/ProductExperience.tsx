@@ -525,20 +525,13 @@ export function ProductExperience() {
 
       // =======================================================================
       // MASTER GSAP TIMELINE: DELIBERATE LEFT-TO-RIGHT SEQUENTIAL REVEAL
-      // Expansion → Solid Black Surface → Split into 5 Cards → Left-to-Right Flips
+      // Expansion → Split into 5 Cards → 3D Arc → Left-to-Right Sequential Flips
       // =======================================================================
       const masterTl = gsap.timeline({
         paused: true,
         defaults: { ease: "power2.inOut" },
         onComplete: () => {
           showProductRestingState();
-          // FINAL RESTING STATE: Ensure viewport is locked precisely at Product top
-          if (sectionRef.current) {
-            window.scrollTo({
-              top: sectionRef.current.offsetTop,
-              behavior: "instant" as ScrollBehavior,
-            });
-          }
         },
       });
 
@@ -555,56 +548,7 @@ export function ProductExperience() {
       }
 
       // -----------------------------------------------------------------------
-      // STAGE 1: BLACK OVERLAY TAKES OVER HERO (0.00s -> 0.45s)
-      // Rapid takeover directly over the Hero composition (no empty black pause)
-      // -----------------------------------------------------------------------
-      masterTl.set(blackOverlayRef.current, { display: "block" }, 0.0);
-      masterTl.to(
-        blackOverlayRef.current,
-        {
-          opacity: 1,
-          duration: 0.45,
-          ease: "power2.out",
-        },
-        0.0
-      );
-
-      // Instant programmatic jump to Product section while full-screen black overlay is at 100% opacity
-      masterTl.call(() => {
-        if (sectionRef.current) {
-          window.scrollTo({
-            top: sectionRef.current.offsetTop,
-            behavior: "instant" as ScrollBehavior,
-          });
-        }
-      }, [], 0.45);
-
-      // Reveal the solid black card cluster seamlessly behind the overlay
-      masterTl.set(cardsClusterRef.current, { opacity: 1 }, 0.45);
-
-      // -----------------------------------------------------------------------
-      // STAGE 2: SURFACE COMPRESSES & DIVIDES INTO 5 PIECES/CARDS (0.45s -> 1.05s)
-      // Continuous motion: full-screen black surface → shrinks → splits into 5 cards
-      // -----------------------------------------------------------------------
-      masterTl.to(
-        blackOverlayRef.current,
-        {
-          opacity: 0,
-          duration: 0.32,
-          ease: "power1.out",
-          onComplete: () => {
-            gsap.set(blackOverlayRef.current, { display: "none" });
-          },
-        },
-        0.48
-      );
-
-      // -----------------------------------------------------------------------
-      // STAGE 2B: PRODUCT TEXT & CTA FULLY REVEAL IMMEDIATELY AFTER BLACK SCREEN
-      // (0.50s -> 0.90s)
-      // As the black screen clears, the headline, supporting text, and CTA
-      // are immediately 100% visible in the viewport so the user sees the
-      // complete landing composition while the cards are splitting and flipping!
+      // STAGE 1: PRODUCT HEADER REVEAL (Headline, Subhead, CTA)
       // -----------------------------------------------------------------------
       masterTl.to(
         headlineRef.current,
@@ -614,7 +558,7 @@ export function ProductExperience() {
           duration: 0.45,
           ease: "power2.out",
         },
-        0.50
+        0.05
       );
 
       masterTl.to(
@@ -625,7 +569,7 @@ export function ProductExperience() {
           duration: 0.45,
           ease: "power2.out",
         },
-        0.58
+        0.12
       );
 
       masterTl.to(
@@ -637,19 +581,31 @@ export function ProductExperience() {
           duration: 0.45,
           ease: "back.out(1.2)",
         },
-        0.65
+        0.18
       );
 
-      // Single black surface shrinks/compresses into card amphitheater bounds
+      // -----------------------------------------------------------------------
+      // STAGE 2: CARDS CLUSTER EMERGES, COMPRESSES & DIVIDES INTO 5 CARDS
+      // -----------------------------------------------------------------------
+      masterTl.to(
+        cardsClusterRef.current,
+        {
+          opacity: 1,
+          duration: 0.30,
+          ease: "power1.out",
+        },
+        0.0
+      );
+
       masterTl.to(
         cardsClusterRef.current,
         {
           scaleX: 1,
           scaleY: 1,
-          duration: 0.60,
+          duration: 0.55,
           ease: "power3.inOut",
         },
-        0.45
+        0.05
       );
 
       // Divisions appear: gaps open up and corners round from 0 to 20px
@@ -663,10 +619,10 @@ export function ProductExperience() {
             wrapper,
             {
               x: 0,
-              duration: 0.55,
+              duration: 0.50,
               ease: "power3.out",
             },
-            0.48
+            0.08
           );
         }
 
@@ -675,10 +631,10 @@ export function ProductExperience() {
             front,
             {
               borderRadius: "20px",
-              duration: 0.48,
+              duration: 0.45,
               ease: "power2.out",
             },
-            0.52
+            0.12
           );
         }
 
@@ -688,17 +644,16 @@ export function ProductExperience() {
             {
               borderRadius: "20px",
               borderColor: "rgba(255,255,255,0.12)",
-              duration: 0.48,
+              duration: 0.45,
               ease: "power2.out",
             },
-            0.52
+            0.12
           );
         }
       });
 
       // -----------------------------------------------------------------------
-      // STAGE 3: CARDS MOVE INTO 3D ARC AND SETTLE (0.95s -> 1.55s)
-      // Cards move into their curved 3D positions with solid black backplates
+      // STAGE 3: CARDS MOVE INTO 3D AMPHITHEATER ARC AND SETTLE
       // -----------------------------------------------------------------------
       PRODUCT_CARDS.forEach((card, i) => {
         const wrapper = cardWrapperRefs.current[i];
@@ -711,24 +666,20 @@ export function ProductExperience() {
             z: card.restZ,
             rotateY: card.restRotateY,
             rotateZ: card.restRotateZ,
-            duration: 0.60,
+            duration: 0.55,
             ease: "power3.out",
           },
-          0.95 + i * 0.02
+          0.55 + i * 0.02
         );
       });
 
       // -----------------------------------------------------------------------
-      // STAGE 4: SEQUENTIAL LEFT-TO-RIGHT FLIPS (1.60s -> 4.20s)
-      // Once the cards have split from the shrinking surface and moved into their positions,
-      // flip them one by one, from left to right.
-      // Card 1 flips → settles → Card 2 flips → settles → Card 3 flips → settles → Card 4 flips → settles → Card 5 flips → settles.
-      // Deliberate pacing with subtle overlap so the progression is crystal clear.
-      // All other contents (headline, subhead, CTA) remain completely visible in the viewport!
+      // STAGE 4: SEQUENTIAL LEFT-TO-RIGHT FLIPS (Card 1 -> 2 -> 3 -> 4 -> 5)
+      // The signature core animation: each card turns over to reveal its front!
       // -----------------------------------------------------------------------
       const flipDuration = 0.56;
-      const flipInterval = 0.50; // subtle overlap: next card begins right as previous card reaches ~90% and settles
-      const flipBaseStart = 1.60;
+      const flipInterval = 0.50; // smooth overlap
+      const flipBaseStart = 1.15;
 
       PRODUCT_CARDS.forEach((_, i) => {
         const flipper = cardFlipperRefs.current[i];
@@ -747,167 +698,19 @@ export function ProductExperience() {
         );
       });
 
-      // Brief hold for final card settle (Card 5 completes at 1.60 + 4*0.50 + 0.56 = 4.16s)
-      masterTl.to({}, { duration: 0.25 }, 4.16);
-
-      // Enforce zero scroll drift throughout the flipping sequence
-      [0.60, 1.00, 1.50, 2.00, 2.50, 3.00, 3.50, 4.00].forEach((t) => {
-        masterTl.call(() => {
-          if (sectionRef.current && stateRef.current === "transitioning") {
-            window.scrollTo({
-              top: sectionRef.current.offsetTop,
-              behavior: "instant" as ScrollBehavior,
-            });
-          }
-        }, [], t);
-      });
+      // Brief hold for final card settle (Card 5 completes at 1.15 + 4*0.50 + 0.56 = 3.71s)
+      masterTl.to({}, { duration: 0.25 }, flipBaseStart + 4 * flipInterval + flipDuration);
 
       // =======================================================================
-      // SCROLL BEHAVIOR: DETECT SCROLL INTENT ONCE & LOCK SCROLLING
-      // A single scroll gesture triggers the complete sequence automatically
+      // NATIVE BIDIRECTIONAL SCROLLTRIGGER (NO WHEEL HIJACKING, NO LOCKING)
       // =======================================================================
-      const triggerHeroToProduct = () => {
-        if (stateRef.current !== "hero") return;
-        stateRef.current = "transitioning";
-
-        // Prevent erratic user scroll input from interrupting the animation
-        document.documentElement.style.overflow = "hidden";
-        document.body.style.overflow = "hidden";
-        masterTl.play(0);
-      };
-
-      const triggerProductToHero = () => {
-        if (stateRef.current !== "product") return;
-        stateRef.current = "transitioning";
-
-        document.documentElement.style.overflow = "hidden";
-        document.body.style.overflow = "hidden";
-        gsap.set(blackOverlayRef.current, { display: "block" });
-        gsap.to(blackOverlayRef.current, {
-          opacity: 1,
-          duration: 0.35,
-          ease: "power2.out",
-          onComplete: () => {
-            window.scrollTo({ top: 0, behavior: "instant" });
-            masterTl.pause(0);
-            gsap.to(blackOverlayRef.current, {
-              opacity: 0,
-              duration: 0.35,
-              ease: "power2.out",
-              onComplete: () => {
-                gsap.set(blackOverlayRef.current, { display: "none" });
-                stateRef.current = "hero";
-                document.documentElement.style.overflow = "";
-                document.body.style.overflow = "";
-              },
-            });
-          },
-        });
-      };
-
-      // Native wheel listener: completely block scroll events during transition!
-      const handleWheel = (e: WheelEvent) => {
-        if (stateRef.current === "transitioning") {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          return;
-        }
-
-        const scrollY = window.scrollY;
-        const productTop = sectionRef.current?.offsetTop || window.innerHeight;
-
-        // 1. User is on Hero and initiates ONE downward scroll
-        if (stateRef.current === "hero" && scrollY <= 80 && e.deltaY > 5) {
-          e.preventDefault();
-          triggerHeroToProduct();
-        }
-        // 2. User is at Product and initiates ONE upward scroll back to Hero
-        else if (
-          stateRef.current === "product" &&
-          scrollY <= productTop + 20 &&
-          e.deltaY < -15
-        ) {
-          e.preventDefault();
-          triggerProductToHero();
-        }
-      };
-
-      // Touch listener for mobile devices
-      let touchStartY = 0;
-      const handleTouchStart = (e: TouchEvent) => {
-        touchStartY = e.touches[0].clientY;
-      };
-
-      const handleTouchMove = (e: TouchEvent) => {
-        if (stateRef.current === "transitioning") {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          return;
-        }
-
-        const touchDeltaY = touchStartY - e.touches[0].clientY;
-        const scrollY = window.scrollY;
-        const productTop = sectionRef.current?.offsetTop || window.innerHeight;
-
-        if (stateRef.current === "hero" && scrollY <= 80 && touchDeltaY > 15) {
-          e.preventDefault();
-          triggerHeroToProduct();
-        } else if (
-          stateRef.current === "product" &&
-          scrollY <= productTop + 20 &&
-          touchDeltaY < -20
-        ) {
-          e.preventDefault();
-          triggerProductToHero();
-        }
-      };
-
-      // Keyboard listener (ArrowDown, PageDown, Space)
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (stateRef.current === "transitioning") {
-          e.preventDefault();
-          return;
-        }
-        if (stateRef.current === "hero" && ["ArrowDown", "PageDown", " "].includes(e.key)) {
-          e.preventDefault();
-          triggerHeroToProduct();
-        }
-      };
-
-      // Continuous lock on window scroll during transition
-      const handleScroll = () => {
-        if (stateRef.current === "transitioning" && sectionRef.current) {
-          const productTop = sectionRef.current.offsetTop;
-          if (Math.abs(window.scrollY - productTop) > 2) {
-            window.scrollTo({ top: productTop, behavior: "instant" });
-          }
-        }
-      };
-
-      window.addEventListener("wheel", handleWheel, { passive: false });
-      window.addEventListener("touchstart", handleTouchStart, { passive: true });
-      window.addEventListener("touchmove", handleTouchMove, { passive: false });
-      window.addEventListener("keydown", handleKeyDown);
-      window.addEventListener("scroll", handleScroll, { passive: false });
-      window.addEventListener("unifolio-show-product", showProductRestingState);
-      window.addEventListener("unifolio-reset-hero", resetToHeroState);
-
-      const handleHashChange = () => {
-        if (window.location.hash === "#product") {
-          showProductRestingState();
-        } else if (window.location.hash === "#hero" || window.location.hash === "") {
-          resetToHeroState();
-        }
-      };
-      window.addEventListener("hashchange", handleHashChange);
-
-      // ScrollTrigger fallback for trackpad scrolling, scrollbar drag, or fast scrolling
       const scrollTriggerInstance = ScrollTrigger.create({
         trigger: sectionRef.current,
         start: "top 75%",
         onEnter: () => {
           if (stateRef.current === "hero") {
-            showProductRestingState();
+            stateRef.current = "transitioning";
+            masterTl.play(0);
           }
         },
         onLeaveBack: () => {
@@ -917,14 +720,28 @@ export function ProductExperience() {
         },
       });
 
+      // Navbar Navigation support
+      const handleNavToProduct = () => {
+        if (stateRef.current === "hero") {
+          stateRef.current = "transitioning";
+          masterTl.play(0);
+        } else {
+          showProductRestingState();
+        }
+      };
+      window.addEventListener("unifolio-show-product", handleNavToProduct);
+
+      const handleHashChange = () => {
+        if (window.location.hash === "#product") {
+          handleNavToProduct();
+        } else if (window.location.hash === "#hero" || window.location.hash === "") {
+          resetToHeroState();
+        }
+      };
+      window.addEventListener("hashchange", handleHashChange);
+
       return () => {
-        window.removeEventListener("wheel", handleWheel);
-        window.removeEventListener("touchstart", handleTouchStart);
-        window.removeEventListener("touchmove", handleTouchMove);
-        window.removeEventListener("keydown", handleKeyDown);
-        window.removeEventListener("scroll", handleScroll);
-        window.removeEventListener("unifolio-show-product", showProductRestingState);
-        window.removeEventListener("unifolio-reset-hero", resetToHeroState);
+        window.removeEventListener("unifolio-show-product", handleNavToProduct);
         window.removeEventListener("hashchange", handleHashChange);
         scrollTriggerInstance.kill();
         document.documentElement.style.overflow = "";
