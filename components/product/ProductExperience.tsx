@@ -1243,14 +1243,15 @@ export function ProductExperience() {
                 behavior: "instant" as ScrollBehavior,
               });
             }
-            // Subtle ambient living 3D sculpture slow rotation once docked on the left
-            ambientRingTweenRef.current?.kill();
-            ambientRingTweenRef.current = gsap.to(clusterEl, {
-              rotateZ: "+=360",
-              duration: 40,
-              repeat: -1,
-              ease: "none",
-            });
+            // Subtle ambient living 3D sculpture slow rotation once docked on the left (if not already running)
+            if (!ambientRingTweenRef.current || !ambientRingTweenRef.current.isActive()) {
+              ambientRingTweenRef.current = gsap.to(clusterEl, {
+                rotateZ: "+=360",
+                duration: 40,
+                repeat: -1,
+                ease: "none",
+              });
+            }
             // Cooldown so any residual scroll from entering Security doesn't bleed into State 1
             isTransitioningSecurityRef.current = true;
             lastWheelTimeRef.current = Date.now();
@@ -1503,6 +1504,23 @@ export function ProductExperience() {
             force3D: true,
           },
           travelStart
+        );
+
+        // Transition seamlessly into slow ambient rotation when ring reaches left position
+        tl.call(
+          () => {
+            if (stateRef.current !== "product") {
+              ambientRingTweenRef.current?.kill();
+              ambientRingTweenRef.current = gsap.to(clusterEl, {
+                rotateZ: "+=360",
+                duration: 40,
+                repeat: -1,
+                ease: "none",
+              });
+            }
+          },
+          undefined,
+          travelStart + travelDuration
         );
 
         // Smoothly fade in security narrative container on the right as ring approaches left dock

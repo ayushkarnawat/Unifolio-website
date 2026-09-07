@@ -60,19 +60,19 @@ const PRODUCT_CARDS: ProductCardData[] = [
     hoverBullets: [
       {
         label: "Overlap Check.",
-        text: 'See if a "diversified" set of funds is secretly one concentrated bet on the same handful of companies.',
+        text: 'Spot if "diversified" funds secretly concentrate into the same handful of stocks.',
       },
       {
         label: "Performance, in context.",
-        text: "How your funds, stocks and your portfolio as a whole, are actually doing against what matters, not just a raw return.",
+        text: "How your funds and portfolio actually perform against real goals, not raw indices.",
       },
       {
         label: "Hidden Fee Finder.",
-        text: "What you're quietly losing to expense ratios, and what a cheaper option looks like.",
+        text: "What you quietly lose to expense ratios, and what cheaper direct options look like.",
       },
       {
         label: "Peer Benchmarking.",
-        text: "See how your portfolio compares to others with a similar profile, not just a generic market index.",
+        text: "See how your portfolio compares to similar investor profiles, not generic averages.",
       },
     ],
     accent: "#059669",
@@ -1137,6 +1137,11 @@ export function BlueprintHero() {
           ? Math.round(viewportCenterX * 0.32)
           : Math.round(viewportCenterX * 0.20);
         const targetLeftX = targetRingX - leftShift;
+        const rightShiftX = isDesktop
+          ? Math.round(viewportCenterX * 0.42)
+          : isTablet
+          ? Math.round(viewportCenterX * 0.30)
+          : Math.round(viewportCenterX * 0.16);
 
         const tl = gsap.timeline({
           paused: true,
@@ -1155,15 +1160,21 @@ export function BlueprintHero() {
             isSecurityTransitioningRef.current = false;
             lastSecurityScrollTimeRef.current = Date.now();
 
-            // Seamlessly continue the slow rotation indefinitely at constant speed
-            if (ringRotateTweenRef.current) ringRotateTweenRef.current.kill();
-            ringRotateTweenRef.current = gsap.to(clusterEl, {
-              rotateZ: "+=360",
-              duration: 26,
-              repeat: -1,
-              ease: "none",
-              force3D: true,
-            });
+            // Seamlessly continue the slow rotation indefinitely at constant speed (if not already running)
+            // Uses explicit absolute range from 376° to 736° (+360°) with repeat to prevent transform accumulation and drift
+            if (!ringRotateTweenRef.current || !ringRotateTweenRef.current.isActive()) {
+              ringRotateTweenRef.current = gsap.fromTo(
+                clusterEl,
+                { rotateZ: 376 },
+                {
+                  rotateZ: 736,
+                  duration: 26,
+                  repeat: -1,
+                  ease: "none",
+                  force3D: true,
+                }
+              );
+            }
 
             // The viewport and stage REMAIN strictly locked and fixed!
             // stageRef.current stays position: fixed, width: 100%, height: 100vh, zIndex: 40
@@ -1184,13 +1195,32 @@ export function BlueprintHero() {
               ringRotateTweenRef.current.kill();
               ringRotateTweenRef.current = null;
             }
+            if (cardsClusterRef.current) {
+              gsap.set(cardsClusterRef.current, { rotateZ: 0, x: 0, y: 0, rotateX: 0, rotateY: 0 });
+            }
 
             if (securityStageRef.current) {
-              gsap.set(securityStageRef.current, { opacity: 0, visibility: "hidden" });
+              gsap.set(securityStageRef.current, { opacity: 0, visibility: "hidden", zIndex: 15 });
             }
-            securityStateRefs.current.forEach((el) => {
-              if (el) gsap.set(el, { opacity: 0, visibility: "hidden", y: 0 });
+            securityStateRefs.current.forEach((el, idx) => {
+              if (el) {
+                if (idx === 0) {
+                  gsap.set(el, { opacity: 0, visibility: "hidden", x: 0, y: 0, scale: 1, clipPath: "inset(0% 100% 0% 0%)" });
+                } else {
+                  gsap.set(el, { opacity: 0, visibility: "hidden", x: rightShiftX, y: 0 });
+                }
+              }
             });
+
+            gsap.set(
+              [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+              {
+                autoAlpha: 1,
+                opacity: 1,
+                y: 0,
+                visibility: "visible",
+              }
+            );
 
             if (stageRef.current) {
               stageRef.current.style.position = "";
@@ -1209,7 +1239,17 @@ export function BlueprintHero() {
               const wrapper = cardWrapperRefs.current[i];
               const front = cardFrontRefs.current[i];
               if (wrapper) {
-                gsap.set(wrapper, { zIndex: 10 + (2 - Math.abs(i - 2)) });
+                gsap.set(wrapper, {
+                  x: 0,
+                  y: card.restY,
+                  z: card.restZ,
+                  rotateX: 0,
+                  rotateY: card.restRotateY,
+                  rotateZ: card.restRotateZ,
+                  scale: 1,
+                  opacity: 1,
+                  zIndex: 10 + (2 - Math.abs(i - 2)),
+                });
               }
               if (front) {
                 gsap.set(front, {
@@ -1238,23 +1278,210 @@ export function BlueprintHero() {
           },
         });
 
+        // Ensure cards cluster starts cleanly at time 0 with absolute initial transforms
+        tl.set(clusterEl, { x: 0, y: 0, rotateX: 0, rotateY: 0, rotateZ: 0 }, 0);
+
+        // Deterministic initial transform and style states for all 5 product cards at time 0
+        PRODUCT_CARDS.forEach((card, i) => {
+          const wrapper = cardWrapperRefs.current[i];
+          const front = cardFrontRefs.current[i];
+          if (wrapper) {
+            tl.set(
+              wrapper,
+              {
+                x: 0,
+                y: card.restY,
+                z: card.restZ,
+                rotateX: 0,
+                rotateY: card.restRotateY,
+                rotateZ: card.restRotateZ,
+                scale: 1,
+                opacity: 1,
+                zIndex: 10 + (2 - Math.abs(i - 2)),
+              },
+              0
+            );
+          }
+          if (front) {
+            tl.set(
+              front,
+              {
+                background: "",
+                backgroundColor: "#070908",
+                borderColor: "rgba(255, 255, 255, 0.12)",
+                boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4)",
+              },
+              0
+            );
+          }
+        });
+
+        // Deterministic initial hidden stack state for all 21 companion cards at time 0
+        companionCardRefs.current.forEach((compEl, cIdx) => {
+          if (!compEl) return;
+          tl.set(
+            compEl,
+            {
+              xPercent: -50,
+              yPercent: -50,
+              x: stackTargetX,
+              y: stackTargetY,
+              z: -20 - cIdx * 3,
+              rotateX: 38,
+              rotateY: -22,
+              rotateZ: -24,
+              scale: stackCardScale,
+              opacity: 0,
+              visibility: "hidden",
+            },
+            0
+          );
+        });
+
+        cardGradientBgRefs.current.forEach((el) => {
+          if (el) tl.set(el, { opacity: 1 }, 0);
+        });
+        cardIllustrationRefs.current.forEach((el) => {
+          if (el) tl.set(el, { opacity: 0.88 }, 0);
+        });
+        cardBackRefs.current.forEach((el) => {
+          if (el) tl.set(el, { opacity: 0 }, 0);
+        });
+        cardGlassOverlayRefs.current.forEach((el) => {
+          if (el) tl.set(el, { opacity: 0 }, 0);
+        });
+        cardDefaultRefs.current.forEach((el) => {
+          if (el) tl.set(el, { opacity: 1, autoAlpha: 1 }, 0);
+        });
+        tl.set(
+          [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+          { autoAlpha: 1, opacity: 1, y: 0, visibility: "visible" },
+          0
+        );
+
+        // Security Stage positioned & ready behind cards layer (z-15) from the beginning
+        tl.set(securityStageRef.current, { autoAlpha: 1, opacity: 1, visibility: "visible", zIndex: 15 }, 0);
+        securityStateRefs.current.forEach((el, idx) => {
+          if (el) {
+            if (idx === 0) {
+              tl.set(el, { autoAlpha: 1, opacity: 1, visibility: "visible", x: 0, y: 0, scale: 1, clipPath: "inset(0% 100% 0% 0%)" }, 0);
+            } else {
+              tl.set(el, { autoAlpha: 0, opacity: 0, visibility: "hidden", x: rightShiftX, y: 0 }, 0);
+            }
+          }
+        });
+
         // -------------------------------------------------------------------------
-        // PHASE 0: Product header text & CTA smoothly fade away (0.0s -> 0.22s)
-        // Transform Cards 01-05 into smoked emerald translucent glass matching Cards ring.png
+        // UNIFIED SIMULTANEOUS TRANSITION (0.0s -> 0.76s)
+        // All three actions start at the exact same time (0.0s):
+        // 1. Product hero content exits: visible -> gone
+        // 2. 5 Product cards consolidate horizontally into moving stack: spread -> stacked
+        // 3. Security hero text uncovered from left to right as moving cards pass across it: hidden -> revealed
         // -------------------------------------------------------------------------
+        const transitionDuration = 0.76;
+
+        // 1. Product hero content exits smoothly
         tl.to(
-          [headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+          [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
           {
+            autoAlpha: 0,
             opacity: 0,
-            y: -22,
-            duration: 0.22,
-            ease: "power2.in",
-            stagger: 0.02,
+            y: 16,
+            duration: 0.55,
+            ease: "power2.out",
+            stagger: 0.01,
           },
           0.0
         );
+        tl.set(
+          [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+          { autoAlpha: 0, opacity: 0, visibility: "hidden" },
+          transitionDuration
+        );
 
-        // Smoothly transform Cards 01-05 front faces into smoked emerald translucent glass
+        // 2. Cards consolidate horizontally into stack at Card 05
+        const STACK_ROTX = 38;
+        const STACK_ROTY = -22;
+        const STACK_ROTZ = -24;
+
+        PRODUCT_CARDS.forEach((_, i) => {
+          const wrapper = cardWrapperRefs.current[i];
+          if (!wrapper) return;
+
+          const stackStart = i * 0.03;
+          const destX = (stackTargetX - origCenters[i].x) - (4 - i) * 3.0;
+          const destY = (stackTargetY - origCenters[i].y) + (4 - i) * 2.0;
+          const destZ = (i - 4) * 4;
+
+          tl.to(
+            wrapper,
+            {
+              x: destX,
+              y: destY,
+              z: destZ,
+              rotateX: STACK_ROTX,
+              rotateY: STACK_ROTY,
+              rotateZ: STACK_ROTZ,
+              scale: stackCardScale,
+              duration: transitionDuration - stackStart,
+              ease: "power2.inOut",
+            },
+            stackStart
+          );
+        });
+
+        // Fast, subtle fade out of card text, illustrations, and background gradients
+        // (~200ms) as the cards finish consolidating into the stack, leaving clean card surfaces
+        const contentFadeDuration = 0.20;
+        const contentFadeStart = transitionDuration - contentFadeDuration; // 0.56s
+
+        cardDefaultRefs.current.forEach((el) => {
+          if (el) {
+            tl.to(
+              el,
+              { autoAlpha: 0, opacity: 0, duration: contentFadeDuration, ease: "power2.out" },
+              contentFadeStart
+            );
+          }
+        });
+        cardIllustrationRefs.current.forEach((el) => {
+          if (el) {
+            tl.to(
+              el,
+              { opacity: 0, duration: contentFadeDuration, ease: "power2.out" },
+              contentFadeStart
+            );
+          }
+        });
+        cardGradientBgRefs.current.forEach((el) => {
+          if (el) {
+            tl.to(
+              el,
+              { opacity: 0, duration: contentFadeDuration, ease: "power2.out" },
+              contentFadeStart
+            );
+          }
+        });
+        cardBackRefs.current.forEach((el) => {
+          if (el) {
+            tl.to(
+              el,
+              { opacity: 0, duration: contentFadeDuration, ease: "power2.out" },
+              contentFadeStart
+            );
+          }
+        });
+        cardGlassOverlayRefs.current.forEach((el) => {
+          if (el) {
+            tl.to(
+              el,
+              { opacity: 1, duration: contentFadeDuration, ease: "power2.out" },
+              contentFadeStart
+            );
+          }
+        });
+
+        // Card front surfaces smoothly crystallize into clean smoked emerald translucent glass
         PRODUCT_CARDS.forEach((_, i) => {
           const front = cardFrontRefs.current[i];
           const slotK = i; // slots 0 to 4
@@ -1279,66 +1506,36 @@ export function BlueprintHero() {
                   "inset -1px 0 1.5px 0 rgba(34, 197, 94, 0.20), " +
                   "0 12px 26px -6px rgba(0, 0, 0, 0.36), " +
                   "0 2px 6px -1px rgba(2, 16, 9, 0.22)",
-                duration: 0.32,
-                ease: "power2.inOut",
+                duration: contentFadeDuration,
+                ease: "power2.out",
               },
-              0.0
+              contentFadeStart
             );
           }
         });
 
-        // Hide opaque background gradient, sketches, and backface so translucent smoked glass shows through
-        cardGradientBgRefs.current.forEach((el) => {
-          if (el) tl.to(el, { opacity: 0, duration: 0.25, ease: "power2.inOut" }, 0.0);
-        });
-        cardIllustrationRefs.current.forEach((el) => {
-          if (el) tl.to(el, { opacity: 0, duration: 0.25, ease: "power2.inOut" }, 0.0);
-        });
-        cardBackRefs.current.forEach((el) => {
-          if (el) tl.to(el, { opacity: 0, duration: 0.25, ease: "power2.inOut" }, 0.0);
-        });
-        cardGlassOverlayRefs.current.forEach((el) => {
-          if (el) tl.to(el, { opacity: 1, duration: 0.30, ease: "power2.inOut" }, 0.0);
-        });
-        cardDefaultRefs.current.forEach((el) => {
-          if (el) tl.to(el, { opacity: 0.90, duration: 0.25, ease: "power2.inOut" }, 0.0);
-        });
-
-        // -------------------------------------------------------------------------
-        // PHASE 1: STACK LEFT TO RIGHT INTO CARD 05 (0.0s -> 0.45s)
-        // -------------------------------------------------------------------------
-        const STACK_ROTX = 38;
-        const STACK_ROTY = -22;
-        const STACK_ROTZ = -24;
-
-        PRODUCT_CARDS.forEach((_, i) => {
-          const wrapper = cardWrapperRefs.current[i];
-          if (!wrapper) return;
-
-          const stackStart = i * 0.04;
-          const destX = (stackTargetX - origCenters[i].x) - (4 - i) * 3.0;
-          const destY = (stackTargetY - origCenters[i].y) + (4 - i) * 2.0;
-          const destZ = (i - 4) * 4;
-
+        // 3. Security hero text progressively uncovered from left to right as cards sweep across
+        const state0El = securityStateRefs.current[0];
+        if (state0El) {
           tl.to(
-            wrapper,
+            state0El,
             {
-              x: destX,
-              y: destY,
-              z: destZ,
-              rotateX: STACK_ROTX,
-              rotateY: STACK_ROTY,
-              rotateZ: STACK_ROTZ,
-              scale: stackCardScale,
-              duration: 0.32,
+              clipPath: "inset(0% 0% 0% 0%)",
+              duration: transitionDuration,
               ease: "power2.inOut",
             },
-            stackStart
+            0.0
           );
-        });
+        }
+
+        // -------------------------------------------------------------------------
+        // PHASE 2 & 3: ZERO-PAUSE CONTINUATION INTO THE RING (0.76s -> 2.26s)
+        // Stacking immediately continues along the curved trajectory to form the ring.
+        // Zero dead time or stationary hold.
+        // -------------------------------------------------------------------------
+        const unfurlBase = transitionDuration; // 0.76s - immediate, uninterrupted continuation
 
         // Center cluster container with subtle 3D perspective tilt
-        const unfurlBase = 0.46;
         tl.to(
           clusterEl,
           {
@@ -1347,27 +1544,24 @@ export function BlueprintHero() {
             rotateX: 18,
             rotateY: 20,
             rotateZ: 16,
-            duration: 1.10,
+            duration: 0.85,
             ease: "power2.out",
           },
           unfurlBase
         );
 
-        // -------------------------------------------------------------------------
-        // PHASE 2 & 3: UNFURL INTO THE RING ALONG THE CURVED TRAJECTORY
-        // -------------------------------------------------------------------------
         // 2A. The 5 Original Product Cards lead the unfurling into slots 0 to 4 (Left Arc)
         PRODUCT_CARDS.forEach((_, i) => {
           const wrapper = cardWrapperRefs.current[i];
           if (!wrapper) return;
 
           const slot = ringSlots[i];
-          const startTime = unfurlBase + i * 0.038;
+          const startTime = unfurlBase + i * 0.016;
           const origX = origCenters[i].x;
           const origY = origCenters[i].y;
 
           const midX = (stackTargetX + slot.x) * 0.48;
-          const midY = Math.max(stackTargetY, slot.y) + 65;
+          const midY = (stackTargetY + slot.y) * 0.5 + 20;
           const midZ = slot.z * 0.5;
           const midRotZ = STACK_ROTZ * 0.35 + slot.rotZ * 0.65;
 
@@ -1385,8 +1579,8 @@ export function BlueprintHero() {
                   rotateY: 22,
                   rotateZ: midRotZ,
                   scale: finalCardScale,
-                  duration: 0.30,
-                  ease: "power1.in",
+                  duration: 0.24,
+                  ease: "power1.inOut",
                 },
                 {
                   x: slot.x - origX,
@@ -1396,7 +1590,7 @@ export function BlueprintHero() {
                   rotateY: slot.rotY,
                   rotateZ: slot.rotZ,
                   scale: slot.scale,
-                  duration: 0.34,
+                  duration: 0.28,
                   ease: "power1.out",
                 },
               ],
@@ -1407,16 +1601,16 @@ export function BlueprintHero() {
           );
         });
 
-        // 2B. 21 Companion Cards propagate sequentially from within the moving stack
+        // 2B. 21 Companion Cards propagate in overlapping cascade from within moving stack
         companionCardRefs.current.forEach((compEl, cIdx) => {
           if (!compEl) return;
 
           const slotIdx = 5 + cIdx;
           const slot = ringSlots[slotIdx];
-          const startTime = unfurlBase + 5 * 0.038 + cIdx * 0.032;
+          const startTime = unfurlBase + 0.05 + cIdx * 0.014;
 
           const midX = (stackTargetX + slot.x) * 0.48;
-          const midY = Math.max(stackTargetY, slot.y) + 65;
+          const midY = (stackTargetY + slot.y) * 0.5 + 20;
           const midZ = slot.z * 0.5;
           const midRotZ = STACK_ROTZ * 0.35 + slot.rotZ * 0.65;
 
@@ -1442,8 +1636,8 @@ export function BlueprintHero() {
                   rotateY: 22,
                   rotateZ: midRotZ,
                   scale: finalCardScale,
-                  duration: 0.30,
-                  ease: "power1.in",
+                  duration: 0.24,
+                  ease: "power1.inOut",
                 },
                 {
                   x: slot.x,
@@ -1453,7 +1647,7 @@ export function BlueprintHero() {
                   rotateY: slot.rotY,
                   rotateZ: slot.rotZ,
                   scale: slot.scale,
-                  duration: 0.34,
+                  duration: 0.28,
                   ease: "power1.out",
                 },
               ],
@@ -1466,14 +1660,15 @@ export function BlueprintHero() {
 
         // -------------------------------------------------------------------------
         // PHASE 4: IMMEDIATE SIMULTANEOUS GLIDE & ROTATION TOWARD LEFT
-        // As soon as the ring formation is complete, it immediately begins moving
-        // toward its final position on the left while simultaneously rotating.
-        // By the time it reaches its final left-side position, the rotation and
-        // horizontal movement finish together as one continuous, cohesive motion.
+        // Ring moves from center toward its final left position, completing exactly
+        // one full 360° rotation in perfect synchronization.
+        // Simultaneously, the Security hero text glides smoothly from center to right.
+        // Once reaching the left position, it transitions seamlessly into the continuous
+        // slow ambient rotation with zero pause or jump.
         // -------------------------------------------------------------------------
-        const ringFormedTime = 1.90; // All cards complete forming the ring in center
+        const ringFormedTime = 1.65; // Ring silhouette established; seamlessly transitions into left glide
         const glideDuration = 2.10; // Unified cinematic travel & rotation to the left side
-        const ringSettleTime = ringFormedTime + glideDuration; // 4.00s
+        const ringSettleTime = ringFormedTime + glideDuration; // 3.75s
 
         // 1. Smoothly translate the entire ring towards the left side of the viewport
         tl.to(
@@ -1487,61 +1682,35 @@ export function BlueprintHero() {
           ringFormedTime
         );
 
-        // 2. Simultaneously rotate the ring while travelling left (one full elegant 360° rotation)
+        // 2. Simultaneously rotate the ring while travelling left (exactly one full 360° rotation)
+        // Perfectly synchronized with horizontal translation: identical start, duration, and ease
         tl.to(
           clusterEl,
           {
             rotateZ: 16 + 360,
             duration: glideDuration,
-            ease: "power1.inOut",
+            ease: "power2.inOut",
             force3D: true,
           },
           ringFormedTime
         );
 
-        // 3. SECURITY CONTENT REVEAL (Hero State 1)
-        // As soon as the ring reaches the left, reveal the hero text on the right:
-        // “We take your data as seriously as you take your money.”
-        const heroRevealTime = ringSettleTime - 0.15;
-
-        tl.set(
-          securityStageRef.current,
-          {
-            visibility: "visible",
-            opacity: 1,
-          },
-          heroRevealTime
-        );
-
-        // Reset all security states: State 0 prepared, 1-7 hidden
-        securityStateRefs.current.forEach((el, idx) => {
-          if (el) {
-            tl.set(el, { opacity: 0, visibility: idx === 0 ? "visible" : "hidden", y: 0 }, 0);
-          }
-        });
-
-        const state0El = securityStateRefs.current[0];
+        // 3. Security hero text glides smoothly from center to right column position
         if (state0El) {
-          tl.set(
-            state0El,
-            {
-              visibility: "visible",
-              opacity: 0,
-              y: 24,
-            },
-            heroRevealTime
-          );
           tl.to(
             state0El,
             {
-              opacity: 1,
-              y: 0,
-              duration: 0.50,
-              ease: "power2.out",
+              x: rightShiftX,
+              duration: glideDuration,
+              ease: "power2.inOut",
+              force3D: true,
             },
-            heroRevealTime
+            ringFormedTime
           );
         }
+
+        // 4. Elevate Security Stage z-index to 35 once docked on the left
+        tl.set(securityStageRef.current, { zIndex: 35 }, ringSettleTime);
 
         return tl;
       };
@@ -1700,7 +1869,7 @@ export function BlueprintHero() {
       };
 
       const triggerRingToProduct = () => {
-        if (!transitionCompleteRef.current) return;
+        if (!transitionCompleteRef.current || transitionAnimatingRef.current) return;
         stateRef.current = "sculpting";
         transitionAnimatingRef.current = true;
         transitionCompleteRef.current = false;
@@ -1708,31 +1877,26 @@ export function BlueprintHero() {
         isHoldingProductRef.current = false;
         isSecurityTransitioningRef.current = false;
 
-        // Stop continuous rotation before reversing timeline back to product
+        // 1. Immediately stop continuous ambient rotation so it cannot fight the reverse timeline
         if (ringRotateTweenRef.current) {
           ringRotateTweenRef.current.kill();
           ringRotateTweenRef.current = null;
         }
 
-        // Hide Security Stage
-        if (securityStageRef.current) {
-          gsap.to(securityStageRef.current, {
-            opacity: 0,
-            duration: 0.22,
-            ease: "power2.out",
-            onComplete: () => {
-              if (securityStageRef.current) {
-                gsap.set(securityStageRef.current, { visibility: "hidden" });
-              }
-              securityStateRefs.current.forEach((el) => {
-                if (el) gsap.set(el, { opacity: 0, visibility: "hidden", y: 0 });
-              });
-              currentSecurityStateRef.current = 0;
-            },
-          });
+        // 2. Reset any advanced security states back to State 0 before reversing
+        if (currentSecurityStateRef.current > 0) {
+          const activeEl = securityStateRefs.current[currentSecurityStateRef.current];
+          if (activeEl) gsap.set(activeEl, { opacity: 0, visibility: "hidden" });
+          const state0El = securityStateRefs.current[0];
+          const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
+          const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
+          const vCenterX = (typeof window !== "undefined" ? window.innerWidth : 1440) / 2;
+          const shiftX = isDesk ? Math.round(vCenterX * 0.42) : isTab ? Math.round(vCenterX * 0.30) : Math.round(vCenterX * 0.16);
+          if (state0El) gsap.set(state0El, { opacity: 1, visibility: "visible", x: shiftX, y: 0, scale: 1, clipPath: "inset(0% 0% 0% 0%)" });
+          currentSecurityStateRef.current = 0;
         }
 
-        // Notify Navbar IMMEDIATELY that we are returning to Product
+        // 3. Notify Navbar IMMEDIATELY that we are returning to Product
         window.dispatchEvent(
           new CustomEvent("unifolio-active-section", { detail: { section: "product" } })
         );
@@ -1753,7 +1917,37 @@ export function BlueprintHero() {
           stageRef.current.style.zIndex = "40";
         }
 
-        productToRingTlRef.current?.reverse();
+        // 4. Exact backward sequence:
+        // Ring slowly stops its ambient rotation and settles to its exact docked rotation (376° = 16° + 360°),
+        // then the master GSAP timeline plays in reverse along the exact same trajectory:
+        // ring moves back toward center while reversing its rotation (376° -> 16°) -> ring unforms ->
+        // cards retrace curved trajectory backward -> cards return to stacked and product resting positions.
+        const clusterEl = cardsClusterRef.current;
+        const currentRot = clusterEl ? Number(gsap.getProperty(clusterEl, "rotateZ")) || 376 : 376;
+        const angleDelta = ((currentRot - 376) % 360 + 360) % 360;
+
+        const startReverseTimeline = () => {
+          if (cardsClusterRef.current) {
+            gsap.set(cardsClusterRef.current, { rotateZ: 376 });
+          }
+          if (productToRingTlRef.current) {
+            productToRingTlRef.current.seek(productToRingTlRef.current.duration(), false);
+            productToRingTlRef.current.reverse();
+          }
+        };
+
+        if (clusterEl && angleDelta > 0.5) {
+          const stopDuration = Math.min(Math.max((angleDelta / 360) * 0.45, 0.18), 0.38);
+          gsap.to(clusterEl, {
+            rotateZ: 376,
+            duration: stopDuration,
+            ease: "power2.out",
+            overwrite: "auto",
+            onComplete: startReverseTimeline,
+          });
+        } else {
+          startReverseTimeline();
+        }
       };
 
       const handleWheel = (e: WheelEvent) => {
@@ -2242,65 +2436,18 @@ export function BlueprintHero() {
           {/* Transforming Product Scene Container */}
           <div
             ref={productWorldRef}
-            className="relative w-full h-full flex flex-col justify-between items-center px-4 sm:px-6 lg:px-8 pt-20 sm:pt-22 md:pt-24 lg:pt-26 pb-3 sm:pb-4 overflow-hidden select-none will-change-transform"
+            className="relative w-full h-full flex flex-col justify-start items-center px-4 sm:px-6 lg:px-8 pt-14 sm:pt-16 md:pt-18 lg:pt-20 pb-4 sm:pb-6 overflow-hidden select-none will-change-transform"
           >
             {/* Emerald Ambient Glow for Product Stage */}
-            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-emerald-500/[0.12] dark:bg-emerald-500/[0.18] rounded-full blur-[140px] pointer-events-none -z-10" />
+            <div className="absolute top-[32%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-emerald-500/[0.12] dark:bg-emerald-500/[0.18] rounded-full blur-[140px] pointer-events-none -z-10" />
 
             {/* Core Intense Emerald Portal Light (vibrant inside ring void at rest) */}
-            <div className="absolute top-[49%] left-[57%] -translate-x-1/2 -translate-y-1/2 w-[220px] h-[220px] bg-emerald-400/[0.30] dark:bg-emerald-400/[0.45] rounded-full blur-[50px] pointer-events-none -z-10" />
+            <div className="absolute top-[36%] left-[55%] -translate-x-1/2 -translate-y-1/2 w-[220px] h-[220px] bg-emerald-400/[0.30] dark:bg-emerald-400/[0.45] rounded-full blur-[50px] pointer-events-none -z-10" />
 
-            {/* Top Product Header (Headline, Subhead, CTA) */}
-            <div
-              ref={headerRef}
-              className="w-full max-w-3xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mt-1 sm:mt-2"
-            >
-              <h2
-                ref={headlineRef}
-                className="font-sans font-black text-2xl sm:text-3xl md:text-[36px] lg:text-[40px] xl:text-[44px] tracking-[-0.03em] leading-[1.12] text-neutral-950 dark:text-white transition-colors duration-500 will-change-transform"
-              >
-                Understand your wealth.{" "}
-                <span
-                  className="font-medium text-[#22C55E]"
-                  style={{ color: "#22C55E" }}
-                >
-                  Not just see it.
-                </span>
-              </h2>
-
-              <p
-                ref={subheadRef}
-                className="mt-2 sm:mt-2.5 max-w-lg text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 font-normal leading-snug sm:leading-relaxed transition-colors duration-500 will-change-transform"
-              >
-                Every account, every fund, every rupee, in one place, finally clear.
-              </p>
-
-              <div className="mt-3 sm:mt-3.5">
-                <LinkButton
-                  ref={ctaRef}
-                  href="#contact"
-                  size="sm"
-                  variant="primary"
-                  className="shadow-sm shadow-emerald-500/10"
-                  onClick={(e) => {
-                    const target = document.getElementById("contact");
-                    if (target) {
-                      e.preventDefault();
-                      smoothScrollTo(target.offsetTop, { duration: 1.1, ease: "power2.inOut" });
-                    }
-                  }}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E] group-hover:scale-125 transition-transform" />
-                  <span>Join the waitlist</span>
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 text-neutral-500 dark:text-neutral-400" />
-                </LinkButton>
-              </div>
-            </div>
-
-            {/* 3D Perspective Cards Amphitheater Stage */}
+            {/* 3D Perspective Cards Amphitheater Stage - Prominently in upper/middle viewport */}
             <div
               ref={cardsStageRef}
-              className="w-full flex-1 flex items-center justify-center my-auto relative z-25 py-2"
+              className="w-full flex items-center justify-center relative z-25 shrink-0 pt-1 sm:pt-2 pb-1"
               style={{ perspective: "1400px" }}
               onMouseLeave={() => handleCardHover(null)}
               onPointerMove={(e) => {
@@ -2457,17 +2604,17 @@ export function BlueprintHero() {
                             ref={(el) => {
                               cardHoverRefs.current[idx] = el;
                             }}
-                            className="absolute inset-0 z-20 flex flex-col items-center justify-center p-5 sm:p-6 sm:px-7 text-center pointer-events-none will-change-transform"
+                            className="absolute inset-0 z-20 flex flex-col items-center justify-center px-3.5 sm:px-4.5 py-4 sm:py-5 text-center pointer-events-none will-change-transform"
                             style={{
                               opacity: 0,
                               transform: "translateY(8px)",
                             }}
                           >
-                            <div className="flex flex-col items-center justify-center w-full space-y-2.5 sm:space-y-3">
+                            <div className="flex flex-col items-center justify-center w-full h-full space-y-1.5 sm:space-y-2">
                               <span className="font-mono text-[10px] sm:text-xs font-black text-[#22c55e] tracking-widest uppercase">
                                 {card.num}
                               </span>
-                              <h3 className="font-sans font-extrabold text-base sm:text-lg md:text-xl lg:text-[22px] xl:text-[24px] text-white leading-[1.14] tracking-[-0.035em] text-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                              <h3 className="font-sans font-extrabold text-sm sm:text-base md:text-lg lg:text-[19px] xl:text-[20px] text-white leading-tight tracking-[-0.03em] text-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
                                 {card.title}
                               </h3>
 
@@ -2476,13 +2623,13 @@ export function BlueprintHero() {
                                   {card.hoverParagraph}
                                 </p>
                               ) : (
-                                <div className="space-y-2 max-h-[190px] overflow-y-auto pr-1 no-scrollbar pointer-events-auto text-center w-full">
+                                <div className="space-y-1 sm:space-y-1.5 text-center w-full flex-1 flex flex-col justify-center">
                                   {card.hoverBullets?.map((bullet, bIdx) => (
-                                    <div key={bIdx} className="text-[11px] sm:text-xs text-neutral-100 font-semibold leading-[1.38]">
-                                      <span className="font-extrabold text-[#34d399] mr-1 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]">
+                                    <div key={bIdx} className="text-[10px] sm:text-[11px] md:text-[11.5px] text-neutral-100 font-medium leading-[1.32] sm:leading-[1.35]">
+                                      <span className="font-bold text-[#34d399] mr-1 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]">
                                         {bullet.label}
                                       </span>
-                                      <span className="text-neutral-100 font-semibold">
+                                      <span className="text-neutral-100 font-medium">
                                         {bullet.text}
                                       </span>
                                     </div>
@@ -2617,36 +2764,87 @@ export function BlueprintHero() {
               </div>
             </div>
 
+            {/* Product Hero Content (Headline, Supporting Text, CTA) - Positioned underneath cards */}
+            <div
+              ref={headerRef}
+              className="w-full max-w-5xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mt-7 sm:mt-8 md:mt-10 lg:mt-12 mb-2 px-2"
+            >
+              <h2
+                ref={headlineRef}
+                className="font-sans font-black text-2xl sm:text-3xl md:text-[36px] lg:text-[42px] xl:text-[46px] tracking-[-0.03em] leading-tight sm:whitespace-nowrap text-neutral-950 dark:text-white transition-colors duration-500 will-change-transform"
+              >
+                Understand your wealth.{" "}
+                <span
+                  className="font-black text-[#22C55E]"
+                  style={{ color: "#22C55E" }}
+                >
+                  Not just see it.
+                </span>
+              </h2>
+
+              <p
+                ref={subheadRef}
+                className="mt-2.5 sm:mt-3 max-w-xl text-xs sm:text-sm md:text-base text-neutral-600 dark:text-neutral-400 font-medium leading-snug sm:leading-relaxed transition-colors duration-500 will-change-transform"
+              >
+                Every account, every fund, every rupee, in one place, finally clear.
+              </p>
+
+              <div className="mt-4 sm:mt-5">
+                <LinkButton
+                  ref={ctaRef}
+                  href="#contact"
+                  size="md"
+                  variant="primary"
+                  className="shadow-md shadow-emerald-500/15"
+                  onClick={(e) => {
+                    const target = document.getElementById("contact");
+                    if (target) {
+                      e.preventDefault();
+                      smoothScrollTo(target.offsetTop, { duration: 1.1, ease: "power2.inOut" });
+                    }
+                  }}
+                >
+                  <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_10px_#22C55E] group-hover:scale-125 transition-transform" />
+                  <span className="font-bold text-sm sm:text-base tracking-tight">Join the waitlist</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 text-neutral-600 dark:text-neutral-300 stroke-[2.5]" />
+                </LinkButton>
+              </div>
+            </div>
+
             {/* Ambient Floor Reflection Line */}
             <div
               ref={floorLineRef}
-              className="w-full max-w-2xl mx-auto h-[1px] bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-800 to-transparent shrink-0 opacity-50 z-20"
+              className="w-full max-w-xl mx-auto h-[1.5px] bg-gradient-to-r from-transparent via-[#22C55E] to-transparent shrink-0 z-20 mt-5 sm:mt-6 md:mt-7 opacity-75 dark:opacity-85"
             />
 
-            {/* Minimal Editorial Security Content Experience (Right Column) */}
+            {/* Minimal Editorial Security Content Experience */}
             <div
               ref={securityStageRef}
               id="security"
-              className="absolute right-4 sm:right-8 md:right-10 lg:right-12 xl:right-16 top-0 bottom-0 w-full max-w-md sm:max-w-lg lg:max-w-xl xl:max-w-2xl flex items-center justify-start pointer-events-none z-30 select-none"
+              className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none z-15 select-none"
               style={{ opacity: 0, visibility: "hidden" }}
             >
-              <div className="relative w-full text-left">
+              <div className="relative w-full h-full flex items-center justify-center">
                 {SECURITY_STATES.map((item, idx) => (
                   <div
                     key={idx}
                     ref={(el) => {
                       securityStateRefs.current[idx] = el;
                     }}
-                    className="absolute top-1/2 -translate-y-1/2 left-0 right-0 will-change-transform pointer-events-none"
+                    className={`absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full ${
+                      item.type === "hero"
+                        ? "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl px-4 sm:px-6 text-center"
+                        : "max-w-md sm:max-w-lg lg:max-w-xl xl:max-w-2xl px-6 text-left"
+                    } will-change-transform pointer-events-none`}
                     style={{
                       opacity: 0,
                       visibility: "hidden",
                     }}
                   >
                     {item.type === "hero" ? (
-                      <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] uppercase leading-[1.04]">
+                      <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[54px] xl:text-[62px] 2xl:text-[68px] text-neutral-950 dark:text-white tracking-[-0.035em] uppercase leading-[1.04] text-center">
                         We take your data <br />
-                        <span className="text-[#22C55E]">as seriously as you</span> <br />
+                        <span className="text-[#22C55E] font-black">as seriously as you</span> <br />
                         take your money.
                       </h2>
                     ) : item.type === "principle" ? (
