@@ -203,6 +203,7 @@ const SECURITY_STATES: SecurityStateItem[] = [
 ];
 
 const PASSWORD_LETTERS = ["p", "a", "s", "s", "w", "o", "r", "d", "s"];
+const LOCKED_LETTERS = ["L", "o", "c", "k", "e", "d"];
 
 export function BlueprintHero() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -259,6 +260,19 @@ export function BlueprintHero() {
   const pwdLetterRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const pwdMaskRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const pwdMaskTlRef = useRef<gsap.core.Timeline | null>(null);
+
+  // Lock Typography Transformation Interaction ("Locked down, everywhere")
+  const lockCharRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const lockIconWrapperRef = useRef<HTMLSpanElement | null>(null);
+  const lockShackleRef = useRef<SVGPathElement | null>(null);
+  const lockBodyRef = useRef<SVGRectElement | null>(null);
+  const lockAnimTlRef = useRef<gsap.core.Timeline | null>(null);
+  const lockAnimPlayedRef = useRef<boolean>(false);
+
+  // Wheel & gesture isolation refs to prevent skipping states
+  const wheelGestureActiveRef = useRef<boolean>(false);
+  const wheelGestureEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchGestureActiveRef = useRef<boolean>(false);
 
   // State management & transition guards
   const stateRef = useRef<"hero" | "product" | "sculpting" | "ring">("hero");
@@ -2086,6 +2100,242 @@ export function BlueprintHero() {
         );
       };
 
+      // -------------------------------------------------------------------------
+      // LOCK TYPOGRAPHY TRANSFORMATION: "Locked down, everywhere"
+      // Triggers a one-time typography transformation animation on the word "Locked".
+      // Settle briefly -> Letters L, o, c, k morph inward into a golden padlock
+      // -> Shackle snaps shut with punchy recoil (inspired by Lock.mp4)
+      // -> Brief proud hold -> Reverse morph: shackle unlocks, lock dissolves,
+      // letters spring back cleanly into original word "Locked" -> Scrolling unlocked!
+      // -------------------------------------------------------------------------
+      // -------------------------------------------------------------------------
+      // LOCK TYPOGRAPHY TRANSFORMATION: "Locked down, everywhere"
+      // Triggers typography transformation animation on the whole word "Locked".
+      // Settle briefly -> All 6 letters L, o, c, k, e, d morph inward into a golden padlock
+      // -> Shackle snaps shut with punchy recoil (inspired by Lock.mp4)
+      // -> Brief proud hold -> Reverse morph: shackle unlocks, lock dissolves,
+      // all 6 letters spring back cleanly into original word "Locked" -> Scrolling unlocked!
+      // Plays every time the user enters this state (including when scrolling back up and down).
+      // -------------------------------------------------------------------------
+      const playLockMorphAnimation = () => {
+        const chars = lockCharRefs.current.filter(Boolean) as HTMLElement[];
+        const iconWrapper = lockIconWrapperRef.current;
+        const shackle = lockShackleRef.current;
+        const body = lockBodyRef.current;
+
+        if (chars.length < 6 || !iconWrapper || !shackle || !body) {
+          isSecurityTransitioningRef.current = false;
+          return;
+        }
+
+        if (lockAnimTlRef.current) {
+          lockAnimTlRef.current.kill();
+        }
+
+        // Reset to initial clean typography state
+        gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+        gsap.set(iconWrapper, { opacity: 0, scale: 0.35, rotate: 0 });
+        gsap.set(shackle, { y: -14 });
+        gsap.set(body, { scale: 1, y: 0, rotate: 0, transformOrigin: "center center" });
+
+        const tl = gsap.timeline({
+          onComplete: () => {
+            gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+            gsap.set(iconWrapper, { opacity: 0, scale: 0.35 });
+            isSecurityTransitioningRef.current = false;
+            lastSecurityScrollTimeRef.current = Date.now();
+            wheelGestureActiveRef.current = true;
+            if (wheelGestureEndTimerRef.current) clearTimeout(wheelGestureEndTimerRef.current);
+            wheelGestureEndTimerRef.current = setTimeout(() => {
+              wheelGestureActiveRef.current = false;
+            }, 250);
+          },
+        });
+
+        lockAnimTlRef.current = tl;
+
+        // 1. Brief settle so user reads "Locked down, everywhere" normally
+        const tSettle = 0.38;
+
+        // 2. The whole word "Locked" (all 6 letters) morphs and converges inward into the padlock
+        // Far left: 'L' vertical stroke rises and moves right into left shackle leg
+        tl.to(
+          chars[0],
+          {
+            x: 42,
+            y: -12,
+            scaleY: 1.3,
+            scaleX: 0.6,
+            opacity: 0,
+            duration: 0.38,
+            ease: "power2.in",
+          },
+          tSettle
+        );
+        // Mid left: 'o' rises and moves right into top shackle arch
+        tl.to(
+          chars[1],
+          {
+            x: 24,
+            y: -16,
+            scale: 1.35,
+            opacity: 0,
+            duration: 0.36,
+            ease: "power2.in",
+          },
+          tSettle + 0.02
+        );
+        // Near left: 'c' curves into upper shoulder
+        tl.to(
+          chars[2],
+          {
+            x: 10,
+            y: -8,
+            scale: 1.15,
+            opacity: 0,
+            duration: 0.36,
+            ease: "power2.in",
+          },
+          tSettle + 0.03
+        );
+        // Near right: 'k' collapses into center lock core
+        tl.to(
+          chars[3],
+          {
+            x: -8,
+            y: -4,
+            scale: 0.5,
+            opacity: 0,
+            duration: 0.36,
+            ease: "power2.in",
+          },
+          tSettle + 0.03
+        );
+        // Mid right: 'e' curves into right shackle shoulder
+        tl.to(
+          chars[4],
+          {
+            x: -24,
+            y: -14,
+            scale: 1.2,
+            rotate: -16,
+            opacity: 0,
+            duration: 0.36,
+            ease: "power2.in",
+          },
+          tSettle + 0.02
+        );
+        // Far right: 'd' sweeps left into right shackle leg and lock body
+        tl.to(
+          chars[5],
+          {
+            x: -42,
+            y: -10,
+            scaleY: 1.25,
+            opacity: 0,
+            duration: 0.38,
+            ease: "power2.in",
+          },
+          tSettle
+        );
+
+        // The golden padlock blooms directly out of the converged word center
+        const tLockAppear = tSettle + 0.22;
+        tl.to(
+          iconWrapper,
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.32,
+            ease: "back.out(1.8)",
+          },
+          tLockAppear
+        );
+
+        // 3. Shackle plunges down and snaps shut into the lock body (Lock.mp4)
+        const tSnap = tLockAppear + 0.28;
+        tl.to(
+          shackle,
+          {
+            y: 0,
+            duration: 0.16,
+            ease: "power4.in",
+          },
+          tSnap
+        );
+
+        // Impact recoil: lock body dips, wobbles slightly and squashes on snap
+        tl.to(
+          body,
+          {
+            y: 3.5,
+            scaleX: 1.08,
+            scaleY: 0.92,
+            rotate: -3.5,
+            duration: 0.08,
+            ease: "power2.out",
+          },
+          tSnap + 0.14
+        );
+        tl.to(
+          body,
+          {
+            y: 0,
+            scaleX: 1,
+            scaleY: 1,
+            rotate: 0,
+            duration: 0.26,
+            ease: "elastic.out(1.4, 0.35)",
+          },
+          tSnap + 0.22
+        );
+
+        // 4. Brief proud hold in locked form
+        const tHoldEnd = tSnap + 0.22 + 0.72;
+
+        // 5. Reverse morph: shackle unlocks, lock dissolves, ALL 6 letters burst back into "Locked"
+        // Shackle pops back up
+        tl.to(
+          shackle,
+          {
+            y: -14,
+            duration: 0.18,
+            ease: "back.out(2.2)",
+          },
+          tHoldEnd
+        );
+
+        // Lock icon dissolves back into center
+        tl.to(
+          iconWrapper,
+          {
+            opacity: 0,
+            scale: 0.35,
+            duration: 0.26,
+            ease: "power2.in",
+          },
+          tHoldEnd + 0.08
+        );
+
+        // All 6 letters L, o, c, k, e, d spring outward from center into original typographical positions
+        const tRestore = tHoldEnd + 0.12;
+        chars.forEach((char, i) => {
+          tl.to(
+            char,
+            {
+              opacity: 1,
+              scale: 1,
+              x: 0,
+              y: 0,
+              rotate: 0,
+              duration: 0.32,
+              ease: "back.out(2.0)",
+            },
+            tRestore + i * 0.03
+          );
+        });
+      };
+
       const goToSecurityState = (nextIdx: number, direction: 1 | -1) => {
         if (isSecurityTransitioningRef.current) return;
         if (nextIdx < 0 || nextIdx >= SECURITY_STATES.length) return;
@@ -2122,6 +2372,17 @@ export function BlueprintHero() {
           if (masks.length > 0) gsap.set(masks, { opacity: 0, scale: 0.35 });
         }
 
+        // Clean up lock animation if leaving state 3
+        if (prevIdx === 3) {
+          if (lockAnimTlRef.current) {
+            lockAnimTlRef.current.kill();
+            lockAnimTlRef.current = null;
+          }
+          const chars = lockCharRefs.current.filter(Boolean) as HTMLElement[];
+          if (chars.length > 0) gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+          if (lockIconWrapperRef.current) gsap.set(lockIconWrapperRef.current, { opacity: 0, scale: 0.35 });
+        }
+
         const prevEl = securityStateRefs.current[prevIdx];
         const nextEl = securityStateRefs.current[nextIdx];
 
@@ -2131,6 +2392,8 @@ export function BlueprintHero() {
               playTypoEyesAnimation();
             } else if (nextIdx === 2) {
               playPasswordMaskAnimation();
+            } else if (nextIdx === 3) {
+              playLockMorphAnimation();
             } else {
               isSecurityTransitioningRef.current = false;
             }
@@ -2310,6 +2573,16 @@ export function BlueprintHero() {
         if (pwdLetters.length > 0) gsap.set(pwdLetters, { opacity: 1, scale: 1, y: 0 });
         if (pwdMasks.length > 0) gsap.set(pwdMasks, { opacity: 0, scale: 0.35 });
 
+        // Clean up lock animation if active
+        if (lockAnimTlRef.current) {
+          lockAnimTlRef.current.kill();
+          lockAnimTlRef.current = null;
+        }
+        lockAnimPlayedRef.current = false;
+        const lockChars = lockCharRefs.current.filter(Boolean) as HTMLElement[];
+        if (lockChars.length > 0) gsap.set(lockChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+        if (lockIconWrapperRef.current) gsap.set(lockIconWrapperRef.current, { opacity: 0, scale: 0.35 });
+
         // 1. Immediately stop continuous ambient rotation so it cannot fight the reverse timeline
         if (ringRotateTweenRef.current) {
           ringRotateTweenRef.current.kill();
@@ -2397,10 +2670,21 @@ export function BlueprintHero() {
           e.preventDefault();
           e.stopImmediatePropagation();
 
+          // Refresh gesture timer on every wheel tick in security mode
+          if (wheelGestureEndTimerRef.current) {
+            clearTimeout(wheelGestureEndTimerRef.current);
+          }
+          wheelGestureEndTimerRef.current = setTimeout(() => {
+            wheelGestureActiveRef.current = false;
+          }, 180);
+
           if (isSecurityTransitioningRef.current) return;
-          if (Date.now() - lastSecurityScrollTimeRef.current < 420) return;
+          if (wheelGestureActiveRef.current) return;
+          if (Date.now() - lastSecurityScrollTimeRef.current < 500) return;
 
           if (e.deltaY > 12) {
+            wheelGestureActiveRef.current = true;
+            lastSecurityScrollTimeRef.current = Date.now();
             // One intentional downward scroll = exactly one next state
             if (currentSecurityStateRef.current < SECURITY_STATES.length - 1) {
               goToSecurityState(currentSecurityStateRef.current + 1, 1);
@@ -2410,6 +2694,8 @@ export function BlueprintHero() {
             }
             return;
           } else if (e.deltaY < -12) {
+            wheelGestureActiveRef.current = true;
+            lastSecurityScrollTimeRef.current = Date.now();
             // One intentional upward scroll = exactly one previous state
             if (currentSecurityStateRef.current > 0) {
               goToSecurityState(currentSecurityStateRef.current - 1, -1);
@@ -2465,6 +2751,11 @@ export function BlueprintHero() {
       let touchStartY = 0;
       const handleTouchStart = (e: TouchEvent) => {
         touchStartY = e.touches[0].clientY;
+        touchGestureActiveRef.current = false;
+      };
+
+      const handleTouchEnd = () => {
+        touchGestureActiveRef.current = false;
       };
 
       const handleTouchMove = (e: TouchEvent) => {
@@ -2479,10 +2770,13 @@ export function BlueprintHero() {
           e.stopImmediatePropagation();
 
           if (isSecurityTransitioningRef.current) return;
-          if (Date.now() - lastSecurityScrollTimeRef.current < 420) return;
+          if (touchGestureActiveRef.current) return;
+          if (Date.now() - lastSecurityScrollTimeRef.current < 500) return;
 
           const touchDeltaY = touchStartY - e.touches[0].clientY;
-          if (touchDeltaY > 20) {
+          if (touchDeltaY > 24) {
+            touchGestureActiveRef.current = true;
+            lastSecurityScrollTimeRef.current = Date.now();
             touchStartY = e.touches[0].clientY;
             if (currentSecurityStateRef.current < SECURITY_STATES.length - 1) {
               goToSecurityState(currentSecurityStateRef.current + 1, 1);
@@ -2490,7 +2784,9 @@ export function BlueprintHero() {
               exitSecurityToAbout();
             }
             return;
-          } else if (touchDeltaY < -20) {
+          } else if (touchDeltaY < -24) {
+            touchGestureActiveRef.current = true;
+            lastSecurityScrollTimeRef.current = Date.now();
             touchStartY = e.touches[0].clientY;
             if (currentSecurityStateRef.current > 0) {
               goToSecurityState(currentSecurityStateRef.current - 1, -1);
@@ -2585,6 +2881,7 @@ export function BlueprintHero() {
       window.addEventListener("wheel", handleWheel, { passive: false, capture: true });
       window.addEventListener("touchstart", handleTouchStart, { passive: true });
       window.addEventListener("touchmove", handleTouchMove, { passive: false, capture: true });
+      window.addEventListener("touchend", handleTouchEnd, { passive: true });
       window.addEventListener("keydown", handleKeyDown, { capture: true });
 
       // Navbar Navigation Event Listeners
@@ -2800,11 +3097,16 @@ export function BlueprintHero() {
         window.removeEventListener("wheel", handleWheel, { capture: true });
         window.removeEventListener("touchstart", handleTouchStart);
         window.removeEventListener("touchmove", handleTouchMove, { capture: true });
+        window.removeEventListener("touchend", handleTouchEnd);
         window.removeEventListener("keydown", handleKeyDown, { capture: true });
         window.removeEventListener("unifolio-logo-docked", revealHeroAfterDocked);
         window.removeEventListener("unifolio-intro-complete", revealHeroAfterDocked);
         window.removeEventListener("unifolio-show-product", handleShowProduct);
         window.removeEventListener("unifolio-reset-hero", handleResetHero);
+        if (wheelGestureEndTimerRef.current) {
+          clearTimeout(wheelGestureEndTimerRef.current);
+          wheelGestureEndTimerRef.current = null;
+        }
         if (ringRotateTweenRef.current) {
           ringRotateTweenRef.current.kill();
           ringRotateTweenRef.current = null;
@@ -2816,6 +3118,10 @@ export function BlueprintHero() {
         if (pwdMaskTlRef.current) {
           pwdMaskTlRef.current.kill();
           pwdMaskTlRef.current = null;
+        }
+        if (lockAnimTlRef.current) {
+          lockAnimTlRef.current.kill();
+          lockAnimTlRef.current = null;
         }
         if (typoLeftWordRef.current) gsap.set(typoLeftWordRef.current, { x: 0 });
         if (typoRightWordRef.current) gsap.set(typoRightWordRef.current, { x: 0 });
@@ -3271,7 +3577,7 @@ export function BlueprintHero() {
                     className={`absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full ${
                       item.type === "hero"
                         ? "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl px-4 sm:px-6 text-center"
-                        : idx === 2
+                        : idx === 2 || idx === 3
                         ? "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl px-6 md:pl-16 lg:pl-28 xl:pl-36 text-left"
                         : "max-w-md sm:max-w-lg lg:max-w-xl xl:max-w-2xl px-6 text-left"
                     } will-change-transform pointer-events-none`}
@@ -3437,6 +3743,83 @@ export function BlueprintHero() {
                                   </span>
                                 </span>
                               ))}
+                            </span>
+                          </h3>
+                        ) : idx === 3 ? (
+                          // State 4: "Locked down, everywhere" - Typography Transformation Animation
+                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[52px] xl:text-[58px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.06] mb-4 sm:mb-5 select-none whitespace-normal sm:whitespace-nowrap">
+                            {/* The entire word "Locked" transforms into the lock */}
+                            <span className="relative inline-flex items-center justify-center align-baseline">
+                              {/* The 6 letters of "Locked" */}
+                              <span className="inline-flex items-baseline">
+                                {LOCKED_LETTERS.map((char, charIdx) => (
+                                  <span
+                                    key={charIdx}
+                                    ref={(el) => {
+                                      lockCharRefs.current[charIdx] = el;
+                                    }}
+                                    className="inline-block will-change-transform"
+                                  >
+                                    {char}
+                                  </span>
+                                ))}
+                              </span>
+
+                              {/* Morphed Lock SVG Icon (Centered directly over the entire word "Locked") */}
+                              <span
+                                ref={lockIconWrapperRef}
+                                className="absolute inset-0 flex items-center justify-center pointer-events-none will-change-transform"
+                                style={{ opacity: 0, transform: "scale(0.35)" }}
+                                aria-hidden="true"
+                              >
+                                <svg
+                                  viewBox="0 0 44 48"
+                                  className="w-[1.2em] h-[1.3em] overflow-visible drop-shadow-[0_6px_16px_rgba(245,158,11,0.5)]"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <defs>
+                                    <linearGradient id="unifolioLockGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                                      <stop offset="0%" stopColor="#FDE047" />
+                                      <stop offset="45%" stopColor="#F59E0B" />
+                                      <stop offset="100%" stopColor="#D97706" />
+                                    </linearGradient>
+                                  </defs>
+
+                                  {/* Shackle (arched steel bar) */}
+                                  <path
+                                    ref={lockShackleRef}
+                                    d="M 13 21 V 13 C 13 7.5 17 3.5 22 3.5 C 27 3.5 31 7.5 31 13 V 21"
+                                    stroke="currentColor"
+                                    strokeWidth="4.8"
+                                    strokeLinecap="round"
+                                    className="text-neutral-900 dark:text-neutral-100 will-change-transform"
+                                  />
+
+                                  {/* Lock Body (golden amber rounded squircle) */}
+                                  <rect
+                                    ref={lockBodyRef}
+                                    x="6"
+                                    y="18"
+                                    width="32"
+                                    height="26"
+                                    rx="7.5"
+                                    ry="7.5"
+                                    fill="url(#unifolioLockGold)"
+                                    className="will-change-transform"
+                                  />
+
+                                  {/* Keyhole */}
+                                  <circle cx="22" cy="28" r="2.8" fill="#18181B" />
+                                  <path d="M 20.6 28.5 L 19.8 36 L 24.2 36 L 23.4 28.5 Z" fill="#18181B" />
+                                </svg>
+                              </span>
+                            </span>
+
+                            <span> down, </span>
+
+                            <span className="text-[#22C55E] inline-block font-black">
+                              everywhere
                             </span>
                           </h3>
                         ) : (
