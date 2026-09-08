@@ -211,6 +211,23 @@ const SELL_LETTERS = ["s", "e", "l", "l"];
 const CLOSING_BLACK_WORDS = ["Security", "isn't", "a", "feature", "here."];
 const CLOSING_GREEN_WORDS = ["It's", "the", "baseline", "everything", "else", "is", "built", "on."];
 
+const ABOUT_PARA_1_WORDS = [
+  "In", "most", "families,", "someone", "ends", "up", "in", "charge", "of", "the", "money,",
+  "not", "because", "they", "trained", "for", "it,", "but", "because", "someone", "has", "to.",
+  "Their", "financial", "data", "lives", "across", "a", "dozen", "apps", "and", "statements,",
+  "and", "having", "it", "all", "in", "one", "place", "is", "not", "the", "same", "as", "understanding", "it."
+];
+
+const ABOUT_PARA_2_WORDS = [
+  "Unifolio", "exists", "to", "close", "that", "gap,", "to", "give", "that", "person", "the", "same", "clarity",
+  "a", "wealth", "manager", "gives", "their", "wealthiest", "clients,", "whether", "they", "hold", "₹5", "lakh",
+  "or", "₹5", "crore,", "whether", "they've", "studied", "finance", "or", "never", "touched", "a", "balance", "sheet."
+];
+
+const ABOUT_PUNCHLINE_WORDS = [
+  "Not", "just", "where", "their", "money", "is,", "but", "what", "it", "means."
+];
+
 export function BlueprintHero() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -239,6 +256,19 @@ export function BlueprintHero() {
   const currentSecurityStateRef = useRef<number>(0);
   const isSecurityTransitioningRef = useRef<boolean>(false);
   const lastSecurityScrollTimeRef = useRef<number>(0);
+  const securityStateTransitionTlRef = useRef<gsap.core.Timeline | null>(null);
+
+  // About Section Scroll-Mask Reveal Refs
+  const aboutScrollProgressRef = useRef<number>(0);
+  const aboutProgressTweenRef = useRef<gsap.core.Tween | null>(null);
+  const aboutWordOverlayRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const lastAboutRevealTimeRef = useRef<number>(0);
+  const linesCacheRef = useRef<{
+    words: { el: HTMLElement; left: number; right: number; width: number }[];
+    left: number;
+    right: number;
+    width: number;
+  }[] | null>(null);
 
   const cardsStageRef = useRef<HTMLDivElement | null>(null);
   const cardsClusterRef = useRef<HTMLDivElement | null>(null);
@@ -270,15 +300,13 @@ export function BlueprintHero() {
   const heroShiftXRef = useRef<number>(0);
   const rightShiftXRef = useRef<number>(0);
 
-  // About Phase — Semicircle Formation (uses the SAME 26 ring cards — no new card elements)
-  const aboutOrbitStateRef = useRef<{ angle: number }>({ angle: 0 });
-  const aboutUnfoldTlRef = useRef<gsap.core.Timeline | null>(null);
-  const aboutRotationTweenRef = useRef<gsap.core.Tween | null>(null);
-  const aboutTextOverlayRef = useRef<HTMLDivElement | null>(null);
+  // About Section Continuum Refs
+  const aboutContentRef = useRef<HTMLDivElement | null>(null);
   const aboutEyebrowRef = useRef<HTMLDivElement | null>(null);
   const aboutPara1Ref = useRef<HTMLParagraphElement | null>(null);
   const aboutPara2Ref = useRef<HTMLParagraphElement | null>(null);
-  const aboutSemicircleFormedRef = useRef<boolean>(false);
+  const aboutOrbitTweenRef = useRef<gsap.core.Tween | null>(null);
+  const aboutOrbitStateRef = useRef<{ angle: number }>({ angle: 0 });
 
   // Typographic Eyes Easter Egg ("Read-only, always")
   const typoEyesRef = useRef<HTMLSpanElement | null>(null);
@@ -356,6 +384,10 @@ export function BlueprintHero() {
       if (closingExitTlRef.current) {
         closingExitTlRef.current.kill();
         closingExitTlRef.current = null;
+      }
+      if (aboutOrbitTweenRef.current) {
+        aboutOrbitTweenRef.current.kill();
+        aboutOrbitTweenRef.current = null;
       }
     };
   }, []);
@@ -3110,6 +3142,469 @@ export function BlueprintHero() {
         return slots;
       };
 
+      const computeSemicircleParams = () => {
+        const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
+        const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
+        const w = typeof window !== "undefined" ? window.innerWidth : 1440;
+        const h = typeof window !== "undefined" ? window.innerHeight : 900;
+
+        // Massive circular formation radius (~3x larger than original)
+        const radius = isDesk
+          ? Math.min(Math.max(h * 0.94, 820), 1020)
+          : isTab
+          ? Math.min(Math.max(h * 0.78, 600), 760)
+          : Math.min(Math.max(h * 0.65, 440), 540);
+
+        // Keep current card size as requested
+        const baseCardScale = isDesk ? 0.64 : isTab ? 0.54 : 0.44;
+
+        // Bring the semicircles a little down to frame the editorial content centered in viewport
+        const centerY = isDesk ? 55 : isTab ? 45 : 35;
+
+        // Push left semicircle further toward left edge and right semicircle further toward right edge
+        const gapFromCenter = isDesk
+          ? Math.min(Math.max(w * 0.44, 630), 780)
+          : isTab
+          ? Math.min(Math.max(w * 0.48, 440), 560)
+          : Math.max(w * 0.60, 260);
+
+        // Circle centers positioned far outside viewport boundaries so only inner arcs intersect screen
+        const leftCenterX = -(gapFromCenter + radius);
+        const rightCenterX = -leftCenterX;
+
+        // Arc angle spread calibrated so both top and bottom edges are DEEPLY outside the screen (>240px offscreen)
+        const spanDeg = isDesk ? 66 : isTab ? 60 : 54;
+        const totalSpan = 2 * spanDeg;
+        const step = totalSpan / 13;
+
+        // 13 slots along Left Circle inner arc (-spanDeg to +spanDeg)
+        const leftAngles = Array.from({ length: 13 }).map((_, i) => -spanDeg + i * step);
+
+        // 13 slots along Right Circle inner arc (180 - spanDeg to 180 + spanDeg)
+        const rightAngles = Array.from({ length: 13 }).map((_, j) => 180 - spanDeg + j * step);
+
+        return {
+          w,
+          h,
+          radius,
+          gapFromCenter,
+          baseCardScale,
+          leftCenterX,
+          rightCenterX,
+          centerY,
+          spanDeg,
+          totalSpan,
+          step,
+          leftAngles,
+          rightAngles,
+          isDesk,
+          isTab,
+        };
+      };
+
+      const applyAbout3DRotation = (orbitAngle: number) => {
+        const {
+          radius,
+          baseCardScale,
+          leftCenterX,
+          rightCenterX,
+          centerY,
+          spanDeg,
+          totalSpan,
+          leftAngles,
+          rightAngles,
+        } = computeSemicircleParams();
+
+        const allCards = [
+          ...cardWrapperRefs.current.slice(0, 5),
+          ...companionCardRefs.current.slice(0, 21),
+        ].filter(Boolean) as HTMLElement[];
+
+        // Subtle, elegant continuous stream velocity
+        const streamOffset = orbitAngle * 0.28;
+
+        // 1. Left Semicircle (Cards 0..12):
+        // Stream flows continuously downward along the arc: enters top offscreen, exits bottom offscreen,
+        // and wraps seamlessly behind the offscreen boundary so the edges are NEVER shown on screen.
+        for (let i = 0; i < 13; i++) {
+          const el = allCards[i];
+          if (!el) continue;
+
+          let raw = (leftAngles[i] - (-spanDeg) + streamOffset) % totalSpan;
+          if (raw < 0) raw += totalSpan;
+          const angleDeg = -spanDeg + raw;
+
+          const rad = (angleDeg * Math.PI) / 180;
+          const x = leftCenterX + radius * Math.cos(rad);
+          const y = centerY + radius * Math.sin(rad);
+
+          const cosVal = Math.cos(rad);
+          const sinVal = Math.sin(rad);
+          const z = 40 * cosVal;
+          const scale = baseCardScale * (0.95 + 0.08 * cosVal);
+          const opacity = 1.0;
+          const zIndex = 30 + Math.round(cosVal * 25);
+
+          const rotZ = angleDeg;
+          const rotY = 20 - 26 * cosVal;
+          const rotX = -sinVal * 12;
+
+          const origX = i < 5 ? (origCentersRef.current[i]?.x ?? 0) : 0;
+          const origY = i < 5 ? (origCentersRef.current[i]?.y ?? 0) : 0;
+
+          gsap.set(el, {
+            x: x - origX,
+            y: y - origY,
+            z,
+            rotateZ: rotZ,
+            rotateY: rotY,
+            rotateX: rotX,
+            scale,
+            opacity,
+            visibility: "visible",
+            zIndex,
+            force3D: true,
+          });
+        }
+
+        // 2. Right Semicircle (Cards 13..25):
+        // Symmetrically streams downward: enters top offscreen, exits bottom offscreen,
+        // wrapping seamlessly outside the viewport boundaries.
+        const rightMin = 180 - spanDeg;
+        for (let j = 0; j < 13; j++) {
+          const cardIdx = 13 + j;
+          const el = allCards[cardIdx];
+          if (!el) continue;
+
+          let raw = (rightAngles[j] - rightMin - streamOffset) % totalSpan;
+          if (raw < 0) raw += totalSpan;
+          const angleDeg = rightMin + raw;
+
+          const rad = (angleDeg * Math.PI) / 180;
+          const x = rightCenterX + radius * Math.cos(rad);
+          const y = centerY + radius * Math.sin(rad);
+
+          const cosVal = Math.abs(Math.cos(rad));
+          const sinVal = -Math.sin(rad);
+          const z = 40 * cosVal;
+          const scale = baseCardScale * (0.95 + 0.08 * cosVal);
+          const opacity = 1.0;
+          const zIndex = 30 + Math.round(cosVal * 25);
+
+          const rotZ = angleDeg - 180;
+          const rotY = -(20 - 26 * cosVal);
+          const rotX = sinVal * 12;
+
+          gsap.set(el, {
+            x,
+            y,
+            z,
+            rotateZ: rotZ,
+            rotateY: rotY,
+            rotateX: rotX,
+            scale,
+            opacity,
+            visibility: "visible",
+            zIndex,
+            force3D: true,
+          });
+        }
+      };
+
+      const startSemicirclesOrbit = () => {
+        if (aboutOrbitTweenRef.current) {
+          aboutOrbitTweenRef.current.kill();
+        }
+        aboutOrbitStateRef.current = { angle: 0 };
+        aboutOrbitTweenRef.current = gsap.to(aboutOrbitStateRef.current, {
+          angle: 360,
+          duration: 32,
+          repeat: -1,
+          ease: "none",
+          onUpdate: () => {
+            applyAbout3DRotation(aboutOrbitStateRef.current.angle);
+          },
+        });
+      };
+
+      const measureAboutLines = () => {
+        const words = aboutWordOverlayRefs.current.filter(Boolean) as HTMLElement[];
+        if (words.length === 0) return null;
+
+        // Ensure words have laid out with non-zero dimensions
+        const firstRect = words[0].getBoundingClientRect();
+        if (firstRect.width === 0 && firstRect.height === 0) return null;
+
+        const lineGroups: { el: HTMLElement; left: number; right: number; width: number }[][] = [];
+        let currentGroup: { el: HTMLElement; left: number; right: number; width: number }[] = [];
+        let currentTop = -1;
+
+        for (let i = 0; i < words.length; i++) {
+          const el = words[i];
+          const rect = el.getBoundingClientRect();
+          const top = Math.round(rect.top);
+
+          if (currentTop === -1 || Math.abs(top - currentTop) > 6) {
+            if (currentGroup.length > 0) {
+              lineGroups.push(currentGroup);
+            }
+            currentGroup = [];
+            currentTop = top;
+          }
+
+          currentGroup.push({
+            el,
+            left: rect.left,
+            right: rect.right,
+            width: rect.width,
+          });
+        }
+
+        if (currentGroup.length > 0) {
+          lineGroups.push(currentGroup);
+        }
+
+        return lineGroups.map((group) => {
+          const lLeft = group[0].left;
+          const lRight = group[group.length - 1].right;
+          return {
+            words: group,
+            left: lLeft,
+            right: lRight,
+            width: Math.max(1, lRight - lLeft),
+          };
+        });
+      };
+
+      const applyAboutTextReveal = (progress: number) => {
+        if (!linesCacheRef.current || linesCacheRef.current.length === 0) {
+          linesCacheRef.current = measureAboutLines();
+        }
+        const lines = linesCacheRef.current;
+        if (!lines || lines.length === 0) return;
+
+        const totalWidth = lines.reduce((acc, l) => acc + l.width, 0);
+        if (totalWidth <= 0) return;
+
+        const clampedP = Math.max(0, Math.min(1, progress));
+        let remainingDist = clampedP * totalWidth;
+        const feather = 26; // subtle soft edge in px (matching reference video)
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+
+          if (remainingDist >= line.width) {
+            // Line is fully behind the mask sweep -> 100% solid dark revealed
+            remainingDist -= line.width;
+            for (let j = 0; j < line.words.length; j++) {
+              const w = line.words[j];
+              w.el.style.opacity = "1";
+              w.el.style.maskImage = "none";
+              (w.el.style as any).webkitMaskImage = "none";
+              w.el.style.clipPath = "none";
+              (w.el.style as any).webkitClipPath = "none";
+            }
+          } else if (remainingDist <= 0) {
+            // Line is ahead of the mask sweep -> 0% revealed (unrevealed muted grey shows)
+            for (let j = 0; j < line.words.length; j++) {
+              const w = line.words[j];
+              w.el.style.opacity = "0";
+              w.el.style.maskImage = "none";
+              (w.el.style as any).webkitMaskImage = "none";
+              w.el.style.clipPath = "none";
+              (w.el.style as any).webkitClipPath = "none";
+            }
+          } else {
+            // ACTIVE LINE: moving mask reveal is physically traversing across this line
+            const xReveal = line.left + remainingDist;
+            remainingDist = 0; // consumed! All subsequent lines will have remainingDist <= 0
+
+            for (let j = 0; j < line.words.length; j++) {
+              const w = line.words[j];
+
+              if (w.right <= xReveal - feather / 2) {
+                // Word is fully to the left of the moving brush -> solid dark
+                w.el.style.opacity = "1";
+                w.el.style.maskImage = "none";
+                (w.el.style as any).webkitMaskImage = "none";
+                w.el.style.clipPath = "none";
+                (w.el.style as any).webkitClipPath = "none";
+              } else if (w.left >= xReveal + feather / 2) {
+                // Word is fully to the right of the moving brush -> unrevealed
+                w.el.style.opacity = "0";
+                w.el.style.maskImage = "none";
+                (w.el.style as any).webkitMaskImage = "none";
+                w.el.style.clipPath = "none";
+                (w.el.style as any).webkitClipPath = "none";
+              } else {
+                // Word intersects the feathered edge of the mask -> soft inking-in gradient
+                w.el.style.opacity = "1";
+                w.el.style.clipPath = "none";
+                (w.el.style as any).webkitClipPath = "none";
+
+                const stopStart = Math.max(0, (xReveal - feather / 2) - w.left);
+                const stopEnd = Math.max(stopStart + 1, (xReveal + feather / 2) - w.left);
+                const maskGrad = `linear-gradient(to right, black 0px, black ${stopStart.toFixed(1)}px, transparent ${stopEnd.toFixed(1)}px)`;
+
+                w.el.style.maskImage = maskGrad;
+                (w.el.style as any).webkitMaskImage = maskGrad;
+              }
+            }
+          }
+        }
+      };
+
+      const animateAboutTextReveal = (targetP: number) => {
+        if (aboutProgressTweenRef.current) {
+          aboutProgressTweenRef.current.kill();
+        }
+        const state = { p: aboutScrollProgressRef.current };
+        aboutProgressTweenRef.current = gsap.to(state, {
+          p: targetP,
+          duration: 0.26,
+          ease: "power1.out",
+          onUpdate: () => {
+            aboutScrollProgressRef.current = state.p;
+            applyAboutTextReveal(state.p);
+          },
+          onComplete: () => {
+            aboutScrollProgressRef.current = targetP;
+            applyAboutTextReveal(targetP);
+          },
+        });
+      };
+
+      const exitAboutToFaq = () => {
+        if (isSecurityTransitioningRef.current) return;
+        isSecurityTransitioningRef.current = true;
+        lastSecurityScrollTimeRef.current = Date.now();
+
+        if (aboutOrbitTweenRef.current) {
+          aboutOrbitTweenRef.current.kill();
+          aboutOrbitTweenRef.current = null;
+        }
+        if (aboutProgressTweenRef.current) {
+          aboutProgressTweenRef.current.kill();
+          aboutProgressTweenRef.current = null;
+        }
+
+        gsap.to([cardsClusterRef.current, aboutContentRef.current], {
+          y: -window.innerHeight * 0.75,
+          opacity: 0,
+          duration: 0.55,
+          ease: "power2.in",
+          onComplete: () => {
+            stateRef.current = "hero";
+            document.documentElement.style.overflow = "";
+            document.body.style.overflow = "";
+            if (stageRef.current) {
+              stageRef.current.style.position = "";
+              stageRef.current.style.top = "";
+              stageRef.current.style.left = "";
+              stageRef.current.style.width = "";
+              stageRef.current.style.height = "";
+              stageRef.current.style.zIndex = "";
+            }
+            isSecurityTransitioningRef.current = false;
+            const faqEl = document.getElementById("faq");
+            if (faqEl) {
+              smoothScrollTo(faqEl, { duration: 0.85, ease: "power2.inOut" });
+            }
+            window.dispatchEvent(
+              new CustomEvent("unifolio-active-section", { detail: { section: "faq" } })
+            );
+          },
+        });
+      };
+
+      const jumpToAboutState = () => {
+        if (stateRef.current === "about") return;
+        if (stateRef.current === "ring") {
+          consolidateRingToStack();
+          return;
+        }
+
+        isSecurityTransitioningRef.current = true;
+        stateRef.current = "about";
+        setIsAperturePaused(true);
+        productCompleteRef.current = true;
+
+        const pinEnd = apertureScrollTriggerRef.current?.end ?? window.scrollY;
+        lockScrollYRef.current = pinEnd;
+        window.scrollTo(0, pinEnd);
+
+        document.documentElement.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
+
+        if (stageRef.current) {
+          stageRef.current.style.position = "fixed";
+          stageRef.current.style.top = "0px";
+          stageRef.current.style.left = "0px";
+          stageRef.current.style.width = "100%";
+          stageRef.current.style.height = "100vh";
+          stageRef.current.style.zIndex = "40";
+        }
+
+        if (irisPortalRef.current) gsap.set(irisPortalRef.current, { opacity: 1, clipPath: "circle(150% at 50% 50%)" });
+        if (headerRef.current) gsap.set(headerRef.current, { opacity: 0 });
+        if (securityStageRef.current) gsap.set(securityStageRef.current, { opacity: 0 });
+        securityStateRefs.current.forEach((el) => {
+          if (el) gsap.set(el, { opacity: 0, visibility: "hidden" });
+        });
+
+        if (cardsClusterRef.current) {
+          gsap.set(cardsClusterRef.current, { x: 0, y: 0, rotateZ: 0, rotateX: 0, rotateY: 0, opacity: 1 });
+        }
+
+        // Apply dark obsidian glass styling to product card fronts
+        for (let i = 0; i < 5; i++) {
+          const front = cardFrontRefs.current[i];
+          const angleNorm = (i / 26) * 2 * Math.PI;
+          const cosA = Math.cos(angleNorm);
+          const baseAlpha = 0.26 + 0.08 * cosA;
+          const specularTop = Math.min(Math.max(0.55 + 0.30 * cosA, 0.20), 0.88);
+          const emeraldRefract = 0.20 + 0.10 * Math.sin(angleNorm + Math.PI / 3);
+          const borderAlpha = Math.min(Math.max(0.14 + 0.08 * cosA, 0.09), 0.26);
+          if (front) {
+            gsap.set(front, {
+              background: `linear-gradient(140deg, rgba(6, 28, 18, ${baseAlpha.toFixed(2)}) 0%, rgba(3, 18, 11, ${(baseAlpha + 0.07).toFixed(2)}) 50%, rgba(1, 10, 6, ${(baseAlpha + 0.14).toFixed(2)}) 100%)`,
+              borderColor: `rgba(255, 255, 255, ${borderAlpha.toFixed(2)})`,
+              boxShadow:
+                `inset 0 1.5px 1px 0 rgba(255, 255, 255, ${(specularTop * 0.55).toFixed(2)}), ` +
+                "inset 1px 0 1px 0 rgba(255, 255, 255, 0.20), " +
+                `inset 0 -1.5px 2px 0 rgba(34, 197, 94, ${(emeraldRefract * 1.1).toFixed(2)}), ` +
+                "inset -1px 0 1.5px 0 rgba(34, 197, 94, 0.20), " +
+                "0 12px 26px -6px rgba(0, 0, 0, 0.36), " +
+                "0 2px 6px -1px rgba(2, 16, 9, 0.22)",
+            });
+          }
+          if (cardGlassOverlayRefs.current[i]) gsap.set(cardGlassOverlayRefs.current[i], { opacity: 1 });
+          if (cardBackRefs.current[i]) gsap.set(cardBackRefs.current[i], { opacity: 0 });
+        }
+
+        companionCardRefs.current.forEach((compEl) => {
+          if (compEl) gsap.set(compEl, { opacity: 1, visibility: "visible" });
+        });
+
+        applyAbout3DRotation(0);
+
+        if (aboutContentRef.current) {
+          gsap.set(aboutContentRef.current, { opacity: 1, visibility: "visible" });
+        }
+        linesCacheRef.current = null;
+        aboutScrollProgressRef.current = 0;
+        if (aboutEyebrowRef.current) gsap.to(aboutEyebrowRef.current, { opacity: 1, y: 0, duration: 0.6, delay: 0.1 });
+        if (aboutPara1Ref.current) gsap.set(aboutPara1Ref.current, { opacity: 1, y: 0 });
+        if (aboutPara2Ref.current) gsap.set(aboutPara2Ref.current, { opacity: 1, y: 0 });
+        applyAboutTextReveal(0);
+
+        startSemicirclesOrbit();
+        isSecurityTransitioningRef.current = false;
+        window.dispatchEvent(
+          new CustomEvent("unifolio-active-section", { detail: { section: "about" } })
+        );
+      };
+
       const consolidateRingToStack = () => {
         if (!cardsClusterRef.current) return;
         if (isSecurityTransitioningRef.current) return;
@@ -3122,6 +3617,13 @@ export function BlueprintHero() {
           consolidationTlRef.current.kill();
           consolidationTlRef.current = null;
         }
+
+        // Initialize About text reveal at 0 (fully muted) so it rests quietly in subtle light grey
+        linesCacheRef.current = null;
+        aboutScrollProgressRef.current = 0;
+        if (aboutPara1Ref.current) gsap.set(aboutPara1Ref.current, { opacity: 1, y: 0 });
+        if (aboutPara2Ref.current) gsap.set(aboutPara2Ref.current, { opacity: 1, y: 0 });
+        applyAboutTextReveal(0);
 
         // 1. Capture current ambient rotation angle and pause ambient tween
         const currentRot = Number(gsap.getProperty(clusterEl, "rotateZ")) || 376;
@@ -3136,10 +3638,10 @@ export function BlueprintHero() {
 
         const allProductCards = cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
         const allCompanionCards = companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
+        const allCards = [...allProductCards, ...allCompanionCards];
         const ringSlots = computeRingSlots();
 
-        // Target: cards consolidate into tight horizontal stack matching reference attachment (Panels 3 & 4)
-        // Standing upright, front card on right (+35px), overlapping offsets to left (-2.8px per card)
+        // Target: cards consolidate into tight horizontal stack matching reference attachment
         const frontX = 35;
 
         // Measure live bounding rects to anchor trajectory dynamically
@@ -3166,7 +3668,7 @@ export function BlueprintHero() {
         const gBottom = greenRect?.bottom ?? gTop + 54;
         const gCenterY = (gTop + gBottom) / 2;
 
-        // Continuous 5-waypoint trajectory coordinates:
+        // Continuous trajectory coordinates:
         // Waypoint 1: Stack passes right edge of black statement (moving left -> right)
         const px1 = bRight + 65;
         const py1 = bCenterY;
@@ -3191,17 +3693,14 @@ export function BlueprintHero() {
         const dxOvershoot = curX + (pxOvershoot - clusterCenterX);
         const dyOvershoot = curY + (pyOvershoot - clusterCenterY);
 
-        // Waypoint 4B: Fluid downward arc curving naturally into the descent (zero sharp drop)
+        // Waypoint 4B: Fluid downward arc curving naturally into the descent
         const pxArc = gLeft - 75;
         const pyArc = gBottom + 115;
         const dxArc = curX + (pxArc - clusterCenterX);
         const dyArc = curY + (pyArc - clusterCenterY);
 
-        // Waypoint 5: Accelerating dive exit off-screen, carrying momentum directly into the About section
-        const pxExit = gLeft + 35;
-        const pyExit = vh + 540;
-        const dxExit = curX + (pxExit - clusterCenterX);
-        const dyExit = curY + (pyExit - clusterCenterY);
+        const { radius, baseCardScale, leftCenterX, rightCenterX, centerY: sCenterY, leftAngles, rightAngles } =
+          computeSemicircleParams();
 
         const tl = gsap.timeline({
           onUpdate: () => {
@@ -3242,7 +3741,6 @@ export function BlueprintHero() {
             if (closingBlackTextRef.current) {
               const bCurRect = closingBlackTextRef.current.getBoundingClientRect();
               if (time >= 1.50 || wipeRightX >= bCurRect.right) {
-                // Completely removed once cards have cleared past the right edge
                 closingBlackTextRef.current.style.clipPath = `inset(0 0 0 ${bCurRect.width}px)`;
                 (closingBlackTextRef.current.style as any).webkitClipPath = `inset(0 0 0 ${bCurRect.width}px)`;
               } else {
@@ -3253,16 +3751,12 @@ export function BlueprintHero() {
             }
 
             // 3. Spatial erasure of Green Line (swept Right -> Left return, 1.76s -> 2.30s)
-            // Green text MUST remain 100% visible and untouched while the black text disappears!
-            // It only starts disappearing when the cards actually curve around and sweep back from right to left!
             if (closingGreenTextRef.current) {
               const gCurRect = closingGreenTextRef.current.getBoundingClientRect();
               if (time < 1.76) {
-                // Untouched and 100% visible before the return sweep begins!
                 closingGreenTextRef.current.style.clipPath = "none";
                 (closingGreenTextRef.current.style as any).webkitClipPath = "none";
               } else if (time >= 2.32 || wipeLeftX <= gCurRect.left) {
-                // Completely removed once return cards have swept past the left edge
                 closingGreenTextRef.current.style.clipPath = `inset(0 ${gCurRect.width}px 0 0)`;
                 (closingGreenTextRef.current.style as any).webkitClipPath = `inset(0 ${gCurRect.width}px 0 0)`;
               } else {
@@ -3274,12 +3768,45 @@ export function BlueprintHero() {
           },
           onComplete: () => {
             isRingConsolidatedRef.current = true;
-            // Cards have plunged off-screen; hand off seamlessly into the About section
-            exitSecurityToAbout();
+            isSecurityTransitioningRef.current = false;
+            stateRef.current = "about";
+
+            // 1. Start continuous 3D rotation of semicircles
+            startSemicirclesOrbit();
+
+            // 2. Initialize About text in subtle muted state (no sudden block fade-in)
+            linesCacheRef.current = null;
+            aboutScrollProgressRef.current = 0;
+            if (aboutPara1Ref.current) gsap.set(aboutPara1Ref.current, { opacity: 1, y: 0 });
+            if (aboutPara2Ref.current) gsap.set(aboutPara2Ref.current, { opacity: 1, y: 0 });
+            applyAboutTextReveal(0);
+
+            // 3. Update Navbar
+            window.dispatchEvent(
+              new CustomEvent("unifolio-active-section", { detail: { section: "about" } })
+            );
           },
           onReverseComplete: () => {
             isSecurityTransitioningRef.current = false;
             isRingConsolidatedRef.current = false;
+            stateRef.current = "ring";
+
+            if (aboutOrbitTweenRef.current) {
+              aboutOrbitTweenRef.current.kill();
+              aboutOrbitTweenRef.current = null;
+            }
+            if (aboutProgressTweenRef.current) {
+              aboutProgressTweenRef.current.kill();
+              aboutProgressTweenRef.current = null;
+            }
+            linesCacheRef.current = null;
+            aboutScrollProgressRef.current = 0;
+            applyAboutTextReveal(0);
+
+            if (aboutContentRef.current) {
+              gsap.set(aboutContentRef.current, { opacity: 0, visibility: "hidden" });
+            }
+
             if (closingBlackTextRef.current) {
               closingBlackTextRef.current.style.clipPath = "none";
               (closingBlackTextRef.current.style as any).webkitClipPath = "none";
@@ -3288,6 +3815,10 @@ export function BlueprintHero() {
               closingGreenTextRef.current.style.clipPath = "none";
               (closingGreenTextRef.current.style as any).webkitClipPath = "none";
             }
+            if (securityStateRefs.current[7]) {
+              gsap.set(securityStateRefs.current[7], { opacity: 1, y: 0 });
+            }
+
             // Restore ambient ring rotation seamlessly
             if (!ringRotateTweenRef.current || !ringRotateTweenRef.current.isActive()) {
               ringRotateTweenRef.current = gsap.fromTo(
@@ -3302,6 +3833,9 @@ export function BlueprintHero() {
                 }
               );
             }
+            window.dispatchEvent(
+              new CustomEvent("unifolio-active-section", { detail: { section: "security" } })
+            );
           },
         });
         consolidationTlRef.current = tl;
@@ -3391,7 +3925,7 @@ export function BlueprintHero() {
           const midRotY = slot.rotY * 0.4;
           const midScale = slot.scale * 0.45 + stackCardScale * 0.55;
 
-          tl.set(compEl, { zIndex: 100 - k }, kDelay);
+          tl.set(compEl, { zIndex: 100 - k, visibility: "visible" }, kDelay);
 
           tl.to(
             compEl,
@@ -3426,8 +3960,7 @@ export function BlueprintHero() {
           );
         });
 
-        // 3. Settled beat (Panel 4: "Stack settled, ready to move")
-        // Microscopic tactile collective breath as the stack locks in place
+        // 3. Settled beat as the stack locks in place
         tl.to(
           clusterEl,
           {
@@ -3448,10 +3981,9 @@ export function BlueprintHero() {
         );
 
         // =========================================================================
-        // PHASE 2: CONTINUOUS CINEMATIC S-CURVE TRAJECTORY & CONTROLLED DIVE EXIT
-        // Sequence: sweep across black text -> turn apex -> sweep across green text ->
-        // overshoot slightly with horizontal momentum & anticipation lift ->
-        // elegant downward curve -> accelerating, deliberate dive into next section!
+        // PHASE 2: CONTINUOUS CINEMATIC S-CURVE TRAJECTORY & DESCENT INTO ABOUT
+        // Sweep across black text -> turn apex -> sweep across green text ->
+        // overshoot with momentum -> fluid downward arc -> downward arrival into About
         // =========================================================================
         tl.to(
           clusterEl,
@@ -3465,9 +3997,9 @@ export function BlueprintHero() {
                 rotateX: 4,
                 rotateY: -3,
                 duration: 0.52,
-                ease: "power1.in", // accelerating into sweep, carrying speed into the turn
+                ease: "power1.in",
               },
-              // 2. Curved turn apex around the right perimeter between both lines
+              // 2. Curved turn apex around right perimeter
               {
                 x: dx2,
                 y: dy2,
@@ -3475,7 +4007,7 @@ export function BlueprintHero() {
                 rotateX: 7,
                 rotateY: 6,
                 duration: 0.28,
-                ease: "sine.inOut", // smooth circular arc, zero stop
+                ease: "sine.inOut",
               },
               // 3. Leg 2: Return sweep right -> left across green statement
               {
@@ -3485,38 +4017,38 @@ export function BlueprintHero() {
                 rotateX: -2,
                 rotateY: -6,
                 duration: 0.54,
-                ease: "power1.inOut", // sweeping fluidly across green text
+                ease: "power1.inOut",
               },
-              // 4A. Overshoot & Anticipation: Glides past final text with horizontal momentum & subtle lift
+              // 4A. Overshoot & Anticipation
               {
                 x: dxOvershoot,
                 y: dyOvershoot,
                 rotateZ: -8,
                 rotateX: -3,
                 rotateY: -8,
-                duration: 0.30,
-                ease: "power1.out", // momentum coasting to arc apex
+                duration: 0.28,
+                ease: "power1.out",
               },
-              // 4B. Fluid Downward Arc: Curves elegantly into the descent (no sharp 90-degree corner)
+              // 4B. Fluid Downward Arc
               {
                 x: dxArc,
                 y: dyArc,
                 rotateZ: 14,
                 rotateX: 14,
                 rotateY: 4,
-                duration: 0.34,
-                ease: "power1.inOut", // smooth parabolic curve into the dive
+                duration: 0.32,
+                ease: "power1.inOut",
               },
-              // 5. Accelerating Dive Exit: Guided intentionally downward into the next section
+              // 5. Downward Descent & Arrival into About Center
               {
-                x: dxExit,
-                y: dyExit,
-                rotateZ: 28,
-                rotateX: 22,
+                x: 0,
+                y: -20,
+                rotateZ: 0,
+                rotateX: 0,
                 rotateY: 0,
-                scale: 0.94,
-                duration: 0.38,
-                ease: "power2.in", // deliberate, accelerating descent into About
+                scale: stackCardScale,
+                duration: 0.60,
+                ease: "power2.out",
               },
             ],
             force3D: true,
@@ -3540,7 +4072,7 @@ export function BlueprintHero() {
             },
             1.02 + lagIdx * 0.04
           );
-          // Turn apex: cards swing outward smoothly with the centrifugal bank
+          // Turn apex: cards swing outward smoothly with centrifugal bank
           tl.to(
             el,
             {
@@ -3564,7 +4096,7 @@ export function BlueprintHero() {
             },
             1.78 + lagIdx * 0.03
           );
-          // Overshoot & Anticipation: rear cards float in the wake of the overshoot
+          // Overshoot & Anticipation
           tl.to(
             el,
             {
@@ -3576,24 +4108,202 @@ export function BlueprintHero() {
             },
             2.30 + lagIdx * 0.03
           );
-          // Arc & Dive: rear cards lag subtly behind the dive along the curve, creating dimensional depth
+          // Curve and dive lag
           tl.to(
             el,
             {
               x: `-=${k * 6}`,
-              y: `-=${k * 16}`,
-              rotateZ: `-=${k * 3}`,
-              duration: 0.68,
+              y: `-=${k * 12}`,
+              rotateZ: `-=${k * 2}`,
+              duration: 0.40,
               ease: "power2.in",
             },
-            2.60 + lagIdx * 0.03
+            2.58 + lagIdx * 0.03
+          );
+          // Return to flat stack alignment upon arrival
+          const origX = origCentersRef.current[lagIdx + 3]?.x ?? 0;
+          const origY = origCentersRef.current[lagIdx + 3]?.y ?? 0;
+          tl.to(
+            el,
+            {
+              x: frontX - (lagIdx + 3) * 2.8 - origX,
+              y: -origY,
+              rotateZ: 0,
+              rotateX: 0,
+              rotateY: 0,
+              duration: 0.32,
+              ease: "power2.out",
+            },
+            2.95 + lagIdx * 0.03
           );
         });
 
-        // Trigger downward viewport travel simultaneously as the stack arcs downward into the dive
-        tl.add(() => {
-          exitSecurityToAbout();
-        }, 2.60);
+        // Downward arrival: Security closing text fades out smoothly
+        tl.to(
+          securityStateRefs.current[7],
+          {
+            opacity: 0,
+            y: -36,
+            duration: 0.45,
+            ease: "power1.out",
+          },
+          2.60
+        );
+
+        // Downward arrival: About atmosphere fades in smoothly
+        tl.set(aboutContentRef.current, { visibility: "visible" }, 2.70);
+        tl.to(
+          aboutContentRef.current,
+          {
+            opacity: 1,
+            duration: 0.55,
+            ease: "power1.out",
+          },
+          2.70
+        );
+
+        // =========================================================================
+        // PHASE 3: PHYSICAL SPLIT OF THE STACK INTO LEFT & RIGHT GROUPS (3.25s)
+        // =========================================================================
+        allCards.slice(0, 13).forEach((cardEl, i) => {
+          const origX = i < 5 ? (origCentersRef.current[i]?.x ?? 0) : 0;
+          const currentStackX = frontX - i * 2.8;
+          tl.to(
+            cardEl,
+            {
+              x: currentStackX - 28 - origX,
+              rotateZ: -1.2 - (12 - i) * 0.10,
+              duration: 0.32,
+              ease: "power1.inOut",
+            },
+            3.25
+          );
+        });
+
+        allCards.slice(13, 26).forEach((cardEl, j) => {
+          const k = 13 + j;
+          const currentStackX = frontX - k * 2.8;
+          tl.to(
+            cardEl,
+            {
+              x: currentStackX + 28,
+              rotateZ: 1.2 + j * 0.10,
+              duration: 0.32,
+              ease: "power1.inOut",
+            },
+            3.25
+          );
+        });
+
+        // =========================================================================
+        // PHASE 4: STAGGERED ORGANIC FANNING INTO TWO SEMICIRCLES (3.55s -> 4.80s)
+        // =========================================================================
+        // 4A. Left Semicircle: 13 cards peel outward toward the left flanking arc
+        allCards.slice(0, 13).forEach((cardEl, i) => {
+          const angle = leftAngles[i];
+          const rad = (angle * Math.PI) / 180;
+          const targetX = leftCenterX + radius * Math.cos(rad);
+          const targetY = sCenterY + radius * Math.sin(rad);
+          const depthFactor = Math.sin(rad);
+          const targetZ = 40 * depthFactor;
+          const targetScale = baseCardScale * (1.0 + 0.08 * depthFactor);
+          const rotZ = angle;
+          const rotY = 22 - 28 * Math.cos(rad);
+          const rotX = -depthFactor * 12;
+
+          const origX = i < 5 ? (origCentersRef.current[i]?.x ?? 0) : 0;
+          const origY = i < 5 ? (origCentersRef.current[i]?.y ?? 0) : 0;
+
+          const delay = 3.55 + (12 - i) * 0.038;
+          const midX = targetX * 0.55;
+          const midY = (targetY - 20) * 0.5;
+
+          tl.to(
+            cardEl,
+            {
+              keyframes: [
+                {
+                  x: midX - origX,
+                  y: midY - origY,
+                  z: targetZ * 0.5,
+                  rotateZ: rotZ * 0.6,
+                  rotateY: rotY * 0.5,
+                  rotateX: rotX * 0.5,
+                  scale: targetScale * 0.88,
+                  duration: 0.42,
+                  ease: "power2.out",
+                },
+                {
+                  x: targetX - origX,
+                  y: targetY - origY,
+                  z: targetZ,
+                  rotateZ: rotZ,
+                  rotateY: rotY,
+                  rotateX: rotX,
+                  scale: targetScale,
+                  duration: 0.70,
+                  ease: "power3.out",
+                },
+              ],
+              force3D: true,
+            },
+            delay
+          );
+
+          tl.set(cardEl, { zIndex: 25 + Math.round(depthFactor * 15) }, delay + 0.1);
+        });
+
+        // 4B. Right Semicircle: 13 cards peel outward symmetrically toward the right flanking arc
+        allCards.slice(13, 26).forEach((cardEl, j) => {
+          const angle = rightAngles[j];
+          const rad = (angle * Math.PI) / 180;
+          const targetX = rightCenterX + radius * Math.cos(rad);
+          const targetY = sCenterY + radius * Math.sin(rad);
+          const depthFactor = -Math.sin(rad);
+          const targetZ = 40 * depthFactor;
+          const targetScale = baseCardScale * (1.0 + 0.08 * depthFactor);
+          const rotZ = angle - 180;
+          const rotY = -(22 - 28 * Math.abs(Math.cos(rad)));
+          const rotX = depthFactor * 12;
+
+          const delay = 3.55 + (12 - j) * 0.038;
+          const midX = targetX * 0.55;
+          const midY = (targetY - 20) * 0.5;
+
+          tl.to(
+            cardEl,
+            {
+              keyframes: [
+                {
+                  x: midX,
+                  y: midY,
+                  z: targetZ * 0.5,
+                  rotateZ: rotZ * 0.6,
+                  rotateY: rotY * 0.5,
+                  rotateX: rotX * 0.5,
+                  scale: targetScale * 0.88,
+                  duration: 0.42,
+                  ease: "power2.out",
+                },
+                {
+                  x: targetX,
+                  y: targetY,
+                  z: targetZ,
+                  rotateZ: rotZ,
+                  rotateY: rotY,
+                  rotateX: rotX,
+                  scale: targetScale,
+                  duration: 0.70,
+                  ease: "power3.out",
+                },
+              ],
+              force3D: true,
+            },
+            delay
+          );
+
+          tl.set(cardEl, { zIndex: 25 + Math.round(depthFactor * 15) }, delay + 0.1);
+        });
       };
 
       const restoreStackToRing = () => {
@@ -3602,19 +4312,53 @@ export function BlueprintHero() {
         if (!isRingConsolidatedRef.current) return;
 
         isSecurityTransitioningRef.current = true;
-        consolidationTlRef.current.reverse();
+        lastSecurityScrollTimeRef.current = Date.now();
+
+        // Stop 3D orbit & text reveal tweens
+        if (aboutOrbitTweenRef.current) {
+          aboutOrbitTweenRef.current.kill();
+          aboutOrbitTweenRef.current = null;
+        }
+        if (aboutProgressTweenRef.current) {
+          aboutProgressTweenRef.current.kill();
+          aboutProgressTweenRef.current = null;
+        }
+
+        // Quickly fade out editorial text before reversing card trajectory
+        const textElements = [aboutPara1Ref.current, aboutPara2Ref.current].filter(Boolean);
+        if (textElements.length > 0) {
+          gsap.to(textElements, {
+            opacity: 0,
+            y: 16,
+            duration: 0.22,
+            ease: "power2.in",
+            onComplete: () => {
+              aboutScrollProgressRef.current = 0;
+              applyAboutTextReveal(0);
+              consolidationTlRef.current?.reverse();
+            },
+          });
+        } else {
+          aboutScrollProgressRef.current = 0;
+          applyAboutTextReveal(0);
+          consolidationTlRef.current.reverse();
+        }
       };
 
       const goToSecurityState = (nextIdx: number, direction: 1 | -1) => {
-        if (isSecurityTransitioningRef.current) return;
         if (nextIdx < 0 || nextIdx >= SECURITY_STATES.length) return;
 
         const prevIdx = currentSecurityStateRef.current;
         if (prevIdx === nextIdx) return;
 
-        isSecurityTransitioningRef.current = true;
         lastSecurityScrollTimeRef.current = Date.now();
         currentSecurityStateRef.current = nextIdx;
+
+        // Cancel previous state transition timeline if running
+        if (securityStateTransitionTlRef.current) {
+          securityStateTransitionTlRef.current.kill();
+          securityStateTransitionTlRef.current = null;
+        }
 
         // Clean up money animation if leaving state 0
         if (prevIdx === 0) {
@@ -3700,7 +4444,7 @@ export function BlueprintHero() {
         }
 
         // Clean up closing consolidation if leaving state 7
-        if (prevIdx === 7) {
+        if (prevIdx === 7 || nextIdx !== 7) {
           if (consolidationTlRef.current) {
             consolidationTlRef.current.kill();
             consolidationTlRef.current = null;
@@ -3726,11 +4470,19 @@ export function BlueprintHero() {
           }
         }
 
+        // Hide all inactive states immediately
+        securityStateRefs.current.forEach((el, idx) => {
+          if (el && idx !== nextIdx && idx !== prevIdx) {
+            gsap.set(el, { opacity: 0, visibility: "hidden" });
+          }
+        });
+
         const prevEl = securityStateRefs.current[prevIdx];
         const nextEl = securityStateRefs.current[nextIdx];
 
         const tl = gsap.timeline({
           onComplete: () => {
+            securityStateTransitionTlRef.current = null;
             if (nextIdx === 0) {
               if (nextEl) gsap.set(nextEl, { clipPath: "none" });
               playMoneyAnimation();
@@ -3746,15 +4498,10 @@ export function BlueprintHero() {
               playIndiaAnimation();
             } else if (nextIdx === 6) {
               playSellAnimation();
-            } else if (nextIdx === 7) {
-              // Final security state (closing line) enters and remains fully settled and visible
-              // Does not auto-trigger consolidation; waits for intentional user downward scroll
-              isSecurityTransitioningRef.current = false;
-            } else {
-              isSecurityTransitioningRef.current = false;
             }
           },
         });
+        securityStateTransitionTlRef.current = tl;
 
         // 1. Current text smoothly fades and moves out subtly
         if (prevEl) {
@@ -3842,227 +4589,8 @@ export function BlueprintHero() {
         }
       };
 
-      // =========================================================================
-      // ABOUT PHASE: SEMICIRCLE FORMATION using the EXACT same 26 ring cards.
-      // No new card elements are created. The same companion + product cards that
-      // formed the Security ring travel downward and physically split into arcs.
-      // =========================================================================
-
-      const computeAboutSemicircleSlots = () => {
-        const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
-        const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
-        const w = typeof window !== "undefined" ? window.innerWidth : 1440;
-        const h = typeof window !== "undefined" ? window.innerHeight : 900;
-
-        const leftCX = isDesk ? Math.max(w * 0.16, 180) : isTab ? Math.max(w * 0.13, 130) : Math.max(w * 0.10, 80);
-        const rightCX = w - leftCX;
-        const centerY = h * 0.50;
-        const radius = isDesk ? Math.min(h * 0.38, 310) : isTab ? Math.min(h * 0.34, 250) : Math.min(h * 0.30, 185);
-        const cardScale = isDesk ? 0.54 : isTab ? 0.50 : 0.44;
-        const CARDS_PER_ARC = 13;
-        const arcSpan = 130;
-
-        interface ArcSlot { x: number; y: number; z: number; rotZ: number; rotY: number; rotX: number; scale: number; opacity: number; zIndex: number; }
-
-        const buildArc = (cx: number, startAngle: number, mirror: boolean): ArcSlot[] => {
-          const slots: ArcSlot[] = [];
-          for (let i = 0; i < CARDS_PER_ARC; i++) {
-            const angleDeg = startAngle + (arcSpan / (CARDS_PER_ARC - 1)) * i;
-            const rad = (angleDeg * Math.PI) / 180;
-            const x = cx + radius * Math.cos(rad);
-            const y = centerY + radius * Math.sin(rad);
-            const depthFactor = Math.sin(rad);
-            const sc = cardScale * (1.0 + 0.08 * depthFactor);
-            const opacity = depthFactor > 0 ? 1.0 : 0.72 + 0.24 * (1 + depthFactor);
-            const rotZ = mirror ? angleDeg - 180 : angleDeg;
-            const rotY = mirror ? -20 + 26 * Math.cos(rad) : 20 - 26 * Math.cos(rad);
-            const rotX = -depthFactor * 10;
-            slots.push({ x, y, z: 40 * depthFactor, rotZ, rotY, rotX, scale: sc, opacity, zIndex: 25 + Math.round(depthFactor * 14) });
-          }
-          return slots;
-        };
-
-        return {
-          leftSlots: buildArc(leftCX, -65, false),
-          rightSlots: buildArc(rightCX, 115, true),
-          cardScale, centerY, leftCX, rightCX, radius, w, h,
-        };
-      };
-
-      const applyAbout3DRotation = (orbitAngle: number) => {
-        const { leftCX, rightCX, centerY, radius, cardScale } = computeAboutSemicircleSlots();
-        const allProductCards = cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
-        const allCompanionCards = companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
-        const allCards = [...allProductCards, ...allCompanionCards];
-
-        allCards.slice(0, 13).forEach((el, i) => {
-          if (!el) return;
-          const angleDeg = -65 + (130 / 12) * i + orbitAngle * 0.60;
-          const rad = (angleDeg * Math.PI) / 180;
-          const depthFactor = Math.sin(rad);
-          const sc = cardScale * (1.0 + 0.08 * depthFactor);
-          gsap.set(el, { x: leftCX + radius * Math.cos(rad), y: centerY + radius * Math.sin(rad), z: 40 * depthFactor, rotateZ: angleDeg, rotateY: 20 - 26 * Math.cos(rad), rotateX: -depthFactor * 10, scale: sc, opacity: depthFactor > 0 ? 1.0 : 0.72 + 0.24 * (1 + depthFactor), zIndex: 25 + Math.round(depthFactor * 14), force3D: true });
-        });
-
-        allCards.slice(13, 26).forEach((el, j) => {
-          if (!el) return;
-          const angleDeg = 115 + (130 / 12) * j - orbitAngle * 0.60;
-          const rad = (angleDeg * Math.PI) / 180;
-          const depthFactor = Math.sin(rad);
-          const sc = cardScale * (1.0 + 0.08 * depthFactor);
-          gsap.set(el, { x: rightCX + radius * Math.cos(rad), y: centerY + radius * Math.sin(rad), z: 40 * depthFactor, rotateZ: angleDeg - 180, rotateY: -20 + 26 * Math.cos(rad), rotateX: -depthFactor * 10, scale: sc, opacity: depthFactor > 0 ? 1.0 : 0.72 + 0.24 * (1 + depthFactor), zIndex: 25 + Math.round(depthFactor * 14), force3D: true });
-        });
-      };
-
-      const startAboutOrbitRotation = () => {
-        if (aboutRotationTweenRef.current) aboutRotationTweenRef.current.kill();
-        aboutOrbitStateRef.current.angle = 0;
-        aboutRotationTweenRef.current = gsap.to(aboutOrbitStateRef.current, {
-          angle: 360, duration: 36, repeat: -1, ease: "none",
-          onUpdate: () => { applyAbout3DRotation(aboutOrbitStateRef.current.angle); },
-        });
-      };
-
-      const triggerAboutSemicircleFormation = () => {
-        if (aboutSemicircleFormedRef.current) return;
-        aboutSemicircleFormedRef.current = true;
-
-        const { leftSlots, rightSlots } = computeAboutSemicircleSlots();
-        const allProductCards = cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
-        const allCompanionCards = companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
-        const allCards = [...allProductCards, ...allCompanionCards];
-
-        // Hide security text, show about text overlay (initially invisible)
-        if (securityStageRef.current) gsap.set(securityStageRef.current, { autoAlpha: 0 });
-        if (aboutTextOverlayRef.current) gsap.set(aboutTextOverlayRef.current, { autoAlpha: 0, display: "flex" });
-        if (aboutEyebrowRef.current) gsap.set(aboutEyebrowRef.current, { opacity: 0, y: 16 });
-        if (aboutPara1Ref.current) gsap.set(aboutPara1Ref.current, { opacity: 0, y: 24 });
-        if (aboutPara2Ref.current) gsap.set(aboutPara2Ref.current, { opacity: 0, y: 24 });
-
-        if (aboutUnfoldTlRef.current) aboutUnfoldTlRef.current.kill();
-
-        // Read where the cluster currently sits (it just completed the dive-in)
-        const clusterEl = cardsClusterRef.current;
-        const clusterX = clusterEl ? (gsap.getProperty(clusterEl, "x") as number) || 0 : 0;
-        const clusterY = clusterEl ? (gsap.getProperty(clusterEl, "y") as number) || 0 : 0;
-
-        const tl = gsap.timeline({
-          onComplete: () => {
-            startAboutOrbitRotation();
-            if (aboutTextOverlayRef.current) {
-              const textTl = gsap.timeline();
-              textTl.to(aboutTextOverlayRef.current, { autoAlpha: 1, duration: 0.5 }, 0);
-              if (aboutEyebrowRef.current) textTl.to(aboutEyebrowRef.current, { opacity: 1, y: 0, duration: 0.85, ease: "power2.out" }, 0.15);
-              if (aboutPara1Ref.current) textTl.to(aboutPara1Ref.current, { opacity: 1, y: 0, duration: 1.25, ease: "power2.out" }, 0.40);
-              if (aboutPara2Ref.current) textTl.to(aboutPara2Ref.current, { opacity: 1, y: 0, duration: 1.35, ease: "power2.out" }, 0.80);
-            }
-          },
-        });
-        aboutUnfoldTlRef.current = tl;
-
-        // Phase 1 (0–0.40s): Visible loosening — cards spread slightly from the stack before splitting
-        allCards.forEach((el, idx) => {
-          const loosenX = clusterX + (idx % 2 === 0 ? 1 : -1) * (idx * 2.2);
-          tl.to(el, {
-            x: loosenX,
-            y: clusterY + idx * 1.5,
-            rotateZ: (idx % 2 === 0 ? 1 : -1) * (idx * 0.8),
-            rotateX: 8, rotateY: idx % 2 === 0 ? 3 : -3,
-            scale: 0.56, duration: 0.40, ease: "power2.out", force3D: true,
-          }, idx * 0.008);
-        });
-
-        // Phase 2 (0.42s→2.20s): Cards fan outward into two sculptural semicircles
-        const peelStart = 0.42;
-        allCards.slice(0, 13).forEach((el, i) => {
-          const slot = leftSlots[i];
-          const delay = peelStart + (12 - i) * 0.042;
-          tl.to(el, {
-            keyframes: [
-              { x: (clusterX + slot.x) * 0.5, y: (clusterY + slot.y) * 0.5, z: slot.z * 0.5, rotateZ: slot.rotZ * 0.55, rotateY: slot.rotY * 0.5, rotateX: slot.rotX * 0.5, scale: slot.scale * 0.88, duration: 0.46, ease: "power2.out" },
-              { x: slot.x, y: slot.y, z: slot.z, rotateZ: slot.rotZ, rotateY: slot.rotY, rotateX: slot.rotX, scale: slot.scale, opacity: slot.opacity, duration: 0.72, ease: "power3.out" },
-            ],
-            force3D: true,
-          }, delay);
-          tl.set(el, { zIndex: slot.zIndex }, delay + 0.12);
-        });
-
-        allCards.slice(13, 26).forEach((el, j) => {
-          const slot = rightSlots[j];
-          const delay = peelStart + (12 - j) * 0.042;
-          tl.to(el, {
-            keyframes: [
-              { x: (clusterX + slot.x) * 0.5, y: (clusterY + slot.y) * 0.5, z: slot.z * 0.5, rotateZ: slot.rotZ * 0.55, rotateY: slot.rotY * 0.5, rotateX: slot.rotX * 0.5, scale: slot.scale * 0.88, duration: 0.46, ease: "power2.out" },
-              { x: slot.x, y: slot.y, z: slot.z, rotateZ: slot.rotZ, rotateY: slot.rotY, rotateX: slot.rotX, scale: slot.scale, opacity: slot.opacity, duration: 0.72, ease: "power3.out" },
-            ],
-            force3D: true,
-          }, delay);
-          tl.set(el, { zIndex: slot.zIndex }, delay + 0.12);
-        });
-      };
-
-      const resetAboutPhase = () => {
-        aboutSemicircleFormedRef.current = false;
-        aboutOrbitStateRef.current.angle = 0;
-        if (aboutRotationTweenRef.current) { aboutRotationTweenRef.current.kill(); aboutRotationTweenRef.current = null; }
-        if (aboutUnfoldTlRef.current) { aboutUnfoldTlRef.current.kill(); aboutUnfoldTlRef.current = null; }
-        if (aboutTextOverlayRef.current) gsap.set(aboutTextOverlayRef.current, { autoAlpha: 0, display: "none" });
-      };
-
       const exitSecurityToAbout = () => {
-        if (stateRef.current === "about") return;
-        isSecurityTransitioningRef.current = true;
-        lastSecurityScrollTimeRef.current = Date.now();
-        stateRef.current = "about";
-        transitionCompleteRef.current = false;
-        transitionAnimatingRef.current = false;
-        transitionStartedRef.current = false;
-        isHoldingProductRef.current = false;
-        lockScrollYRef.current = 0;
-
-        if (wheelGestureEndTimerRef.current) {
-          clearTimeout(wheelGestureEndTimerRef.current);
-          wheelGestureEndTimerRef.current = null;
-        }
-        wheelGestureActiveRef.current = false;
-        touchGestureActiveRef.current = false;
-
-        // Keep document overflow locked — the fixed stage is still covering the viewport.
-        // We scroll the underlying page so the #about section sits "beneath" the overlay.
-        document.documentElement.style.overflow = "hidden";
-        document.body.style.overflow = "hidden";
-
-        // CRITICAL: Do NOT unfix the stage. The same cards that formed the Security ring
-        // will continue to animate within this fixed stage overlay into the About semicircles.
-        // The stageRef keeps its position:fixed, top:0, left:0, 100vw × 100vh layout.
-
-        // Notify Navbar to update active item to "about"
-        window.dispatchEvent(
-          new CustomEvent("unifolio-active-section", { detail: { section: "about" } })
-        );
-
-        // Silently scroll the underlying page to the about section while the fixed overlay plays.
-        // This way backward-scroll detection (rect.top checks) will work correctly.
-        const aboutEl = document.getElementById("about");
-        if (aboutEl) {
-          smoothScrollTo(aboutEl, {
-            duration: 0.95,
-            ease: "power2.inOut",
-            onComplete: () => {
-              isSecurityTransitioningRef.current = false;
-              // Release overflow so the about section text is reachable via normal scroll
-              document.documentElement.style.overflow = "";
-              document.body.style.overflow = "";
-              // Trigger the actual semicircle formation using the SAME ring cards
-              triggerAboutSemicircleFormation();
-            },
-          });
-        } else {
-          isSecurityTransitioningRef.current = false;
-          document.documentElement.style.overflow = "";
-          document.body.style.overflow = "";
-          triggerAboutSemicircleFormation();
-        }
+        jumpToAboutState();
       };
 
       const triggerProductToRing = () => {
@@ -4279,14 +4807,40 @@ export function BlueprintHero() {
           return;
         }
 
-        // 1b. If in About section and scrolling backward: return directly to Security Section at State 0
+        // 1b. If in About section: scroll-driven moving mask text reveal (matching reference video)
         if (stateRef.current === "about") {
-          if (e.deltaY < -10) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            handleShowSecurity();
-            return;
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          if (isSecurityTransitioningRef.current) return;
+
+          if (e.deltaY > 8) {
+            const curP = aboutScrollProgressRef.current;
+            if (curP < 0.999) {
+              const step = Math.min(0.16, Math.max(0.035, Math.abs(e.deltaY) * 0.00075));
+              lastAboutRevealTimeRef.current = Date.now();
+              animateAboutTextReveal(Math.min(1, curP + step));
+              return;
+            } else {
+              // Once fully revealed, subsequent intentional downward scroll exits smoothly to FAQ
+              if (Date.now() - lastAboutRevealTimeRef.current < 280) return;
+              exitAboutToFaq();
+              return;
+            }
+          } else if (e.deltaY < -8) {
+            const curP = aboutScrollProgressRef.current;
+            if (curP > 0.001) {
+              const step = Math.min(0.16, Math.max(0.035, Math.abs(e.deltaY) * 0.00075));
+              lastAboutRevealTimeRef.current = Date.now();
+              animateAboutTextReveal(Math.max(0, curP - step));
+              return;
+            } else {
+              // When rewound to 0, subsequent upward scroll returns cleanly to Security
+              if (Date.now() - lastAboutRevealTimeRef.current < 280) return;
+              restoreStackToRing();
+              return;
+            }
           }
+          return;
         }
 
         // 2. While in Ring state with Security Content experience active:
@@ -4303,12 +4857,10 @@ export function BlueprintHero() {
             wheelGestureActiveRef.current = false;
           }, 180);
 
-          if (isSecurityTransitioningRef.current) return;
-          if (wheelGestureActiveRef.current) return;
-          if (Date.now() - lastSecurityScrollTimeRef.current < 500) return;
+          // Allow responsive scrolling up and down between animations (220ms cadence)
+          if (Date.now() - lastSecurityScrollTimeRef.current < 220) return;
 
-          if (e.deltaY > 12) {
-            wheelGestureActiveRef.current = true;
+          if (e.deltaY > 8) {
             lastSecurityScrollTimeRef.current = Date.now();
             // One intentional downward scroll = exactly one next state
             if (currentSecurityStateRef.current < SECURITY_STATES.length - 1) {
@@ -4322,8 +4874,7 @@ export function BlueprintHero() {
               // Once consolidated, hold in place — do not begin next movement yet
             }
             return;
-          } else if (e.deltaY < -12) {
-            wheelGestureActiveRef.current = true;
+          } else if (e.deltaY < -8) {
             lastSecurityScrollTimeRef.current = Date.now();
             // If at final state and stack is consolidated, scroll up reverses consolidation and restores ring
             if (currentSecurityStateRef.current === SECURITY_STATES.length - 1 && isRingConsolidatedRef.current) {
@@ -4400,28 +4951,51 @@ export function BlueprintHero() {
         }
 
         if (stateRef.current === "about") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          if (isSecurityTransitioningRef.current) return;
+
           const touchY = e.touches[0].clientY;
           const touchDeltaY = touchStartY - touchY;
-          if (touchDeltaY < -20) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
+
+          if (touchDeltaY > 12) {
             touchStartY = touchY;
-            handleShowSecurity();
-            return;
+            const curP = aboutScrollProgressRef.current;
+            if (curP < 0.999) {
+              const step = Math.min(0.18, Math.max(0.045, Math.abs(touchDeltaY) * 0.0015));
+              lastAboutRevealTimeRef.current = Date.now();
+              animateAboutTextReveal(Math.min(1, curP + step));
+              return;
+            } else {
+              if (Date.now() - lastAboutRevealTimeRef.current < 300) return;
+              exitAboutToFaq();
+              return;
+            }
+          } else if (touchDeltaY < -12) {
+            touchStartY = touchY;
+            const curP = aboutScrollProgressRef.current;
+            if (curP > 0.001) {
+              const step = Math.min(0.18, Math.max(0.045, Math.abs(touchDeltaY) * 0.0015));
+              lastAboutRevealTimeRef.current = Date.now();
+              animateAboutTextReveal(Math.max(0, curP - step));
+              return;
+            } else {
+              if (Date.now() - lastAboutRevealTimeRef.current < 300) return;
+              restoreStackToRing();
+              return;
+            }
           }
+          return;
         }
 
         if (stateRef.current === "ring" && transitionCompleteRef.current) {
           e.preventDefault();
           e.stopImmediatePropagation();
 
-          if (isSecurityTransitioningRef.current) return;
-          if (touchGestureActiveRef.current) return;
-          if (Date.now() - lastSecurityScrollTimeRef.current < 500) return;
+          if (Date.now() - lastSecurityScrollTimeRef.current < 220) return;
 
           const touchDeltaY = touchStartY - e.touches[0].clientY;
-          if (touchDeltaY > 24) {
-            touchGestureActiveRef.current = true;
+          if (touchDeltaY > 16) {
             lastSecurityScrollTimeRef.current = Date.now();
             touchStartY = e.touches[0].clientY;
             if (currentSecurityStateRef.current < SECURITY_STATES.length - 1) {
@@ -4432,8 +5006,7 @@ export function BlueprintHero() {
               }
             }
             return;
-          } else if (touchDeltaY < -24) {
-            touchGestureActiveRef.current = true;
+          } else if (touchDeltaY < -16) {
             lastSecurityScrollTimeRef.current = Date.now();
             touchStartY = e.touches[0].clientY;
             if (currentSecurityStateRef.current === SECURITY_STATES.length - 1 && isRingConsolidatedRef.current) {
@@ -4475,12 +5048,43 @@ export function BlueprintHero() {
           return;
         }
 
-        if (stateRef.current === "ring" && transitionCompleteRef.current) {
+        if (stateRef.current === "about") {
           if (["ArrowDown", "PageDown", " "].includes(e.key) && !e.shiftKey) {
             e.preventDefault();
             e.stopImmediatePropagation();
             if (isSecurityTransitioningRef.current) return;
-            if (Date.now() - lastSecurityScrollTimeRef.current < 350) return;
+            const curP = aboutScrollProgressRef.current;
+            if (curP < 0.999) {
+              lastAboutRevealTimeRef.current = Date.now();
+              animateAboutTextReveal(Math.min(1, curP + 0.12));
+              return;
+            } else {
+              if (Date.now() - lastAboutRevealTimeRef.current < 250) return;
+              exitAboutToFaq();
+              return;
+            }
+          } else if (["ArrowUp", "PageUp"].includes(e.key) || (e.key === " " && e.shiftKey)) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            if (isSecurityTransitioningRef.current) return;
+            const curP = aboutScrollProgressRef.current;
+            if (curP > 0.001) {
+              lastAboutRevealTimeRef.current = Date.now();
+              animateAboutTextReveal(Math.max(0, curP - 0.12));
+              return;
+            } else {
+              if (Date.now() - lastAboutRevealTimeRef.current < 250) return;
+              restoreStackToRing();
+              return;
+            }
+          }
+        }
+
+        if (stateRef.current === "ring" && transitionCompleteRef.current) {
+          if (["ArrowDown", "PageDown", " "].includes(e.key) && !e.shiftKey) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            if (Date.now() - lastSecurityScrollTimeRef.current < 220) return;
 
             if (currentSecurityStateRef.current < SECURITY_STATES.length - 1) {
               goToSecurityState(currentSecurityStateRef.current + 1, 1);
@@ -4493,8 +5097,7 @@ export function BlueprintHero() {
           } else if (["ArrowUp", "PageUp"].includes(e.key) || (e.key === " " && e.shiftKey)) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            if (isSecurityTransitioningRef.current) return;
-            if (Date.now() - lastSecurityScrollTimeRef.current < 350) return;
+            if (Date.now() - lastSecurityScrollTimeRef.current < 220) return;
 
             if (currentSecurityStateRef.current === SECURITY_STATES.length - 1 && isRingConsolidatedRef.current) {
               restoreStackToRing();
@@ -4546,6 +5149,14 @@ export function BlueprintHero() {
       window.addEventListener("touchmove", handleTouchMove, { passive: false, capture: true });
       window.addEventListener("touchend", handleTouchEnd, { passive: true });
       window.addEventListener("keydown", handleKeyDown, { capture: true });
+
+      const handleResizeLines = () => {
+        linesCacheRef.current = null;
+        if (stateRef.current === "about") {
+          applyAboutTextReveal(aboutScrollProgressRef.current);
+        }
+      };
+      window.addEventListener("resize", handleResizeLines);
 
       // Navbar Navigation Event Listeners
       const handleShowProduct = () => {
@@ -4757,8 +5368,13 @@ export function BlueprintHero() {
       };
 
       const handleShowSecurity = () => {
-        // Reset About phase animations before restoring the Security ring
-        resetAboutPhase();
+        if (aboutOrbitTweenRef.current) {
+          aboutOrbitTweenRef.current.kill();
+          aboutOrbitTweenRef.current = null;
+        }
+        if (aboutContentRef.current) {
+          gsap.set(aboutContentRef.current, { opacity: 0, visibility: "hidden" });
+        }
 
         if (consolidationTlRef.current) {
           consolidationTlRef.current.kill();
@@ -4997,6 +5613,7 @@ export function BlueprintHero() {
         window.removeEventListener("unifolio-reset-hero", handleResetHero);
         window.removeEventListener("unifolio-show-about", handleShowAbout);
         window.removeEventListener("unifolio-show-security", handleShowSecurity);
+        window.removeEventListener("resize", handleResizeLines);
         if (wheelGestureEndTimerRef.current) {
           clearTimeout(wheelGestureEndTimerRef.current);
           wheelGestureEndTimerRef.current = null;
@@ -5061,6 +5678,8 @@ export function BlueprintHero() {
     >
       {/* Anchor for Navbar #product navigation */}
       <div id="product" className="absolute top-[80vh] pointer-events-none" />
+      {/* Anchor for Navbar #about navigation */}
+      <div id="about" className="absolute top-[200vh] pointer-events-none" />
 
       {/* Master Viewport Stage: Fixed/Pinned at 100vh */}
       <div
@@ -6067,52 +6686,122 @@ export function BlueprintHero() {
                 ))}
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* ===================================================================
-            ABOUT TEXT OVERLAY (z-50): Appears INSIDE the fixed stage after
-            the semicircles form and start rotating. Hidden by default.
-            The overlay sits in the center gap between the two card arcs.
-           =================================================================== */}
-        <div
-          ref={aboutTextOverlayRef}
-          className="absolute inset-0 z-50 flex flex-col items-center justify-center pointer-events-none select-text px-6 sm:px-8"
-          style={{ display: "none", opacity: 0, visibility: "hidden" }}
-        >
-          {/* Soft atmospheric depth glow */}
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center z-0">
-            <div className="w-[400px] sm:w-[560px] lg:w-[700px] h-[280px] sm:h-[400px] rounded-full bg-emerald-500/[0.04] dark:bg-emerald-500/[0.06] blur-[90px] sm:blur-[110px]" />
-          </div>
-
-          <div className="relative z-10 max-w-lg sm:max-w-xl lg:max-w-2xl xl:max-w-3xl text-center">
-            {/* Sovereign Eyebrow Badge */}
+            {/* =================================================================== */}
+            {/* LAYER: ABOUT SECTION EDITORIAL CONTENT & ATMOSPHERE                */}
+            {/* Positioned centered in viewport, revealed when semicircles form     */}
+            {/* =================================================================== */}
             <div
-              ref={aboutEyebrowRef}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-mono uppercase tracking-[0.22em] mb-6 sm:mb-8 backdrop-blur-md will-change-transform"
+              ref={aboutContentRef}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 will-change-[opacity,transform]"
+              style={{ opacity: 0, visibility: "hidden" }}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              The Philosophy
+              {/* Soft atmospheric emerald depth field */}
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center z-0">
+                <div className="w-[500px] sm:w-[700px] lg:w-[900px] h-[350px] sm:h-[500px] rounded-full bg-emerald-500/[0.035] dark:bg-emerald-500/[0.05] blur-[100px] sm:blur-[130px]" />
+              </div>
+
+              {/* Ambient Top and Bottom Hairlines */}
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" />
+
+              {/* Central Editorial Content */}
+              <div
+                className="relative z-20 max-w-lg sm:max-w-xl lg:max-w-2xl xl:max-w-3xl mx-auto px-6 sm:px-8 text-center select-text pointer-events-auto will-change-transform"
+              >
+                {/* Paragraph 1: Human Reality & Overwhelm */}
+                <p
+                  ref={aboutPara1Ref}
+                  className="font-sans font-light text-xl sm:text-2xl md:text-3xl lg:text-[2.25rem] leading-[1.32] tracking-tight will-change-transform"
+                >
+                  {ABOUT_PARA_1_WORDS.map((word, wIdx) => {
+                    const globalIdx = wIdx;
+                    return (
+                      <span
+                        key={wIdx}
+                        className="relative inline-block whitespace-nowrap mr-[0.28em]"
+                      >
+                        {/* Base unrevealed layer: consistently muted light grey */}
+                        <span className="text-neutral-400 dark:text-neutral-500 select-none pointer-events-none">
+                          {word}
+                        </span>
+                        {/* Progressive moving mask reveal layer: solid dark */}
+                        <span
+                          ref={(el) => {
+                            aboutWordOverlayRefs.current[globalIdx] = el;
+                          }}
+                          className="absolute inset-0 text-[#111613] dark:text-[#FAF8F5] select-text will-change-[mask-image,opacity]"
+                          style={{ opacity: 0 }}
+                          aria-hidden="true"
+                        >
+                          {word}
+                        </span>
+                      </span>
+                    );
+                  })}
+                </p>
+
+                {/* Paragraph 2: Unifolio's Purpose & Mission */}
+                <p
+                  ref={aboutPara2Ref}
+                  className="mt-6 sm:mt-8 md:mt-10 font-sans font-light text-base sm:text-lg md:text-xl lg:text-[1.65rem] leading-[1.42] tracking-tight will-change-transform"
+                >
+                  {ABOUT_PARA_2_WORDS.map((word, wIdx) => {
+                    const globalIdx = ABOUT_PARA_1_WORDS.length + wIdx;
+                    return (
+                      <span
+                        key={wIdx}
+                        className="relative inline-block whitespace-nowrap mr-[0.28em]"
+                      >
+                        {/* Base unrevealed layer: consistently muted light grey */}
+                        <span className="text-neutral-400 dark:text-neutral-500 select-none pointer-events-none">
+                          {word}
+                        </span>
+                        {/* Progressive moving mask reveal layer: solid dark */}
+                        <span
+                          ref={(el) => {
+                            aboutWordOverlayRefs.current[globalIdx] = el;
+                          }}
+                          className="absolute inset-0 text-[#111613] dark:text-[#FAF8F5] select-text will-change-[mask-image,opacity]"
+                          style={{ opacity: 0 }}
+                          aria-hidden="true"
+                        >
+                          {word}
+                        </span>
+                      </span>
+                    );
+                  })}
+                  <span className="block mt-3.5 sm:mt-4 font-medium text-lg sm:text-xl md:text-2xl lg:text-[1.85rem] tracking-tight">
+                    {ABOUT_PUNCHLINE_WORDS.map((word, wIdx) => {
+                      const globalIdx =
+                        ABOUT_PARA_1_WORDS.length + ABOUT_PARA_2_WORDS.length + wIdx;
+                      return (
+                        <span
+                          key={wIdx}
+                          className="relative inline-block whitespace-nowrap mr-[0.28em]"
+                        >
+                          {/* Base unrevealed layer: consistently muted light grey */}
+                          <span className="text-neutral-400 dark:text-neutral-500 select-none pointer-events-none">
+                            {word}
+                          </span>
+                          {/* Progressive moving mask reveal layer: solid dark */}
+                          <span
+                            ref={(el) => {
+                              aboutWordOverlayRefs.current[globalIdx] = el;
+                            }}
+                            className="absolute inset-0 text-[#111613] dark:text-white select-text will-change-[mask-image,opacity]"
+                            style={{ opacity: 0 }}
+                            aria-hidden="true"
+                          >
+                            {word}
+                          </span>
+                        </span>
+                      );
+                    })}
+                  </span>
+                </p>
+              </div>
             </div>
-
-            {/* Paragraph 1 */}
-            <p
-              ref={aboutPara1Ref}
-              className="font-sans font-light text-xl sm:text-2xl md:text-3xl lg:text-[2.25rem] leading-[1.32] tracking-tight text-[#111613] dark:text-[#FAF8F5] will-change-transform"
-            >
-              In most families, someone ends up in charge of the money, not because they trained for it, but because someone has to. Their financial data lives across a dozen apps and statements, and having it all in one place is not the same as understanding it.
-            </p>
-
-            {/* Paragraph 2 */}
-            <p
-              ref={aboutPara2Ref}
-              className="mt-6 sm:mt-8 md:mt-10 font-sans font-light text-base sm:text-lg md:text-xl lg:text-[1.65rem] leading-[1.42] tracking-tight text-[#44524A] dark:text-[#A2B0A6] will-change-transform"
-            >
-              Unifolio exists to close that gap, to give that person the same clarity a wealth manager gives their wealthiest clients, whether they hold ₹5 lakh or ₹5 crore, whether they&apos;ve studied finance or never touched a balance sheet.{" "}
-              <span className="block mt-3.5 sm:mt-4 text-[#111613] dark:text-white font-medium text-lg sm:text-xl md:text-2xl lg:text-[1.85rem] tracking-tight">
-                Not just where their money is, but what it means.
-              </span>
-            </p>
           </div>
         </div>
 
@@ -6120,7 +6809,6 @@ export function BlueprintHero() {
         {/* LAYER 2B (z-25): LUMINOUS EVENT HORIZON PORTAL RIM (Zero GPU / DOM) */}
         {/* Frames the opening boundary during suction; dissolves as hole expands */}
         {/* =================================================================== */}
-
         <div
           ref={portalRimRef}
           className="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-emerald-400/70 dark:border-emerald-400/80 shadow-[0_0_45px_rgba(16,185,129,0.5),inset_0_0_25px_rgba(16,185,129,0.3)] z-25 opacity-0 will-change-[width,height,left,top,opacity]"
