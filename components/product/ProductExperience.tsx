@@ -1286,12 +1286,38 @@ export function ProductExperience() {
           0.0
         );
 
-        // Subtly dim product card text down to subtle translucent watermark so the glass sculpture takes center stage
+        // Keep text visible during cascade slide, then fade out and remove as soon as stack forms at 0.50s
+        const contentFadeStart = 0.34;
+        const contentFadeDuration = 0.16;
+
         cardDefaultRefs.current.forEach((el) => {
           if (el) {
-            tl.to(el, { opacity: 0.22, duration: 0.25, ease: "power2.inOut" }, 0.0);
+            tl.to(el, { autoAlpha: 0, opacity: 0, duration: contentFadeDuration, ease: "power2.out" }, contentFadeStart);
           }
         });
+        cardHoverRefs.current.forEach((el) => {
+          if (el) {
+            tl.to(el, { autoAlpha: 0, opacity: 0, duration: contentFadeDuration, ease: "power2.out" }, contentFadeStart);
+          }
+        });
+
+        // Exact point stack finishes forming (0.50s): remove all text with display: none
+        tl.set(
+          [
+            ...cardDefaultRefs.current.filter(Boolean),
+            ...cardHoverRefs.current.filter(Boolean),
+          ],
+          { display: "none", autoAlpha: 0, opacity: 0, visibility: "hidden" },
+          0.50
+        );
+
+        if (clusterEl) {
+          const textNodes = clusterEl.querySelectorAll('[data-card-text="true"]');
+          if (textNodes.length > 0) {
+            tl.to(textNodes, { autoAlpha: 0, opacity: 0, duration: contentFadeDuration, ease: "power2.out" }, contentFadeStart);
+            tl.set(textNodes, { display: "none", autoAlpha: 0, opacity: 0, visibility: "hidden" }, 0.50);
+          }
+        }
 
         // -------------------------------------------------------------------------
         // PHASE 1: STACK LEFT TO RIGHT (Card 01 -> Card 02 -> Card 03 -> Card 04 -> Card 05)
@@ -1361,6 +1387,14 @@ export function ProductExperience() {
         // Cards 01-05 lead out of the stack, companion cards propagate sequentially
         // -------------------------------------------------------------------------
         const unfurlBase = 0.50;
+        tl.set(
+          [
+            ...cardDefaultRefs.current.filter(Boolean),
+            ...cardHoverRefs.current.filter(Boolean),
+          ],
+          { display: "none", autoAlpha: 0, opacity: 0, visibility: "hidden" },
+          unfurlBase
+        );
 
         // 2A. The 5 Original Product Cards lead the unfurling into slots 0 to 4 (Left Arc)
         PRODUCT_CARDS.forEach((_, i) => {
@@ -2043,7 +2077,8 @@ export function ProductExperience() {
                         ref={(el) => {
                           cardDefaultRefs.current[idx] = el;
                         }}
-                        className="absolute inset-0 z-20 flex flex-col justify-start p-5 sm:p-5.5 md:p-6 text-left pointer-events-none select-none will-change-transform"
+                        data-card-text="true"
+                        className="product-card-text absolute inset-0 z-20 flex flex-col justify-start p-5 sm:p-5.5 md:p-6 text-left pointer-events-none select-none will-change-transform"
                       >
                         <span className="text-[#22c55e] font-mono font-black text-sm sm:text-base tracking-widest mb-1.5 sm:mb-2">
                           {card.num}
@@ -2060,7 +2095,8 @@ export function ProductExperience() {
                         ref={(el) => {
                           cardHoverRefs.current[idx] = el;
                         }}
-                        className="absolute inset-0 z-30 flex flex-col justify-between p-5 sm:p-5.5 md:p-6 text-center pointer-events-none will-change-transform overflow-hidden"
+                        data-card-text="true"
+                        className="product-card-text absolute inset-0 z-30 flex flex-col justify-between p-5 sm:p-5.5 md:p-6 text-center pointer-events-none will-change-transform overflow-hidden"
                         style={{
                           opacity: 0,
                           transform: "translateY(8px)",
