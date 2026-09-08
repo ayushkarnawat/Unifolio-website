@@ -265,6 +265,10 @@ export function BlueprintHero() {
   const isRingConsolidatedRef = useRef<boolean>(false);
   const consolidationTlRef = useRef<gsap.core.Timeline | null>(null);
   const origCentersRef = useRef<{ x: number; y: number }[]>([]);
+  const targetLeftXRef = useRef<number>(0);
+  const targetRingYRef = useRef<number>(0);
+  const heroShiftXRef = useRef<number>(0);
+  const rightShiftXRef = useRef<number>(0);
 
   // Typographic Eyes Easter Egg ("Read-only, always")
   const typoEyesRef = useRef<HTMLSpanElement | null>(null);
@@ -1224,6 +1228,11 @@ export function BlueprintHero() {
           : isTablet
           ? Math.round(ringRightEdgeRelX + 30)
           : 0;
+
+        targetLeftXRef.current = targetLeftX;
+        targetRingYRef.current = targetRingY;
+        heroShiftXRef.current = heroShiftX;
+        rightShiftXRef.current = rightShiftX;
 
         const tl = gsap.timeline({
           paused: true,
@@ -4089,6 +4098,16 @@ export function BlueprintHero() {
           return;
         }
 
+        // 1b. If in About section and scrolling backward: return directly to Security Section at State 0
+        if (stateRef.current === "about") {
+          if (e.deltaY < -10) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            handleShowSecurity();
+            return;
+          }
+        }
+
         // 2. While in Ring state with Security Content experience active:
         // The viewport/page must remain fixed while progressing through discrete states
         if (stateRef.current === "ring" && transitionCompleteRef.current) {
@@ -4197,6 +4216,18 @@ export function BlueprintHero() {
           e.preventDefault();
           e.stopImmediatePropagation();
           return;
+        }
+
+        if (stateRef.current === "about") {
+          const touchY = e.touches[0].clientY;
+          const touchDeltaY = touchStartY - touchY;
+          if (touchDeltaY < -20) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            touchStartY = touchY;
+            handleShowSecurity();
+            return;
+          }
         }
 
         if (stateRef.current === "ring" && transitionCompleteRef.current) {
@@ -4319,6 +4350,11 @@ export function BlueprintHero() {
         ) {
           if (lockScrollYRef.current > 0 && Math.abs(window.scrollY - lockScrollYRef.current) > 1) {
             window.scrollTo(0, lockScrollYRef.current);
+          }
+        } else if (stateRef.current === "about") {
+          const pinEnd = apertureScrollTriggerRef.current?.end ?? 0;
+          if (pinEnd > 0 && window.scrollY < pinEnd - 20) {
+            handleShowSecurity();
           }
         }
       };
@@ -4540,6 +4576,20 @@ export function BlueprintHero() {
       };
 
       const handleShowSecurity = () => {
+        if (consolidationTlRef.current) {
+          consolidationTlRef.current.kill();
+          consolidationTlRef.current = null;
+        }
+        isRingConsolidatedRef.current = false;
+
+        if (typoEyesTlRef.current) { typoEyesTlRef.current.kill(); typoEyesTlRef.current = null; }
+        if (pwdMaskTlRef.current) { pwdMaskTlRef.current.kill(); pwdMaskTlRef.current = null; }
+        if (lockAnimTlRef.current) { lockAnimTlRef.current.kill(); lockAnimTlRef.current = null; }
+        if (connectionAnimTlRef.current) { connectionAnimTlRef.current.kill(); connectionAnimTlRef.current = null; }
+        if (indiaAnimTlRef.current) { indiaAnimTlRef.current.kill(); indiaAnimTlRef.current = null; }
+        if (sellAnimTlRef.current) { sellAnimTlRef.current.kill(); sellAnimTlRef.current = null; }
+        if (moneyAnimTlRef.current) { moneyAnimTlRef.current.kill(); moneyAnimTlRef.current = null; }
+
         stateRef.current = "ring";
         transitionStartedRef.current = true;
         transitionAnimatingRef.current = false;
@@ -4547,6 +4597,7 @@ export function BlueprintHero() {
         currentSecurityStateRef.current = 0;
         isHoldingProductRef.current = false;
         isSecurityTransitioningRef.current = false;
+        lastSecurityScrollTimeRef.current = Date.now();
 
         const pinEnd = apertureScrollTriggerRef.current?.end ?? window.scrollY;
         lockScrollYRef.current = pinEnd;
@@ -4562,34 +4613,183 @@ export function BlueprintHero() {
           stageRef.current.style.width = "100%";
           stageRef.current.style.height = "100vh";
           stageRef.current.style.zIndex = "40";
-          gsap.set(stageRef.current, { opacity: 1 });
+          gsap.set(stageRef.current, { opacity: 1, visibility: "visible" });
         }
 
+        // Hide Hero elements
+        gsap.set(
+          [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+          { autoAlpha: 0, opacity: 0, visibility: "hidden" }
+        );
+
+        // Layout measurements
         const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
-        const ringCenterX = isDesk ? "-24vw" : "-30vw";
-        if (cardsClusterRef.current) {
-          gsap.set(cardsClusterRef.current, {
-            x: ringCenterX,
-            y: "0vh",
-            scaleX: 0.92,
-            scaleY: 0.92,
-            rotateZ: 0,
+        const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
+        const vCenterX = (typeof window !== "undefined" ? window.innerWidth : 1440) / 2;
+        const vhVal = typeof window !== "undefined" ? window.innerHeight : 800;
+        const rRadius = Math.min(Math.max(vhVal * 0.22, 160), 220);
+        const lShift = isDesk ? Math.round(vCenterX * 0.44) : isTab ? Math.round(vCenterX * 0.32) : Math.round(vCenterX * 0.20);
+        const ringEdgeRel = -lShift + rRadius + 55;
+        const heroShift = isDesk ? Math.round(ringEdgeRel + 40) : isTab ? Math.round(ringEdgeRel + 30) : 0;
+        const shiftX = heroShiftXRef.current || heroShift;
+        const rightShift = rightShiftXRef.current || (isDesk ? Math.round(vCenterX * 0.42) : isTab ? Math.round(vCenterX * 0.30) : Math.round(vCenterX * 0.16));
+
+        // Reconstruct 3D ring cards
+        const ringSlots = computeRingSlots();
+        const allProductCards = cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
+        allProductCards.forEach((wrapper, i) => {
+          const slot = ringSlots[i];
+          const origX = origCentersRef.current[i]?.x ?? 0;
+          const origY = origCentersRef.current[i]?.y ?? 0;
+          gsap.set(wrapper, {
+            x: slot.x - origX,
+            y: slot.y - origY,
+            z: slot.z,
+            rotateX: slot.rotX,
+            rotateY: slot.rotY,
+            rotateZ: slot.rotZ,
+            scale: slot.scale,
+            opacity: 1,
+            visibility: "visible",
+            zIndex: slot.zIndex,
+            force3D: true,
           });
+
+          const front = cardFrontRefs.current[i];
+          const angleNorm = (i / 26) * 2 * Math.PI;
+          const cosA = Math.cos(angleNorm);
+          const baseAlpha = 0.26 + 0.08 * cosA;
+          const specularTop = Math.min(Math.max(0.55 + 0.30 * cosA, 0.20), 0.88);
+          const emeraldRefract = 0.20 + 0.10 * Math.sin(angleNorm + Math.PI / 3);
+          const borderAlpha = Math.min(Math.max(0.14 + 0.08 * cosA, 0.09), 0.26);
+          if (front) {
+            gsap.set(front, {
+              background: `linear-gradient(140deg, rgba(6, 28, 18, ${baseAlpha.toFixed(2)}) 0%, rgba(3, 18, 11, ${(baseAlpha + 0.07).toFixed(2)}) 50%, rgba(1, 10, 6, ${(baseAlpha + 0.14).toFixed(2)}) 100%)`,
+              borderColor: `rgba(255, 255, 255, ${borderAlpha.toFixed(2)})`,
+              boxShadow:
+                `inset 0 1.5px 1px 0 rgba(255, 255, 255, ${(specularTop * 0.55).toFixed(2)}), ` +
+                "inset 1px 0 1px 0 rgba(255, 255, 255, 0.20), " +
+                `inset 0 -1.5px 2px 0 rgba(34, 197, 94, ${(emeraldRefract * 1.1).toFixed(2)}), ` +
+                "inset -1px 0 1.5px 0 rgba(34, 197, 94, 0.20), " +
+                "0 12px 26px -6px rgba(0, 0, 0, 0.36), " +
+                "0 2px 6px -1px rgba(2, 16, 9, 0.22)",
+            });
+          }
+        });
+
+        cardDefaultRefs.current.forEach((el) => {
+          if (el) gsap.set(el, { opacity: 0, autoAlpha: 0 });
+        });
+        cardIllustrationRefs.current.forEach((el) => {
+          if (el) gsap.set(el, { opacity: 0 });
+        });
+        cardGradientBgRefs.current.forEach((el) => {
+          if (el) gsap.set(el, { opacity: 0 });
+        });
+        cardBackRefs.current.forEach((el) => {
+          if (el) gsap.set(el, { opacity: 0 });
+        });
+        cardGlassOverlayRefs.current.forEach((el) => {
+          if (el) gsap.set(el, { opacity: 1 });
+        });
+
+        const allCompanionCards = companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
+        allCompanionCards.forEach((compEl, cIdx) => {
+          const slot = ringSlots[5 + cIdx];
+          gsap.set(compEl, {
+            xPercent: -50,
+            yPercent: -50,
+            x: slot.x,
+            y: slot.y,
+            z: slot.z,
+            rotateX: slot.rotX,
+            rotateY: slot.rotY,
+            rotateZ: slot.rotZ,
+            scale: slot.scale,
+            opacity: 1,
+            visibility: "visible",
+            zIndex: slot.zIndex,
+            force3D: true,
+          });
+        });
+
+        // Dock cluster to left and restart ambient ring rotation
+        const clusterEl = cardsClusterRef.current;
+        if (clusterEl) {
+          const fallbackX = isDesk ? -Math.round(vCenterX * 0.44) : -Math.round(vCenterX * 0.32);
+          const leftX = targetLeftXRef.current !== 0 ? targetLeftXRef.current : fallbackX;
+          const ringY = targetRingYRef.current !== 0 ? targetRingYRef.current : 18;
+
+          gsap.set(clusterEl, {
+            x: leftX,
+            y: ringY,
+            rotateX: 18,
+            rotateY: 20,
+            rotateZ: 376,
+            scaleX: 1,
+            scaleY: 1,
+            scale: 1,
+          });
+
+          if (ringRotateTweenRef.current) {
+            ringRotateTweenRef.current.kill();
+            ringRotateTweenRef.current = null;
+          }
+          ringRotateTweenRef.current = gsap.fromTo(
+            clusterEl,
+            { rotateZ: 376 },
+            {
+              rotateZ: 736,
+              duration: 26,
+              repeat: -1,
+              ease: "none",
+              force3D: true,
+            }
+          );
         }
 
         if (securityStageRef.current) {
           gsap.set(securityStageRef.current, { autoAlpha: 1, opacity: 1, visibility: "visible", zIndex: 35 });
         }
 
+        // Reset closing statements clip-paths
+        if (closingBlackTextRef.current) {
+          closingBlackTextRef.current.style.clipPath = "none";
+          (closingBlackTextRef.current.style as any).webkitClipPath = "none";
+        }
+        if (closingGreenTextRef.current) {
+          closingGreenTextRef.current.style.clipPath = "none";
+          (closingGreenTextRef.current.style as any).webkitClipPath = "none";
+        }
+
+        // Show State 0 and hide all other states
         securityStateRefs.current.forEach((el, idx) => {
           if (el) {
             if (idx === 0) {
-              gsap.set(el, { opacity: 1, visibility: "visible", x: 0, y: 0, scale: 1, clipPath: "inset(0% 0% 0% 0%)" });
+              gsap.set(el, {
+                autoAlpha: 1,
+                opacity: 1,
+                visibility: "visible",
+                x: shiftX,
+                y: 0,
+                scale: 1,
+                clipPath: "none",
+              });
             } else {
-              gsap.set(el, { opacity: 0, visibility: "hidden" });
+              gsap.set(el, {
+                autoAlpha: 0,
+                opacity: 0,
+                visibility: "hidden",
+                x: rightShift,
+                y: 0,
+              });
             }
           }
         });
+
+        if (securityHeroRibbonRef.current) {
+          gsap.set(securityHeroRibbonRef.current, { x: 0, opacity: 1 });
+        }
 
         playMoneyAnimation();
         window.dispatchEvent(new CustomEvent("unifolio-active-section", { detail: { section: "security" } }));

@@ -231,11 +231,19 @@ export function BlueprintAboutMetrics() {
 
     const handleWheel = (e: WheelEvent) => {
       const rect = sectionEl.getBoundingClientRect();
-      const inView = rect.top <= 10 && rect.bottom >= window.innerHeight - 10;
+      const delta = e.deltaY;
+
+      // At initial step (0), upward scroll anywhere near or inside the top of About returns directly to Security State 0
+      if (currentStep.current === 0 && delta < -10 && rect.top >= -120 && rect.top <= window.innerHeight * 0.5) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("unifolio-show-security"));
+        return;
+      }
+
+      const inView = rect.top <= 80 && rect.bottom >= window.innerHeight - 80;
       if (!inView) return;
 
       const now = Date.now();
-      const delta = e.deltaY;
 
       if (Math.abs(delta) < 15) return;
 
@@ -257,8 +265,11 @@ export function BlueprintAboutMetrics() {
         if (currentStep.current > 0) {
           e.preventDefault();
           animateToStep(currentStep.current - 1);
+        } else {
+          // At initial step (0), upward scroll returns directly to Security Section at State 0
+          e.preventDefault();
+          window.dispatchEvent(new CustomEvent("unifolio-show-security"));
         }
-        // At initial step (0), allow natural upward scroll into Offerings
       }
     };
 
@@ -269,11 +280,20 @@ export function BlueprintAboutMetrics() {
 
     const handleTouchMove = (e: TouchEvent) => {
       const rect = sectionEl.getBoundingClientRect();
-      const inView = rect.top <= 10 && rect.bottom >= window.innerHeight - 10;
-      if (!inView) return;
-
       const touchY = e.touches[0].clientY;
       const delta = touchStartY - touchY;
+
+      // At initial step (0), upward touch returns directly to Security Section at State 0
+      if (currentStep.current === 0 && delta < -15 && rect.top >= -120 && rect.top <= window.innerHeight * 0.5) {
+        e.preventDefault();
+        touchStartY = touchY;
+        window.dispatchEvent(new CustomEvent("unifolio-show-security"));
+        return;
+      }
+
+      const inView = rect.top <= 80 && rect.bottom >= window.innerHeight - 80;
+      if (!inView) return;
+
       const now = Date.now();
 
       if (Math.abs(delta) < 25) return;
@@ -294,6 +314,11 @@ export function BlueprintAboutMetrics() {
           e.preventDefault();
           touchStartY = touchY;
           animateToStep(currentStep.current - 1);
+        } else {
+          // At initial step (0), upward touch returns directly to Security Section at State 0
+          e.preventDefault();
+          touchStartY = touchY;
+          window.dispatchEvent(new CustomEvent("unifolio-show-security"));
         }
       }
     };
