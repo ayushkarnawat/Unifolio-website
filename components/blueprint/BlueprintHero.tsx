@@ -306,7 +306,7 @@ export function BlueprintHero() {
   const touchGestureActiveRef = useRef<boolean>(false);
 
   // State management & transition guards
-  const stateRef = useRef<"hero" | "product" | "sculpting" | "ring">("hero");
+  const stateRef = useRef<"hero" | "product" | "sculpting" | "ring" | "about">("hero");
   const productCompleteRef = useRef<boolean>(false);
   const isHoldingProductRef = useRef<boolean>(false);
   const transitionStartedRef = useRef<boolean>(false);
@@ -761,7 +761,7 @@ export function BlueprintHero() {
                     }, 140);
                   }
                 } else if (self.progress < 0.70) {
-                  if (stateRef.current === "product") {
+                  if (stateRef.current === "product" || stateRef.current === "about") {
                     stateRef.current = "hero";
                     if (currentHoverRef.current !== null) {
                       commitCardHover(null);
@@ -2838,21 +2838,21 @@ export function BlueprintHero() {
         // 1. Brief settle so user reads "Stored in India" normally
         const tSettle = 0.35;
 
-        // 2. The 5 letters deconstruct and fly outward to cardinal nodes of India (shifting rightwards towards the map)
+        // 2. The 5 letters deconstruct and fly outward to cardinal nodes of India (elevated to match map)
         if (chars[0]) {
-          tl.to(chars[0], { x: 12, y: -34, scale: 0.2, rotate: -6, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
+          tl.to(chars[0], { x: 12, y: -56, scale: 0.2, rotate: -6, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
         }
         if (chars[1]) {
-          tl.to(chars[1], { x: 8, y: 8, scale: 0.25, rotate: -4, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.02);
+          tl.to(chars[1], { x: 8, y: -14, scale: 0.25, rotate: -4, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.02);
         }
         if (chars[2]) {
-          tl.to(chars[2], { x: 32, y: 44, scale: 0.2, rotate: 2, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.03);
+          tl.to(chars[2], { x: 32, y: 18, scale: 0.2, rotate: 2, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.03);
         }
         if (chars[3]) {
-          tl.to(chars[3], { x: 56, y: 16, scale: 0.25, rotate: 8, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.02);
+          tl.to(chars[3], { x: 56, y: -8, scale: 0.25, rotate: 8, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.02);
         }
         if (chars[4]) {
-          tl.to(chars[4], { x: 64, y: -24, scale: 0.2, rotate: 12, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
+          tl.to(chars[4], { x: 64, y: -46, scale: 0.2, rotate: 12, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
         }
 
         // 3. The India map outline wrapper appears centered over "India"
@@ -3262,8 +3262,25 @@ export function BlueprintHero() {
       const exitSecurityToAbout = () => {
         isSecurityTransitioningRef.current = true;
         lastSecurityScrollTimeRef.current = Date.now();
+        stateRef.current = "about";
+        transitionCompleteRef.current = false;
+        transitionAnimatingRef.current = false;
+        transitionStartedRef.current = false;
+        isHoldingProductRef.current = false;
+        lockScrollYRef.current = 0;
 
-        // Release locked stage so page can scroll naturally
+        if (wheelGestureEndTimerRef.current) {
+          clearTimeout(wheelGestureEndTimerRef.current);
+          wheelGestureEndTimerRef.current = null;
+        }
+        wheelGestureActiveRef.current = false;
+        touchGestureActiveRef.current = false;
+
+        // Release document overflow lock so page can scroll naturally
+        document.documentElement.style.overflow = "";
+        document.body.style.overflow = "";
+
+        // Unfix the fixed stage so it flows naturally in document
         if (stageRef.current) {
           stageRef.current.style.position = "";
           stageRef.current.style.top = "";
@@ -3272,8 +3289,6 @@ export function BlueprintHero() {
           stageRef.current.style.height = "";
           stageRef.current.style.zIndex = "";
         }
-        document.documentElement.style.overflow = "";
-        document.body.style.overflow = "";
 
         // Notify Navbar to update active item to "about"
         window.dispatchEvent(
@@ -3282,12 +3297,16 @@ export function BlueprintHero() {
 
         const aboutEl = document.getElementById("about");
         if (aboutEl) {
-          smoothScrollTo(aboutEl.offsetTop, { duration: 1.0, ease: "power2.inOut" });
-        }
-
-        setTimeout(() => {
+          smoothScrollTo(aboutEl, {
+            duration: 0.85,
+            ease: "power2.inOut",
+            onComplete: () => {
+              isSecurityTransitioningRef.current = false;
+            },
+          });
+        } else {
           isSecurityTransitioningRef.current = false;
-        }, 1000);
+        }
       };
 
       const triggerProductToRing = () => {
@@ -3918,8 +3937,70 @@ export function BlueprintHero() {
         });
       };
 
+      const handleShowAbout = () => {
+        exitSecurityToAbout();
+      };
+
+      const handleShowSecurity = () => {
+        stateRef.current = "ring";
+        transitionStartedRef.current = true;
+        transitionAnimatingRef.current = false;
+        transitionCompleteRef.current = true;
+        currentSecurityStateRef.current = 0;
+        isHoldingProductRef.current = false;
+        isSecurityTransitioningRef.current = false;
+
+        const pinEnd = apertureScrollTriggerRef.current?.end ?? window.scrollY;
+        lockScrollYRef.current = pinEnd;
+        window.scrollTo(0, pinEnd);
+
+        document.documentElement.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
+
+        if (stageRef.current) {
+          stageRef.current.style.position = "fixed";
+          stageRef.current.style.top = "0px";
+          stageRef.current.style.left = "0px";
+          stageRef.current.style.width = "100%";
+          stageRef.current.style.height = "100vh";
+          stageRef.current.style.zIndex = "40";
+          gsap.set(stageRef.current, { opacity: 1 });
+        }
+
+        const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
+        const ringCenterX = isDesk ? "-24vw" : "-30vw";
+        if (cardsClusterRef.current) {
+          gsap.set(cardsClusterRef.current, {
+            x: ringCenterX,
+            y: "0vh",
+            scaleX: 0.92,
+            scaleY: 0.92,
+            rotateZ: 0,
+          });
+        }
+
+        if (securityStageRef.current) {
+          gsap.set(securityStageRef.current, { autoAlpha: 1, opacity: 1, visibility: "visible", zIndex: 35 });
+        }
+
+        securityStateRefs.current.forEach((el, idx) => {
+          if (el) {
+            if (idx === 0) {
+              gsap.set(el, { opacity: 1, visibility: "visible", x: 0, y: 0, scale: 1, clipPath: "inset(0% 0% 0% 0%)" });
+            } else {
+              gsap.set(el, { opacity: 0, visibility: "hidden" });
+            }
+          }
+        });
+
+        playMoneyAnimation();
+        window.dispatchEvent(new CustomEvent("unifolio-active-section", { detail: { section: "security" } }));
+      };
+
       window.addEventListener("unifolio-show-product", handleShowProduct);
       window.addEventListener("unifolio-reset-hero", handleResetHero);
+      window.addEventListener("unifolio-show-about", handleShowAbout);
+      window.addEventListener("unifolio-show-security", handleShowSecurity);
 
       return () => {
         window.removeEventListener("scroll", handleScrollLock, { capture: true });
@@ -3932,6 +4013,8 @@ export function BlueprintHero() {
         window.removeEventListener("unifolio-intro-complete", revealHeroAfterDocked);
         window.removeEventListener("unifolio-show-product", handleShowProduct);
         window.removeEventListener("unifolio-reset-hero", handleResetHero);
+        window.removeEventListener("unifolio-show-about", handleShowAbout);
+        window.removeEventListener("unifolio-show-security", handleShowSecurity);
         if (wheelGestureEndTimerRef.current) {
           clearTimeout(wheelGestureEndTimerRef.current);
           wheelGestureEndTimerRef.current = null;
@@ -4899,14 +4982,14 @@ export function BlueprintHero() {
                                 ))}
                               </span>
 
-                              {/* Morphed Minimal India Map Outline SVG (Shifted right so it does NOT overlap the word "in") */}
+                              {/* Morphed Minimal India Map Outline SVG (Shifted right so it does NOT overlap the word "in", and upward for vertical balance) */}
                               <span
                                 ref={indiaMapWrapperRef}
                                 className="absolute inset-0 flex items-center justify-center pointer-events-none will-change-transform z-10"
                                 style={{ opacity: 0, transform: "scale(0.35)" }}
                                 aria-hidden="true"
                               >
-                                <span className="inline-flex items-center justify-center translate-x-8 sm:translate-x-10 md:translate-x-12">
+                                <span className="inline-flex items-center justify-center translate-x-8 sm:translate-x-10 md:translate-x-12 -translate-y-5 sm:-translate-y-7 md:-translate-y-8">
                                   <svg
                                     viewBox="0 0 200 200"
                                     className="w-[2.8em] h-[2.8em] sm:w-[3.2em] sm:h-[3.2em] md:w-[3.6em] md:h-[3.6em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.35)] dark:drop-shadow-[0_6px_20px_rgba(34,197,94,0.45)]"
