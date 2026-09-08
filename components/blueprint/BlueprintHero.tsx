@@ -207,6 +207,7 @@ const LOCKED_LETTERS = ["L", "o", "c", "k", "e", "d"];
 const YOU_LETTERS = ["Y", "o", "u"];
 const INDIA_LETTERS = ["I", "n", "d", "i", "a"];
 const MONEY_LETTERS = ["m", "o", "n", "e", "y"];
+const SELL_LETTERS = ["s", "e", "l", "l"];
 
 export function BlueprintHero() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -292,6 +293,12 @@ export function BlueprintHero() {
   const moneyBill1Ref = useRef<SVGGElement | null>(null);
   const moneyBill2Ref = useRef<SVGGElement | null>(null);
   const moneyAnimTlRef = useRef<gsap.core.Timeline | null>(null);
+
+  // Sell Typography Transformation Interaction ("We don't sell your data")
+  const sellCharRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const sellShieldWrapperRef = useRef<HTMLSpanElement | null>(null);
+  const sellShieldIconRef = useRef<SVGSVGElement | null>(null);
+  const sellAnimTlRef = useRef<gsap.core.Timeline | null>(null);
 
   // Wheel & gesture isolation refs to prevent skipping states
   const wheelGestureActiveRef = useRef<boolean>(false);
@@ -2909,6 +2916,161 @@ export function BlueprintHero() {
         });
       };
 
+      // -------------------------------------------------------------------------
+      // SELL TYPOGRAPHY TRANSFORMATION INTERACTION: "We don't sell your data"
+      // Recreates the exact motion language and animation style from sell.mp4:
+      // 1. Text settles briefly so user reads "We don't sell your data" normally.
+      // 2. The 4 letters (s-e-l-l) deconstruct and disperse gracefully outward.
+      // 3. The 3D Security Shield Badge blooms into view at the exact position of "sell".
+      // 4. Performs the 3D perspective swivel (right tilt, smooth glide to left tilt, return center).
+      // 5. Holds the proud defense shield posture with subtle radiant green atmosphere.
+      // 6. Smoothly contracts & dissolves back into the readable word "sell".
+      // 7. Scrolling unlocks once text is fully restored!
+      // -------------------------------------------------------------------------
+      const playSellAnimation = () => {
+        const chars = sellCharRefs.current.filter(Boolean) as HTMLElement[];
+        const wrapper = sellShieldWrapperRef.current;
+        const icon = sellShieldIconRef.current;
+
+        if (chars.length === 0 || !wrapper) {
+          isSecurityTransitioningRef.current = false;
+          return;
+        }
+
+        if (sellAnimTlRef.current) {
+          sellAnimTlRef.current.kill();
+        }
+
+        // Reset elements to initial clean typography state
+        gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+        gsap.set(wrapper, { opacity: 0, scale: 0.35 });
+        if (icon) gsap.set(icon, { rotateY: 0, rotateZ: 0, x: 0, y: 0 });
+
+        const tl = gsap.timeline({
+          onComplete: () => {
+            gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+            gsap.set(wrapper, { opacity: 0, scale: 0.35 });
+            if (icon) gsap.set(icon, { rotateY: 0, rotateZ: 0, x: 0, y: 0 });
+            isSecurityTransitioningRef.current = false;
+            lastSecurityScrollTimeRef.current = Date.now();
+            wheelGestureActiveRef.current = true;
+            if (wheelGestureEndTimerRef.current) clearTimeout(wheelGestureEndTimerRef.current);
+            wheelGestureEndTimerRef.current = setTimeout(() => {
+              wheelGestureActiveRef.current = false;
+            }, 250);
+          },
+        });
+
+        sellAnimTlRef.current = tl;
+
+        // 1. Brief settle so user reads "We don't sell your data" normally
+        const tSettle = 0.35;
+
+        // 2. The 4 letters deconstruct and fly outward
+        if (chars[0]) {
+          tl.to(chars[0], { x: -16, y: -10, scale: 0.2, rotate: -12, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle);
+        }
+        if (chars[1]) {
+          tl.to(chars[1], { x: -6, y: 12, scale: 0.25, rotate: -6, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle + 0.02);
+        }
+        if (chars[2]) {
+          tl.to(chars[2], { x: 8, y: -12, scale: 0.25, rotate: 6, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle + 0.02);
+        }
+        if (chars[3]) {
+          tl.to(chars[3], { x: 18, y: 10, scale: 0.2, rotate: 12, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle);
+        }
+
+        // 3. Shield Badge scales & blooms in with elastic overshoot matching sell.mp4
+        const tShieldEnter = tSettle + 0.12;
+        tl.to(
+          wrapper,
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.36,
+            ease: "back.out(1.8)",
+          },
+          tShieldEnter
+        );
+
+        // 4. Exact 3D motion language from sell.mp4:
+        // - Tilt right (Frames 10-18: rotateY: 16, rotateZ: 2)
+        // - Smooth glide to left (Frames 20-36: rotateY: -16, rotateZ: -2)
+        // - Return to center (Frames 36-52: rotateY: 0, rotateZ: 0)
+        const tSwivel = tShieldEnter + 0.24;
+        if (icon) {
+          tl.to(
+            icon,
+            {
+              rotateY: 16,
+              rotateZ: 2,
+              x: 2,
+              y: -2,
+              duration: 0.36,
+              ease: "power1.inOut",
+            },
+            tSwivel
+          );
+          tl.to(
+            icon,
+            {
+              rotateY: -16,
+              rotateZ: -2,
+              x: -2,
+              y: 1,
+              duration: 0.52,
+              ease: "power1.inOut",
+            },
+            tSwivel + 0.36
+          );
+          tl.to(
+            icon,
+            {
+              rotateY: 0,
+              rotateZ: 0,
+              x: 0,
+              y: 0,
+              duration: 0.40,
+              ease: "power2.out",
+            },
+            tSwivel + 0.88
+          );
+        }
+
+        // 5. Proud hold of the defense shield
+        const tHoldEnd = tSwivel + 1.28 + 0.45;
+
+        // 6. Shield contracts and dissolves back into nothingness
+        tl.to(
+          wrapper,
+          {
+            opacity: 0,
+            scale: 0.35,
+            duration: 0.26,
+            ease: "power2.in",
+          },
+          tHoldEnd
+        );
+
+        // 7. All 4 letters spring outward back into their exact typographical positions
+        const tRestore = tHoldEnd + 0.18;
+        chars.forEach((char, i) => {
+          tl.to(
+            char,
+            {
+              opacity: 1,
+              scale: 1,
+              x: 0,
+              y: 0,
+              rotate: 0,
+              duration: 0.32,
+              ease: "back.out(2.0)",
+            },
+            tRestore + i * 0.025
+          );
+        });
+      };
+
       const goToSecurityState = (nextIdx: number, direction: 1 | -1) => {
         if (isSecurityTransitioningRef.current) return;
         if (nextIdx < 0 || nextIdx >= SECURITY_STATES.length) return;
@@ -2991,6 +3153,18 @@ export function BlueprintHero() {
           if (indiaMapWrapperRef.current) gsap.set(indiaMapWrapperRef.current, { opacity: 0, scale: 0.35 });
         }
 
+        // Clean up sell animation if leaving state 6
+        if (prevIdx === 6) {
+          if (sellAnimTlRef.current) {
+            sellAnimTlRef.current.kill();
+            sellAnimTlRef.current = null;
+          }
+          const chars = sellCharRefs.current.filter(Boolean) as HTMLElement[];
+          if (chars.length > 0) gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+          if (sellShieldWrapperRef.current) gsap.set(sellShieldWrapperRef.current, { opacity: 0, scale: 0.35 });
+          if (sellShieldIconRef.current) gsap.set(sellShieldIconRef.current, { rotateY: 0, rotateZ: 0, x: 0, y: 0 });
+        }
+
         const prevEl = securityStateRefs.current[prevIdx];
         const nextEl = securityStateRefs.current[nextIdx];
 
@@ -3008,6 +3182,8 @@ export function BlueprintHero() {
               playHandshakeAnimation();
             } else if (nextIdx === 5) {
               playIndiaAnimation();
+            } else if (nextIdx === 6) {
+              playSellAnimation();
             } else {
               isSecurityTransitioningRef.current = false;
             }
@@ -3214,6 +3390,16 @@ export function BlueprintHero() {
         const indiaChars = indiaCharRefs.current.filter(Boolean) as HTMLElement[];
         if (indiaChars.length > 0) gsap.set(indiaChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
         if (indiaMapWrapperRef.current) gsap.set(indiaMapWrapperRef.current, { opacity: 0, scale: 0.35 });
+
+        // Clean up sell animation if active
+        if (sellAnimTlRef.current) {
+          sellAnimTlRef.current.kill();
+          sellAnimTlRef.current = null;
+        }
+        const sellChars = sellCharRefs.current.filter(Boolean) as HTMLElement[];
+        if (sellChars.length > 0) gsap.set(sellChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+        if (sellShieldWrapperRef.current) gsap.set(sellShieldWrapperRef.current, { opacity: 0, scale: 0.35 });
+        if (sellShieldIconRef.current) gsap.set(sellShieldIconRef.current, { rotateY: 0, rotateZ: 0, x: 0, y: 0 });
 
         // Clean up money animation if active
         if (moneyAnimTlRef.current) {
@@ -3774,6 +3960,10 @@ export function BlueprintHero() {
           indiaAnimTlRef.current.kill();
           indiaAnimTlRef.current = null;
         }
+        if (sellAnimTlRef.current) {
+          sellAnimTlRef.current.kill();
+          sellAnimTlRef.current = null;
+        }
         if (moneyAnimTlRef.current) {
           moneyAnimTlRef.current.kill();
           moneyAnimTlRef.current = null;
@@ -4232,7 +4422,7 @@ export function BlueprintHero() {
                     className={`absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full ${
                       item.type === "hero"
                         ? "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl px-4 sm:px-6 text-center"
-                        : idx === 2 || idx === 3 || idx === 4 || idx === 5
+                        : idx === 2 || idx === 3 || idx === 4 || idx === 5 || idx === 6
                         ? "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl px-6 md:pl-16 lg:pl-28 xl:pl-36 text-left"
                         : "max-w-md sm:max-w-lg lg:max-w-xl xl:max-w-2xl px-6 text-left"
                     } will-change-transform pointer-events-none`}
@@ -4738,6 +4928,89 @@ export function BlueprintHero() {
                                 </span>
                               </span>
                             </span>
+                          </h3>
+                        ) : idx === 6 ? (
+                          // State 7: "We don't sell your data" - Typography Transformation into Security Shield Badge
+                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.06] mb-4 sm:mb-5 select-none whitespace-normal lg:whitespace-nowrap">
+                            <span>We don&apos;t </span>
+
+                            {/* The word "sell" in Unifolio green transforms into the animated Security Shield Badge */}
+                            <span className="relative inline-flex items-center justify-center align-baseline">
+                              {/* The 4 letters of "sell" in Unifolio green #22C55E */}
+                              <span className="inline-flex items-baseline text-[#22C55E] font-black">
+                                {SELL_LETTERS.map((char, charIdx) => (
+                                  <span
+                                    key={charIdx}
+                                    ref={(el) => {
+                                      sellCharRefs.current[charIdx] = el;
+                                    }}
+                                    className="inline-block will-change-transform"
+                                  >
+                                    {char}
+                                  </span>
+                                ))}
+                              </span>
+
+                              {/* Morphed Security Shield Badge SVG (Centered directly over the word "sell") */}
+                              <span
+                                ref={sellShieldWrapperRef}
+                                className="absolute inset-0 flex items-center justify-center pointer-events-none will-change-transform z-10"
+                                style={{ opacity: 0, transform: "scale(0.35)", perspective: "800px" }}
+                                aria-hidden="true"
+                              >
+                                <svg
+                                  ref={sellShieldIconRef}
+                                  viewBox="0 0 100 100"
+                                  className="w-[2.4em] h-[2.4em] sm:w-[2.7em] sm:h-[2.7em] md:w-[3.0em] md:h-[3.0em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.40)] dark:drop-shadow-[0_6px_22px_rgba(34,197,94,0.55)] will-change-transform"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  style={{ transformStyle: "preserve-3d" }}
+                                >
+                                  {/* Outer Shield Outline */}
+                                  <path
+                                    d="M 26 13 L 74 13 C 78 13 83 17 85 22 C 86.5 25 86 48 86 52 C 86 68 70 82 50 89 C 30 82 14 68 14 52 C 14 48 13.5 25 15 22 C 17 17 22 13 26 13 Z"
+                                    fill="rgba(34, 197, 94, 0.08)"
+                                    stroke="#22C55E"
+                                    strokeWidth="3.2"
+                                    strokeLinejoin="round"
+                                  />
+                                  {/* Inner Shield Bevel Rim */}
+                                  <path
+                                    d="M 33 21 L 67 21 C 70 21 74 24 76 28 C 77 32 76.5 48 76.5 51 C 76.5 63 64 73.5 50 79 C 36 73.5 23.5 63 23.5 51 C 23.5 48 23 32 24 28 C 26 24 30 21 33 21 Z"
+                                    fill="none"
+                                    stroke="#22C55E"
+                                    strokeWidth="2.0"
+                                    strokeLinejoin="round"
+                                    opacity="0.85"
+                                  />
+                                  {/* 3D Bevel Corner Lines */}
+                                  <path d="M 26 13 L 33 21" stroke="#22C55E" strokeWidth="2.0" strokeLinecap="round" opacity="0.75" />
+                                  <path d="M 74 13 L 67 21" stroke="#22C55E" strokeWidth="2.0" strokeLinecap="round" opacity="0.75" />
+                                  <path d="M 15 22 L 24 28" stroke="#22C55E" strokeWidth="2.0" strokeLinecap="round" opacity="0.75" />
+                                  <path d="M 85 22 L 76 28" stroke="#22C55E" strokeWidth="2.0" strokeLinecap="round" opacity="0.75" />
+                                  <path d="M 50 79 L 50 89" stroke="#22C55E" strokeWidth="2.0" strokeLinecap="round" opacity="0.75" />
+                                  {/* Center Circle */}
+                                  <circle
+                                    cx="50"
+                                    cy="49"
+                                    r="18"
+                                    fill="rgba(34, 197, 94, 0.12)"
+                                    stroke="#22C55E"
+                                    strokeWidth="2.6"
+                                  />
+                                  {/* Center 5-Pointed Star */}
+                                  <path
+                                    d="M 50.0 37.0 L 53.1 44.8 L 61.4 45.3 L 54.9 50.6 L 57.1 58.7 L 50.0 54.2 L 42.9 58.7 L 45.1 50.6 L 38.6 45.3 L 46.9 44.8 Z"
+                                    fill="#22C55E"
+                                    stroke="#22C55E"
+                                    strokeWidth="1.2"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                              </span>
+                            </span>
+
+                            <span> your data</span>
                           </h3>
                         ) : (
                           <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[40px] xl:text-[46px] text-neutral-950 dark:text-white tracking-[-0.03em] leading-[1.08] mb-3 sm:mb-4">
