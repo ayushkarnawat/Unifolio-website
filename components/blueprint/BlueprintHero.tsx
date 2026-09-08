@@ -204,8 +204,9 @@ const SECURITY_STATES: SecurityStateItem[] = [
 
 const PASSWORD_LETTERS = ["p", "a", "s", "s", "w", "o", "r", "d", "s"];
 const LOCKED_LETTERS = ["L", "o", "c", "k", "e", "d"];
-const CONTROL_LETTERS = ["c", "o", "n", "t", "r", "o", "l"];
+const YOU_LETTERS = ["Y", "o", "u"];
 const INDIA_LETTERS = ["I", "n", "d", "i", "a"];
+const MONEY_LETTERS = ["m", "o", "n", "e", "y"];
 
 export function BlueprintHero() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -272,7 +273,7 @@ export function BlueprintHero() {
   const lockAnimPlayedRef = useRef<boolean>(false);
 
   // Handshake Typography Transformation Interaction ("You control the connection")
-  const controlCharRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const youCharRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const handshakeWrapperRef = useRef<HTMLSpanElement | null>(null);
   const handLeftGroupRef = useRef<SVGGElement | null>(null);
   const handRightGroupRef = useRef<SVGGElement | null>(null);
@@ -284,6 +285,13 @@ export function BlueprintHero() {
   const indiaMapWrapperRef = useRef<HTMLSpanElement | null>(null);
   const indiaMapPathRef = useRef<SVGPathElement | null>(null);
   const indiaAnimTlRef = useRef<gsap.core.Timeline | null>(null);
+
+  // Money Typography Transformation Interaction ("take your money.")
+  const moneyCharRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const moneyWrapperRef = useRef<HTMLSpanElement | null>(null);
+  const moneyBill1Ref = useRef<SVGGElement | null>(null);
+  const moneyBill2Ref = useRef<SVGGElement | null>(null);
+  const moneyAnimTlRef = useRef<gsap.core.Timeline | null>(null);
 
   // Wheel & gesture isolation refs to prevent skipping states
   const wheelGestureActiveRef = useRef<boolean>(false);
@@ -1225,6 +1233,9 @@ export function BlueprintHero() {
             // stageRef.current stays position: fixed, width: 100%, height: 100vh, zIndex: 40
             // document overflow stays hidden
             // Discrete scroll gestures now control Security States 1 to 8!
+
+            // Trigger money transformation animation once hero text has settled in right-side Security layout
+            playMoneyAnimation();
           },
           onReverseComplete: () => {
             stateRef.current = "product";
@@ -1235,6 +1246,16 @@ export function BlueprintHero() {
             isHoldingProductRef.current = true;
             currentSecurityStateRef.current = 0;
             isSecurityTransitioningRef.current = false;
+
+            if (moneyAnimTlRef.current) {
+              moneyAnimTlRef.current.kill();
+              moneyAnimTlRef.current = null;
+            }
+            const moneyChars = moneyCharRefs.current.filter(Boolean) as HTMLElement[];
+            if (moneyChars.length > 0) gsap.set(moneyChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+            if (moneyWrapperRef.current) gsap.set(moneyWrapperRef.current, { opacity: 0, scale: 0.35 });
+            if (moneyBill1Ref.current) gsap.set(moneyBill1Ref.current, { x: 0, y: 0, rotate: 0 });
+            if (moneyBill2Ref.current) gsap.set(moneyBill2Ref.current, { x: 0, y: 0, rotate: 0 });
 
             if (ringRotateTweenRef.current) {
               ringRotateTweenRef.current.kill();
@@ -1758,6 +1779,188 @@ export function BlueprintHero() {
         tl.set(securityStageRef.current, { zIndex: 35 }, ringSettleTime);
 
         return tl;
+      };
+
+      // -------------------------------------------------------------------------
+      // MONEY TYPOGRAPHY TRANSFORMATION INTERACTION: "take your money."
+      // Smoothly morphs the word "money" into the animated cash banknote stack from money.mp4
+      // 1. Text settles briefly after sliding into the right-side Security layout.
+      // 2. The 5 letters (m-o-n-e-y) deconstruct and fly/contract into the banknote shape.
+      // 3. The crisp cash banknote scales into position directly over the word.
+      // 4. Two additional banknotes fan up from behind to form the 3-bill cash fan.
+      // 5. Subtle playful bounce/flutter matching the reference video.
+      // 6. Banknotes hold their fan formation proudly.
+      // 7. Bills collapse smoothly back into a single banknote.
+      // 8. Banknote contracts/dissolves, and the 5 letters reconstruct outward
+      //    into the exact original word "money".
+      // 9. Scrolling unlocks once word is restored!
+      // -------------------------------------------------------------------------
+      const playMoneyAnimation = () => {
+        const chars = moneyCharRefs.current.filter(Boolean) as HTMLElement[];
+        const wrapper = moneyWrapperRef.current;
+        const bill1 = moneyBill1Ref.current;
+        const bill2 = moneyBill2Ref.current;
+
+        if (chars.length === 0 || !wrapper) {
+          isSecurityTransitioningRef.current = false;
+          return;
+        }
+
+        if (moneyAnimTlRef.current) {
+          moneyAnimTlRef.current.kill();
+        }
+
+        // Reset elements to initial clean typography state
+        gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+        gsap.set(wrapper, { opacity: 0, scale: 0.35 });
+        if (bill1) gsap.set(bill1, { x: 0, y: 0, rotate: 0 });
+        if (bill2) gsap.set(bill2, { x: 0, y: 0, rotate: 0 });
+
+        const tl = gsap.timeline({
+          onComplete: () => {
+            gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+            gsap.set(wrapper, { opacity: 0, scale: 0.35 });
+            if (bill1) gsap.set(bill1, { x: 0, y: 0, rotate: 0 });
+            if (bill2) gsap.set(bill2, { x: 0, y: 0, rotate: 0 });
+            isSecurityTransitioningRef.current = false;
+            lastSecurityScrollTimeRef.current = Date.now();
+            wheelGestureActiveRef.current = true;
+            if (wheelGestureEndTimerRef.current) clearTimeout(wheelGestureEndTimerRef.current);
+            wheelGestureEndTimerRef.current = setTimeout(() => {
+              wheelGestureActiveRef.current = false;
+            }, 250);
+          },
+        });
+
+        moneyAnimTlRef.current = tl;
+
+        // 1. Brief settle so user can read the settled headline
+        const tSettle = 0.30;
+
+        // 2. The 5 letters deconstruct into the banknote elements
+        if (chars[0]) {
+          tl.to(chars[0], { x: -28, y: 10, scale: 0.2, rotate: -15, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle);
+        }
+        if (chars[1]) {
+          tl.to(chars[1], { x: -10, y: -18, scale: 0.25, rotate: 10, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle + 0.02);
+        }
+        if (chars[2]) {
+          tl.to(chars[2], { x: 0, y: -22, scale: 0.25, rotate: -8, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle + 0.01);
+        }
+        if (chars[3]) {
+          tl.to(chars[3], { x: 12, y: -16, scale: 0.25, rotate: 12, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle + 0.02);
+        }
+        if (chars[4]) {
+          tl.to(chars[4], { x: 28, y: 12, scale: 0.2, rotate: 18, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle);
+        }
+
+        // 3. Banknote SVG scales and blooms into position directly over "money"
+        const tBillEnter = tSettle + 0.12;
+        tl.to(
+          wrapper,
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.32,
+            ease: "back.out(1.8)",
+          },
+          tBillEnter
+        );
+
+        // 4. The 2 bills fan out gently at the exact position of the removed bill
+        const tFanOut = tBillEnter + 0.24;
+        if (bill1) {
+          tl.to(
+            bill1,
+            {
+              x: 3,
+              y: 2,
+              rotate: 5,
+              duration: 0.34,
+              ease: "back.out(1.8)",
+            },
+            tFanOut
+          );
+        }
+        if (bill2) {
+          tl.to(
+            bill2,
+            {
+              x: -4,
+              y: -2,
+              rotate: -8,
+              duration: 0.38,
+              ease: "back.out(2.0)",
+            },
+            tFanOut + 0.02
+          );
+        }
+
+        // 5. Subtle playful bounce/flutter on the front bill
+        const tFlutter = tFanOut + 0.40;
+        if (bill2) {
+          tl.to(
+            bill2,
+            {
+              rotate: -5,
+              y: -1,
+              duration: 0.16,
+              yoyo: true,
+              repeat: 1,
+              ease: "sine.inOut",
+            },
+            tFlutter
+          );
+        }
+
+        // 6. Proud hold of the cash fan
+        const tHoldEnd = tFlutter + 0.32 + 0.75;
+
+        // 7. Collapse the bills back together into 1 banknote
+        const tCollapse = tHoldEnd;
+        if (bill1 || bill2) {
+          tl.to(
+            [bill1, bill2].filter(Boolean),
+            {
+              x: 0,
+              y: 0,
+              rotate: 0,
+              duration: 0.28,
+              ease: "power2.inOut",
+            },
+            tCollapse
+          );
+        }
+
+        // 8. Banknote contracts & dissolves
+        tl.to(
+          wrapper,
+          {
+            opacity: 0,
+            scale: 0.35,
+            duration: 0.25,
+            ease: "power2.in",
+          },
+          tCollapse + 0.20
+        );
+
+        // 9. All 5 letters spring outward back into their exact typographical positions
+        const tRestore = tCollapse + 0.26;
+        chars.forEach((char, i) => {
+          tl.to(
+            char,
+            {
+              opacity: 1,
+              scale: 1,
+              x: 0,
+              y: 0,
+              rotate: 0,
+              duration: 0.32,
+              ease: "back.out(2.0)",
+            },
+            tRestore + i * 0.025
+          );
+        });
       };
 
       // -------------------------------------------------------------------------
@@ -2368,7 +2571,7 @@ export function BlueprintHero() {
       // Plays every time the user enters this state.
       // -------------------------------------------------------------------------
       const playHandshakeAnimation = () => {
-        const chars = controlCharRefs.current.filter(Boolean) as HTMLElement[];
+        const chars = youCharRefs.current.filter(Boolean) as HTMLElement[];
         const wrapper = handshakeWrapperRef.current;
         const leftHand = handLeftGroupRef.current;
         const rightHand = handRightGroupRef.current;
@@ -2409,21 +2612,12 @@ export function BlueprintHero() {
         // 1. Brief settle so user reads "You control the connection" normally
         const tSettle = 0.40;
 
-        // 2. The 7 letters of "control" (c-o-n-t-r-o-l) deconstruct and converge inward
-        // Left characters c, o, n converge into left green hand:
-        if (chars[0]) tl.to(chars[0], { x: 28, y: 3, scale: 0.25, rotate: 12, opacity: 0, duration: 0.34, ease: "power2.in" }, tSettle);
-        if (chars[1]) tl.to(chars[1], { x: 18, y: 1, scale: 0.3, rotate: 8, opacity: 0, duration: 0.34, ease: "power2.in" }, tSettle + 0.02);
-        if (chars[2]) tl.to(chars[2], { x: 9, y: 0, scale: 0.4, rotate: 4, opacity: 0, duration: 0.34, ease: "power2.in" }, tSettle + 0.03);
+        // 2. The 3 letters of "You" (Y-o-u) deconstruct and converge inward
+        if (chars[0]) tl.to(chars[0], { x: 22, y: 2, scale: 0.25, rotate: 10, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
+        if (chars[1]) tl.to(chars[1], { scale: 0.2, y: -2, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.02);
+        if (chars[2]) tl.to(chars[2], { x: -22, y: 2, scale: 0.25, rotate: -10, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
 
-        // Center character 't' collapses into center clasp core
-        if (chars[3]) tl.to(chars[3], { scale: 0.2, y: -2, opacity: 0, duration: 0.34, ease: "power2.in" }, tSettle + 0.04);
-
-        // Right characters r, o, l converge into right green hand:
-        if (chars[4]) tl.to(chars[4], { x: -9, y: 0, scale: 0.4, rotate: -4, opacity: 0, duration: 0.34, ease: "power2.in" }, tSettle + 0.03);
-        if (chars[5]) tl.to(chars[5], { x: -18, y: 1, scale: 0.3, rotate: -8, opacity: 0, duration: 0.34, ease: "power2.in" }, tSettle + 0.02);
-        if (chars[6]) tl.to(chars[6], { x: -28, y: 3, scale: 0.25, rotate: -12, opacity: 0, duration: 0.34, ease: "power2.in" }, tSettle);
-
-        // 3. Handshake illustration blooms directly over the word "control"
+        // 3. Handshake illustration blooms directly over the word "You"
         const tHandsEnter = tSettle + 0.18;
         tl.to(
           wrapper,
@@ -2637,21 +2831,21 @@ export function BlueprintHero() {
         // 1. Brief settle so user reads "Stored in India" normally
         const tSettle = 0.35;
 
-        // 2. The 5 letters deconstruct and fly outward to cardinal nodes of India
+        // 2. The 5 letters deconstruct and fly outward to cardinal nodes of India (shifting rightwards towards the map)
         if (chars[0]) {
-          tl.to(chars[0], { x: -28, y: -38, scale: 0.2, rotate: -16, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
+          tl.to(chars[0], { x: 12, y: -34, scale: 0.2, rotate: -6, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
         }
         if (chars[1]) {
-          tl.to(chars[1], { x: -44, y: 8, scale: 0.25, rotate: -10, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.02);
+          tl.to(chars[1], { x: 8, y: 8, scale: 0.25, rotate: -4, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.02);
         }
         if (chars[2]) {
-          tl.to(chars[2], { x: 0, y: 46, scale: 0.2, rotate: 0, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.03);
+          tl.to(chars[2], { x: 32, y: 44, scale: 0.2, rotate: 2, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.03);
         }
         if (chars[3]) {
-          tl.to(chars[3], { x: 40, y: 18, scale: 0.25, rotate: 10, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.02);
+          tl.to(chars[3], { x: 56, y: 16, scale: 0.25, rotate: 8, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.02);
         }
         if (chars[4]) {
-          tl.to(chars[4], { x: 46, y: -28, scale: 0.2, rotate: 16, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
+          tl.to(chars[4], { x: 64, y: -24, scale: 0.2, rotate: 12, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
         }
 
         // 3. The India map outline wrapper appears centered over "India"
@@ -2726,6 +2920,19 @@ export function BlueprintHero() {
         lastSecurityScrollTimeRef.current = Date.now();
         currentSecurityStateRef.current = nextIdx;
 
+        // Clean up money animation if leaving state 0
+        if (prevIdx === 0) {
+          if (moneyAnimTlRef.current) {
+            moneyAnimTlRef.current.kill();
+            moneyAnimTlRef.current = null;
+          }
+          const chars = moneyCharRefs.current.filter(Boolean) as HTMLElement[];
+          if (chars.length > 0) gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+          if (moneyWrapperRef.current) gsap.set(moneyWrapperRef.current, { opacity: 0, scale: 0.35 });
+          if (moneyBill1Ref.current) gsap.set(moneyBill1Ref.current, { x: 0, y: 0, rotate: 0 });
+          if (moneyBill2Ref.current) gsap.set(moneyBill2Ref.current, { x: 0, y: 0, rotate: 0 });
+        }
+
         // Clean up typo eyes animation if leaving state 1 mid-animation
         if (prevIdx === 1 && typoEyesTlRef.current?.isActive()) {
           typoEyesTlRef.current.kill();
@@ -2768,7 +2975,7 @@ export function BlueprintHero() {
             handshakeAnimTlRef.current.kill();
             handshakeAnimTlRef.current = null;
           }
-          const chars = controlCharRefs.current.filter(Boolean) as HTMLElement[];
+          const chars = youCharRefs.current.filter(Boolean) as HTMLElement[];
           if (chars.length > 0) gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
           if (handshakeWrapperRef.current) gsap.set(handshakeWrapperRef.current, { opacity: 0, scale: 0.35 });
         }
@@ -2789,7 +2996,9 @@ export function BlueprintHero() {
 
         const tl = gsap.timeline({
           onComplete: () => {
-            if (nextIdx === 1) {
+            if (nextIdx === 0) {
+              playMoneyAnimation();
+            } else if (nextIdx === 1) {
               playTypoEyesAnimation();
             } else if (nextIdx === 2) {
               playPasswordMaskAnimation();
@@ -2993,8 +3202,8 @@ export function BlueprintHero() {
           handshakeAnimTlRef.current.kill();
           handshakeAnimTlRef.current = null;
         }
-        const controlChars = controlCharRefs.current.filter(Boolean) as HTMLElement[];
-        if (controlChars.length > 0) gsap.set(controlChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+        const youChars = youCharRefs.current.filter(Boolean) as HTMLElement[];
+        if (youChars.length > 0) gsap.set(youChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
         if (handshakeWrapperRef.current) gsap.set(handshakeWrapperRef.current, { opacity: 0, scale: 0.35 });
 
         // Clean up India animation if active
@@ -3005,6 +3214,17 @@ export function BlueprintHero() {
         const indiaChars = indiaCharRefs.current.filter(Boolean) as HTMLElement[];
         if (indiaChars.length > 0) gsap.set(indiaChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
         if (indiaMapWrapperRef.current) gsap.set(indiaMapWrapperRef.current, { opacity: 0, scale: 0.35 });
+
+        // Clean up money animation if active
+        if (moneyAnimTlRef.current) {
+          moneyAnimTlRef.current.kill();
+          moneyAnimTlRef.current = null;
+        }
+        const moneyChars = moneyCharRefs.current.filter(Boolean) as HTMLElement[];
+        if (moneyChars.length > 0) gsap.set(moneyChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+        if (moneyWrapperRef.current) gsap.set(moneyWrapperRef.current, { opacity: 0, scale: 0.35 });
+        if (moneyBill1Ref.current) gsap.set(moneyBill1Ref.current, { x: 0, y: 0, rotate: 0 });
+        if (moneyBill2Ref.current) gsap.set(moneyBill2Ref.current, { x: 0, y: 0, rotate: 0 });
 
         // 1. Immediately stop continuous ambient rotation so it cannot fight the reverse timeline
         if (ringRotateTweenRef.current) {
@@ -3554,6 +3774,10 @@ export function BlueprintHero() {
           indiaAnimTlRef.current.kill();
           indiaAnimTlRef.current = null;
         }
+        if (moneyAnimTlRef.current) {
+          moneyAnimTlRef.current.kill();
+          moneyAnimTlRef.current = null;
+        }
         if (typoLeftWordRef.current) gsap.set(typoLeftWordRef.current, { x: 0 });
         if (typoRightWordRef.current) gsap.set(typoRightWordRef.current, { x: 0 });
         if (productToRingTlRef.current) {
@@ -4018,10 +4242,91 @@ export function BlueprintHero() {
                     }}
                   >
                     {item.type === "hero" ? (
-                      <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[54px] xl:text-[62px] 2xl:text-[68px] text-neutral-950 dark:text-white tracking-[-0.035em] uppercase leading-[1.04] text-center">
+                      <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[54px] xl:text-[62px] 2xl:text-[68px] text-neutral-950 dark:text-white tracking-[-0.035em] uppercase leading-[1.04] text-center select-none">
                         We take your data <br />
-                        <span className="text-[#22C55E] font-black">as seriously as you</span> <br />
-                        take your money.
+                        as <span className="text-[#22C55E] font-black">seriously</span> as you <br />
+                        take your{" "}
+                        <span className="relative inline-flex items-center justify-center align-baseline">
+                          {/* The 5 letters of "money" in black */}
+                          <span className="inline-flex items-baseline text-neutral-950 dark:text-white font-black">
+                            {MONEY_LETTERS.map((char, charIdx) => (
+                              <span
+                                key={charIdx}
+                                ref={(el) => {
+                                  moneyCharRefs.current[charIdx] = el;
+                                }}
+                                className="inline-block will-change-transform"
+                              >
+                                {char}
+                              </span>
+                            ))}
+                          </span>
+
+                          {/* Morphed Cash Banknote Stack Animation SVG (Centered directly over "money") */}
+                          <span
+                            ref={moneyWrapperRef}
+                            className="absolute inset-0 flex items-center justify-center pointer-events-none will-change-transform z-10"
+                            style={{ opacity: 0, transform: "scale(0.35)" }}
+                            aria-hidden="true"
+                          >
+                            <svg
+                              viewBox="0 0 160 110"
+                              className="w-[2.4em] h-[1.65em] sm:w-[2.7em] sm:h-[1.85em] md:w-[3.0em] md:h-[2.05em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.35)] dark:drop-shadow-[0_6px_20px_rgba(34,197,94,0.45)]"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <defs>
+                                <g id="unifolio-money-bill">
+                                  {/* Main Banknote Body */}
+                                  <rect
+                                    x="-48"
+                                    y="-25"
+                                    width="96"
+                                    height="50"
+                                    rx="5"
+                                    fill="#4ADE80"
+                                    stroke="#15803D"
+                                    strokeWidth="2.8"
+                                  />
+                                  {/* 4 Corner Tabs */}
+                                  <path d="M -48 -14 A 11 11 0 0 1 -37 -25 L -48 -25 Z" fill="#15803D" />
+                                  <path d="M 48 -14 A 11 11 0 0 0 37 -25 L 48 -25 Z" fill="#15803D" />
+                                  <path d="M -48 14 A 11 11 0 0 0 -37 25 L -48 25 Z" fill="#15803D" />
+                                  <path d="M 48 14 A 11 11 0 0 1 37 25 L 48 25 Z" fill="#15803D" />
+                                  {/* Side Circles */}
+                                  <circle cx="-27" cy="0" r="5" fill="#15803D" />
+                                  <circle cx="27" cy="0" r="5" fill="#15803D" />
+                                  {/* Center Circle */}
+                                  <circle cx="0" cy="0" r="15" fill="#15803D" />
+                                  {/* Center Dollar Sign */}
+                                  <text
+                                    x="0"
+                                    y="6.5"
+                                    fontFamily="system-ui, -apple-system, sans-serif"
+                                    fontSize="19"
+                                    fontWeight="900"
+                                    fill="#4ADE80"
+                                    textAnchor="middle"
+                                    className="select-none"
+                                  >
+                                    $
+                                  </text>
+                                </g>
+                              </defs>
+
+                              {/* Top Pair: Back Bill */}
+                              <g ref={moneyBill1Ref} transform="translate(80, 68)" style={{ transformOrigin: "80px 68px" }}>
+                                <use href="#unifolio-money-bill" />
+                              </g>
+
+                              {/* Top Pair: Front Bill */}
+                              <g ref={moneyBill2Ref} transform="translate(80, 68)" style={{ transformOrigin: "80px 68px" }}>
+                                <use href="#unifolio-money-bill" />
+                              </g>
+                            </svg>
+                          </span>
+                        </span>
+                        .
                       </h2>
                     ) : item.type === "principle" ? (
                       <div className="flex flex-col">
@@ -4254,19 +4559,17 @@ export function BlueprintHero() {
                             </span>
                           </h3>
                         ) : idx === 4 ? (
-                          // State 5: "You control the connection" - Typography Transformation into Handshake
+                          // State 5: "You control the connection" - Typography Transformation into Handshake on "You"
                           <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.06] mb-4 sm:mb-5 select-none whitespace-normal lg:whitespace-nowrap">
-                            <span>You </span>
-
-                            {/* The entire word "control" transforms into the handshake */}
+                            {/* The word "You" transforms into the handshake */}
                             <span className="relative inline-flex items-center justify-center align-baseline">
-                              {/* The 7 letters of "control" */}
+                              {/* The 3 letters of "You" in Unifolio green */}
                               <span className="inline-flex items-baseline text-[#22C55E] font-black">
-                                {CONTROL_LETTERS.map((char, charIdx) => (
+                                {YOU_LETTERS.map((char, charIdx) => (
                                   <span
                                     key={charIdx}
                                     ref={(el) => {
-                                      controlCharRefs.current[charIdx] = el;
+                                      youCharRefs.current[charIdx] = el;
                                     }}
                                     className="inline-block will-change-transform"
                                   >
@@ -4275,7 +4578,7 @@ export function BlueprintHero() {
                                 ))}
                               </span>
 
-                              {/* Morphed Handshake SVG Icon (Centered directly over the word "control") */}
+                              {/* Morphed Handshake SVG Icon (Centered directly over the word "You") */}
                               <span
                                 ref={handshakeWrapperRef}
                                 className="absolute inset-0 flex items-center justify-center pointer-events-none will-change-transform z-10"
@@ -4382,7 +4685,7 @@ export function BlueprintHero() {
                               </span>
                             </span>
 
-                            <span> the connection</span>
+                            <span> control the connection</span>
                           </h3>
                         ) : idx === 5 ? (
                           // State 6: "Stored in India" - Typography Transformation into Minimal India Map Outline
@@ -4406,31 +4709,33 @@ export function BlueprintHero() {
                                 ))}
                               </span>
 
-                              {/* Morphed Minimal India Map Outline SVG (Centered directly over the word "India") */}
+                              {/* Morphed Minimal India Map Outline SVG (Shifted right so it does NOT overlap the word "in") */}
                               <span
                                 ref={indiaMapWrapperRef}
                                 className="absolute inset-0 flex items-center justify-center pointer-events-none will-change-transform z-10"
                                 style={{ opacity: 0, transform: "scale(0.35)" }}
                                 aria-hidden="true"
                               >
-                                <svg
-                                  viewBox="0 0 200 200"
-                                  className="w-[2.8em] h-[2.8em] sm:w-[3.2em] sm:h-[3.2em] md:w-[3.6em] md:h-[3.6em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.35)] dark:drop-shadow-[0_6px_20px_rgba(34,197,94,0.45)]"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  {/* Smooth India silhouette perimeter outline from India.mp4 */}
-                                  <path
-                                    ref={indiaMapPathRef}
-                                    d="M 59.2 13.0 C 61.8 12.9 65.5 12.6 68.7 14.1 C 71.9 15.6 75.5 21.1 78.3 22.0 C 81.0 23.0 82.9 20.3 85.2 19.9 C 87.4 19.6 89.6 19.5 91.5 19.9 C 93.5 20.4 97.2 20.5 96.8 22.6 C 96.5 24.6 90.6 30.1 89.4 32.1 C 88.2 34.2 89.0 33.8 89.4 34.8 C 89.7 35.7 91.2 36.9 91.5 38.0 C 91.8 39.0 92.1 40.1 91.0 41.1 C 89.8 42.2 83.3 42.1 84.6 44.3 C 85.9 46.5 96.5 52.4 98.9 54.4 C 101.4 56.3 99.8 54.7 99.5 56.0 C 99.1 57.2 95.5 59.8 96.8 61.8 C 98.1 63.9 103.3 66.4 107.4 68.2 C 111.6 69.9 117.7 71.6 121.7 72.4 C 125.8 73.2 129.5 73.3 131.8 73.0 C 134.1 72.6 134.5 72.0 135.5 70.3 C 136.6 68.6 137.2 64.5 138.2 62.9 C 139.2 61.3 139.0 59.6 141.4 60.8 C 143.8 61.9 149.9 68.2 152.5 69.8 C 155.1 71.4 155.2 70.8 156.7 70.3 C 158.3 69.8 159.7 69.2 162.0 66.6 C 164.4 63.9 168.9 56.8 171.1 54.4 C 173.3 52.0 173.8 52.6 175.3 52.3 C 176.8 51.9 178.7 51.9 180.1 52.3 C 181.5 52.6 182.6 52.9 183.8 54.4 C 185.0 55.9 187.1 59.3 187.5 61.3 C 187.9 63.2 187.6 64.8 186.4 66.1 C 185.3 67.3 182.1 67.7 180.6 68.7 C 179.1 69.8 178.8 69.7 177.4 72.4 C 176.1 75.2 173.5 80.8 172.7 85.2 C 171.8 89.5 173.7 96.6 172.1 98.4 C 170.5 100.3 165.3 97.4 163.1 96.3 C 160.9 95.1 159.6 93.1 158.9 91.5 C 158.2 89.9 158.1 88.3 158.9 86.7 C 159.7 85.2 162.8 83.2 163.6 82.0 C 164.4 80.7 165.5 79.4 163.6 79.3 C 161.8 79.2 155.9 79.9 152.5 81.4 C 149.1 82.9 144.6 86.5 143.0 88.3 C 141.3 90.2 141.5 90.1 142.4 92.6 C 143.4 95.1 149.0 101.2 148.8 103.2 C 148.6 105.1 143.3 103.7 141.4 104.2 C 139.4 104.8 139.5 103.5 137.1 106.4 C 134.7 109.2 130.0 117.4 127.0 121.2 C 124.1 125.0 123.1 126.6 119.6 129.2 C 116.2 131.7 109.4 134.6 106.4 136.6 C 103.4 138.5 102.7 139.2 101.6 140.8 C 100.4 142.5 99.9 143.2 99.5 146.7 C 99.0 150.1 99.6 156.8 98.9 161.5 C 98.2 166.2 96.5 171.4 95.2 174.8 C 94.0 178.1 93.3 179.6 91.5 181.7 C 89.7 183.7 86.4 186.3 84.6 187.0 C 82.9 187.7 82.5 187.3 80.9 185.9 C 79.3 184.5 78.3 184.1 75.1 178.5 C 71.9 172.8 65.3 159.5 61.8 152.0 C 58.4 144.5 56.1 139.7 54.4 133.4 C 52.7 127.1 52.4 117.7 51.7 114.3 C 51.1 111.0 52.9 111.8 50.7 113.3 C 48.5 114.7 41.5 121.2 38.5 122.8 C 35.5 124.4 34.2 123.1 32.7 122.8 C 31.1 122.5 30.8 122.6 28.9 121.2 C 27.1 119.8 21.2 116.0 21.5 114.3 C 21.9 112.6 28.9 112.2 31.1 111.1 C 33.3 110.1 33.7 109.3 34.8 108.0 C 35.8 106.6 39.1 104.2 37.4 103.2 C 35.7 102.2 27.5 102.7 24.7 102.1 C 21.9 101.6 22.5 101.9 20.5 100.0 C 18.4 98.1 13.6 92.9 12.5 91.0 C 11.4 89.0 12.6 89.1 13.6 88.3 C 14.5 87.5 14.7 86.9 18.3 86.2 C 22.0 85.5 32.2 84.7 35.3 84.1 C 38.4 83.5 37.1 84.1 36.9 82.5 C 36.7 80.9 34.5 76.8 34.2 74.5 C 34.0 72.3 34.7 70.6 35.3 69.2 C 35.9 67.9 37.1 67.0 38.0 66.6 C 38.8 66.1 39.3 66.1 40.6 66.6 C 41.9 67.1 41.5 73.8 45.9 69.8 C 50.3 65.8 63.9 47.9 67.1 42.7 C 70.4 37.6 67.1 40.5 65.5 39.0 C 63.9 37.5 58.5 35.9 57.6 33.7 C 56.6 31.5 60.8 28.2 59.7 25.8 C 58.6 23.3 52.4 20.6 51.2 18.9 C 50.1 17.1 51.5 16.1 52.8 15.2 C 54.1 14.2 56.5 13.2 59.2 13.0 Z"
+                                <span className="inline-flex items-center justify-center translate-x-8 sm:translate-x-10 md:translate-x-12">
+                                  <svg
+                                    viewBox="0 0 200 200"
+                                    className="w-[2.8em] h-[2.8em] sm:w-[3.2em] sm:h-[3.2em] md:w-[3.6em] md:h-[3.6em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.35)] dark:drop-shadow-[0_6px_20px_rgba(34,197,94,0.45)]"
                                     fill="none"
-                                    stroke="#22C55E"
-                                    strokeWidth="2.2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="will-change-transform"
-                                  />
-                                </svg>
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    {/* Smooth India silhouette perimeter outline from India.mp4 */}
+                                    <path
+                                      ref={indiaMapPathRef}
+                                      d="M 59.2 13.0 C 61.8 12.9 65.5 12.6 68.7 14.1 C 71.9 15.6 75.5 21.1 78.3 22.0 C 81.0 23.0 82.9 20.3 85.2 19.9 C 87.4 19.6 89.6 19.5 91.5 19.9 C 93.5 20.4 97.2 20.5 96.8 22.6 C 96.5 24.6 90.6 30.1 89.4 32.1 C 88.2 34.2 89.0 33.8 89.4 34.8 C 89.7 35.7 91.2 36.9 91.5 38.0 C 91.8 39.0 92.1 40.1 91.0 41.1 C 89.8 42.2 83.3 42.1 84.6 44.3 C 85.9 46.5 96.5 52.4 98.9 54.4 C 101.4 56.3 99.8 54.7 99.5 56.0 C 99.1 57.2 95.5 59.8 96.8 61.8 C 98.1 63.9 103.3 66.4 107.4 68.2 C 111.6 69.9 117.7 71.6 121.7 72.4 C 125.8 73.2 129.5 73.3 131.8 73.0 C 134.1 72.6 134.5 72.0 135.5 70.3 C 136.6 68.6 137.2 64.5 138.2 62.9 C 139.2 61.3 139.0 59.6 141.4 60.8 C 143.8 61.9 149.9 68.2 152.5 69.8 C 155.1 71.4 155.2 70.8 156.7 70.3 C 158.3 69.8 159.7 69.2 162.0 66.6 C 164.4 63.9 168.9 56.8 171.1 54.4 C 173.3 52.0 173.8 52.6 175.3 52.3 C 176.8 51.9 178.7 51.9 180.1 52.3 C 181.5 52.6 182.6 52.9 183.8 54.4 C 185.0 55.9 187.1 59.3 187.5 61.3 C 187.9 63.2 187.6 64.8 186.4 66.1 C 185.3 67.3 182.1 67.7 180.6 68.7 C 179.1 69.8 178.8 69.7 177.4 72.4 C 176.1 75.2 173.5 80.8 172.7 85.2 C 171.8 89.5 173.7 96.6 172.1 98.4 C 170.5 100.3 165.3 97.4 163.1 96.3 C 160.9 95.1 159.6 93.1 158.9 91.5 C 158.2 89.9 158.1 88.3 158.9 86.7 C 159.7 85.2 162.8 83.2 163.6 82.0 C 164.4 80.7 165.5 79.4 163.6 79.3 C 161.8 79.2 155.9 79.9 152.5 81.4 C 149.1 82.9 144.6 86.5 143.0 88.3 C 141.3 90.2 141.5 90.1 142.4 92.6 C 143.4 95.1 149.0 101.2 148.8 103.2 C 148.6 105.1 143.3 103.7 141.4 104.2 C 139.4 104.8 139.5 103.5 137.1 106.4 C 134.7 109.2 130.0 117.4 127.0 121.2 C 124.1 125.0 123.1 126.6 119.6 129.2 C 116.2 131.7 109.4 134.6 106.4 136.6 C 103.4 138.5 102.7 139.2 101.6 140.8 C 100.4 142.5 99.9 143.2 99.5 146.7 C 99.0 150.1 99.6 156.8 98.9 161.5 C 98.2 166.2 96.5 171.4 95.2 174.8 C 94.0 178.1 93.3 179.6 91.5 181.7 C 89.7 183.7 86.4 186.3 84.6 187.0 C 82.9 187.7 82.5 187.3 80.9 185.9 C 79.3 184.5 78.3 184.1 75.1 178.5 C 71.9 172.8 65.3 159.5 61.8 152.0 C 58.4 144.5 56.1 139.7 54.4 133.4 C 52.7 127.1 52.4 117.7 51.7 114.3 C 51.1 111.0 52.9 111.8 50.7 113.3 C 48.5 114.7 41.5 121.2 38.5 122.8 C 35.5 124.4 34.2 123.1 32.7 122.8 C 31.1 122.5 30.8 122.6 28.9 121.2 C 27.1 119.8 21.2 116.0 21.5 114.3 C 21.9 112.6 28.9 112.2 31.1 111.1 C 33.3 110.1 33.7 109.3 34.8 108.0 C 35.8 106.6 39.1 104.2 37.4 103.2 C 35.7 102.2 27.5 102.7 24.7 102.1 C 21.9 101.6 22.5 101.9 20.5 100.0 C 18.4 98.1 13.6 92.9 12.5 91.0 C 11.4 89.0 12.6 89.1 13.6 88.3 C 14.5 87.5 14.7 86.9 18.3 86.2 C 22.0 85.5 32.2 84.7 35.3 84.1 C 38.4 83.5 37.1 84.1 36.9 82.5 C 36.7 80.9 34.5 76.8 34.2 74.5 C 34.0 72.3 34.7 70.6 35.3 69.2 C 35.9 67.9 37.1 67.0 38.0 66.6 C 38.8 66.1 39.3 66.1 40.6 66.6 C 41.9 67.1 41.5 73.8 45.9 69.8 C 50.3 65.8 63.9 47.9 67.1 42.7 C 70.4 37.6 67.1 40.5 65.5 39.0 C 63.9 37.5 58.5 35.9 57.6 33.7 C 56.6 31.5 60.8 28.2 59.7 25.8 C 58.6 23.3 52.4 20.6 51.2 18.9 C 50.1 17.1 51.5 16.1 52.8 15.2 C 54.1 14.2 56.5 13.2 59.2 13.0 Z"
+                                      fill="none"
+                                      stroke="#22C55E"
+                                      strokeWidth="2.2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      className="will-change-transform"
+                                    />
+                                  </svg>
+                                </span>
                               </span>
                             </span>
                           </h3>
