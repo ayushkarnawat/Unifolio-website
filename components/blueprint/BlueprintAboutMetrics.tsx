@@ -298,14 +298,26 @@ export function BlueprintAboutMetrics() {
       }
     };
 
+    const handleEnergise = () => {
+      if (beaconRef.current) {
+        gsap.fromTo(
+          beaconRef.current,
+          { scale: 0.82, filter: "brightness(1.5) drop-shadow(0 0 40px rgba(34,197,94,0.7))" },
+          { scale: 1, filter: "brightness(1) drop-shadow(0 0 0px transparent)", duration: 1.3, ease: "power2.out" }
+        );
+      }
+    };
+
     window.addEventListener("wheel", handleWheel, { passive: false });
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
     window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("unifolio-about-energise", handleEnergise);
 
     return () => {
       window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("unifolio-about-energise", handleEnergise);
     };
   }, []);
 

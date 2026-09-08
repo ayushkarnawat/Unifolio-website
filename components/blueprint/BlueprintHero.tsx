@@ -208,6 +208,8 @@ const CONNECTION_LETTERS = ["c", "o", "n", "n", "e", "c", "t", "i", "o", "n"];
 const INDIA_LETTERS = ["I", "n", "d", "i", "a"];
 const MONEY_LETTERS = ["m", "o", "n", "e", "y"];
 const SELL_LETTERS = ["s", "e", "l", "l"];
+const CLOSING_BLACK_WORDS = ["Security", "isn't", "a", "feature", "here."];
+const CLOSING_GREEN_WORDS = ["It's", "the", "baseline", "everything", "else", "is", "built", "on."];
 
 export function BlueprintHero() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -254,10 +256,15 @@ export function BlueprintHero() {
   const productToRingTlRef = useRef<gsap.core.Timeline | null>(null);
   const ringRotateTweenRef = useRef<gsap.core.Tween | null>(null);
 
-  // Closing Exit Wipe Transition ("Security isn't a feature here...")
+  // Closing Exit Transition ("Security isn't a feature here...")
   const closingBlackTextRef = useRef<HTMLDivElement | null>(null);
   const closingGreenTextRef = useRef<HTMLDivElement | null>(null);
+  const closingBlackWordRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const closingGreenWordRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const closingExitTlRef = useRef<gsap.core.Timeline | null>(null);
+  const isRingConsolidatedRef = useRef<boolean>(false);
+  const consolidationTlRef = useRef<gsap.core.Timeline | null>(null);
+  const origCentersRef = useRef<{ x: number; y: number }[]>([]);
 
   // Typographic Eyes Easter Egg ("Read-only, always")
   const typoEyesRef = useRef<HTMLSpanElement | null>(null);
@@ -1124,6 +1131,7 @@ export function BlueprintHero() {
             y: r.top + r.height / 2 - clusterCenterY,
           };
         });
+        origCentersRef.current = origCenters;
 
         // Destination center for Phase 1 stacking: Card 05's current horizontal position
         const stackTargetX = origCenters[4].x;
@@ -2031,10 +2039,10 @@ export function BlueprintHero() {
         const pupils = typoPupilsRef.current.filter(Boolean) as HTMLElement[];
         const eyelids = typoEyelidsRef.current.filter(Boolean) as HTMLElement[];
 
-        // Dynamic push distance based on screen width
+        // Dynamic push distance based on screen width - generous spacing so composition feels spacious and unclustered
         const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
         const isTablet = typeof window !== "undefined" && window.innerWidth < 1024;
-        const pushDistance = isMobile ? 32 : isTablet ? 44 : 54;
+        const pushDistance = isMobile ? 38 : isTablet ? 52 : 66;
 
         // Reset initial state: words closed at rest, eyes compressed tightly behind
         gsap.set(eyesEl, {
@@ -2083,7 +2091,7 @@ export function BlueprintHero() {
           tl.to(
             leftWord,
             {
-              x: -12,
+              x: -15,
               duration: 0.28,
               ease: "power1.out",
             },
@@ -2092,7 +2100,7 @@ export function BlueprintHero() {
           tl.to(
             rightWord,
             {
-              x: 12,
+              x: 15,
               duration: 0.28,
               ease: "power1.out",
             },
@@ -2103,7 +2111,7 @@ export function BlueprintHero() {
           tl.to(
             leftWord,
             {
-              x: -9,
+              x: -11,
               duration: 0.10,
               ease: "sine.inOut",
             },
@@ -2112,7 +2120,7 @@ export function BlueprintHero() {
           tl.to(
             rightWord,
             {
-              x: 9,
+              x: 11,
               duration: 0.10,
               ease: "sine.inOut",
             },
@@ -2784,19 +2792,19 @@ export function BlueprintHero() {
 
         // 2. The 5 letters deconstruct and fly outward to cardinal nodes of India (elevated to match map)
         if (chars[0]) {
-          tl.to(chars[0], { x: 12, y: -56, scale: 0.2, rotate: -6, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
+          tl.to(chars[0], { x: 12, y: -72, scale: 0.2, rotate: -6, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
         }
         if (chars[1]) {
-          tl.to(chars[1], { x: 8, y: -14, scale: 0.25, rotate: -4, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.02);
+          tl.to(chars[1], { x: 8, y: -30, scale: 0.25, rotate: -4, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.02);
         }
         if (chars[2]) {
-          tl.to(chars[2], { x: 32, y: 18, scale: 0.2, rotate: 2, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.03);
+          tl.to(chars[2], { x: 32, y: 0, scale: 0.2, rotate: 2, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.03);
         }
         if (chars[3]) {
-          tl.to(chars[3], { x: 56, y: -8, scale: 0.25, rotate: 8, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.02);
+          tl.to(chars[3], { x: 56, y: -24, scale: 0.25, rotate: 8, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.02);
         }
         if (chars[4]) {
-          tl.to(chars[4], { x: 64, y: -46, scale: 0.2, rotate: 12, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
+          tl.to(chars[4], { x: 64, y: -62, scale: 0.2, rotate: 12, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
         }
 
         // 3. The India map outline wrapper appears centered over "India"
@@ -3038,35 +3046,82 @@ export function BlueprintHero() {
         });
       };
 
-      const playClosingExitSequence = () => {
-        if (!cardsClusterRef.current) return;
-        if (closingExitTlRef.current) {
-          closingExitTlRef.current.kill();
-          closingExitTlRef.current = null;
+      interface RingSlot {
+        x: number;
+        y: number;
+        z: number;
+        rotX: number;
+        rotY: number;
+        rotZ: number;
+        scale: number;
+        zIndex: number;
+      }
+
+      const computeRingSlots = (): RingSlot[] => {
+        const TOTAL_RING_CARDS = 26;
+        const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
+        const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
+        const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+
+        const ringRadius = Math.min(Math.max(vh * 0.22, 160), 220);
+        const finalCardScale = isDesktop ? 0.52 : isTablet ? 0.48 : 0.44;
+        const START_ALPHA = 225; // Top-Left (Card 01)
+        const ANGLE_STEP = 360.0 / TOTAL_RING_CARDS;
+
+        const slots: RingSlot[] = [];
+        for (let k = 0; k < TOTAL_RING_CARDS; k++) {
+          const alphaDeg = (START_ALPHA - k * ANGLE_STEP) % 360;
+          const rad = (alphaDeg * Math.PI) / 180;
+          const x = ringRadius * Math.cos(rad);
+          const y = ringRadius * Math.sin(rad);
+          const z = 55 * Math.sin(((alphaDeg - 45) * Math.PI) / 180);
+          const tangentDeg = (Math.atan2(-Math.cos(rad), Math.sin(rad)) * 180) / Math.PI;
+
+          slots.push({
+            x,
+            y,
+            z,
+            rotX: 18,
+            rotY: 20,
+            rotZ: tangentDeg,
+            scale: finalCardScale,
+            zIndex: 100 - k,
+          });
         }
+        return slots;
+      };
+
+      const consolidateRingToStack = () => {
+        if (!cardsClusterRef.current) return;
+        if (isSecurityTransitioningRef.current) return;
+        if (isRingConsolidatedRef.current) return;
 
         const clusterEl = cardsClusterRef.current;
         isSecurityTransitioningRef.current = true;
 
-        // Stop continuous ambient ring rotation
+        if (consolidationTlRef.current) {
+          consolidationTlRef.current.kill();
+          consolidationTlRef.current = null;
+        }
+
+        // 1. Capture current ambient rotation angle and pause ambient tween
+        const currentRot = Number(gsap.getProperty(clusterEl, "rotateZ")) || 376;
         if (ringRotateTweenRef.current) {
           ringRotateTweenRef.current.kill();
           ringRotateTweenRef.current = null;
         }
 
-        // Reset clip paths on the closing text containers (strictly visible, zero opacity fade)
-        if (closingBlackTextRef.current) {
-          closingBlackTextRef.current.style.clipPath = "inset(0% 0% 0% 0%)";
-          (closingBlackTextRef.current.style as any).webkitClipPath = "inset(0% 0% 0% 0%)";
-          closingBlackTextRef.current.style.opacity = "1";
-          closingBlackTextRef.current.style.visibility = "visible";
-        }
-        if (closingGreenTextRef.current) {
-          closingGreenTextRef.current.style.clipPath = "inset(0% 0% 0% 0%)";
-          (closingGreenTextRef.current.style as any).webkitClipPath = "inset(0% 0% 0% 0%)";
-          closingGreenTextRef.current.style.opacity = "1";
-          closingGreenTextRef.current.style.visibility = "visible";
-        }
+        const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
+        const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
+        const stackCardScale = isDesktop ? 0.60 : isTablet ? 0.56 : 0.52;
+
+        const allProductCards = cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
+        const allCompanionCards = companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
+        const ringSlots = computeRingSlots();
+
+        // Target: cards consolidate into tight horizontal stack matching reference attachment (Panels 3 & 4)
+        // Standing upright, front card on right (+35px), overlapping offsets to left (-2.8px per card)
+        const frontX = 35;
 
         // Measure live bounding rects to anchor trajectory dynamically
         const blackRect = closingBlackTextRef.current?.getBoundingClientRect();
@@ -3080,219 +3135,457 @@ export function BlueprintHero() {
 
         const vw = typeof window !== "undefined" ? window.innerWidth : 1440;
         const vh = typeof window !== "undefined" ? window.innerHeight : 900;
-        const bLeft = blackRect?.left ?? vw * 0.45;
+        const bLeft = blackRect?.left ?? vw * 0.28;
         const bRight = blackRect?.right ?? vw * 0.82;
-        const bTop = blackRect?.top ?? vh * 0.40;
-        const bBottom = blackRect?.bottom ?? bTop + 120;
+        const bTop = blackRect?.top ?? vh * 0.38;
+        const bBottom = blackRect?.bottom ?? bTop + 54;
         const bCenterY = (bTop + bBottom) / 2;
 
-        const gLeft = greenRect?.left ?? vw * 0.45;
-        const gRight = greenRect?.right ?? vw * 0.82;
-        const gTop = greenRect?.top ?? vh * 0.54;
-        const gBottom = greenRect?.bottom ?? gTop + 160;
+        const gLeft = greenRect?.left ?? bLeft;
+        const gRight = greenRect?.right ?? vw * 0.80;
+        const gTop = greenRect?.top ?? bBottom + 8;
+        const gBottom = greenRect?.bottom ?? gTop + 54;
         const gCenterY = (gTop + gBottom) / 2;
 
-        // Path keypoints based on yellow trajectory diagram:
-        // P2: Right edge of black text (completing sweep 1)
-        const px2 = bRight + 60;
-        const py2 = bCenterY;
-        const x2 = curX + (px2 - clusterCenterX);
-        const y2 = curY + (py2 - clusterCenterY);
+        // Continuous 5-waypoint trajectory coordinates:
+        // Waypoint 1: Stack passes right edge of black statement (moving left -> right)
+        const px1 = bRight + 65;
+        const py1 = bCenterY;
+        const dx1 = curX + (px1 - clusterCenterX);
+        const dy1 = curY + (py1 - clusterCenterY);
 
-        // P3: Apex of smooth curved turn downward around the right edge
-        const px3 = bRight + 100;
-        const py3 = (bBottom + gTop) / 2 + 15;
-        const x3 = curX + (px3 - clusterCenterX);
-        const y3 = curY + (py3 - clusterCenterY);
+        // Waypoint 2: Curved turn apex around right perimeter between both lines
+        const px2 = Math.max(bRight, gRight) + 85;
+        const py2 = (bCenterY + gCenterY) / 2;
+        const dx2 = curX + (px2 - clusterCenterX);
+        const dy2 = curY + (py2 - clusterCenterY);
 
-        // P4: Sweeping through center-left of green text (completing sweep 2)
-        const px4 = gLeft + (gRight - gLeft) * 0.28;
-        const py4 = gCenterY + 12;
-        const x4 = curX + (px4 - clusterCenterX);
-        const y4 = curY + (py4 - clusterCenterY);
+        // Waypoint 3: End of green return sweep past left edge of green statement (moving right -> left)
+        const px3 = gLeft - 45;
+        const py3 = gCenterY;
+        const dx3 = curX + (px3 - clusterCenterX);
+        const dy3 = curY + (py3 - clusterCenterY);
 
-        // P5: Curving downward toward bottom-right
-        const px5 = gLeft + (gRight - gLeft) * 0.75;
-        const py5 = gBottom + 70;
-        const x5 = curX + (px5 - clusterCenterX);
-        const y5 = curY + (py5 - clusterCenterY);
+        // Waypoint 4A: Overshoot past final text with horizontal momentum & subtle anticipation lift
+        const pxOvershoot = gLeft - 105;
+        const pyOvershoot = gCenterY - 5;
+        const dxOvershoot = curX + (pxOvershoot - clusterCenterX);
+        const dyOvershoot = curY + (pyOvershoot - clusterCenterY);
 
-        // P6: Off-screen plunge downward toward bottom-right
-        const px6 = gRight + 140;
-        const py6 = vh + 450;
-        const x6 = curX + (px6 - clusterCenterX);
-        const y6 = curY + (py6 - clusterCenterY);
+        // Waypoint 4B: Fluid downward arc curving naturally into the descent (zero sharp drop)
+        const pxArc = gLeft - 75;
+        const pyArc = gBottom + 115;
+        const dxArc = curX + (pxArc - clusterCenterX);
+        const dyArc = curY + (pyArc - clusterCenterY);
 
-        const allCards: HTMLElement[] = [
-          ...(cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[]),
-          ...(companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[]),
-        ];
-
-        const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
-        const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
-        const baseScale = isDesktop ? 0.48 : isTablet ? 0.44 : 0.40;
-
-        // Collect cards with their initial local positions in the ring
-        const cardsWithPos = allCards.map((cardEl, origIdx) => {
-          const x = (gsap.getProperty(cardEl, "x") as number) || 0;
-          const y = (gsap.getProperty(cardEl, "y") as number) || 0;
-          return { cardEl, origIdx, x, y };
-        });
-
-        // Sort cards from right to left (highest x to lowest x).
-        // Cards already closest to the motion direction become the front of the ribbon!
-        // This eliminates crossing paths or scattering in opposite directions.
-        cardsWithPos.sort((a, b) => b.x - a.x);
-        const TOTAL_CARDS = cardsWithPos.length;
-
-        let maxBlackCover = 0;
-        let maxGreenCover = 0;
+        // Waypoint 5: Accelerating dive exit off-screen, carrying momentum directly into the About section
+        const pxExit = gLeft + 35;
+        const pyExit = vh + 540;
+        const dxExit = curX + (pxExit - clusterCenterX);
+        const dyExit = curY + (pyExit - clusterCenterY);
 
         const tl = gsap.timeline({
           onUpdate: () => {
-            const blackEl = closingBlackTextRef.current;
-            const greenEl = closingGreenTextRef.current;
-            if (!blackEl || !greenEl) return;
+            const time = tl.time();
+            // During consolidation (< 0.96s), both statement lines remain 100% visible and untouched
+            if (time < 0.96) {
+              if (closingBlackTextRef.current) {
+                closingBlackTextRef.current.style.clipPath = "none";
+                (closingBlackTextRef.current.style as any).webkitClipPath = "none";
+              }
+              if (closingGreenTextRef.current) {
+                closingGreenTextRef.current.style.clipPath = "none";
+                (closingGreenTextRef.current.style as any).webkitClipPath = "none";
+              }
+              return;
+            }
 
-            const cRect = clusterEl.getBoundingClientRect();
-            const bR = blackEl.getBoundingClientRect();
-            const gR = greenEl.getBoundingClientRect();
+            // 1. Compute physical bounds of solid cards in the stack
+            let maxCardRight = -Infinity;
+            let minCardLeft = Infinity;
+            allProductCards.forEach((c) => {
+              if (!c) return;
+              const r = c.getBoundingClientRect();
+              if (r.right > maxCardRight) maxCardRight = r.right;
+              if (r.left < minCardLeft) minCardLeft = r.left;
+            });
+            if (!isFinite(maxCardRight) || !isFinite(minCardLeft)) {
+              const cR = clusterEl.getBoundingClientRect();
+              maxCardRight = cR.left + cR.width * 0.72;
+              minCardLeft = cR.left + cR.width * 0.28;
+            }
 
-            // 1. Black Text Physical Wipe (Left to Right)
-            // Leading edge of cards moving right: cluster center + forward offset
-            const cardFrontX = cRect.left + cRect.width * 0.62;
-            if (cardFrontX >= bR.left) {
-              const pB = Math.max(0, Math.min(1, (cardFrontX - bR.left) / (bR.width || 1)));
-              if (pB > maxBlackCover) {
-                maxBlackCover = pB;
-                const pctB = (maxBlackCover * 100).toFixed(1);
-                blackEl.style.clipPath = `inset(0% 0% 0% ${pctB}%)`;
-                (blackEl.style as any).webkitClipPath = `inset(0% 0% 0% ${pctB}%)`;
+            // Eraser cut lines: 24px inside the leading edge under the solid body of cards
+            const wipeRightX = maxCardRight - 24;
+            const wipeLeftX = minCardLeft + 24;
+
+            // 2. Spatial erasure of Black Line (swept Left -> Right, 0.96s -> 1.48s)
+            if (closingBlackTextRef.current) {
+              const bCurRect = closingBlackTextRef.current.getBoundingClientRect();
+              if (time >= 1.50 || wipeRightX >= bCurRect.right) {
+                // Completely removed once cards have cleared past the right edge
+                closingBlackTextRef.current.style.clipPath = `inset(0 0 0 ${bCurRect.width}px)`;
+                (closingBlackTextRef.current.style as any).webkitClipPath = `inset(0 0 0 ${bCurRect.width}px)`;
+              } else {
+                const bProgress = Math.max(0, Math.min(bCurRect.width, wipeRightX - bCurRect.left));
+                closingBlackTextRef.current.style.clipPath = `inset(0 0 0 ${bProgress}px)`;
+                (closingBlackTextRef.current.style as any).webkitClipPath = `inset(0 0 0 ${bProgress}px)`;
               }
             }
 
-            // 2. Green Text Physical Wipe (Right to Left)
-            // After the turn, cards sweep left across green text:
-            // Leading edge heading left is cluster center - left offset
-            const progress = tl.progress();
-            if (progress >= 0.45) {
-              const cardBackX = cRect.left + cRect.width * 0.38;
-              if (cardBackX <= gR.right + 30) {
-                const pG = Math.max(0, Math.min(1, (gR.right - cardBackX) / (gR.width || 1)));
-                if (pG > maxGreenCover) {
-                  maxGreenCover = pG;
-                  const pctG = (maxGreenCover * 100).toFixed(1);
-                  greenEl.style.clipPath = `inset(0% ${pctG}% 0% 0%)`;
-                  (greenEl.style as any).webkitClipPath = `inset(0% ${pctG}% 0% 0%)`;
-                }
+            // 3. Spatial erasure of Green Line (swept Right -> Left return, 1.76s -> 2.30s)
+            // Green text MUST remain 100% visible and untouched while the black text disappears!
+            // It only starts disappearing when the cards actually curve around and sweep back from right to left!
+            if (closingGreenTextRef.current) {
+              const gCurRect = closingGreenTextRef.current.getBoundingClientRect();
+              if (time < 1.76) {
+                // Untouched and 100% visible before the return sweep begins!
+                closingGreenTextRef.current.style.clipPath = "none";
+                (closingGreenTextRef.current.style as any).webkitClipPath = "none";
+              } else if (time >= 2.32 || wipeLeftX <= gCurRect.left) {
+                // Completely removed once return cards have swept past the left edge
+                closingGreenTextRef.current.style.clipPath = `inset(0 ${gCurRect.width}px 0 0)`;
+                (closingGreenTextRef.current.style as any).webkitClipPath = `inset(0 ${gCurRect.width}px 0 0)`;
+              } else {
+                const gRightClip = Math.max(0, Math.min(gCurRect.width, gCurRect.right - wipeLeftX));
+                closingGreenTextRef.current.style.clipPath = `inset(0 ${gRightClip}px 0 0)`;
+                (closingGreenTextRef.current.style as any).webkitClipPath = `inset(0 ${gRightClip}px 0 0)`;
               }
             }
           },
           onComplete: () => {
+            isRingConsolidatedRef.current = true;
+            // Cards have plunged off-screen; hand off seamlessly into the About section
             exitSecurityToAbout();
           },
+          onReverseComplete: () => {
+            isSecurityTransitioningRef.current = false;
+            isRingConsolidatedRef.current = false;
+            if (closingBlackTextRef.current) {
+              closingBlackTextRef.current.style.clipPath = "none";
+              (closingBlackTextRef.current.style as any).webkitClipPath = "none";
+            }
+            if (closingGreenTextRef.current) {
+              closingGreenTextRef.current.style.clipPath = "none";
+              (closingGreenTextRef.current.style as any).webkitClipPath = "none";
+            }
+            // Restore ambient ring rotation seamlessly
+            if (!ringRotateTweenRef.current || !ringRotateTweenRef.current.isActive()) {
+              ringRotateTweenRef.current = gsap.fromTo(
+                clusterEl,
+                { rotateZ: currentRot },
+                {
+                  rotateZ: currentRot + 360,
+                  duration: 26,
+                  repeat: -1,
+                  ease: "none",
+                  force3D: true,
+                }
+              );
+            }
+          },
         });
-        closingExitTlRef.current = tl;
+        consolidationTlRef.current = tl;
 
-        // 1. Controlled, elegant unfurl: cards smoothly condense into a dense, layered flowing ribbon
-        // All cards move inward toward the forward flight line without crossing or scattering.
-        cardsWithPos.forEach((item, rank) => {
-          // Spread smoothly along horizontal flight axis (from +85px at front to -85px at tail)
-          const targetX = 85 - rank * (170 / (TOTAL_CARDS - 1));
-          const targetY = Math.sin((rank / (TOTAL_CARDS - 1)) * Math.PI * 2) * 6;
-          const targetZ = (TOTAL_CARDS - rank) * 2;
-
-          tl.to(
-            item.cardEl,
-            {
-              x: targetX,
-              y: targetY,
-              z: targetZ,
-              rotateX: 12,
-              rotateY: -8,
-              rotateZ: -2 + Math.sin(rank * 0.3) * 1.5,
-              scale: baseScale,
-              opacity: 1,
-              visibility: "visible",
-              duration: 0.34,
-              ease: "power2.out",
-            },
-            0
-          );
-        });
-
-        // 2. Stage 1: Sweep right across black text (P0 -> P2)
-        // Deliberate continuous sweep covering and taking the text away
+        // Cluster counter-rotates backward along the unwind, settling to neutral upright orientation
         tl.to(
           clusterEl,
           {
-            x: x2,
-            y: y2,
-            rotateZ: -2,
-            rotateX: 12,
-            rotateY: -8,
-            duration: 0.58,
-            ease: "power1.inOut",
+            rotateZ: currentRot - 80,
+            rotateX: 0,
+            rotateY: 0,
+            duration: 0.88,
+            ease: "power2.inOut",
           },
           0
         );
 
-        // 3. Stage 2: Smooth curved turn downward around the right edge (P2 -> P3)
-        // Fluid momentum conservation: cards bank together as ONE unified ribbon into the curve
+        // 2A. Product Cards 0..4 consolidate sequentially into the horizontal stack
+        allProductCards.forEach((wrapper, i) => {
+          const slot = ringSlots[i];
+          const kDelay = i * 0.018;
+          const origX = origCentersRef.current[i]?.x ?? 0;
+          const origY = origCentersRef.current[i]?.y ?? 0;
+
+          const destX = frontX - i * 2.8;
+          const destY = 0;
+          const destZ = -i * 2.2;
+
+          const midX = slot.x * 0.45 + destX * 0.55;
+          const midY = slot.y * 0.45 + destY * 0.55;
+          const midZ = slot.z * 0.4 + destZ * 0.6 + 12;
+          const midRotZ = slot.rotZ * 0.35;
+          const midRotX = slot.rotX * 0.4;
+          const midRotY = slot.rotY * 0.4;
+          const midScale = slot.scale * 0.45 + stackCardScale * 0.55;
+
+          tl.set(wrapper, { zIndex: 100 - i }, kDelay);
+
+          tl.to(
+            wrapper,
+            {
+              keyframes: [
+                {
+                  x: midX - origX,
+                  y: midY - origY,
+                  z: midZ,
+                  rotateX: midRotX,
+                  rotateY: midRotY,
+                  rotateZ: midRotZ,
+                  scale: midScale,
+                  duration: 0.26,
+                  ease: "power1.inOut",
+                },
+                {
+                  x: destX - origX,
+                  y: destY - origY,
+                  z: destZ,
+                  rotateX: 0,
+                  rotateY: 0,
+                  rotateZ: 0,
+                  scale: stackCardScale,
+                  duration: 0.34,
+                  ease: "power2.out",
+                },
+              ],
+              force3D: true,
+            },
+            kDelay
+          );
+        });
+
+        // 2B. Companion Cards 5..25 consolidate sequentially behind the product cards
+        allCompanionCards.forEach((compEl, cIdx) => {
+          const k = 5 + cIdx;
+          const slot = ringSlots[k];
+          const kDelay = k * 0.016;
+
+          const destX = frontX - k * 2.8;
+          const destY = 0;
+          const destZ = -k * 2.2;
+
+          const midX = slot.x * 0.45 + destX * 0.55;
+          const midY = slot.y * 0.45 + destY * 0.55;
+          const midZ = slot.z * 0.4 + destZ * 0.6 + 10;
+          const midRotZ = slot.rotZ * 0.35;
+          const midRotX = slot.rotX * 0.4;
+          const midRotY = slot.rotY * 0.4;
+          const midScale = slot.scale * 0.45 + stackCardScale * 0.55;
+
+          tl.set(compEl, { zIndex: 100 - k }, kDelay);
+
+          tl.to(
+            compEl,
+            {
+              keyframes: [
+                {
+                  x: midX,
+                  y: midY,
+                  z: midZ,
+                  rotateX: midRotX,
+                  rotateY: midRotY,
+                  rotateZ: midRotZ,
+                  scale: midScale,
+                  duration: 0.26,
+                  ease: "power1.inOut",
+                },
+                {
+                  x: destX,
+                  y: destY,
+                  z: destZ,
+                  rotateX: 0,
+                  rotateY: 0,
+                  rotateZ: 0,
+                  scale: stackCardScale,
+                  duration: 0.34,
+                  ease: "power2.out",
+                },
+              ],
+              force3D: true,
+            },
+            kDelay
+          );
+        });
+
+        // 3. Settled beat (Panel 4: "Stack settled, ready to move")
+        // Microscopic tactile collective breath as the stack locks in place
         tl.to(
           clusterEl,
           {
-            x: x3,
-            y: y3,
-            rotateZ: 38,
-            rotateY: 10,
-            duration: 0.26,
-            ease: "sine.inOut",
+            scale: 1.015,
+            duration: 0.06,
+            ease: "power1.out",
           },
-          0.58
+          0.94
+        );
+        tl.to(
+          clusterEl,
+          {
+            scale: 1.0,
+            duration: 0.06,
+            ease: "power1.in",
+          },
+          1.00
         );
 
-        // 4. Stage 3: Sweep across/down through green text (P3 -> P4)
-        // Carrying away the green text
+        // =========================================================================
+        // PHASE 2: CONTINUOUS CINEMATIC S-CURVE TRAJECTORY & CONTROLLED DIVE EXIT
+        // Sequence: sweep across black text -> turn apex -> sweep across green text ->
+        // overshoot slightly with horizontal momentum & anticipation lift ->
+        // elegant downward curve -> accelerating, deliberate dive into next section!
+        // =========================================================================
         tl.to(
           clusterEl,
           {
-            x: x4,
-            y: y4,
-            rotateZ: 14,
-            rotateY: -6,
-            duration: 0.44,
-            ease: "sine.inOut",
+            keyframes: [
+              // 1. Leg 1: Sweep left -> right across black statement
+              {
+                x: dx1,
+                y: dy1,
+                rotateZ: 3.5,
+                rotateX: 4,
+                rotateY: -3,
+                duration: 0.52,
+                ease: "power1.in", // accelerating into sweep, carrying speed into the turn
+              },
+              // 2. Curved turn apex around the right perimeter between both lines
+              {
+                x: dx2,
+                y: dy2,
+                rotateZ: 14,
+                rotateX: 7,
+                rotateY: 6,
+                duration: 0.28,
+                ease: "sine.inOut", // smooth circular arc, zero stop
+              },
+              // 3. Leg 2: Return sweep right -> left across green statement
+              {
+                x: dx3,
+                y: dy3,
+                rotateZ: -5,
+                rotateX: -2,
+                rotateY: -6,
+                duration: 0.54,
+                ease: "power1.inOut", // sweeping fluidly across green text
+              },
+              // 4A. Overshoot & Anticipation: Glides past final text with horizontal momentum & subtle lift
+              {
+                x: dxOvershoot,
+                y: dyOvershoot,
+                rotateZ: -8,
+                rotateX: -3,
+                rotateY: -8,
+                duration: 0.30,
+                ease: "power1.out", // momentum coasting to arc apex
+              },
+              // 4B. Fluid Downward Arc: Curves elegantly into the descent (no sharp 90-degree corner)
+              {
+                x: dxArc,
+                y: dyArc,
+                rotateZ: 14,
+                rotateX: 14,
+                rotateY: 4,
+                duration: 0.34,
+                ease: "power1.inOut", // smooth parabolic curve into the dive
+              },
+              // 5. Accelerating Dive Exit: Guided intentionally downward into the next section
+              {
+                x: dxExit,
+                y: dyExit,
+                rotateZ: 28,
+                rotateX: 22,
+                rotateY: 0,
+                scale: 0.94,
+                duration: 0.38,
+                ease: "power2.in", // deliberate, accelerating descent into About
+              },
+            ],
+            force3D: true,
           },
-          0.84
+          0.96
         );
 
-        // 5. Stage 4: Curve downward toward bottom-right (P4 -> P5)
-        tl.to(
-          clusterEl,
-          {
-            x: x5,
-            y: y5,
-            rotateZ: 28,
-            duration: 0.22,
-            ease: "sine.in",
-          },
-          1.28
-        );
+        // Dynamic aerodynamic trailing on rear cards (3 & 4) adapting to trajectory
+        [allProductCards[3], allProductCards[4]].forEach((el, lagIdx) => {
+          if (!el) return;
+          const k = lagIdx + 1;
+          // Leg 1: aerodynamic lag to left during rightward travel
+          tl.to(
+            el,
+            {
+              x: `-=${k * 14}`,
+              y: `+=${k * 2.5}`,
+              rotateZ: `-=${k * 2.5}`,
+              duration: 0.44,
+              ease: "power1.out",
+            },
+            1.02 + lagIdx * 0.04
+          );
+          // Turn apex: cards swing outward smoothly with the centrifugal bank
+          tl.to(
+            el,
+            {
+              x: `+=${k * 8}`,
+              y: `+=${k * 4}`,
+              rotateZ: `+=${k * 3.5}`,
+              duration: 0.28,
+              ease: "sine.inOut",
+            },
+            1.48 + lagIdx * 0.03
+          );
+          // Leg 2: aerodynamic lag to right during leftward return travel
+          tl.to(
+            el,
+            {
+              x: `+=${k * 16}`,
+              y: `-=${k * 2}`,
+              rotateZ: `+=${k * 2}`,
+              duration: 0.50,
+              ease: "sine.inOut",
+            },
+            1.78 + lagIdx * 0.03
+          );
+          // Overshoot & Anticipation: rear cards float in the wake of the overshoot
+          tl.to(
+            el,
+            {
+              x: `+=${k * 10}`,
+              y: `-=${k * 1.5}`,
+              rotateZ: `+=${k * 1.5}`,
+              duration: 0.28,
+              ease: "power1.out",
+            },
+            2.30 + lagIdx * 0.03
+          );
+          // Arc & Dive: rear cards lag subtly behind the dive along the curve, creating dimensional depth
+          tl.to(
+            el,
+            {
+              x: `-=${k * 6}`,
+              y: `-=${k * 16}`,
+              rotateZ: `-=${k * 3}`,
+              duration: 0.68,
+              ease: "power2.in",
+            },
+            2.60 + lagIdx * 0.03
+          );
+        });
 
-        // 6. Stage 5: Plunge downward and off-screen toward bottom-right (P5 -> P6)
-        tl.to(
-          clusterEl,
-          {
-            x: x6,
-            y: y6,
-            rotateZ: 40,
-            opacity: 0,
-            duration: 0.26,
-            ease: "power2.in",
-          },
-          1.50
-        );
+        // Trigger the luminous emerald beacon in the About section as stack plunges
+        tl.add(() => {
+          window.dispatchEvent(
+            new CustomEvent("unifolio-about-energise", { detail: { momentum: "downward" } })
+          );
+        }, 2.95);
+      };
+
+      const restoreStackToRing = () => {
+        if (!consolidationTlRef.current) return;
+        if (isSecurityTransitioningRef.current) return;
+        if (!isRingConsolidatedRef.current) return;
+
+        isSecurityTransitioningRef.current = true;
+        consolidationTlRef.current.reverse();
       };
 
       const goToSecurityState = (nextIdx: number, direction: 1 | -1) => {
@@ -3389,11 +3682,30 @@ export function BlueprintHero() {
           if (sellShieldIconRef.current) gsap.set(sellShieldIconRef.current, { rotateY: 0, rotateZ: 0, x: 0, y: 0 });
         }
 
-        // Clean up closing exit animation if leaving state 7
+        // Clean up closing consolidation if leaving state 7
         if (prevIdx === 7) {
-          if (closingExitTlRef.current) {
-            closingExitTlRef.current.kill();
-            closingExitTlRef.current = null;
+          if (consolidationTlRef.current) {
+            consolidationTlRef.current.kill();
+            consolidationTlRef.current = null;
+          }
+          isRingConsolidatedRef.current = false;
+          closingBlackWordRefs.current.forEach((el) => {
+            if (el) gsap.set(el, { opacity: 1, scale: 1, x: 0, y: 0 });
+          });
+          closingGreenWordRefs.current.forEach((el) => {
+            if (el) gsap.set(el, { opacity: 1, scale: 1, x: 0, y: 0 });
+          });
+          if (closingBlackTextRef.current) {
+            closingBlackTextRef.current.style.clipPath = "none";
+            (closingBlackTextRef.current.style as any).webkitClipPath = "none";
+            closingBlackTextRef.current.style.opacity = "1";
+            closingBlackTextRef.current.style.visibility = "visible";
+          }
+          if (closingGreenTextRef.current) {
+            closingGreenTextRef.current.style.clipPath = "none";
+            (closingGreenTextRef.current.style as any).webkitClipPath = "none";
+            closingGreenTextRef.current.style.opacity = "1";
+            closingGreenTextRef.current.style.visibility = "visible";
           }
         }
 
@@ -3418,8 +3730,9 @@ export function BlueprintHero() {
             } else if (nextIdx === 6) {
               playSellAnimation();
             } else if (nextIdx === 7) {
-              // Closing line has appeared — trigger the fast cinematic cards unfurl, wipe & exit sequence
-              playClosingExitSequence();
+              // Final security state (closing line) enters and remains fully settled and visible
+              // Does not auto-trigger consolidation; waits for intentional user downward scroll
+              isSecurityTransitioningRef.current = false;
             } else {
               isSecurityTransitioningRef.current = false;
             }
@@ -3458,6 +3771,16 @@ export function BlueprintHero() {
           if (nextIdx === 0 && securityHeroRibbonRef.current) {
             gsap.set(securityHeroRibbonRef.current, { x: 0 });
             gsap.set(nextEl, { clipPath: "none" });
+          }
+          if (nextIdx === 7) {
+            if (closingBlackTextRef.current) {
+              closingBlackTextRef.current.style.clipPath = "none";
+              (closingBlackTextRef.current.style as any).webkitClipPath = "none";
+            }
+            if (closingGreenTextRef.current) {
+              closingGreenTextRef.current.style.clipPath = "none";
+              (closingGreenTextRef.current.style as any).webkitClipPath = "none";
+            }
           }
           tl.set(
             nextEl,
@@ -3680,6 +4003,13 @@ export function BlueprintHero() {
           ringRotateTweenRef.current = null;
         }
 
+        // Clean up consolidation timeline if active
+        if (consolidationTlRef.current) {
+          consolidationTlRef.current.kill();
+          consolidationTlRef.current = null;
+        }
+        isRingConsolidatedRef.current = false;
+
         // 2. Reset any advanced security states back to State 0 before reversing
         if (currentSecurityStateRef.current > 0) {
           const activeEl = securityStateRefs.current[currentSecurityStateRef.current];
@@ -3784,13 +4114,22 @@ export function BlueprintHero() {
             if (currentSecurityStateRef.current < SECURITY_STATES.length - 1) {
               goToSecurityState(currentSecurityStateRef.current + 1, 1);
             } else {
-              // At State 8 Closing line -> next intentional downward scroll proceeds to About
-              exitSecurityToAbout();
+              // At final security state (State 7):
+              // First downward scroll triggers consolidation of the ring into the horizontal stack
+              if (!isRingConsolidatedRef.current) {
+                consolidateRingToStack();
+              }
+              // Once consolidated, hold in place — do not begin next movement yet
             }
             return;
           } else if (e.deltaY < -12) {
             wheelGestureActiveRef.current = true;
             lastSecurityScrollTimeRef.current = Date.now();
+            // If at final state and stack is consolidated, scroll up reverses consolidation and restores ring
+            if (currentSecurityStateRef.current === SECURITY_STATES.length - 1 && isRingConsolidatedRef.current) {
+              restoreStackToRing();
+              return;
+            }
             // One intentional upward scroll = exactly one previous state
             if (currentSecurityStateRef.current > 0) {
               goToSecurityState(currentSecurityStateRef.current - 1, -1);
@@ -3876,13 +4215,19 @@ export function BlueprintHero() {
             if (currentSecurityStateRef.current < SECURITY_STATES.length - 1) {
               goToSecurityState(currentSecurityStateRef.current + 1, 1);
             } else {
-              exitSecurityToAbout();
+              if (!isRingConsolidatedRef.current) {
+                consolidateRingToStack();
+              }
             }
             return;
           } else if (touchDeltaY < -24) {
             touchGestureActiveRef.current = true;
             lastSecurityScrollTimeRef.current = Date.now();
             touchStartY = e.touches[0].clientY;
+            if (currentSecurityStateRef.current === SECURITY_STATES.length - 1 && isRingConsolidatedRef.current) {
+              restoreStackToRing();
+              return;
+            }
             if (currentSecurityStateRef.current > 0) {
               goToSecurityState(currentSecurityStateRef.current - 1, -1);
             } else {
@@ -3928,7 +4273,9 @@ export function BlueprintHero() {
             if (currentSecurityStateRef.current < SECURITY_STATES.length - 1) {
               goToSecurityState(currentSecurityStateRef.current + 1, 1);
             } else {
-              exitSecurityToAbout();
+              if (!isRingConsolidatedRef.current) {
+                consolidateRingToStack();
+              }
             }
             return;
           } else if (["ArrowUp", "PageUp"].includes(e.key) || (e.key === " " && e.shiftKey)) {
@@ -3937,6 +4284,10 @@ export function BlueprintHero() {
             if (isSecurityTransitioningRef.current) return;
             if (Date.now() - lastSecurityScrollTimeRef.current < 350) return;
 
+            if (currentSecurityStateRef.current === SECURITY_STATES.length - 1 && isRingConsolidatedRef.current) {
+              restoreStackToRing();
+              return;
+            }
             if (currentSecurityStateRef.current > 0) {
               goToSecurityState(currentSecurityStateRef.current - 1, -1);
             } else {
@@ -4889,7 +5240,7 @@ export function BlueprintHero() {
                               {/* The Living Eyes - Trapped behind the words, forcing their way out */}
                               <span
                                 ref={typoEyesRef}
-                                className="absolute -top-[28px] sm:-top-[36px] md:-top-[44px] left-1/2 -translate-x-1/2 pointer-events-none select-none inline-flex items-center gap-2 sm:gap-2.5 md:gap-3 px-2 py-1 z-20"
+                                className="absolute -top-[38px] sm:-top-[48px] md:-top-[58px] left-1/2 -translate-x-1/2 pointer-events-none select-none inline-flex items-center gap-2 sm:gap-2.5 md:gap-3 px-2 py-1 z-20"
                                 style={{
                                   opacity: 0,
                                   visibility: "hidden",
@@ -5143,7 +5494,7 @@ export function BlueprintHero() {
                           </h3>
                         ) : idx === 5 ? (
                           // State 6: "Stored in India" - Typography Transformation into Minimal India Map Outline
-                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.06] mb-4 sm:mb-5 select-none whitespace-normal lg:whitespace-nowrap">
+                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.06] mb-5 sm:mb-6 md:mb-7 select-none whitespace-normal lg:whitespace-nowrap">
                             <span>Stored in </span>
 
                             {/* The word "India" transforms into the minimal outline map */}
@@ -5170,7 +5521,7 @@ export function BlueprintHero() {
                                 style={{ opacity: 0, transform: "scale(0.35)" }}
                                 aria-hidden="true"
                               >
-                                <span className="inline-flex items-center justify-center translate-x-8 sm:translate-x-10 md:translate-x-12 -translate-y-5 sm:-translate-y-7 md:-translate-y-8">
+                                <span className="inline-flex items-center justify-center translate-x-8 sm:translate-x-10 md:translate-x-12 -translate-y-9 sm:-translate-y-12 md:-translate-y-15">
                                   <svg
                                     viewBox="0 0 200 200"
                                     className="w-[2.8em] h-[2.8em] sm:w-[3.2em] sm:h-[3.2em] md:w-[3.6em] md:h-[3.6em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.35)] dark:drop-shadow-[0_6px_20px_rgba(34,197,94,0.45)]"
@@ -5290,22 +5641,40 @@ export function BlueprintHero() {
                         {/* Black text portion: "Security isn't a feature here." */}
                         <div
                           ref={closingBlackTextRef}
-                          className="overflow-hidden will-change-[clip-path,opacity]"
-                          style={{ clipPath: "inset(0% 0% 0% 0%)" }}
+                          className="will-change-[clip-path,opacity]"
                         >
-                          <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] uppercase leading-[1.04]">
-                            Security isn&apos;t a feature here.
+                          <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] uppercase leading-[1.04] flex flex-wrap gap-x-[0.26em] gap-y-0.5">
+                            {CLOSING_BLACK_WORDS.map((word, wIdx) => (
+                              <span
+                                key={wIdx}
+                                ref={(el) => {
+                                  closingBlackWordRefs.current[wIdx] = el;
+                                }}
+                                className="inline-block will-change-transform"
+                              >
+                                {word}
+                              </span>
+                            ))}
                           </h2>
                         </div>
 
                         {/* Green text portion: "It's the baseline everything else is built on." */}
                         <div
                           ref={closingGreenTextRef}
-                          className="overflow-hidden will-change-[clip-path,opacity]"
-                          style={{ clipPath: "inset(0% 0% 0% 0%)" }}
+                          className="will-change-[clip-path,opacity]"
                         >
-                          <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-[#22C55E] tracking-[-0.035em] uppercase leading-[1.04]">
-                            It&apos;s the baseline everything else is built on.
+                          <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-[#22C55E] tracking-[-0.035em] uppercase leading-[1.04] flex flex-wrap gap-x-[0.26em] gap-y-0.5">
+                            {CLOSING_GREEN_WORDS.map((word, wIdx) => (
+                              <span
+                                key={wIdx}
+                                ref={(el) => {
+                                  closingGreenWordRefs.current[wIdx] = el;
+                                }}
+                                className="inline-block will-change-transform"
+                              >
+                                {word}
+                              </span>
+                            ))}
                           </h2>
                         </div>
                       </div>
