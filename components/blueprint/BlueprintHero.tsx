@@ -204,7 +204,7 @@ const SECURITY_STATES: SecurityStateItem[] = [
 
 const PASSWORD_LETTERS = ["p", "a", "s", "s", "w", "o", "r", "d", "s"];
 const LOCKED_LETTERS = ["L", "o", "c", "k", "e", "d"];
-const YOU_LETTERS = ["Y", "o", "u"];
+const CONNECTION_LETTERS = ["c", "o", "n", "n", "e", "c", "t", "i", "o", "n"];
 const INDIA_LETTERS = ["I", "n", "d", "i", "a"];
 const MONEY_LETTERS = ["m", "o", "n", "e", "y"];
 const SELL_LETTERS = ["s", "e", "l", "l"];
@@ -232,6 +232,8 @@ export function BlueprintHero() {
   // Security Pinned Content Stage & Step Refs
   const securityStageRef = useRef<HTMLDivElement | null>(null);
   const securityStateRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const securityHeroWordRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const securityHeroRibbonRef = useRef<HTMLDivElement | null>(null);
   const currentSecurityStateRef = useRef<number>(0);
   const isSecurityTransitioningRef = useRef<boolean>(false);
   const lastSecurityScrollTimeRef = useRef<number>(0);
@@ -251,6 +253,11 @@ export function BlueprintHero() {
   const COMPANION_COUNT = 21;
   const productToRingTlRef = useRef<gsap.core.Timeline | null>(null);
   const ringRotateTweenRef = useRef<gsap.core.Tween | null>(null);
+
+  // Closing Exit Wipe Transition ("Security isn't a feature here...")
+  const closingBlackTextRef = useRef<HTMLDivElement | null>(null);
+  const closingGreenTextRef = useRef<HTMLDivElement | null>(null);
+  const closingExitTlRef = useRef<gsap.core.Timeline | null>(null);
 
   // Typographic Eyes Easter Egg ("Read-only, always")
   const typoEyesRef = useRef<HTMLSpanElement | null>(null);
@@ -273,13 +280,10 @@ export function BlueprintHero() {
   const lockAnimTlRef = useRef<gsap.core.Timeline | null>(null);
   const lockAnimPlayedRef = useRef<boolean>(false);
 
-  // Handshake Typography Transformation Interaction ("You control the connection")
-  const youCharRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const handshakeWrapperRef = useRef<HTMLSpanElement | null>(null);
-  const handLeftGroupRef = useRef<SVGGElement | null>(null);
-  const handRightGroupRef = useRef<SVGGElement | null>(null);
-  const handshakeSparksRef = useRef<SVGGElement | null>(null);
-  const handshakeAnimTlRef = useRef<gsap.core.Timeline | null>(null);
+  // Connection Typography Transformation Interaction ("You control the connection")
+  const connectionCharRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const connectionWrapperRef = useRef<HTMLSpanElement | null>(null);
+  const connectionAnimTlRef = useRef<gsap.core.Timeline | null>(null);
 
   // India Typography Transformation Interaction ("Stored in India")
   const indiaCharRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -327,6 +331,10 @@ export function BlueprintHero() {
       if (ringRotateTweenRef.current) {
         ringRotateTweenRef.current.kill();
         ringRotateTweenRef.current = null;
+      }
+      if (closingExitTlRef.current) {
+        closingExitTlRef.current.kill();
+        closingExitTlRef.current = null;
       }
     };
   }, []);
@@ -1197,11 +1205,17 @@ export function BlueprintHero() {
           ? Math.round(viewportCenterX * 0.32)
           : Math.round(viewportCenterX * 0.20);
         const targetLeftX = targetRingX - leftShift;
+        const ringRightEdgeRelX = -leftShift + ringRadius + 55;
         const rightShiftX = isDesktop
           ? Math.round(viewportCenterX * 0.42)
           : isTablet
           ? Math.round(viewportCenterX * 0.30)
           : Math.round(viewportCenterX * 0.16);
+        const heroShiftX = isDesktop
+          ? Math.round(ringRightEdgeRelX + 40)
+          : isTablet
+          ? Math.round(ringRightEdgeRelX + 30)
+          : 0;
 
         const tl = gsap.timeline({
           paused: true,
@@ -1278,7 +1292,7 @@ export function BlueprintHero() {
             securityStateRefs.current.forEach((el, idx) => {
               if (el) {
                 if (idx === 0) {
-                  gsap.set(el, { opacity: 0, visibility: "hidden", x: 0, y: 0, scale: 1, clipPath: "inset(0% 100% 0% 0%)" });
+                  gsap.set(el, { opacity: 0, visibility: "hidden", x: heroShiftX, y: 0, scale: 1, clipPath: "none" });
                 } else {
                   gsap.set(el, { opacity: 0, visibility: "hidden", x: rightShiftX, y: 0 });
                 }
@@ -1436,22 +1450,20 @@ export function BlueprintHero() {
         tl.set(securityStageRef.current, { autoAlpha: 1, opacity: 1, visibility: "visible", zIndex: 15 }, 0);
         securityStateRefs.current.forEach((el, idx) => {
           if (el) {
-            if (idx === 0) {
-              tl.set(el, { autoAlpha: 1, opacity: 1, visibility: "visible", x: 0, y: 0, scale: 1, clipPath: "inset(0% 100% 0% 0%)" }, 0);
-            } else {
-              tl.set(el, { autoAlpha: 0, opacity: 0, visibility: "hidden", x: rightShiftX, y: 0 }, 0);
-            }
+            const sX = idx === 0 ? heroShiftX : rightShiftX;
+            tl.set(el, { autoAlpha: 0, opacity: 0, visibility: "hidden", x: sX, y: 0, clipPath: "none" }, 0);
           }
         });
+        if (securityHeroRibbonRef.current) {
+          tl.set(securityHeroRibbonRef.current, { x: 0 }, 0);
+        }
 
         // -------------------------------------------------------------------------
-        // UNIFIED SIMULTANEOUS TRANSITION (0.0s -> 0.76s)
-        // All three actions start at the exact same time (0.0s):
-        // 1. Product hero content exits: visible -> gone
-        // 2. 5 Product cards consolidate horizontally into moving stack: spread -> stacked
-        // 3. Security hero text uncovered from left to right as moving cards pass across it: hidden -> revealed
+        // PHASE 1: CARDS CONSOLIDATE HORIZONTALLY (0.0s -> 0.52s)
+        // Cards consolidate slightly faster into horizontal stack at Card 05.
+        // The Security hero text is NOT revealed during this movement.
         // -------------------------------------------------------------------------
-        const transitionDuration = 0.76;
+        const transitionDuration = 0.52;
 
         // 1. Product hero content exits smoothly
         tl.to(
@@ -1460,7 +1472,7 @@ export function BlueprintHero() {
             autoAlpha: 0,
             opacity: 0,
             y: 16,
-            duration: 0.55,
+            duration: 0.44,
             ease: "power2.out",
             stagger: 0.01,
           },
@@ -1472,7 +1484,7 @@ export function BlueprintHero() {
           transitionDuration
         );
 
-        // 2. Cards consolidate horizontally into stack at Card 05
+        // 2. Cards consolidate horizontally into stack at Card 05 (slightly faster)
         const STACK_ROTX = 38;
         const STACK_ROTY = -22;
         const STACK_ROTZ = -24;
@@ -1481,7 +1493,7 @@ export function BlueprintHero() {
           const wrapper = cardWrapperRefs.current[i];
           if (!wrapper) return;
 
-          const stackStart = i * 0.03;
+          const stackStart = i * 0.024;
           const destX = (stackTargetX - origCenters[i].x) - (4 - i) * 3.0;
           const destY = (stackTargetY - origCenters[i].y) + (4 - i) * 2.0;
           const destZ = (i - 4) * 4;
@@ -1504,9 +1516,9 @@ export function BlueprintHero() {
         });
 
         // Fast, subtle fade out of card text, illustrations, and background gradients
-        // (~200ms) as the cards finish consolidating into the stack, leaving clean card surfaces
-        const contentFadeDuration = 0.20;
-        const contentFadeStart = transitionDuration - contentFadeDuration; // 0.56s
+        // as cards finish consolidating into the stack, leaving clean card surfaces
+        const contentFadeDuration = 0.18;
+        const contentFadeStart = transitionDuration - contentFadeDuration; // 0.34s
 
         cardDefaultRefs.current.forEach((el) => {
           if (el) {
@@ -1587,26 +1599,12 @@ export function BlueprintHero() {
           }
         });
 
-        // 3. Security hero text progressively uncovered from left to right as cards sweep across
-        const state0El = securityStateRefs.current[0];
-        if (state0El) {
-          tl.to(
-            state0El,
-            {
-              clipPath: "inset(0% 0% 0% 0%)",
-              duration: transitionDuration,
-              ease: "power2.inOut",
-            },
-            0.0
-          );
-        }
-
         // -------------------------------------------------------------------------
-        // PHASE 2 & 3: ZERO-PAUSE CONTINUATION INTO THE RING (0.76s -> 2.26s)
-        // Stacking immediately continues along the curved trajectory to form the ring.
-        // Zero dead time or stationary hold.
+        // PHASE 2: ZERO-PAUSE CONTINUATION INTO THE RING FORMATION (0.52s -> 1.88s)
+        // Stacking immediately continues without pause along the curved trajectory to form the ring.
+        // Ring formation is slightly slowed down so the progressive text reveal feels cinematic.
         // -------------------------------------------------------------------------
-        const unfurlBase = transitionDuration; // 0.76s - immediate, uninterrupted continuation
+        const unfurlBase = transitionDuration; // 0.52s - immediate continuation, no pause
 
         // Center cluster container with subtle 3D perspective tilt
         tl.to(
@@ -1617,7 +1615,7 @@ export function BlueprintHero() {
             rotateX: 18,
             rotateY: 20,
             rotateZ: 16,
-            duration: 0.85,
+            duration: 1.25,
             ease: "power2.out",
           },
           unfurlBase
@@ -1629,7 +1627,7 @@ export function BlueprintHero() {
           if (!wrapper) return;
 
           const slot = ringSlots[i];
-          const startTime = unfurlBase + i * 0.016;
+          const startTime = unfurlBase + i * 0.022;
           const origX = origCenters[i].x;
           const origY = origCenters[i].y;
 
@@ -1652,7 +1650,7 @@ export function BlueprintHero() {
                   rotateY: 22,
                   rotateZ: midRotZ,
                   scale: finalCardScale,
-                  duration: 0.24,
+                  duration: 0.36,
                   ease: "power1.inOut",
                 },
                 {
@@ -1663,7 +1661,7 @@ export function BlueprintHero() {
                   rotateY: slot.rotY,
                   rotateZ: slot.rotZ,
                   scale: slot.scale,
-                  duration: 0.28,
+                  duration: 0.44,
                   ease: "power1.out",
                 },
               ],
@@ -1680,7 +1678,7 @@ export function BlueprintHero() {
 
           const slotIdx = 5 + cIdx;
           const slot = ringSlots[slotIdx];
-          const startTime = unfurlBase + 0.05 + cIdx * 0.014;
+          const startTime = unfurlBase + 0.06 + cIdx * 0.020;
 
           const midX = (stackTargetX + slot.x) * 0.48;
           const midY = (stackTargetY + slot.y) * 0.5 + 20;
@@ -1709,7 +1707,7 @@ export function BlueprintHero() {
                   rotateY: 22,
                   rotateZ: midRotZ,
                   scale: finalCardScale,
-                  duration: 0.24,
+                  duration: 0.36,
                   ease: "power1.inOut",
                 },
                 {
@@ -1720,7 +1718,7 @@ export function BlueprintHero() {
                   rotateY: slot.rotY,
                   rotateZ: slot.rotZ,
                   scale: slot.scale,
-                  duration: 0.28,
+                  duration: 0.44,
                   ease: "power1.out",
                 },
               ],
@@ -1732,16 +1730,68 @@ export function BlueprintHero() {
         });
 
         // -------------------------------------------------------------------------
-        // PHASE 4: IMMEDIATE SIMULTANEOUS GLIDE & ROTATION TOWARD LEFT
+        // STATE 0 SECURITY HERO TEXT REVEAL: SMOOTH CARD-TRAIN ATTACHMENT
+        // Synchronized with departing cards from the stack at Card 05.
+        // CARDS LEAD -> TEXT FOLLOWS DIRECTLY BEHIND -> SETTLES IN RESTING POSITION
+        // Clean, uncut two-line typography with locked line breaks.
+        // -------------------------------------------------------------------------
+        const state0El = securityStateRefs.current[0];
+        const ribbonEl = securityHeroRibbonRef.current;
+
+        if (state0El && ribbonEl) {
+          // In state0El local coordinates (where 0 is center of state0El at heroShiftX):
+          // Stack center relative to state0El center:
+          const stackLocalCenterX = stackTargetX - heroShiftX;
+          // Smooth entrance offset tucked behind the card stack:
+          const enterOffset = Math.max(Math.min(stackLocalCenterX, 140), 60);
+
+          // Phase 1 (0.0s): Completely hidden behind the stack
+          tl.set(state0El, { autoAlpha: 0, opacity: 0, visibility: "hidden", x: heroShiftX, y: 0, clipPath: "none" }, 0);
+          tl.set(ribbonEl, { x: enterOffset, opacity: 0 }, 0);
+
+          // Phase 2: As cards depart from stack (unfurlBase = 0.52s):
+          // Make container visible with clipPath strictly 'none' so no text is ever cut
+          tl.set(
+            state0El,
+            {
+              autoAlpha: 1,
+              opacity: 1,
+              visibility: "visible",
+              clipPath: "none",
+            },
+            unfurlBase
+          );
+
+          // As Card 01 leads and pulls away leftward toward the ring:
+          // The headline emerges smoothly from behind the departing cards, following them into resting position
+          const ribbonPullStart = unfurlBase + 0.04; // 0.56s - cards visibly lead the motion
+          const ribbonPullDuration = 1.10; // 0.56s -> 1.66s (settles smoothly as ring forms)
+
+          tl.fromTo(
+            ribbonEl,
+            { x: enterOffset, opacity: 0 },
+            {
+              x: 0,
+              opacity: 1,
+              duration: ribbonPullDuration,
+              ease: "power2.out",
+            },
+            ribbonPullStart
+          );
+
+          // Ensure clipPath remains none
+          tl.set(state0El, { clipPath: "none" }, ribbonPullStart + ribbonPullDuration);
+        }
+
+        // -------------------------------------------------------------------------
+        // PHASE 3: RING ROTATES & DOCKS TO LEFT (1.88s -> 3.98s)
         // Ring moves from center toward its final left position, completing exactly
         // one full 360° rotation in perfect synchronization.
-        // Simultaneously, the Security hero text glides smoothly from center to right.
-        // Once reaching the left position, it transitions seamlessly into the continuous
-        // slow ambient rotation with zero pause or jump.
+        // The Security hero text is already settled in its right-side column position!
         // -------------------------------------------------------------------------
-        const ringFormedTime = 1.65; // Ring silhouette established; seamlessly transitions into left glide
+        const ringFormedTime = 1.88; // Ring formation complete; seamlessly rolls into left position
         const glideDuration = 2.10; // Unified cinematic travel & rotation to the left side
-        const ringSettleTime = ringFormedTime + glideDuration; // 3.75s
+        const ringSettleTime = ringFormedTime + glideDuration; // 3.98s
 
         // 1. Smoothly translate the entire ring towards the left side of the viewport
         tl.to(
@@ -1767,20 +1817,6 @@ export function BlueprintHero() {
           },
           ringFormedTime
         );
-
-        // 3. Security hero text glides smoothly from center to right column position
-        if (state0El) {
-          tl.to(
-            state0El,
-            {
-              x: rightShiftX,
-              duration: glideDuration,
-              ease: "power2.inOut",
-              force3D: true,
-            },
-            ringFormedTime
-          );
-        }
 
         // 4. Elevate Security Stage z-index to 35 once docked on the left
         tl.set(securityStageRef.current, { zIndex: 35 }, ringSettleTime);
@@ -1819,14 +1855,14 @@ export function BlueprintHero() {
 
         // Reset elements to initial clean typography state
         gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
-        gsap.set(wrapper, { opacity: 0, scale: 0.35 });
+        gsap.set(wrapper, { opacity: 0, scale: 0.85 });
         if (bill1) gsap.set(bill1, { x: 0, y: 0, rotate: 0 });
         if (bill2) gsap.set(bill2, { x: 0, y: 0, rotate: 0 });
 
         const tl = gsap.timeline({
           onComplete: () => {
             gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
-            gsap.set(wrapper, { opacity: 0, scale: 0.35 });
+            gsap.set(wrapper, { opacity: 0, scale: 0.85 });
             if (bill1) gsap.set(bill1, { x: 0, y: 0, rotate: 0 });
             if (bill2) gsap.set(bill2, { x: 0, y: 0, rotate: 0 });
             isSecurityTransitioningRef.current = false;
@@ -1844,46 +1880,47 @@ export function BlueprintHero() {
         // 1. Brief settle so user can read the settled headline
         const tSettle = 0.30;
 
-        // 2. The 5 letters deconstruct into the banknote elements
-        if (chars[0]) {
-          tl.to(chars[0], { x: -28, y: 10, scale: 0.2, rotate: -15, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle);
-        }
-        if (chars[1]) {
-          tl.to(chars[1], { x: -10, y: -18, scale: 0.25, rotate: 10, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle + 0.02);
-        }
-        if (chars[2]) {
-          tl.to(chars[2], { x: 0, y: -22, scale: 0.25, rotate: -8, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle + 0.01);
-        }
-        if (chars[3]) {
-          tl.to(chars[3], { x: 12, y: -16, scale: 0.25, rotate: 12, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle + 0.02);
-        }
-        if (chars[4]) {
-          tl.to(chars[4], { x: 28, y: 12, scale: 0.2, rotate: 18, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle);
-        }
+        // 2. The 5 letters contract seamlessly in-place into the banknote shape
+        chars.forEach((char, i) => {
+          const offsetX = (i - 2) * 5;
+          tl.to(
+            char,
+            {
+              x: offsetX,
+              y: 0,
+              scale: 0.35,
+              opacity: 0,
+              duration: 0.25,
+              ease: "power2.in",
+            },
+            tSettle + i * 0.015
+          );
+        });
 
-        // 3. Banknote SVG scales and blooms into position directly over "money"
+        // 3. Banknote SVG blooms directly in place over the bounding box of "money"
         const tBillEnter = tSettle + 0.12;
-        tl.to(
+        tl.fromTo(
           wrapper,
+          { opacity: 0, scale: 0.85 },
           {
             opacity: 1,
             scale: 1,
-            duration: 0.32,
+            duration: 0.28,
             ease: "back.out(1.8)",
           },
           tBillEnter
         );
 
-        // 4. The 2 bills fan out gently at the exact position of the removed bill
-        const tFanOut = tBillEnter + 0.24;
+        // 4. Two banknotes fan out gently directly within the bounding area
+        const tFanOut = tBillEnter + 0.22;
         if (bill1) {
           tl.to(
             bill1,
             {
-              x: 3,
-              y: 2,
-              rotate: 5,
-              duration: 0.34,
+              x: 2.5,
+              y: -1.2,
+              rotate: 4.5,
+              duration: 0.32,
               ease: "back.out(1.8)",
             },
             tFanOut
@@ -1893,10 +1930,10 @@ export function BlueprintHero() {
           tl.to(
             bill2,
             {
-              x: -4,
-              y: -2,
-              rotate: -8,
-              duration: 0.38,
+              x: -2.5,
+              y: 1.0,
+              rotate: -5.5,
+              duration: 0.34,
               ease: "back.out(2.0)",
             },
             tFanOut + 0.02
@@ -1904,13 +1941,12 @@ export function BlueprintHero() {
         }
 
         // 5. Subtle playful bounce/flutter on the front bill
-        const tFlutter = tFanOut + 0.40;
+        const tFlutter = tFanOut + 0.38;
         if (bill2) {
           tl.to(
             bill2,
             {
-              rotate: -5,
-              y: -1,
+              rotate: -3.5,
               duration: 0.16,
               yoyo: true,
               repeat: 1,
@@ -1921,7 +1957,7 @@ export function BlueprintHero() {
         }
 
         // 6. Proud hold of the cash fan
-        const tHoldEnd = tFlutter + 0.32 + 0.75;
+        const tHoldEnd = tFlutter + 0.32 + 0.70;
 
         // 7. Collapse the bills back together into 1 banknote
         const tCollapse = tHoldEnd;
@@ -1932,40 +1968,41 @@ export function BlueprintHero() {
               x: 0,
               y: 0,
               rotate: 0,
-              duration: 0.28,
+              duration: 0.26,
               ease: "power2.inOut",
             },
             tCollapse
           );
         }
 
-        // 8. Banknote contracts & dissolves
+        // 8. Banknote contracts & dissolves in-place
         tl.to(
           wrapper,
           {
             opacity: 0,
-            scale: 0.35,
-            duration: 0.25,
+            scale: 0.85,
+            duration: 0.22,
             ease: "power2.in",
           },
-          tCollapse + 0.20
+          tCollapse + 0.16
         );
 
-        // 9. All 5 letters spring outward back into their exact typographical positions
-        const tRestore = tCollapse + 0.26;
+        // 9. All 5 letters reconstruct outward back into their exact typographical positions
+        const tRestore = tCollapse + 0.22;
         chars.forEach((char, i) => {
-          tl.to(
+          tl.fromTo(
             char,
+            { opacity: 0, scale: 0.35, x: (i - 2) * 5, y: 0, rotate: 0 },
             {
               opacity: 1,
               scale: 1,
               x: 0,
               y: 0,
               rotate: 0,
-              duration: 0.32,
+              duration: 0.30,
               ease: "back.out(2.0)",
             },
-            tRestore + i * 0.025
+            tRestore + i * 0.02
           );
         });
       };
@@ -2563,42 +2600,32 @@ export function BlueprintHero() {
       };
 
       // -------------------------------------------------------------------------
-      // HANDSHAKE TRANSFORMATION INTERACTION: "You control the connection"
-      // Triggers typography transformation animation into a handshake illustration
-      // inspired directly by handshake.mp4 in the public folder.
+      // CONNECTION TYPOGRAPHY TRANSFORMATION INTERACTION: "You control the connection"
       // 1. Full line "You control the connection" appears normally and settles.
-      // 2. Left words ("You control") & right words ("the connection") deconstruct
-      //    and converge into two hands reaching out towards each other from left and right.
-      // 3. The hands meet in the center and clasp firmly into a warm handshake,
-      //    complete with a rhythmic pump recoil and floating celebration sparkles!
-      // 4. Hold clasped handshake proudly for a beat.
-      // 5. Reverse transformation: hands unclasp and dissolve, reconstructing
-      //    back into the exact typographical sentence.
-      // 6. Scrolling unlocks once text is fully restored!
+      // 2. The 10 letters of "connection" (c-o-n-n-e-c-t-i-o-n) disperse gracefully outward.
+      // 3. The animated "connection" SVG appears directly over the word "connection",
+      //    playing its vibrant Unifolio green (#22C55E) animated connecting cards and sparkles.
+      // 4. Smooth resolution: after playing, the SVG dissolves, and the letters of
+      //    "connection" spring back outward into their clean typographical positions.
+      // 5. Scrolling unlocks once text is fully restored!
       // Plays every time the user enters this state.
       // -------------------------------------------------------------------------
-      const playHandshakeAnimation = () => {
-        const chars = youCharRefs.current.filter(Boolean) as HTMLElement[];
-        const wrapper = handshakeWrapperRef.current;
-        const leftHand = handLeftGroupRef.current;
-        const rightHand = handRightGroupRef.current;
-        const sparks = handshakeSparksRef.current;
+      const playConnectionAnimation = () => {
+        const chars = connectionCharRefs.current.filter(Boolean) as HTMLElement[];
+        const wrapper = connectionWrapperRef.current;
 
-        if (chars.length === 0 || !wrapper || !leftHand || !rightHand) {
+        if (chars.length === 0 || !wrapper) {
           isSecurityTransitioningRef.current = false;
           return;
         }
 
-        if (handshakeAnimTlRef.current) {
-          handshakeAnimTlRef.current.kill();
+        if (connectionAnimTlRef.current) {
+          connectionAnimTlRef.current.kill();
         }
 
         // Reset elements to initial clean typography state
         gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
         gsap.set(wrapper, { opacity: 0, scale: 0.35 });
-        gsap.set(leftHand, { x: -60, opacity: 0, y: 0 });
-        gsap.set(rightHand, { x: 60, opacity: 0, y: 0 });
-        if (sparks) gsap.set(sparks, { opacity: 0, scale: 0.4 });
 
         const tl = gsap.timeline({
           onComplete: () => {
@@ -2614,155 +2641,72 @@ export function BlueprintHero() {
           },
         });
 
-        handshakeAnimTlRef.current = tl;
+        connectionAnimTlRef.current = tl;
 
         // 1. Brief settle so user reads "You control the connection" normally
-        const tSettle = 0.40;
+        const tSettle = 0.35;
 
-        // 2. The 3 letters of "You" (Y-o-u) deconstruct and converge inward
-        if (chars[0]) tl.to(chars[0], { x: 22, y: 2, scale: 0.25, rotate: 10, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
-        if (chars[1]) tl.to(chars[1], { scale: 0.2, y: -2, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle + 0.02);
-        if (chars[2]) tl.to(chars[2], { x: -22, y: 2, scale: 0.25, rotate: -10, opacity: 0, duration: 0.32, ease: "power2.in" }, tSettle);
+        // 2. The 10 letters of "connection" deconstruct and disperse gracefully
+        const letterOffsets = [
+          { x: -36, y: -18, rot: -10 },
+          { x: -26, y: 16, rot: -6 },
+          { x: -18, y: -22, rot: -4 },
+          { x: -10, y: 14, rot: -2 },
+          { x: -4, y: -16, rot: 3 },
+          { x: 4, y: 18, rot: -3 },
+          { x: 12, y: -14, rot: 4 },
+          { x: 20, y: 20, rot: 6 },
+          { x: 28, y: -18, rot: 8 },
+          { x: 38, y: 16, rot: 12 },
+        ];
 
-        // 3. Handshake illustration blooms directly over the word "You"
-        const tHandsEnter = tSettle + 0.18;
+        chars.forEach((char, i) => {
+          const off = letterOffsets[i] || { x: 0, y: 0, rot: 0 };
+          tl.to(
+            char,
+            {
+              x: off.x,
+              y: off.y,
+              scale: 0.2,
+              rotate: off.rot,
+              opacity: 0,
+              duration: 0.30,
+              ease: "power2.in",
+            },
+            tSettle + i * 0.015
+          );
+        });
+
+        // 3. The connection SVG animation blooms directly over the word "connection"
+        const tSvgEnter = tSettle + 0.16;
         tl.to(
           wrapper,
           {
             opacity: 1,
             scale: 1,
-            duration: 0.32,
+            duration: 0.35,
             ease: "back.out(1.8)",
           },
-          tHandsEnter
+          tSvgEnter
         );
 
-        tl.to(
-          leftHand,
-          {
-            x: 0,
-            opacity: 1,
-            duration: 0.34,
-            ease: "power3.out",
-          },
-          tHandsEnter
-        );
-        tl.to(
-          rightHand,
-          {
-            x: 0,
-            opacity: 1,
-            duration: 0.34,
-            ease: "power3.out",
-          },
-          tHandsEnter
-        );
+        // 4. Hold to let the animated connection SVG play its full loop
+        const tHoldEnd = tSvgEnter + 2.15;
 
-        // 4. Clasp moment & Handshake pump recoil (inspired by handshake.mp4)
-        const tClasp = tHandsEnter + 0.30;
-
-        // Downward shake pump
-        tl.to(
-          [leftHand, rightHand],
-          {
-            y: 8,
-            duration: 0.10,
-            ease: "power2.out",
-          },
-          tClasp
-        );
-        // Upward recoil
-        tl.to(
-          [leftHand, rightHand],
-          {
-            y: -9,
-            duration: 0.14,
-            ease: "power2.inOut",
-          },
-          tClasp + 0.10
-        );
-        // Secondary soft bounce
-        tl.to(
-          [leftHand, rightHand],
-          {
-            y: 3.5,
-            duration: 0.10,
-            ease: "power2.inOut",
-          },
-          tClasp + 0.24
-        );
-        // Settle to rest
-        tl.to(
-          [leftHand, rightHand],
-          {
-            y: 0,
-            duration: 0.18,
-            ease: "elastic.out(1.4, 0.4)",
-          },
-          tClasp + 0.34
-        );
-
-        // Sparkles pop at clasp moment
-        if (sparks) {
-          tl.to(
-            sparks,
-            {
-              opacity: 1,
-              scale: 1,
-              duration: 0.25,
-              ease: "back.out(2.0)",
-            },
-            tClasp + 0.04
-          );
-          tl.to(
-            sparks,
-            {
-              opacity: 0,
-              scale: 1.25,
-              duration: 0.45,
-              ease: "power2.out",
-            },
-            tClasp + 0.32
-          );
-        }
-
-        // 5. Proud hold in clasped handshake
-        const tHoldEnd = tClasp + 0.34 + 0.75;
-
-        // 6. Reverse transformation: hands unclasp & letters burst back into "control"
-        tl.to(
-          leftHand,
-          {
-            x: -60,
-            opacity: 0,
-            duration: 0.26,
-            ease: "power2.in",
-          },
-          tHoldEnd
-        );
-        tl.to(
-          rightHand,
-          {
-            x: 60,
-            opacity: 0,
-            duration: 0.26,
-            ease: "power2.in",
-          },
-          tHoldEnd
-        );
+        // 5. Reverse transformation: connection SVG dissolves, letters spring back
         tl.to(
           wrapper,
           {
             opacity: 0,
-            scale: 0.35,
-            duration: 0.24,
+            scale: 0.40,
+            duration: 0.26,
             ease: "power2.in",
           },
-          tHoldEnd + 0.06
+          tHoldEnd
         );
 
-        // All 7 letters of "control" spring outward from center into exact original positions
-        const tRestore = tHoldEnd + 0.10;
+        // All 10 letters spring outward back into their exact typographical positions
+        const tRestore = tHoldEnd + 0.08;
         chars.forEach((char, i) => {
           tl.to(
             char,
@@ -2775,7 +2719,7 @@ export function BlueprintHero() {
               duration: 0.32,
               ease: "back.out(2.0)",
             },
-            tRestore + i * 0.025
+            tRestore + i * 0.02
           );
         });
       };
@@ -2920,11 +2864,13 @@ export function BlueprintHero() {
       // SELL TYPOGRAPHY TRANSFORMATION INTERACTION: "We don't sell your data"
       // Recreates the exact motion language and animation style from sell.mp4:
       // 1. Text settles briefly so user reads "We don't sell your data" normally.
-      // 2. The 4 letters (s-e-l-l) deconstruct and disperse gracefully outward.
-      // 3. The 3D Security Shield Badge blooms into view at the exact position of "sell".
-      // 4. Performs the 3D perspective swivel (right tilt, smooth glide to left tilt, return center).
-      // 5. Holds the proud defense shield posture with subtle radiant green atmosphere.
-      // 6. Smoothly contracts & dissolves back into the readable word "sell".
+      // 2. The word "sell" detaches from the hero line and floats upward.
+      // 3. At this elevated position (a little upward from the hero line), it pops up
+      //    into the 3D Security Shield Badge.
+      // 4. Performs the 3D perspective swivel (tilt right, smooth glide left, return center).
+      // 5. Holds proud defense shield posture.
+      // 6. Shield contracts and descends, with the word "sell" descending back
+      //    into its exact original position on the hero baseline.
       // 7. Scrolling unlocks once text is fully restored!
       // -------------------------------------------------------------------------
       const playSellAnimation = () => {
@@ -2941,15 +2887,20 @@ export function BlueprintHero() {
           sellAnimTlRef.current.kill();
         }
 
+        // Responsive upward detachment offset (floats comfortably above the hero line)
+        const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
+        const isSmall = typeof window !== "undefined" && window.innerWidth < 640;
+        const targetUpY = isDesk ? -62 : isSmall ? -46 : -56;
+
         // Reset elements to initial clean typography state
         gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
-        gsap.set(wrapper, { opacity: 0, scale: 0.35 });
+        gsap.set(wrapper, { opacity: 0, scale: 0.35, y: 0, x: 0 });
         if (icon) gsap.set(icon, { rotateY: 0, rotateZ: 0, x: 0, y: 0 });
 
         const tl = gsap.timeline({
           onComplete: () => {
             gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
-            gsap.set(wrapper, { opacity: 0, scale: 0.35 });
+            gsap.set(wrapper, { opacity: 0, scale: 0.35, y: 0, x: 0 });
             if (icon) gsap.set(icon, { rotateY: 0, rotateZ: 0, x: 0, y: 0 });
             isSecurityTransitioningRef.current = false;
             lastSecurityScrollTimeRef.current = Date.now();
@@ -2966,47 +2917,55 @@ export function BlueprintHero() {
         // 1. Brief settle so user reads "We don't sell your data" normally
         const tSettle = 0.35;
 
-        // 2. The 4 letters deconstruct and fly outward
-        if (chars[0]) {
-          tl.to(chars[0], { x: -16, y: -10, scale: 0.2, rotate: -12, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle);
-        }
-        if (chars[1]) {
-          tl.to(chars[1], { x: -6, y: 12, scale: 0.25, rotate: -6, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle + 0.02);
-        }
-        if (chars[2]) {
-          tl.to(chars[2], { x: 8, y: -12, scale: 0.25, rotate: 6, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle + 0.02);
-        }
-        if (chars[3]) {
-          tl.to(chars[3], { x: 18, y: 10, scale: 0.2, rotate: 12, opacity: 0, duration: 0.30, ease: "power2.in" }, tSettle);
-        }
+        // 2. The word "sell" detaches from the hero line and floats upward together
+        chars.forEach((char, i) => {
+          tl.to(
+            char,
+            {
+              y: targetUpY,
+              x: (i - 1.5) * 5,
+              scale: 0.85,
+              opacity: 0,
+              duration: 0.36,
+              ease: "power2.out",
+            },
+            tSettle + i * 0.015
+          );
+        });
 
-        // 3. Shield Badge scales & blooms in with elastic overshoot matching sell.mp4
-        const tShieldEnter = tSettle + 0.12;
-        tl.to(
+        // 3. Shield Badge pops open directly at the elevated upward position as "sell" arrives
+        const tShieldEnter = tSettle + 0.16;
+        tl.fromTo(
           wrapper,
+          {
+            opacity: 0,
+            scale: 0.35,
+            y: targetUpY + 18,
+          },
           {
             opacity: 1,
             scale: 1,
-            duration: 0.36,
+            y: targetUpY,
+            duration: 0.40,
             ease: "back.out(1.8)",
           },
           tShieldEnter
         );
 
-        // 4. Exact 3D motion language from sell.mp4:
-        // - Tilt right (Frames 10-18: rotateY: 16, rotateZ: 2)
-        // - Smooth glide to left (Frames 20-36: rotateY: -16, rotateZ: -2)
+        // 4. Exact 3D motion language from sell.mp4 at the elevated upward position:
+        // - Tilt right (Frames 10-18: rotateY: 18, rotateZ: 2)
+        // - Smooth glide to left (Frames 20-36: rotateY: -18, rotateZ: -2)
         // - Return to center (Frames 36-52: rotateY: 0, rotateZ: 0)
-        const tSwivel = tShieldEnter + 0.24;
+        const tSwivel = tShieldEnter + 0.28;
         if (icon) {
           tl.to(
             icon,
             {
-              rotateY: 16,
+              rotateY: 18,
               rotateZ: 2,
-              x: 2,
-              y: -2,
-              duration: 0.36,
+              x: 3,
+              y: -3,
+              duration: 0.40,
               ease: "power1.inOut",
             },
             tSwivel
@@ -3014,14 +2973,14 @@ export function BlueprintHero() {
           tl.to(
             icon,
             {
-              rotateY: -16,
+              rotateY: -18,
               rotateZ: -2,
-              x: -2,
-              y: 1,
-              duration: 0.52,
+              x: -3,
+              y: 2,
+              duration: 0.54,
               ease: "power1.inOut",
             },
-            tSwivel + 0.36
+            tSwivel + 0.40
           );
           tl.to(
             icon,
@@ -3030,45 +2989,310 @@ export function BlueprintHero() {
               rotateZ: 0,
               x: 0,
               y: 0,
-              duration: 0.40,
+              duration: 0.42,
               ease: "power2.out",
             },
-            tSwivel + 0.88
+            tSwivel + 0.94
           );
         }
 
         // 5. Proud hold of the defense shield
-        const tHoldEnd = tSwivel + 1.28 + 0.45;
+        const tHoldEnd = tSwivel + 1.36 + 0.45;
 
-        // 6. Shield contracts and dissolves back into nothingness
+        // 6. Shield contracts & begins descending back toward the hero line
         tl.to(
           wrapper,
           {
             opacity: 0,
             scale: 0.35,
-            duration: 0.26,
+            y: targetUpY + 28,
+            duration: 0.28,
             ease: "power2.in",
           },
           tHoldEnd
         );
 
-        // 7. All 4 letters spring outward back into their exact typographical positions
-        const tRestore = tHoldEnd + 0.18;
+        // 7. The word "sell" descends from above and snaps right back into its original position on the hero line
+        const tRestore = tHoldEnd + 0.10;
         chars.forEach((char, i) => {
-          tl.to(
+          tl.fromTo(
             char,
+            {
+              y: targetUpY + 22,
+              x: (i - 1.5) * 4,
+              scale: 0.65,
+              opacity: 0,
+              rotate: (i - 1.5) * 3,
+            },
             {
               opacity: 1,
               scale: 1,
               x: 0,
               y: 0,
               rotate: 0,
-              duration: 0.32,
+              duration: 0.38,
               ease: "back.out(2.0)",
             },
-            tRestore + i * 0.025
+            tRestore + i * 0.02
           );
         });
+      };
+
+      const playClosingExitSequence = () => {
+        if (!cardsClusterRef.current) return;
+        if (closingExitTlRef.current) {
+          closingExitTlRef.current.kill();
+          closingExitTlRef.current = null;
+        }
+
+        const clusterEl = cardsClusterRef.current;
+        isSecurityTransitioningRef.current = true;
+
+        // Stop continuous ambient ring rotation
+        if (ringRotateTweenRef.current) {
+          ringRotateTweenRef.current.kill();
+          ringRotateTweenRef.current = null;
+        }
+
+        // Reset clip paths on the closing text containers (strictly visible, zero opacity fade)
+        if (closingBlackTextRef.current) {
+          closingBlackTextRef.current.style.clipPath = "inset(0% 0% 0% 0%)";
+          (closingBlackTextRef.current.style as any).webkitClipPath = "inset(0% 0% 0% 0%)";
+          closingBlackTextRef.current.style.opacity = "1";
+          closingBlackTextRef.current.style.visibility = "visible";
+        }
+        if (closingGreenTextRef.current) {
+          closingGreenTextRef.current.style.clipPath = "inset(0% 0% 0% 0%)";
+          (closingGreenTextRef.current.style as any).webkitClipPath = "inset(0% 0% 0% 0%)";
+          closingGreenTextRef.current.style.opacity = "1";
+          closingGreenTextRef.current.style.visibility = "visible";
+        }
+
+        // Measure live bounding rects to anchor trajectory dynamically
+        const blackRect = closingBlackTextRef.current?.getBoundingClientRect();
+        const greenRect = closingGreenTextRef.current?.getBoundingClientRect();
+        const clusterRect = clusterEl.getBoundingClientRect();
+        const clusterCenterX = clusterRect.left + clusterRect.width / 2;
+        const clusterCenterY = clusterRect.top + clusterRect.height / 2;
+
+        const curX = (gsap.getProperty(clusterEl, "x") as number) || 0;
+        const curY = (gsap.getProperty(clusterEl, "y") as number) || 0;
+
+        const vw = typeof window !== "undefined" ? window.innerWidth : 1440;
+        const vh = typeof window !== "undefined" ? window.innerHeight : 900;
+        const bLeft = blackRect?.left ?? vw * 0.45;
+        const bRight = blackRect?.right ?? vw * 0.82;
+        const bTop = blackRect?.top ?? vh * 0.40;
+        const bBottom = blackRect?.bottom ?? bTop + 120;
+        const bCenterY = (bTop + bBottom) / 2;
+
+        const gLeft = greenRect?.left ?? vw * 0.45;
+        const gRight = greenRect?.right ?? vw * 0.82;
+        const gTop = greenRect?.top ?? vh * 0.54;
+        const gBottom = greenRect?.bottom ?? gTop + 160;
+        const gCenterY = (gTop + gBottom) / 2;
+
+        // Path keypoints based on yellow trajectory diagram:
+        // P2: Right edge of black text (completing sweep 1)
+        const px2 = bRight + 60;
+        const py2 = bCenterY;
+        const x2 = curX + (px2 - clusterCenterX);
+        const y2 = curY + (py2 - clusterCenterY);
+
+        // P3: Apex of smooth curved turn downward around the right edge
+        const px3 = bRight + 100;
+        const py3 = (bBottom + gTop) / 2 + 15;
+        const x3 = curX + (px3 - clusterCenterX);
+        const y3 = curY + (py3 - clusterCenterY);
+
+        // P4: Sweeping through center-left of green text (completing sweep 2)
+        const px4 = gLeft + (gRight - gLeft) * 0.28;
+        const py4 = gCenterY + 12;
+        const x4 = curX + (px4 - clusterCenterX);
+        const y4 = curY + (py4 - clusterCenterY);
+
+        // P5: Curving downward toward bottom-right
+        const px5 = gLeft + (gRight - gLeft) * 0.75;
+        const py5 = gBottom + 70;
+        const x5 = curX + (px5 - clusterCenterX);
+        const y5 = curY + (py5 - clusterCenterY);
+
+        // P6: Off-screen plunge downward toward bottom-right
+        const px6 = gRight + 140;
+        const py6 = vh + 450;
+        const x6 = curX + (px6 - clusterCenterX);
+        const y6 = curY + (py6 - clusterCenterY);
+
+        const allCards: HTMLElement[] = [
+          ...(cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[]),
+          ...(companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[]),
+        ];
+
+        const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
+        const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
+        const baseScale = isDesktop ? 0.48 : isTablet ? 0.44 : 0.40;
+
+        // Collect cards with their initial local positions in the ring
+        const cardsWithPos = allCards.map((cardEl, origIdx) => {
+          const x = (gsap.getProperty(cardEl, "x") as number) || 0;
+          const y = (gsap.getProperty(cardEl, "y") as number) || 0;
+          return { cardEl, origIdx, x, y };
+        });
+
+        // Sort cards from right to left (highest x to lowest x).
+        // Cards already closest to the motion direction become the front of the ribbon!
+        // This eliminates crossing paths or scattering in opposite directions.
+        cardsWithPos.sort((a, b) => b.x - a.x);
+        const TOTAL_CARDS = cardsWithPos.length;
+
+        let maxBlackCover = 0;
+        let maxGreenCover = 0;
+
+        const tl = gsap.timeline({
+          onUpdate: () => {
+            const blackEl = closingBlackTextRef.current;
+            const greenEl = closingGreenTextRef.current;
+            if (!blackEl || !greenEl) return;
+
+            const cRect = clusterEl.getBoundingClientRect();
+            const bR = blackEl.getBoundingClientRect();
+            const gR = greenEl.getBoundingClientRect();
+
+            // 1. Black Text Physical Wipe (Left to Right)
+            // Leading edge of cards moving right: cluster center + forward offset
+            const cardFrontX = cRect.left + cRect.width * 0.62;
+            if (cardFrontX >= bR.left) {
+              const pB = Math.max(0, Math.min(1, (cardFrontX - bR.left) / (bR.width || 1)));
+              if (pB > maxBlackCover) {
+                maxBlackCover = pB;
+                const pctB = (maxBlackCover * 100).toFixed(1);
+                blackEl.style.clipPath = `inset(0% 0% 0% ${pctB}%)`;
+                (blackEl.style as any).webkitClipPath = `inset(0% 0% 0% ${pctB}%)`;
+              }
+            }
+
+            // 2. Green Text Physical Wipe (Right to Left)
+            // After the turn, cards sweep left across green text:
+            // Leading edge heading left is cluster center - left offset
+            const progress = tl.progress();
+            if (progress >= 0.45) {
+              const cardBackX = cRect.left + cRect.width * 0.38;
+              if (cardBackX <= gR.right + 30) {
+                const pG = Math.max(0, Math.min(1, (gR.right - cardBackX) / (gR.width || 1)));
+                if (pG > maxGreenCover) {
+                  maxGreenCover = pG;
+                  const pctG = (maxGreenCover * 100).toFixed(1);
+                  greenEl.style.clipPath = `inset(0% ${pctG}% 0% 0%)`;
+                  (greenEl.style as any).webkitClipPath = `inset(0% ${pctG}% 0% 0%)`;
+                }
+              }
+            }
+          },
+          onComplete: () => {
+            exitSecurityToAbout();
+          },
+        });
+        closingExitTlRef.current = tl;
+
+        // 1. Controlled, elegant unfurl: cards smoothly condense into a dense, layered flowing ribbon
+        // All cards move inward toward the forward flight line without crossing or scattering.
+        cardsWithPos.forEach((item, rank) => {
+          // Spread smoothly along horizontal flight axis (from +85px at front to -85px at tail)
+          const targetX = 85 - rank * (170 / (TOTAL_CARDS - 1));
+          const targetY = Math.sin((rank / (TOTAL_CARDS - 1)) * Math.PI * 2) * 6;
+          const targetZ = (TOTAL_CARDS - rank) * 2;
+
+          tl.to(
+            item.cardEl,
+            {
+              x: targetX,
+              y: targetY,
+              z: targetZ,
+              rotateX: 12,
+              rotateY: -8,
+              rotateZ: -2 + Math.sin(rank * 0.3) * 1.5,
+              scale: baseScale,
+              opacity: 1,
+              visibility: "visible",
+              duration: 0.34,
+              ease: "power2.out",
+            },
+            0
+          );
+        });
+
+        // 2. Stage 1: Sweep right across black text (P0 -> P2)
+        // Deliberate continuous sweep covering and taking the text away
+        tl.to(
+          clusterEl,
+          {
+            x: x2,
+            y: y2,
+            rotateZ: -2,
+            rotateX: 12,
+            rotateY: -8,
+            duration: 0.58,
+            ease: "power1.inOut",
+          },
+          0
+        );
+
+        // 3. Stage 2: Smooth curved turn downward around the right edge (P2 -> P3)
+        // Fluid momentum conservation: cards bank together as ONE unified ribbon into the curve
+        tl.to(
+          clusterEl,
+          {
+            x: x3,
+            y: y3,
+            rotateZ: 38,
+            rotateY: 10,
+            duration: 0.26,
+            ease: "sine.inOut",
+          },
+          0.58
+        );
+
+        // 4. Stage 3: Sweep across/down through green text (P3 -> P4)
+        // Carrying away the green text
+        tl.to(
+          clusterEl,
+          {
+            x: x4,
+            y: y4,
+            rotateZ: 14,
+            rotateY: -6,
+            duration: 0.44,
+            ease: "sine.inOut",
+          },
+          0.84
+        );
+
+        // 5. Stage 4: Curve downward toward bottom-right (P4 -> P5)
+        tl.to(
+          clusterEl,
+          {
+            x: x5,
+            y: y5,
+            rotateZ: 28,
+            duration: 0.22,
+            ease: "sine.in",
+          },
+          1.28
+        );
+
+        // 6. Stage 5: Plunge downward and off-screen toward bottom-right (P5 -> P6)
+        tl.to(
+          clusterEl,
+          {
+            x: x6,
+            y: y6,
+            rotateZ: 40,
+            opacity: 0,
+            duration: 0.26,
+            ease: "power2.in",
+          },
+          1.50
+        );
       };
 
       const goToSecurityState = (nextIdx: number, direction: 1 | -1) => {
@@ -3090,7 +3314,7 @@ export function BlueprintHero() {
           }
           const chars = moneyCharRefs.current.filter(Boolean) as HTMLElement[];
           if (chars.length > 0) gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
-          if (moneyWrapperRef.current) gsap.set(moneyWrapperRef.current, { opacity: 0, scale: 0.35 });
+          if (moneyWrapperRef.current) gsap.set(moneyWrapperRef.current, { opacity: 0, scale: 0.85 });
           if (moneyBill1Ref.current) gsap.set(moneyBill1Ref.current, { x: 0, y: 0, rotate: 0 });
           if (moneyBill2Ref.current) gsap.set(moneyBill2Ref.current, { x: 0, y: 0, rotate: 0 });
         }
@@ -3131,15 +3355,15 @@ export function BlueprintHero() {
           if (lockIconWrapperRef.current) gsap.set(lockIconWrapperRef.current, { opacity: 0, scale: 0.35 });
         }
 
-        // Clean up handshake animation if leaving state 4
+        // Clean up connection animation if leaving state 4
         if (prevIdx === 4) {
-          if (handshakeAnimTlRef.current) {
-            handshakeAnimTlRef.current.kill();
-            handshakeAnimTlRef.current = null;
+          if (connectionAnimTlRef.current) {
+            connectionAnimTlRef.current.kill();
+            connectionAnimTlRef.current = null;
           }
-          const chars = youCharRefs.current.filter(Boolean) as HTMLElement[];
+          const chars = connectionCharRefs.current.filter(Boolean) as HTMLElement[];
           if (chars.length > 0) gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
-          if (handshakeWrapperRef.current) gsap.set(handshakeWrapperRef.current, { opacity: 0, scale: 0.35 });
+          if (connectionWrapperRef.current) gsap.set(connectionWrapperRef.current, { opacity: 0, scale: 0.35 });
         }
 
         // Clean up India animation if leaving state 5
@@ -3161,8 +3385,16 @@ export function BlueprintHero() {
           }
           const chars = sellCharRefs.current.filter(Boolean) as HTMLElement[];
           if (chars.length > 0) gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
-          if (sellShieldWrapperRef.current) gsap.set(sellShieldWrapperRef.current, { opacity: 0, scale: 0.35 });
+          if (sellShieldWrapperRef.current) gsap.set(sellShieldWrapperRef.current, { opacity: 0, scale: 0.35, y: 0, x: 0 });
           if (sellShieldIconRef.current) gsap.set(sellShieldIconRef.current, { rotateY: 0, rotateZ: 0, x: 0, y: 0 });
+        }
+
+        // Clean up closing exit animation if leaving state 7
+        if (prevIdx === 7) {
+          if (closingExitTlRef.current) {
+            closingExitTlRef.current.kill();
+            closingExitTlRef.current = null;
+          }
         }
 
         const prevEl = securityStateRefs.current[prevIdx];
@@ -3171,6 +3403,7 @@ export function BlueprintHero() {
         const tl = gsap.timeline({
           onComplete: () => {
             if (nextIdx === 0) {
+              if (nextEl) gsap.set(nextEl, { clipPath: "none" });
               playMoneyAnimation();
             } else if (nextIdx === 1) {
               playTypoEyesAnimation();
@@ -3179,11 +3412,14 @@ export function BlueprintHero() {
             } else if (nextIdx === 3) {
               playLockMorphAnimation();
             } else if (nextIdx === 4) {
-              playHandshakeAnimation();
+              playConnectionAnimation();
             } else if (nextIdx === 5) {
               playIndiaAnimation();
             } else if (nextIdx === 6) {
               playSellAnimation();
+            } else if (nextIdx === 7) {
+              // Closing line has appeared — trigger the fast cinematic cards unfurl, wipe & exit sequence
+              playClosingExitSequence();
             } else {
               isSecurityTransitioningRef.current = false;
             }
@@ -3208,14 +3444,21 @@ export function BlueprintHero() {
         const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
         const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
         const vCenterX = (typeof window !== "undefined" ? window.innerWidth : 1440) / 2;
-        const shiftX = isDesk
-          ? Math.round(vCenterX * 0.42)
-          : isTab
-          ? Math.round(vCenterX * 0.30)
-          : Math.round(vCenterX * 0.16);
+        const vhVal = typeof window !== "undefined" ? window.innerHeight : 800;
+        const rRadius = Math.min(Math.max(vhVal * 0.22, 160), 220);
+        const lShift = isDesk ? Math.round(vCenterX * 0.44) : isTab ? Math.round(vCenterX * 0.32) : Math.round(vCenterX * 0.20);
+        const ringEdgeRel = -lShift + rRadius + 55;
+        const heroShift = isDesk ? Math.round(ringEdgeRel + 40) : isTab ? Math.round(ringEdgeRel + 30) : 0;
+        const shiftX = nextIdx === 0
+          ? heroShift
+          : (isDesk ? Math.round(vCenterX * 0.42) : isTab ? Math.round(vCenterX * 0.30) : Math.round(vCenterX * 0.16));
 
         // 2. New text smoothly enters with a slight directional movement & subtle stagger
         if (nextEl) {
+          if (nextIdx === 0 && securityHeroRibbonRef.current) {
+            gsap.set(securityHeroRibbonRef.current, { x: 0 });
+            gsap.set(nextEl, { clipPath: "none" });
+          }
           tl.set(
             nextEl,
             {
@@ -3392,14 +3635,14 @@ export function BlueprintHero() {
         if (lockChars.length > 0) gsap.set(lockChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
         if (lockIconWrapperRef.current) gsap.set(lockIconWrapperRef.current, { opacity: 0, scale: 0.35 });
 
-        // Clean up handshake animation if active
-        if (handshakeAnimTlRef.current) {
-          handshakeAnimTlRef.current.kill();
-          handshakeAnimTlRef.current = null;
+        // Clean up connection animation if active
+        if (connectionAnimTlRef.current) {
+          connectionAnimTlRef.current.kill();
+          connectionAnimTlRef.current = null;
         }
-        const youChars = youCharRefs.current.filter(Boolean) as HTMLElement[];
-        if (youChars.length > 0) gsap.set(youChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
-        if (handshakeWrapperRef.current) gsap.set(handshakeWrapperRef.current, { opacity: 0, scale: 0.35 });
+        const connChars = connectionCharRefs.current.filter(Boolean) as HTMLElement[];
+        if (connChars.length > 0) gsap.set(connChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+        if (connectionWrapperRef.current) gsap.set(connectionWrapperRef.current, { opacity: 0, scale: 0.35 });
 
         // Clean up India animation if active
         if (indiaAnimTlRef.current) {
@@ -3417,7 +3660,7 @@ export function BlueprintHero() {
         }
         const sellChars = sellCharRefs.current.filter(Boolean) as HTMLElement[];
         if (sellChars.length > 0) gsap.set(sellChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
-        if (sellShieldWrapperRef.current) gsap.set(sellShieldWrapperRef.current, { opacity: 0, scale: 0.35 });
+        if (sellShieldWrapperRef.current) gsap.set(sellShieldWrapperRef.current, { opacity: 0, scale: 0.35, y: 0, x: 0 });
         if (sellShieldIconRef.current) gsap.set(sellShieldIconRef.current, { rotateY: 0, rotateZ: 0, x: 0, y: 0 });
 
         // Clean up money animation if active
@@ -3427,7 +3670,7 @@ export function BlueprintHero() {
         }
         const moneyChars = moneyCharRefs.current.filter(Boolean) as HTMLElement[];
         if (moneyChars.length > 0) gsap.set(moneyChars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
-        if (moneyWrapperRef.current) gsap.set(moneyWrapperRef.current, { opacity: 0, scale: 0.35 });
+        if (moneyWrapperRef.current) gsap.set(moneyWrapperRef.current, { opacity: 0, scale: 0.85 });
         if (moneyBill1Ref.current) gsap.set(moneyBill1Ref.current, { x: 0, y: 0, rotate: 0 });
         if (moneyBill2Ref.current) gsap.set(moneyBill2Ref.current, { x: 0, y: 0, rotate: 0 });
 
@@ -3445,8 +3688,12 @@ export function BlueprintHero() {
           const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
           const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
           const vCenterX = (typeof window !== "undefined" ? window.innerWidth : 1440) / 2;
-          const shiftX = isDesk ? Math.round(vCenterX * 0.42) : isTab ? Math.round(vCenterX * 0.30) : Math.round(vCenterX * 0.16);
-          if (state0El) gsap.set(state0El, { opacity: 1, visibility: "visible", x: shiftX, y: 0, scale: 1, clipPath: "inset(0% 0% 0% 0%)" });
+          const vhVal = typeof window !== "undefined" ? window.innerHeight : 800;
+          const rRadius = Math.min(Math.max(vhVal * 0.22, 160), 220);
+          const lShift = isDesk ? Math.round(vCenterX * 0.44) : isTab ? Math.round(vCenterX * 0.32) : Math.round(vCenterX * 0.20);
+          const ringEdgeRel = -lShift + rRadius + 55;
+          const shiftX = isDesk ? Math.round(ringEdgeRel + 40) : isTab ? Math.round(ringEdgeRel + 30) : 0;
+          if (state0El) gsap.set(state0El, { opacity: 1, visibility: "visible", x: shiftX, y: 0, scale: 1, clipPath: "none" });
           currentSecurityStateRef.current = 0;
         }
 
@@ -3844,7 +4091,7 @@ export function BlueprintHero() {
         transitionStartedRef.current = false;
         transitionAnimatingRef.current = false;
         transitionCompleteRef.current = false;
-        window.dispatchEvent(new CustomEvent("unifolio-active-section", { detail: { section: "hero" } }));
+        window.dispatchEvent(new CustomEvent("unifolio-active-section", { detail: { section: "product" } }));
         if (arrivalIdleTimeoutRef.current) {
           clearTimeout(arrivalIdleTimeoutRef.current);
           arrivalIdleTimeoutRef.current = null;
@@ -4035,9 +4282,9 @@ export function BlueprintHero() {
           lockAnimTlRef.current.kill();
           lockAnimTlRef.current = null;
         }
-        if (handshakeAnimTlRef.current) {
-          handshakeAnimTlRef.current.kill();
-          handshakeAnimTlRef.current = null;
+        if (connectionAnimTlRef.current) {
+          connectionAnimTlRef.current.kill();
+          connectionAnimTlRef.current = null;
         }
         if (indiaAnimTlRef.current) {
           indiaAnimTlRef.current.kill();
@@ -4502,105 +4749,128 @@ export function BlueprintHero() {
                     ref={(el) => {
                       securityStateRefs.current[idx] = el;
                     }}
-                    className={`absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full ${
+                    className={
                       item.type === "hero"
-                        ? "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl px-4 sm:px-6 text-center"
-                        : idx === 2 || idx === 3 || idx === 4 || idx === 5 || idx === 6
-                        ? "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl px-6 md:pl-16 lg:pl-28 xl:pl-36 text-left"
-                        : "max-w-md sm:max-w-lg lg:max-w-xl xl:max-w-2xl px-6 text-left"
-                    } will-change-transform pointer-events-none`}
+                        ? "absolute top-1/2 left-1/2 -translate-y-1/2 w-auto max-w-none whitespace-nowrap overflow-visible will-change-transform pointer-events-none"
+                        : `absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full ${
+                            idx === 2 || idx === 3 || idx === 4 || idx === 5 || idx === 6
+                              ? "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl px-6 md:pl-16 lg:pl-28 xl:pl-36 text-left"
+                              : "max-w-md sm:max-w-lg lg:max-w-xl xl:max-w-2xl px-6 text-left"
+                          } will-change-transform pointer-events-none`
+                    }
                     style={{
                       opacity: 0,
                       visibility: "hidden",
                     }}
                   >
                     {item.type === "hero" ? (
-                      <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[54px] xl:text-[62px] 2xl:text-[68px] text-neutral-950 dark:text-white tracking-[-0.035em] uppercase leading-[1.04] text-center select-none">
-                        We take your data <br />
-                        as <span className="text-[#22C55E] font-black">seriously</span> as you <br />
-                        take your{" "}
-                        <span className="relative inline-flex items-center justify-center align-baseline">
-                          {/* The 5 letters of "money" in black */}
-                          <span className="inline-flex items-baseline text-neutral-950 dark:text-white font-black">
-                            {MONEY_LETTERS.map((char, charIdx) => (
-                              <span
-                                key={charIdx}
-                                ref={(el) => {
-                                  moneyCharRefs.current[charIdx] = el;
-                                }}
-                                className="inline-block will-change-transform"
-                              >
-                                {char}
-                              </span>
-                            ))}
-                          </span>
+                      <div
+                        ref={securityHeroRibbonRef}
+                        className="relative will-change-transform select-none inline-block"
+                      >
+                        <h2 className="font-sans font-black text-xl sm:text-2xl md:text-3xl lg:text-[36px] xl:text-[42px] 2xl:text-[46px] text-neutral-950 dark:text-white tracking-[-0.03em] uppercase select-none flex flex-col items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12]">
+                          {/* Line 1: We take your data as seriously */}
+                          <div className="whitespace-nowrap flex items-baseline gap-[0.24em]">
+                            <span ref={(el) => { securityHeroWordRefs.current[0] = el; }} className="inline-block will-change-transform">We</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[1] = el; }} className="inline-block will-change-transform">take</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[2] = el; }} className="inline-block will-change-transform">your</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[3] = el; }} className="inline-block will-change-transform">data</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[4] = el; }} className="inline-block will-change-transform">as</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[5] = el; }} className="inline-block text-[#22C55E] font-black will-change-transform">seriously</span>
+                          </div>
 
-                          {/* Morphed Cash Banknote Stack Animation SVG (Centered directly over "money") */}
-                          <span
-                            ref={moneyWrapperRef}
-                            className="absolute inset-0 flex items-center justify-center pointer-events-none will-change-transform z-10"
-                            style={{ opacity: 0, transform: "scale(0.35)" }}
-                            aria-hidden="true"
-                          >
-                            <svg
-                              viewBox="0 0 160 110"
-                              className="w-[2.4em] h-[1.65em] sm:w-[2.7em] sm:h-[1.85em] md:w-[3.0em] md:h-[2.05em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.35)] dark:drop-shadow-[0_6px_20px_rgba(34,197,94,0.45)]"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <defs>
-                                <g id="unifolio-money-bill">
-                                  {/* Main Banknote Body */}
-                                  <rect
-                                    x="-48"
-                                    y="-25"
-                                    width="96"
-                                    height="50"
-                                    rx="5"
-                                    fill="#4ADE80"
-                                    stroke="#15803D"
-                                    strokeWidth="2.8"
-                                  />
-                                  {/* 4 Corner Tabs */}
-                                  <path d="M -48 -14 A 11 11 0 0 1 -37 -25 L -48 -25 Z" fill="#15803D" />
-                                  <path d="M 48 -14 A 11 11 0 0 0 37 -25 L 48 -25 Z" fill="#15803D" />
-                                  <path d="M -48 14 A 11 11 0 0 0 -37 25 L -48 25 Z" fill="#15803D" />
-                                  <path d="M 48 14 A 11 11 0 0 1 37 25 L 48 25 Z" fill="#15803D" />
-                                  {/* Side Circles */}
-                                  <circle cx="-27" cy="0" r="5" fill="#15803D" />
-                                  <circle cx="27" cy="0" r="5" fill="#15803D" />
-                                  {/* Center Circle */}
-                                  <circle cx="0" cy="0" r="15" fill="#15803D" />
-                                  {/* Center Dollar Sign */}
-                                  <text
-                                    x="0"
-                                    y="6.5"
-                                    fontFamily="system-ui, -apple-system, sans-serif"
-                                    fontSize="19"
-                                    fontWeight="900"
-                                    fill="#4ADE80"
-                                    textAnchor="middle"
-                                    className="select-none"
+                          {/* Line 2: as you take your money. */}
+                          <div className="whitespace-nowrap flex items-baseline gap-[0.24em]">
+                            <span ref={(el) => { securityHeroWordRefs.current[6] = el; }} className="inline-block will-change-transform">as</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[7] = el; }} className="inline-block will-change-transform">you</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[8] = el; }} className="inline-block will-change-transform">take</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[9] = el; }} className="inline-block will-change-transform">your</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[10] = el; }} className="inline-block will-change-transform">
+                              <span className="relative inline-flex items-center justify-center align-baseline">
+                                {/* The 5 letters of "money" in black */}
+                                <span className="inline-flex items-baseline text-neutral-950 dark:text-white font-black">
+                                  {MONEY_LETTERS.map((char, charIdx) => (
+                                    <span
+                                      key={charIdx}
+                                      ref={(el) => {
+                                        moneyCharRefs.current[charIdx] = el;
+                                      }}
+                                      className="inline-block will-change-transform"
+                                    >
+                                      {char}
+                                    </span>
+                                  ))}
+                                </span>
+
+                                {/* Morphed Cash Banknote Stack Animation SVG (Centered directly within the bounding box of "MONEY") */}
+                                <span
+                                  ref={moneyWrapperRef}
+                                  className="absolute inset-0 flex items-center justify-center pointer-events-none will-change-transform z-10"
+                                  style={{ opacity: 0, transform: "scale(0.85)" }}
+                                  aria-hidden="true"
+                                >
+                                  <svg
+                                    viewBox="-56 -28 112 56"
+                                    className="w-full h-full max-h-[1.15em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.35)] dark:drop-shadow-[0_6px_20px_rgba(34,197,94,0.45)]"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
                                   >
-                                    $
-                                  </text>
-                                </g>
-                              </defs>
+                                    <defs>
+                                      <g id="unifolio-money-bill">
+                                        {/* Main Banknote Body centered at (0, 0) */}
+                                        <rect
+                                          x="-48"
+                                          y="-25"
+                                          width="96"
+                                          height="50"
+                                          rx="5"
+                                          fill="#4ADE80"
+                                          stroke="#15803D"
+                                          strokeWidth="2.8"
+                                        />
+                                        {/* 4 Corner Tabs */}
+                                        <path d="M -48 -14 A 11 11 0 0 1 -37 -25 L -48 -25 Z" fill="#15803D" />
+                                        <path d="M 48 -14 A 11 11 0 0 0 37 -25 L 48 -25 Z" fill="#15803D" />
+                                        <path d="M -48 14 A 11 11 0 0 0 -37 25 L -48 25 Z" fill="#15803D" />
+                                        <path d="M 48 14 A 11 11 0 0 1 37 25 L 48 25 Z" fill="#15803D" />
+                                        {/* Side Circles */}
+                                        <circle cx="-27" cy="0" r="5" fill="#15803D" />
+                                        <circle cx="27" cy="0" r="5" fill="#15803D" />
+                                        {/* Center Circle */}
+                                        <circle cx="0" cy="0" r="15" fill="#15803D" />
+                                        {/* Center Dollar Sign */}
+                                        <text
+                                          x="0"
+                                          y="6.5"
+                                          fontFamily="system-ui, -apple-system, sans-serif"
+                                          fontSize="19"
+                                          fontWeight="900"
+                                          fill="#4ADE80"
+                                          textAnchor="middle"
+                                          className="select-none"
+                                        >
+                                          $
+                                        </text>
+                                      </g>
+                                    </defs>
 
-                              {/* Top Pair: Back Bill */}
-                              <g ref={moneyBill1Ref} transform="translate(80, 68)" style={{ transformOrigin: "80px 68px" }}>
-                                <use href="#unifolio-money-bill" />
-                              </g>
+                                    {/* Top Pair: Back Bill */}
+                                    <g ref={moneyBill1Ref} transform="translate(0, 0)" style={{ transformOrigin: "0px 0px" }}>
+                                      <use href="#unifolio-money-bill" />
+                                    </g>
 
-                              {/* Top Pair: Front Bill */}
-                              <g ref={moneyBill2Ref} transform="translate(80, 68)" style={{ transformOrigin: "80px 68px" }}>
-                                <use href="#unifolio-money-bill" />
-                              </g>
-                            </svg>
-                          </span>
-                        </span>
-                        .
-                      </h2>
+                                    {/* Top Pair: Front Bill */}
+                                    <g ref={moneyBill2Ref} transform="translate(0, 0)" style={{ transformOrigin: "0px 0px" }}>
+                                      <use href="#unifolio-money-bill" />
+                                    </g>
+                                  </svg>
+                                </span>
+                              </span>
+                              .
+                            </span>
+                          </div>
+                        </h2>
+                      </div>
                     ) : item.type === "principle" ? (
                       <div className="flex flex-col">
                         {idx === 1 ? (
@@ -4832,17 +5102,19 @@ export function BlueprintHero() {
                             </span>
                           </h3>
                         ) : idx === 4 ? (
-                          // State 5: "You control the connection" - Typography Transformation into Handshake on "You"
+                          // State 5: "You control the connection" - Typography Transformation on "connection"
                           <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.06] mb-4 sm:mb-5 select-none whitespace-normal lg:whitespace-nowrap">
-                            {/* The word "You" transforms into the handshake */}
+                            <span>You control the </span>
+
+                            {/* The word "connection" in Unifolio green transforms into the animated connection SVG */}
                             <span className="relative inline-flex items-center justify-center align-baseline">
-                              {/* The 3 letters of "You" in Unifolio green */}
+                              {/* The 10 letters of "connection" in Unifolio green #22C55E */}
                               <span className="inline-flex items-baseline text-[#22C55E] font-black">
-                                {YOU_LETTERS.map((char, charIdx) => (
+                                {CONNECTION_LETTERS.map((char, charIdx) => (
                                   <span
                                     key={charIdx}
                                     ref={(el) => {
-                                      youCharRefs.current[charIdx] = el;
+                                      connectionCharRefs.current[charIdx] = el;
                                     }}
                                     className="inline-block will-change-transform"
                                   >
@@ -4851,114 +5123,23 @@ export function BlueprintHero() {
                                 ))}
                               </span>
 
-                              {/* Morphed Handshake SVG Icon (Centered directly over the word "You") */}
+                              {/* Morphed Connection SVG Animation (Centered directly over the word "connection") */}
                               <span
-                                ref={handshakeWrapperRef}
+                                ref={connectionWrapperRef}
                                 className="absolute inset-0 flex items-center justify-center pointer-events-none will-change-transform z-10"
                                 style={{ opacity: 0, transform: "scale(0.35)" }}
                                 aria-hidden="true"
                               >
-                                <svg
-                                  viewBox="0 0 220 130"
-                                  className="w-[2.8em] h-[1.7em] sm:w-[2.9em] sm:h-[1.75em] overflow-visible drop-shadow-[0_6px_22px_rgba(34,197,94,0.5)]"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <defs>
-                                    <linearGradient id="cuffGreenLeft" x1="32" y1="38" x2="74" y2="86" gradientUnits="userSpaceOnUse">
-                                      <stop offset="0%" stopColor="#4ADE80" />
-                                      <stop offset="60%" stopColor="#22C55E" />
-                                      <stop offset="100%" stopColor="#16A34A" />
-                                    </linearGradient>
-                                    <linearGradient id="cuffGreenRight" x1="144" y1="38" x2="188" y2="86" gradientUnits="userSpaceOnUse">
-                                      <stop offset="0%" stopColor="#4ADE80" />
-                                      <stop offset="60%" stopColor="#22C55E" />
-                                      <stop offset="100%" stopColor="#15803D" />
-                                    </linearGradient>
-                                  </defs>
-
-                                  {/* Handshake Sparks & Celebration Stars (burst upon clasp) */}
-                                  <g ref={handshakeSparksRef} className="will-change-transform origin-center" style={{ opacity: 0 }}>
-                                    {/* Top Left Emerald Star */}
-                                    <path
-                                      d="M 82 20 Q 82 27 75 27 Q 82 27 82 34 Q 82 27 89 27 Q 82 27 82 20 Z"
-                                      fill="#10B981"
-                                    />
-                                    {/* Top Right Golden Star */}
-                                    <path
-                                      d="M 140 18 Q 140 25 133 25 Q 140 25 140 32 Q 140 25 147 25 Q 140 25 140 18 Z"
-                                      fill="#FBBF24"
-                                    />
-                                    {/* Bottom Left Mint Star */}
-                                    <path
-                                      d="M 68 96 Q 68 102 62 102 Q 68 102 68 108 Q 68 102 74 102 Q 68 102 68 96 Z"
-                                      fill="#34D399"
-                                    />
-                                    {/* Bottom Right Lime Star */}
-                                    <path
-                                      d="M 148 94 Q 148 100 142 100 Q 148 100 148 106 Q 148 100 154 100 Q 148 100 148 94 Z"
-                                      fill="#A3E635"
-                                    />
-                                  </g>
-
-                                  {/* Left Hand Group (reaching right) */}
-                                  <g ref={handLeftGroupRef} className="will-change-transform">
-                                    {/* Left Sleeve / Cuff (Unifolio Green #22C55E) */}
-                                    <path
-                                      d="M 52 38 L 74 48 C 76 49 77 52 76 54 L 62 84 C 61 86 58 87 56 86 L 34 76 C 32 75 31 72 32 70 L 46 40 C 47 38 50 37 52 38 Z"
-                                      fill="url(#cuffGreenLeft)"
-                                    />
-                                    {/* White Cuff Button */}
-                                    <circle cx="48" cy="74" r="3.6" fill="#FFFFFF" />
-                                    {/* Star highlight on sleeve */}
-                                    <path
-                                      d="M 58 48 Q 58 44 58 42 Q 58 44 60 45 Q 58 46 58 50 Q 58 46 56 45 Q 58 44 58 42 Z"
-                                      fill="#FFFFFF"
-                                    />
-
-                                    {/* Left Hand / Palm & Fingers */}
-                                    <path
-                                      d="M 68 52 C 78 50 86 44 94 42 C 99 41 104 43 103 48 C 101 54 94 57 88 60 L 118 70 C 122 71 123 76 120 79 C 117 82 112 82 108 80 L 86 72 L 114 82 C 117 83 118 88 115 91 C 112 94 107 94 103 92 L 80 82 L 102 93 C 105 94 106 99 103 102 C 100 105 95 105 91 103 L 64 86 C 58 82 56 74 58 68 Z"
-                                      fill="#FDA4AF"
-                                    />
-                                    {/* Finger Creases */}
-                                    <path d="M 88 68 L 114 77" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" opacity="0.65" />
-                                    <path d="M 84 78 L 108 87" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" opacity="0.65" />
-                                    <path d="M 80 87 L 98 96" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" opacity="0.65" />
-                                  </g>
-
-                                  {/* Right Hand Group (reaching left) */}
-                                  <g ref={handRightGroupRef} className="will-change-transform">
-                                    {/* Right Sleeve / Cuff (Unifolio Green #22C55E) */}
-                                    <path
-                                      d="M 168 38 C 170 37 173 38 174 40 L 188 70 C 189 72 188 75 186 76 L 164 86 C 162 87 159 86 158 84 L 144 54 C 143 52 144 49 146 48 Z"
-                                      fill="url(#cuffGreenRight)"
-                                    />
-                                    {/* White Cuff Button */}
-                                    <circle cx="172" cy="74" r="3.6" fill="#FFFFFF" />
-                                    {/* Curved Highlight */}
-                                    <path
-                                      d="M 160 46 C 164 44 169 46 172 50 C 171 52 168 50 164 51 Z"
-                                      fill="#FFFFFF"
-                                    />
-
-                                    {/* Right Hand Palm & Thumb */}
-                                    <path
-                                      d="M 152 52 C 142 50 134 44 122 43 C 114 42 108 46 110 52 C 113 58 122 62 130 65 L 148 76 C 153 79 156 74 156 68 Z"
-                                      fill="#FED7AA"
-                                    />
-                                    {/* Curled Fingertips visible under clasp */}
-                                    <rect x="74" y="80" width="14" height="22" rx="7" transform="rotate(-20 74 80)" fill="#FDBA74" />
-                                    <rect x="88" y="86" width="14" height="22" rx="7" transform="rotate(-20 88 86)" fill="#FDBA74" />
-                                    <rect x="102" y="91" width="13" height="20" rx="6.5" transform="rotate(-20 102 91)" fill="#FDBA74" />
-                                    {/* Thumb Crease */}
-                                    <path d="M 124 50 C 120 54 122 58 128 62" stroke="#15803D" strokeWidth="2" strokeLinecap="round" opacity="0.55" />
-                                  </g>
-                                </svg>
+                                <span className="inline-flex items-center justify-center -translate-y-2 sm:-translate-y-3">
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img
+                                    src="/connection.svg"
+                                    alt="Connection animation"
+                                    className="w-[3.4em] h-[3.4em] sm:w-[3.8em] sm:h-[3.8em] md:w-[4.2em] md:h-[4.2em] object-contain drop-shadow-[0_4px_16px_rgba(34,197,94,0.35)] dark:drop-shadow-[0_6px_20px_rgba(34,197,94,0.45)] select-none pointer-events-none"
+                                  />
+                                </span>
                               </span>
                             </span>
-
-                            <span> control the connection</span>
                           </h3>
                         ) : idx === 5 ? (
                           // State 6: "Stored in India" - Typography Transformation into Minimal India Map Outline
@@ -5034,11 +5215,11 @@ export function BlueprintHero() {
                                 ))}
                               </span>
 
-                              {/* Morphed Security Shield Badge SVG (Centered directly over the word "sell") */}
+                              {/* Morphed Security Shield Badge SVG (Elevated smoothly over the word "sell") */}
                               <span
                                 ref={sellShieldWrapperRef}
                                 className="absolute inset-0 flex items-center justify-center pointer-events-none will-change-transform z-10"
-                                style={{ opacity: 0, transform: "scale(0.35)", perspective: "800px" }}
+                                style={{ opacity: 0, perspective: "800px" }}
                                 aria-hidden="true"
                               >
                                 <svg
@@ -5105,12 +5286,29 @@ export function BlueprintHero() {
                         </p>
                       </div>
                     ) : (
-                      <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] uppercase leading-[1.04]">
-                        Security isn&apos;t a feature here. <br />
-                        <span className="text-[#22C55E]">
-                          It&apos;s the baseline everything else is built on.
-                        </span>
-                      </h2>
+                      <div className="flex flex-col gap-1 sm:gap-1.5 select-none relative">
+                        {/* Black text portion: "Security isn't a feature here." */}
+                        <div
+                          ref={closingBlackTextRef}
+                          className="overflow-hidden will-change-[clip-path,opacity]"
+                          style={{ clipPath: "inset(0% 0% 0% 0%)" }}
+                        >
+                          <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] uppercase leading-[1.04]">
+                            Security isn&apos;t a feature here.
+                          </h2>
+                        </div>
+
+                        {/* Green text portion: "It's the baseline everything else is built on." */}
+                        <div
+                          ref={closingGreenTextRef}
+                          className="overflow-hidden will-change-[clip-path,opacity]"
+                          style={{ clipPath: "inset(0% 0% 0% 0%)" }}
+                        >
+                          <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-[#22C55E] tracking-[-0.035em] uppercase leading-[1.04]">
+                            It&apos;s the baseline everything else is built on.
+                          </h2>
+                        </div>
+                      </div>
                     )}
                   </div>
                 ))}

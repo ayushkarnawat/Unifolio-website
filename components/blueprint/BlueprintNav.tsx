@@ -69,58 +69,36 @@ export function BlueprintNav() {
       const scrollY = window.scrollY;
       setScrolled(scrollY > 60);
 
-      // 1. On landing / near top of page (Home)
-      if (scrollY < window.innerHeight * 0.65) {
-        forcedSectionRef.current = null;
-        setActiveId("hero");
-        return;
-      }
-
-      // If an explicit section was signaled (e.g. at transition trigger to Security), honor it
-      if (forcedSectionRef.current) {
-        const aboutEl = document.getElementById("about");
-        const contactEl = document.getElementById("contact");
-        const triggerPos = scrollY + window.innerHeight * 0.35;
-        if (aboutEl && triggerPos >= aboutEl.offsetTop) {
-          forcedSectionRef.current = null;
-        } else if (contactEl && triggerPos >= contactEl.offsetTop) {
-          forcedSectionRef.current = null;
-        } else {
-          setActiveId(forcedSectionRef.current);
-          return;
-        }
-      }
-
-      // 2. Near bottom of page (Contact)
-      if (scrollY + window.innerHeight >= document.documentElement.scrollHeight - 60) {
-        setActiveId("contact");
-        return;
-      }
-
-      // 3. Middle Section Thresholds
       const contactEl = document.getElementById("contact");
       const aboutEl = document.getElementById("about");
-      const securityEl = document.getElementById("security");
-      const productEl = document.getElementById("product") || document.getElementById("statement");
 
-      const contactTop = contactEl ? contactEl.offsetTop : Infinity;
-      const aboutTop = aboutEl ? aboutEl.offsetTop : Infinity;
-      const securityTop = securityEl ? securityEl.offsetTop : Infinity;
-      const productTop = productEl ? productEl.offsetTop : Infinity;
+      const scrollMid = scrollY + window.innerHeight * 0.40;
+      const isAtBottom = scrollY + window.innerHeight >= document.documentElement.scrollHeight - 50;
 
-      const triggerPos = scrollY + window.innerHeight * 0.35;
-
-      if (triggerPos >= contactTop) {
+      // 1. Bottom of page or within Contact section
+      if (isAtBottom || (contactEl && scrollMid >= contactEl.offsetTop)) {
+        forcedSectionRef.current = null;
         setActiveId("contact");
-      } else if (triggerPos >= aboutTop) {
-        setActiveId("about");
-      } else if (triggerPos >= securityTop) {
-        setActiveId("security");
-      } else if (triggerPos >= productTop) {
-        setActiveId("product");
-      } else {
-        setActiveId("hero");
+        return;
       }
+
+      // 2. Within About section
+      if (aboutEl && scrollMid >= aboutEl.offsetTop) {
+        forcedSectionRef.current = null;
+        setActiveId("about");
+        return;
+      }
+
+      // 3. Above About section (Hero / Product / Security)
+      // If an explicit section was signaled (e.g. user entered the card ring experience)
+      if (forcedSectionRef.current === "security") {
+        setActiveId("security");
+        return;
+      }
+
+      // Otherwise, the user is in the Product section (landing hero, aperture zoom, product cards, or scrolled back)
+      forcedSectionRef.current = null;
+      setActiveId("product");
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -130,28 +108,36 @@ export function BlueprintNav() {
 
   // Smooth Gliding Active Indicator Movement (GSAP Interpolation to exact text span)
   useEffect(() => {
-    const activeElement = textRefs.current[activeId] || linkRefs.current[activeId];
-    const containerElement = navContainerRef.current;
-    if (!activeElement || !containerElement || !indicatorRef.current) return;
+    const updateIndicator = () => {
+      const activeElement = textRefs.current[activeId] || linkRefs.current[activeId];
+      const containerElement = navContainerRef.current;
+      if (!activeElement || !containerElement || !indicatorRef.current) return;
 
-    const activeRect = activeElement.getBoundingClientRect();
-    const containerRect = containerElement.getBoundingClientRect();
+      const activeRect = activeElement.getBoundingClientRect();
+      const containerRect = containerElement.getBoundingClientRect();
 
-    const x = activeRect.left - containerRect.left;
-    const width = activeRect.width;
+      const x = activeRect.left - containerRect.left;
+      const width = activeRect.width;
 
-    if (prefersReducedMotion()) {
-      gsap.set(indicatorRef.current, { x, width, opacity: 1 });
-    } else {
-      gsap.to(indicatorRef.current, {
-        x,
-        width,
-        opacity: 1,
-        duration: 0.35,
-        ease: "power2.out",
-      });
-    }
-  }, [activeId]);
+      if (width === 0) return;
+
+      if (prefersReducedMotion()) {
+        gsap.set(indicatorRef.current, { x, width, opacity: 1 });
+      } else {
+        gsap.to(indicatorRef.current, {
+          x,
+          width,
+          opacity: 1,
+          duration: 0.35,
+          ease: "power2.out",
+        });
+      }
+    };
+
+    updateIndicator();
+    const rafId = requestAnimationFrame(updateIndicator);
+    return () => cancelAnimationFrame(rafId);
+  }, [activeId, isLogoDocked]);
 
   // Window resize handler to reposition indicator precisely
   useEffect(() => {
@@ -187,21 +173,30 @@ export function BlueprintNav() {
     setActiveId(id);
 
     if (href === "#hero" || id === "hero") {
+      forcedSectionRef.current = null;
+      setActiveId("product");
       window.dispatchEvent(new CustomEvent("unifolio-reset-hero"));
       smoothScrollTo(0, { duration: 0.85, ease: "power2.inOut" });
       return;
     }
 
     if (href === "#product" || id === "product") {
+      forcedSectionRef.current = "product";
+      setActiveId("product");
       window.dispatchEvent(new CustomEvent("unifolio-show-product"));
+      return;
     }
 
     if (href === "#security" || id === "security") {
+      forcedSectionRef.current = "security";
+      setActiveId("security");
       window.dispatchEvent(new CustomEvent("unifolio-show-security"));
       return;
     }
 
     if (href === "#about" || id === "about") {
+      forcedSectionRef.current = "about";
+      setActiveId("about");
       window.dispatchEvent(new CustomEvent("unifolio-show-about"));
       const navbarOffset = 75;
       smoothScrollTo(href, { offset: navbarOffset, duration: 0.85, ease: "power2.inOut" });
@@ -231,6 +226,8 @@ export function BlueprintNav() {
           if (typeof window !== "undefined") {
             if (window.location.pathname === "/" || window.location.pathname === "") {
               e.preventDefault();
+              forcedSectionRef.current = null;
+              setActiveId("product");
               window.dispatchEvent(new CustomEvent("unifolio-reset-hero"));
               smoothScrollTo(0, { duration: 0.85, ease: "power2.inOut" });
             }
