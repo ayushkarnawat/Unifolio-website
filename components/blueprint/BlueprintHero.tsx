@@ -352,7 +352,7 @@ export function BlueprintHero() {
   const touchGestureActiveRef = useRef<boolean>(false);
 
   // State management & transition guards
-  const stateRef = useRef<"hero" | "product" | "sculpting" | "ring" | "about">("hero");
+  const stateRef = useRef<"hero" | "product" | "sculpting" | "ring" | "about" | "faq">("hero");
   const productCompleteRef = useRef<boolean>(false);
   const isHoldingProductRef = useRef<boolean>(false);
   const transitionStartedRef = useRef<boolean>(false);
@@ -3277,48 +3277,42 @@ export function BlueprintHero() {
         const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
         const envScale = isDesk ? 0.72 : isTab ? 0.60 : 0.50;
 
-        // Converge & Fold Slots: Cards fold directly from the center stack into the 4 envelope facets
-        const convergeSlots = [
-          // Left diagonal fold facet (Cards 0..5)
-          { x: -195, y: -45, z: 12, rotZ: 38,  rotX: 4,  rotY: 16,  scale: envScale * 0.98, zIndex: 20 },
-          { x: -150, y: 15,  z: 14, rotZ: 38,  rotX: 4,  rotY: 16,  scale: envScale * 0.98, zIndex: 21 },
-          { x: -105, y: 75,  z: 16, rotZ: 38,  rotX: 4,  rotY: 14,  scale: envScale * 0.98, zIndex: 22 },
-          { x: -60,  y: 120, z: 18, rotZ: 35,  rotX: 2,  rotY: 12,  scale: envScale * 0.98, zIndex: 23 },
-          { x: -235, y: -65, z: 10, rotZ: 40,  rotX: 6,  rotY: 18,  scale: envScale * 0.94, zIndex: 18 },
-          { x: -175, y: 45,  z: 15, rotZ: 38,  rotX: 4,  rotY: 15,  scale: envScale * 0.96, zIndex: 21 },
-
-          // Right diagonal fold facet (Cards 6..11)
-          { x: 195,  y: -45, z: 12, rotZ: -38, rotX: 4,  rotY: -16, scale: envScale * 0.98, zIndex: 20 },
-          { x: 150,  y: 15,  z: 14, rotZ: -38, rotX: 4,  rotY: -16, scale: envScale * 0.98, zIndex: 21 },
-          { x: 105,  y: 75,  z: 16, rotZ: -38, rotX: 4,  rotY: -14, scale: envScale * 0.98, zIndex: 22 },
-          { x: 60,   y: 120, z: 18, rotZ: -35, rotX: 2,  rotY: -12, scale: envScale * 0.98, zIndex: 23 },
-          { x: 235,  y: -65, z: 10, rotZ: -40, rotX: 6,  rotY: -18, scale: envScale * 0.94, zIndex: 18 },
-          { x: 175,  y: 45,  z: 15, rotZ: -38, rotX: 4,  rotY: -15, scale: envScale * 0.96, zIndex: 21 },
-
-          // Bottom pocket facet (Cards 12..18)
-          { x: -115, y: 110, z: 20, rotZ: 6,   rotX: -14, rotY: 0,  scale: envScale * 1.00, zIndex: 24 },
-          { x: -40,  y: 135, z: 22, rotZ: 2,   rotX: -15, rotY: 0,  scale: envScale * 1.02, zIndex: 25 },
-          { x: 40,   y: 135, z: 22, rotZ: -2,  rotX: -15, rotY: 0,  scale: envScale * 1.02, zIndex: 25 },
-          { x: 115,  y: 110, z: 20, rotZ: -6,  rotX: -14, rotY: 0,  scale: envScale * 1.00, zIndex: 24 },
-          { x: 0,    y: 145, z: 24, rotZ: 0,   rotX: -16, rotY: 0,  scale: envScale * 1.04, zIndex: 26 },
-          { x: -75,  y: 120, z: 21, rotZ: 4,   rotX: -15, rotY: 0,  scale: envScale * 1.00, zIndex: 25 },
-          { x: 75,   y: 120, z: 21, rotZ: -4,  rotX: -15, rotY: 0,  scale: envScale * 1.00, zIndex: 25 },
-
-          // Top folding flap facet (Cards 19..25)
-          { x: -110, y: -65, z: 24, rotZ: -20, rotX: 16, rotY: 0,  scale: envScale * 0.98, zIndex: 27 },
-          { x: 110,  y: -65, z: 24, rotZ: 20,  rotX: 16, rotY: 0,  scale: envScale * 0.98, zIndex: 27 },
-          { x: -55,  y: -90, z: 26, rotZ: -10, rotX: 18, rotY: 0,  scale: envScale * 1.00, zIndex: 28 },
-          { x: 55,   y: -90, z: 26, rotZ: 10,  rotX: 18, rotY: 0,  scale: envScale * 1.00, zIndex: 28 },
-          { x: 0,    y: -105, z: 28, rotZ: 0,  rotX: 20, rotY: 0,  scale: envScale * 1.02, zIndex: 29 },
-          { x: 0,    y: -35, z: 30, rotZ: 0,   rotX: 14, rotY: 0,  scale: envScale * 1.00, zIndex: 30 },
-          { x: 0,    y: 15,  z: 32, rotZ: 0,   rotX: 8,  rotY: 0,  scale: envScale * 0.96, zIndex: 31 },
+        // Dynamic organic scatter slots of all 26 cards as they hit the About surface:
+        // Realistic physical dispersal, rotational offsets (-16deg to +16deg), 3D pitch/yaw, and depth
+        const scatterSlots = [
+          { x: -160, y: -45, z: 8,  rotZ: -14, rotX: -4, rotY: 6,   scale: envScale * 0.95 },
+          { x: 145,  y: 35,  z: 12, rotZ: 12,  rotX: 5,  rotY: -7,  scale: envScale * 0.96 },
+          { x: -75,  y: 65,  z: 16, rotZ: -8,  rotX: 3,  rotY: 4,   scale: envScale * 0.98 },
+          { x: 95,   y: -55, z: 10, rotZ: 15,  rotX: -5, rotY: -5,  scale: envScale * 0.95 },
+          { x: -190, y: 20,  z: 6,  rotZ: -12, rotX: 2,  rotY: 8,   scale: envScale * 0.92 },
+          { x: 180,  y: -25, z: 14, rotZ: 10,  rotX: -3, rotY: -8,  scale: envScale * 0.93 },
+          { x: -40,  y: -75, z: 18, rotZ: 7,   rotX: -6, rotY: 3,   scale: envScale * 0.97 },
+          { x: 50,   y: 80,  z: 15, rotZ: -11, rotX: 6,  rotY: -4,  scale: envScale * 0.96 },
+          { x: -125, y: -80, z: 9,  rotZ: -16, rotX: -4, rotY: 7,   scale: envScale * 0.94 },
+          { x: 130,  y: 85,  z: 11, rotZ: 13,  rotX: 4,  rotY: -6,  scale: envScale * 0.95 },
+          { x: -105, y: 35,  z: 17, rotZ: -6,  rotX: 2,  rotY: 5,   scale: envScale * 0.98 },
+          { x: 110,  y: -30, z: 13, rotZ: 9,   rotX: -3, rotY: -5,  scale: envScale * 0.96 },
+          { x: -15,  y: 45,  z: 22, rotZ: 5,   rotX: 4,  rotY: 2,   scale: envScale * 1.00 },
+          { x: 25,   y: -40, z: 20, rotZ: -7,  rotX: -4, rotY: -3,  scale: envScale * 0.99 },
+          { x: -215, y: -20, z: 5,  rotZ: -15, rotX: -2, rotY: 9,   scale: envScale * 0.91 },
+          { x: 210,  y: 30,  z: 7,  rotZ: 16,  rotX: 3,  rotY: -9,  scale: envScale * 0.91 },
+          { x: -65,  y: -40, z: 19, rotZ: 8,   rotX: -3, rotY: 4,   scale: envScale * 0.98 },
+          { x: 75,   y: 45,  z: 16, rotZ: -9,  rotX: 4,  rotY: -4,  scale: envScale * 0.97 },
+          { x: -145, y: 70,  z: 8,  rotZ: 11,  rotX: 5,  rotY: 6,   scale: envScale * 0.93 },
+          { x: 155,  y: -70, z: 10, rotZ: -13, rotX: -5, rotY: -7,  scale: envScale * 0.93 },
+          { x: -30,  y: 90,  z: 21, rotZ: -5,  rotX: 6,  rotY: 2,   scale: envScale * 0.99 },
+          { x: 35,   y: -85, z: 19, rotZ: 6,   rotX: -6, rotY: -2,  scale: envScale * 0.99 },
+          { x: -85,  y: 10,  z: 23, rotZ: 4,   rotX: 1,  rotY: 3,   scale: envScale * 1.01 },
+          { x: 80,   y: -10, z: 24, rotZ: -4,  rotX: -1, rotY: -3,  scale: envScale * 1.01 },
+          { x: -10,  y: -15, z: 26, rotZ: 2,   rotX: -2, rotY: 1,   scale: envScale * 1.02 },
+          { x: 10,   y: 15,  z: 27, rotZ: -2,  rotX: 2,  rotY: -1,  scale: envScale * 1.02 },
         ];
 
         return {
           isDesk,
           isTab,
           envScale,
-          convergeSlots,
+          scatterSlots,
         };
       };
 
@@ -3333,14 +3327,18 @@ export function BlueprintHero() {
         }
 
         gsap.to([cardsClusterRef.current, aboutContentRef.current], {
-          y: -window.innerHeight * 0.75,
+          y: -window.innerHeight * 0.65,
           opacity: 0,
-          duration: 0.55,
+          duration: 0.50,
           ease: "power2.in",
           onComplete: () => {
-            stateRef.current = "hero";
+            stateRef.current = "faq";
+            lockScrollYRef.current = -1;
             document.documentElement.style.overflow = "";
             document.body.style.overflow = "";
+            document.documentElement.style.removeProperty("overflow");
+            document.body.style.removeProperty("overflow");
+
             if (stageRef.current) {
               stageRef.current.style.position = "";
               stageRef.current.style.top = "";
@@ -3350,13 +3348,16 @@ export function BlueprintHero() {
               stageRef.current.style.zIndex = "";
             }
             isSecurityTransitioningRef.current = false;
-            const faqEl = document.getElementById("faq");
-            if (faqEl) {
-              smoothScrollTo(faqEl, { duration: 0.85, ease: "power2.inOut" });
-            }
-            window.dispatchEvent(
-              new CustomEvent("unifolio-active-section", { detail: { section: "faq" } })
-            );
+
+            requestAnimationFrame(() => {
+              const faqEl = document.getElementById("faq");
+              if (faqEl) {
+                smoothScrollTo(faqEl, { duration: 0.85, ease: "power2.inOut" });
+              }
+              window.dispatchEvent(
+                new CustomEvent("unifolio-active-section", { detail: { section: "faq" } })
+              );
+            });
           },
         });
       };
@@ -3373,9 +3374,8 @@ export function BlueprintHero() {
         setIsAperturePaused(true);
         productCompleteRef.current = true;
 
-        const pinEnd = apertureScrollTriggerRef.current?.end ?? window.scrollY;
-        lockScrollYRef.current = pinEnd;
-        window.scrollTo(0, pinEnd);
+        lockScrollYRef.current = 0;
+        window.scrollTo(0, 0);
 
         document.documentElement.style.overflow = "hidden";
         document.body.style.overflow = "hidden";
@@ -3404,18 +3404,6 @@ export function BlueprintHero() {
         const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
         const targetEnvelopeY = isDesk ? 95 : isTab ? 80 : 65;
 
-        if (cardsClusterRef.current) {
-          gsap.set(cardsClusterRef.current, {
-            x: 0,
-            y: targetEnvelopeY + 55,
-            rotateZ: 0,
-            rotateX: 0,
-            rotateY: 0,
-            scale: 1,
-            opacity: 1,
-          });
-        }
-
         // Hide all 26 individual cards — morph into single physical envelope is complete
         allCards.forEach((cardEl) => {
           if (cardEl) gsap.set(cardEl, { opacity: 0, visibility: "hidden" });
@@ -3431,7 +3419,7 @@ export function BlueprintHero() {
         }
 
         if (envelopeTopFlapRef.current) {
-          gsap.set(envelopeTopFlapRef.current, { rotateX: -175, zIndex: 0 });
+          gsap.set(envelopeTopFlapRef.current, { rotateX: -175, zIndex: 0, opacity: 0 });
         }
 
         if (envelopeSealRef.current) {
@@ -3445,15 +3433,17 @@ export function BlueprintHero() {
           gsap.set(philosophyDocRef.current, {
             opacity: 1,
             visibility: "visible",
-            y: -250,
-            rotateX: 0,
-            z: 50,
+            y: -375,
+            rotateZ: -2.8,
+            rotateX: 2.0,
+            rotateY: 2.2,
+            z: 55,
             scale: 1,
           });
         }
 
         if (docPaperSheetRef.current) {
-          gsap.set(docPaperSheetRef.current, { height: 640 });
+          gsap.set(docPaperSheetRef.current, { height: 930 });
         }
 
         if (docInkCopyRef.current) {
@@ -3466,12 +3456,52 @@ export function BlueprintHero() {
           });
         }
 
+        if (cardsClusterRef.current) {
+          gsap.fromTo(
+            cardsClusterRef.current,
+            {
+              x: 0,
+              y: -window.innerHeight * 0.45,
+              rotateZ: 0,
+              rotateX: 0,
+              rotateY: 0,
+              scale: 0.95,
+              opacity: 0,
+            },
+            {
+              x: 0,
+              y: targetEnvelopeY + 140,
+              rotateZ: 0,
+              rotateX: 0,
+              rotateY: 0,
+              scale: 1,
+              opacity: 1,
+              duration: 0.55,
+              ease: "power2.out",
+            }
+          );
+        }
+
         if (aboutContentRef.current) {
-          gsap.set(aboutContentRef.current, { opacity: 1, visibility: "visible" });
+          gsap.fromTo(
+            aboutContentRef.current,
+            { opacity: 0, y: -40 },
+            {
+              opacity: 1,
+              y: 0,
+              visibility: "visible",
+              duration: 0.55,
+              ease: "power2.out",
+              onComplete: () => {
+                isSecurityTransitioningRef.current = false;
+              },
+            }
+          );
+        } else {
+          isSecurityTransitioningRef.current = false;
         }
 
         isRingConsolidatedRef.current = true;
-        isSecurityTransitioningRef.current = false;
         window.dispatchEvent(
           new CustomEvent("unifolio-active-section", { detail: { section: "about" } })
         );
@@ -3565,7 +3595,7 @@ export function BlueprintHero() {
         const dxArc = curX + (pxArc - clusterCenterX);
         const dyArc = curY + (pyArc - clusterCenterY);
 
-        const { isDesk, envScale, convergeSlots } =
+        const { isDesk, envScale, scatterSlots } =
           computeEnvelopeParams();
 
         const tl = gsap.timeline({
@@ -3651,7 +3681,7 @@ export function BlueprintHero() {
               gsap.set(unifiedEnvelopeRef.current, { opacity: 0, visibility: "hidden" });
             }
             if (envelopeTopFlapRef.current) {
-              gsap.set(envelopeTopFlapRef.current, { rotateX: 0, zIndex: 25 });
+              gsap.set(envelopeTopFlapRef.current, { rotateX: 0, zIndex: 30, opacity: 1 });
             }
             if (envelopeSealRef.current) {
               gsap.set(envelopeSealRef.current, { opacity: 1, scale: 1 });
@@ -3664,10 +3694,10 @@ export function BlueprintHero() {
               });
             }
             if (philosophyDocRef.current) {
-              gsap.set(philosophyDocRef.current, { opacity: 1, visibility: "visible", y: 200, rotateX: 0, z: 0, scale: 1 });
+              gsap.set(philosophyDocRef.current, { opacity: 1, visibility: "visible", y: 220, rotateX: 0, rotateY: 0, rotateZ: 0, z: 0, scale: 1 });
             }
             if (docPaperSheetRef.current) {
-              gsap.set(docPaperSheetRef.current, { height: 260 });
+              gsap.set(docPaperSheetRef.current, { height: 320 });
             }
             if (docInkCopyRef.current) {
               gsap.set(docInkCopyRef.current, {
@@ -4061,24 +4091,39 @@ export function BlueprintHero() {
         // Cluster glides to dead-center, cards flatten radii & merge surfaces,
         // and the single unified physical envelope emerges at screen center.
         // =========================================================================
-        // Glide cluster from drop landing (-20) downwards toward the center of the viewport
+        // =========================================================================
+        // PHYSICAL TRANSFORMATION: CARDS DROP -> SCATTER -> GATHER/COMPRESS -> MORPH
+        // 1. CARDS DROP & SCATTER (3.15s -> 3.52s):
+        //    Cards land and organically scatter across the surface with physical momentum,
+        //    angular variance (-16deg to +16deg), 3D pitch/yaw, and realistic depth.
+        // 2. GATHER / COMPRESS (3.54s -> 3.88s):
+        //    Scattered cards magnetically draw inward and compress into a tight, dense,
+        //    solid rectangular pack at the exact center (borderRadius: 20px -> 16px).
+        // 3. MORPH INTO A SINGLE REAL ENVELOPE (3.88s -> 4.22s):
+        //    The compressed cards progressively flatten and broaden into the continuous
+        //    envelope surface, while the envelope's origami creases unfold and solidify in unison.
+        //    No separate card collage, no fade-out, no cut, no sudden appearance.
+        // =========================================================================
+
+        // Glide cluster smoothly from drop landing (-20) downwards toward targetEnvelopeY
         tl.to(
           cardsClusterRef.current,
           {
             y: targetEnvelopeY,
-            duration: 0.78,
+            duration: 0.82,
             ease: "power2.out",
           },
-          3.25
+          3.15
         );
 
-        // 26 cards expand & fold directly outward from stack into envelope facets
+        // 26 cards: Scatter -> Gather/Compress -> Flatten into continuous envelope
         allCards.forEach((cardEl, idx) => {
-          const slot = convergeSlots[idx];
+          const slot = scatterSlots[idx];
           const origX = idx < 5 ? (origCentersRef.current[idx]?.x ?? 0) : 0;
           const origY = idx < 5 ? (origCentersRef.current[idx]?.y ?? 0) : 0;
-          const stagger = (idx % 6) * 0.020;
+          const stagger = (idx % 6) * 0.012;
 
+          // STEP 1: SCATTER on landing with authentic physical dispersion and angular offsets
           tl.to(
             cardEl,
             {
@@ -4089,48 +4134,71 @@ export function BlueprintHero() {
               rotateX: slot.rotX,
               rotateY: slot.rotY,
               scale: slot.scale,
-              borderRadius: "2px",
-              duration: 0.82,
-              ease: "power3.inOut",
+              duration: 0.36,
+              ease: "power2.out",
               force3D: true,
             },
-            3.25 + stagger
+            3.15 + stagger
           );
-          tl.set(cardEl, { zIndex: slot.zIndex }, 3.25 + stagger + 0.04);
 
-          // Surfaces merge and fade out as unified envelope material emerges
+          // STEP 2: GATHER / COMPRESS inward into a single dense, unified rectangular pack
           tl.to(
             cardEl,
             {
+              x: 0 - origX,
+              y: 0 - origY,
+              z: (idx - 13) * 0.5,
+              rotateZ: 0,
+              rotateX: 0,
+              rotateY: 0,
+              scale: envScale,
+              borderRadius: "16px",
+              duration: 0.34,
+              ease: "power3.inOut",
+              force3D: true,
+            },
+            3.54 + stagger * 0.4
+          );
+
+          // STEP 3: MORPH / FLATTEN: The compressed card pack flattens and broadens into
+          // the continuous envelope surface as its origami seams solidify
+          tl.to(
+            cardEl,
+            {
+              scaleX: envScale * 1.85,
+              scaleY: envScale * 1.35,
               opacity: 0,
-              duration: 0.38,
+              duration: 0.28,
               ease: "power2.inOut",
             },
-            3.70 + stagger * 0.35
+            3.88 + (idx % 4) * 0.012
           );
-          tl.set(cardEl, { visibility: "hidden" }, 4.10);
+          tl.set(cardEl, { visibility: "hidden" }, 4.22);
         });
 
-        // Unified physical envelope emerges seamlessly at screen center
+        // Unified physical envelope emerges directly from the core of the compressed cards,
+        // expanding and solidifying its creases in perfect physical unison
         if (unifiedEnvelopeRef.current) {
           tl.set(
             unifiedEnvelopeRef.current,
             {
               visibility: "visible",
-              opacity: 0,
-              scale: 0.90,
+              opacity: 0.25,
+              scaleX: 0.54,
+              scaleY: 0.74,
             },
-            3.52
+            3.86
           );
           tl.to(
             unifiedEnvelopeRef.current,
             {
               opacity: 1,
-              scale: 1.0,
-              duration: 0.62,
+              scaleX: 1.0,
+              scaleY: 1.0,
+              duration: 0.26,
               ease: "power2.out",
             },
-            3.58
+            3.88
           );
         }
 
@@ -4180,8 +4248,8 @@ export function BlueprintHero() {
         if (envelopeSealRef.current) {
           tl.set(envelopeSealRef.current, { opacity: 1, scale: 1 }, 0);
         }
-        // Document starts deep inside pocket (y: 200, height: 280)
-        // Strictly hidden until top flap opens! (0.0s -> 5.15s)
+        // Document starts deep inside pocket cavity (y: 220, height: 320)
+        // Strictly hidden until top flap opens! (0.0s -> 5.25s)
         if (docCavityWrapperRef.current) {
           tl.set(
             docCavityWrapperRef.current,
@@ -4201,8 +4269,10 @@ export function BlueprintHero() {
             {
               visibility: "hidden",
               opacity: 0,
-              y: 200,
+              y: 220,
               rotateX: 0,
+              rotateY: 0,
+              rotateZ: 0,
               z: 0,
               scale: 1,
               transformOrigin: "50% 0%",
@@ -4211,7 +4281,7 @@ export function BlueprintHero() {
           );
         }
         if (docPaperSheetRef.current) {
-          tl.set(docPaperSheetRef.current, { height: 280, scale: 1 }, 0);
+          tl.set(docPaperSheetRef.current, { height: 320, scale: 1 }, 0);
         }
         if (docInkCopyRef.current) {
           tl.set(
@@ -4242,53 +4312,78 @@ export function BlueprintHero() {
         }
 
         // 3. Top Flap hinges open naturally along its fold line (rotateX: 0 -> -175deg)
-        // Flap finishes opening completely (4.68s -> 5.30s)
+        // Flap finishes opening completely (4.68s -> 5.25s)
         if (envelopeTopFlapRef.current) {
           tl.to(
             envelopeTopFlapRef.current,
             {
               rotateX: -175,
-              duration: 0.62,
+              duration: 0.57,
               ease: "power2.inOut",
               force3D: true,
             },
             4.68
           );
           // Halfway through rotation (-90deg), switch zIndex behind the backplate
-          tl.set(envelopeTopFlapRef.current, { zIndex: 0 }, 4.98);
+          tl.set(envelopeTopFlapRef.current, { zIndex: 0 }, 4.95);
         }
 
-        // 4A. Once the top flap opens enough to reveal the inside cavity (5.15s):
-        // Make the document inside visible, resting in the pocket mouth
-        if (docCavityWrapperRef.current) {
-          tl.set(docCavityWrapperRef.current, { visibility: "visible", opacity: 1 }, 5.15);
-        }
-        if (philosophyDocRef.current) {
-          tl.set(philosophyDocRef.current, { visibility: "visible", opacity: 1 }, 5.15);
-        }
+        // 4. PHYSICAL EMERGENCE CHOREOGRAPHY (Strictly Sequential):
+        // flap opens → envelope moves down+document emerges from inside envelope (simultaneous)
+        // → document rises substantially → document unfurls → document settles into final reference composition.
 
-        // Physical pull-out: Document emerges upward and outward from inside envelope!
-        // The envelope remains stationary. The document travels 500px upward (y: 200 -> -300),
-        // with realistic 3D paper perspective (rotateX: 18, z: 45), smoothly emerging
-        // from behind the front pocket and crossing the envelope mouth until it completely clears.
-        if (philosophyDocRef.current) {
+        // 4A. Simultaneous: Once flap opens (5.25s), envelope moves downward
+        // AND document begins emerging from inside the envelope cavity!
+        if (cardsClusterRef.current) {
           tl.to(
-            philosophyDocRef.current,
+            cardsClusterRef.current,
             {
-              y: -300,
-              rotateX: 18,
-              z: 45,
-              duration: 0.95,
-              ease: "power2.out",
-              force3D: true,
+              y: targetEnvelopeY + 140,
+              duration: 1.20,
+              ease: "power2.inOut",
             },
-            5.30
+            5.25
           );
         }
 
-        // 4B. Once bottom edge has cleared the pocket mouth (6.25s):
-        // Seamlessly promote zIndex to 35 (in front of stationary envelope),
-        // remove bottom cavity clipping, and dramatically unfurl & expand into Hero State!
+        // Seamlessly dissolve open flap as document clears so flap line is never visible above document
+        if (envelopeTopFlapRef.current) {
+          tl.to(
+            envelopeTopFlapRef.current,
+            {
+              opacity: 0,
+              duration: 0.35,
+              ease: "power2.out",
+            },
+            5.45
+          );
+        }
+
+        if (docCavityWrapperRef.current) {
+          tl.set(docCavityWrapperRef.current, { visibility: "visible", opacity: 1 }, 5.25);
+        }
+        if (philosophyDocRef.current) {
+          tl.set(philosophyDocRef.current, { visibility: "visible", opacity: 1 }, 5.25);
+          // Document physically rises out of the envelope cavity (y: 220 -> -490),
+          // with realistic 3D paper pitch (rotateX: 14deg, rotateY: 1.2deg, z: 40px)
+          tl.to(
+            philosophyDocRef.current,
+            {
+              y: -490,
+              rotateX: 14,
+              rotateY: 1.2,
+              z: 40,
+              duration: 1.10,
+              ease: "power2.out",
+              force3D: true,
+            },
+            5.25
+          );
+        }
+
+        // 4B. Document rises substantially and bottom edge clears envelope mouth (6.35s):
+        // Promote wrapper in front of envelope (zIndex: 35), remove bottom cavity clipping,
+        // and unfurl & expand into dramatic full-page financial document!
         if (docCavityWrapperRef.current) {
           tl.set(
             docCavityWrapperRef.current,
@@ -4297,62 +4392,57 @@ export function BlueprintHero() {
               clipPath: "none",
               WebkitClipPath: "none",
             },
-            6.25
+            6.35
           );
         }
         if (docPaperSheetRef.current) {
           tl.to(
             docPaperSheetRef.current,
             {
-              height: 740,
-              scale: 1.14,
+              height: 930,
               boxShadow:
-                "0 55px 110px -20px rgba(0, 0, 0, 0.75), 0 25px 50px -10px rgba(0, 0, 0, 0.45), inset 0 2px 3px rgba(255, 255, 255, 0.95), inset 0 -2px 3px rgba(0, 0, 0, 0.08)",
-              duration: 0.75,
+                "0 45px 110px -20px rgba(0, 0, 0, 0.75), 0 20px 45px -10px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(215, 205, 190, 0.8), inset 0 2px 3px rgba(255, 255, 255, 0.95), inset 0 -2px 3px rgba(0, 0, 0, 0.06)",
+              duration: 0.85,
               ease: "power2.inOut",
             },
-            6.25
+            6.35
           );
         }
         if (philosophyDocRef.current) {
+          // Document unfurls with momentum and counter-curl flex
           tl.to(
             philosophyDocRef.current,
             {
-              y: -190,
-              duration: 0.75,
-              ease: "power2.inOut",
-              force3D: true,
-            },
-            6.25
-          );
-          // Paper curl counter-flexes and straightens into elegant editorial presentation
-          tl.to(
-            philosophyDocRef.current,
-            {
-              rotateX: -3,
-              duration: 0.40,
+              rotateX: -3.5,
+              duration: 0.45,
               ease: "sine.inOut",
               force3D: true,
             },
-            6.25
+            6.35
           );
+
+          // 4C. Document settles into the final reference composition (6.80s -> 7.25s)
+          // Positioned higher in viewport (y: -375) placed cleanly above envelope,
+          // tilted counter-clockwise (-2.8deg), slight 3D dimensional yaw (2.2deg)
           tl.to(
             philosophyDocRef.current,
             {
-              rotateX: 0,
-              z: 50,
-              duration: 0.35,
-              ease: "power1.out",
+              y: -375,
+              rotateZ: -2.8,
+              rotateX: 2.0,
+              rotateY: 2.2,
+              z: 55,
+              duration: 0.65,
+              ease: "power2.out",
               force3D: true,
             },
-            6.65
+            6.80
           );
         }
 
-        // 5. Only after the document is completely outside, unfurled, and settled flat (7.00s):
-        // Reveal the About copy via high-contrast letterpress printing ink sweep!
+        // 5. Reveal the About copy via high-contrast letterpress printing ink sweep (7.25s -> 8.40s)
         if (docInkCopyRef.current) {
-          tl.set(docInkCopyRef.current, { visibility: "visible" }, 7.00);
+          tl.set(docInkCopyRef.current, { visibility: "visible" }, 7.25);
           tl.fromTo(
             docInkCopyRef.current,
             { opacity: 0 },
@@ -4361,7 +4451,7 @@ export function BlueprintHero() {
               duration: 0.35,
               ease: "power1.in",
             },
-            7.00
+            7.25
           );
           tl.fromTo(
             docInkCopyRef.current,
@@ -4373,7 +4463,7 @@ export function BlueprintHero() {
               duration: 1.15,
               ease: "power2.inOut",
             },
-            7.00
+            7.25
           );
           tl.fromTo(
             docInkCopyRef.current,
@@ -4385,20 +4475,299 @@ export function BlueprintHero() {
               duration: 1.15,
               ease: "power2.out",
             },
-            7.00
+            7.25
           );
         }
       };
 
       const restoreStackToRing = () => {
-        if (!consolidationTlRef.current) return;
         if (isSecurityTransitioningRef.current) return;
-        if (!isRingConsolidatedRef.current) return;
+        if (stateRef.current !== "about" && !isRingConsolidatedRef.current) return;
 
         isSecurityTransitioningRef.current = true;
         lastSecurityScrollTimeRef.current = Date.now();
 
-        consolidationTlRef.current.reverse();
+        // Kill forward timeline if active
+        if (consolidationTlRef.current) {
+          consolidationTlRef.current.kill();
+          consolidationTlRef.current = null;
+        }
+
+        const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
+        const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
+        const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+        const vw = typeof window !== "undefined" ? window.innerWidth : 1440;
+        const viewportCenterY = vh / 2;
+        const viewportCenterX = vw / 2;
+        const clusterRect = cardsClusterRef.current?.getBoundingClientRect();
+        const clusterCenterX = clusterRect ? (clusterRect.left + clusterRect.width / 2) : viewportCenterX;
+        const clusterCenterY = clusterRect ? (clusterRect.top + clusterRect.height / 2) : viewportCenterY;
+        const fallbackTargetRingY = Math.round(viewportCenterY - clusterCenterY + 18);
+        const fallbackTargetRingX = Math.round(viewportCenterX - clusterCenterX);
+        const leftShift = isDesktop
+          ? Math.round(viewportCenterX * 0.44)
+          : isTablet
+          ? Math.round(viewportCenterX * 0.32)
+          : Math.round(viewportCenterX * 0.20);
+        const fallbackTargetLeftX = fallbackTargetRingX - leftShift;
+
+        const targetLeftX = targetLeftXRef.current ?? fallbackTargetLeftX;
+        const targetRingY = targetRingYRef.current ?? fallbackTargetRingY;
+
+        const stackCardScale = isDesktop ? 0.60 : isTablet ? 0.56 : 0.52;
+        const targetEnvelopeY = isDesktop ? 95 : isTablet ? 80 : 65;
+        const frontX = 35;
+
+        const allProductCards = cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
+        const allCompanionCards = companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
+        const allCards = [...allProductCards, ...allCompanionCards];
+        const ringSlots = computeRingSlots();
+
+        const revTl = gsap.timeline({
+          onComplete: () => {
+            isSecurityTransitioningRef.current = false;
+            isRingConsolidatedRef.current = false;
+            stateRef.current = "ring";
+            currentSecurityStateRef.current = 7;
+
+            // Restore ambient ring rotation seamlessly
+            if (cardsClusterRef.current && (!ringRotateTweenRef.current || !ringRotateTweenRef.current.isActive())) {
+              const curRot = Number(gsap.getProperty(cardsClusterRef.current, "rotateZ")) || 376;
+              ringRotateTweenRef.current = gsap.fromTo(
+                cardsClusterRef.current,
+                { rotateZ: curRot },
+                {
+                  rotateZ: curRot + 360,
+                  duration: 26,
+                  repeat: -1,
+                  ease: "none",
+                  force3D: true,
+                }
+              );
+            }
+
+            window.dispatchEvent(
+              new CustomEvent("unifolio-active-section", { detail: { section: "security" } })
+            );
+          },
+        });
+
+        // -------------------------------------------------------------------------
+        // REVERSE STEP 1: DOCUMENT DIRECTLY RETRACTS BACK INTO ENVELOPE (0.00s -> 0.32s)
+        // No text fade-out! The document glides straight back down inside the cavity.
+        // -------------------------------------------------------------------------
+        if (docCavityWrapperRef.current) {
+          gsap.set(docCavityWrapperRef.current, {
+            zIndex: 10,
+            clipPath: "inset(-2000px 0px 0px 0px round 0 0 22px 22px)",
+            WebkitClipPath: "inset(-2000px 0px 0px 0px round 0 0 22px 22px)",
+          });
+        }
+        if (envelopeTopFlapRef.current) {
+          gsap.set(envelopeTopFlapRef.current, { opacity: 1, rotateX: -175, zIndex: 0 });
+        }
+        if (philosophyDocRef.current) {
+          revTl.to(
+            philosophyDocRef.current,
+            {
+              y: 220,
+              rotateZ: 0,
+              rotateX: 0,
+              rotateY: 0,
+              z: 0,
+              duration: 0.32,
+              ease: "power2.in",
+              force3D: true,
+            },
+            0
+          );
+          revTl.set(philosophyDocRef.current, { visibility: "hidden", opacity: 0 }, 0.32);
+        }
+
+        // Lift envelope back up from downward emergence displacement
+        if (cardsClusterRef.current) {
+          revTl.to(
+            cardsClusterRef.current,
+            {
+              y: targetEnvelopeY,
+              duration: 0.28,
+              ease: "power2.out",
+            },
+            0.04
+          );
+        }
+
+        // -------------------------------------------------------------------------
+        // REVERSE STEP 2: ENVELOPE TOP FLAP AUTOMATICALLY CLOSES (0.32s -> 0.52s)
+        // No waiting for additional scroll input! Immediately snaps shut and seals.
+        // -------------------------------------------------------------------------
+        if (envelopeTopFlapRef.current) {
+          revTl.set(envelopeTopFlapRef.current, { zIndex: 30, opacity: 1 }, 0.32);
+          revTl.to(
+            envelopeTopFlapRef.current,
+            {
+              rotateX: 0,
+              duration: 0.20,
+              ease: "power2.inOut",
+              force3D: true,
+            },
+            0.32
+          );
+        }
+        if (envelopeSealRef.current) {
+          revTl.set(envelopeSealRef.current, { visibility: "visible" }, 0.32);
+          revTl.to(
+            envelopeSealRef.current,
+            {
+              opacity: 1,
+              scale: 1,
+              duration: 0.16,
+              ease: "power2.out",
+            },
+            0.36
+          );
+        }
+
+        // -------------------------------------------------------------------------
+        // REVERSE STEP 3: ENVELOPE DIRECTLY MORPHS INTO CARD STACK (0.52s -> 0.76s)
+        // No card scattering or reassembly! The closed envelope directly contracts into
+        // the pristine 26-card stack at the center.
+        // -------------------------------------------------------------------------
+        allCards.forEach((cardEl, idx) => {
+          const origX = idx < 5 ? (origCentersRef.current[idx]?.x ?? 0) : 0;
+          const origY = idx < 5 ? (origCentersRef.current[idx]?.y ?? 0) : 0;
+          const destX = frontX - idx * 2.8 - origX;
+          const destY = -origY;
+          const destZ = -idx * 2.2;
+
+          revTl.set(
+            cardEl,
+            {
+              x: destX,
+              y: destY,
+              z: destZ,
+              rotateZ: 0,
+              rotateX: 0,
+              rotateY: 0,
+              scale: stackCardScale,
+              borderRadius: "20px",
+              opacity: 0,
+              visibility: "visible",
+            },
+            0.52
+          );
+
+          revTl.to(
+            cardEl,
+            {
+              opacity: 1,
+              duration: 0.20,
+              ease: "power2.out",
+            },
+            0.54
+          );
+        });
+
+        if (unifiedEnvelopeRef.current) {
+          revTl.to(
+            unifiedEnvelopeRef.current,
+            {
+              scaleX: 0.54,
+              scaleY: 0.74,
+              opacity: 0,
+              duration: 0.22,
+              ease: "power2.in",
+            },
+            0.52
+          );
+          revTl.set(unifiedEnvelopeRef.current, { visibility: "hidden" }, 0.75);
+        }
+
+        // -------------------------------------------------------------------------
+        // REVERSE STEP 4: CARD RING TRAVELS UP & DOCKS TO ORIGINAL LEFT POSITION (0.76s -> 1.25s)
+        // The card ring smoothly returns to its original position (left side of the screen)
+        // AND original size (scale: 1.0, scaleX: 1.0, scaleY: 1.0) in the Security section.
+        // -------------------------------------------------------------------------
+        if (cardsClusterRef.current) {
+          revTl.to(
+            cardsClusterRef.current,
+            {
+              x: targetLeftX,
+              y: targetRingY,
+              scale: 1.0,
+              scaleX: 1.0,
+              scaleY: 1.0,
+              rotateX: 18,
+              rotateY: 20,
+              rotateZ: 376,
+              duration: 0.48,
+              ease: "power2.out",
+              force3D: true,
+            },
+            0.76
+          );
+        }
+
+        if (aboutContentRef.current) {
+          revTl.to(
+            aboutContentRef.current,
+            {
+              opacity: 0,
+              duration: 0.40,
+              ease: "power2.inOut",
+            },
+            0.76
+          );
+          revTl.set(aboutContentRef.current, { visibility: "hidden" }, 1.18);
+        }
+
+        if (closingBlackTextRef.current) {
+          closingBlackTextRef.current.style.clipPath = "none";
+          (closingBlackTextRef.current.style as any).webkitClipPath = "none";
+        }
+        if (closingGreenTextRef.current) {
+          closingGreenTextRef.current.style.clipPath = "none";
+          (closingGreenTextRef.current.style as any).webkitClipPath = "none";
+        }
+        if (securityStateRefs.current[7]) {
+          revTl.set(securityStateRefs.current[7], { visibility: "visible" }, 0.76);
+          revTl.to(
+            securityStateRefs.current[7],
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.38,
+              ease: "power2.out",
+            },
+            0.80
+          );
+        }
+
+        // Unwind cards from stack smoothly into the ring at its exact original scale and layout
+        allCards.forEach((cardEl, idx) => {
+          const slot = ringSlots[idx];
+          const origX = idx < 5 ? (origCentersRef.current[idx]?.x ?? 0) : 0;
+          const origY = idx < 5 ? (origCentersRef.current[idx]?.y ?? 0) : 0;
+
+          revTl.to(
+            cardEl,
+            {
+              x: slot.x - origX,
+              y: slot.y - origY,
+              z: slot.z,
+              rotateX: slot.rotX,
+              rotateY: slot.rotY,
+              rotateZ: slot.rotZ,
+              scale: slot.scale,
+              scaleX: slot.scale,
+              scaleY: slot.scale,
+              duration: 0.38,
+              ease: "power2.out",
+              force3D: true,
+            },
+            0.86 + (idx % 6) * 0.012
+          );
+        });
       };
 
       const goToSecurityState = (nextIdx: number, direction: 1 | -1) => {
@@ -4892,6 +5261,25 @@ export function BlueprintHero() {
           return;
         }
 
+        // 1c. If in FAQ / content sections:
+        if (stateRef.current === "faq") {
+          // Downward scroll: native smooth scroll through FAQ, Contact, and footer
+          if (e.deltaY > 0) {
+            return;
+          }
+          // Upward scroll at or near the top of FAQ: gracefully re-enter About
+          const faqEl = document.getElementById("faq");
+          const faqTop = faqEl ? faqEl.offsetTop : window.innerHeight;
+          if (e.deltaY < -10 && window.scrollY <= faqTop + 30) {
+            if (Date.now() - lastSecurityScrollTimeRef.current < 300) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            jumpToAboutState();
+            return;
+          }
+          return;
+        }
+
         // 2. While in Ring state with Security Content experience active:
         // The viewport/page must remain fixed while progressing through discrete states
         if (stateRef.current === "ring" && transitionCompleteRef.current) {
@@ -5011,6 +5399,25 @@ export function BlueprintHero() {
             touchStartY = touchY;
             if (Date.now() - lastSecurityScrollTimeRef.current < 300) return;
             restoreStackToRing();
+            return;
+          }
+          return;
+        }
+
+        if (stateRef.current === "faq") {
+          const touchY = e.touches[0].clientY;
+          const touchDeltaY = touchStartY - touchY;
+          if (touchDeltaY > 0) {
+            return;
+          }
+          const faqEl = document.getElementById("faq");
+          const faqTop = faqEl ? faqEl.offsetTop : window.innerHeight;
+          if (touchDeltaY < -12 && window.scrollY <= faqTop + 30) {
+            touchStartY = touchY;
+            if (Date.now() - lastSecurityScrollTimeRef.current < 300) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            jumpToAboutState();
             return;
           }
           return;
@@ -5168,9 +5575,24 @@ export function BlueprintHero() {
             return;
           }
         }
+
+        if (stateRef.current === "faq") {
+          if (["ArrowUp", "PageUp"].includes(e.key) || (e.key === " " && e.shiftKey)) {
+            const faqEl = document.getElementById("faq");
+            const faqTop = faqEl ? faqEl.offsetTop : window.innerHeight;
+            if (window.scrollY <= faqTop + 30) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              jumpToAboutState();
+              return;
+            }
+          }
+          return;
+        }
       };
 
       const handleScrollLock = () => {
+        if (stateRef.current === "faq") return;
         if (
           transitionAnimatingRef.current ||
           stateRef.current === "hero" ||
@@ -5202,6 +5624,7 @@ export function BlueprintHero() {
 
       // Navbar Navigation Event Listeners
       const handleShowProduct = () => {
+        smoothScrollTo(0, { duration: 0.85, ease: "power2.inOut" });
         stateRef.current = "product";
         setIsAperturePaused(true);
         productCompleteRef.current = true;
@@ -6368,55 +6791,84 @@ export function BlueprintHero() {
                       >
                       <div
                         ref={docPaperSheetRef}
-                        className="relative w-[92vw] max-w-[620px] sm:max-w-[700px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[960px] rounded-[18px] sm:rounded-[24px] p-8 sm:p-11 md:p-13 lg:p-16 overflow-hidden will-change-[height,transform]"
+                        className="relative w-[95vw] max-w-[620px] sm:max-w-[700px] md:max-w-[780px] lg:max-w-[860px] xl:max-w-[920px] rounded-[18px] sm:rounded-[24px] p-7 sm:p-10 md:p-12 lg:p-14 overflow-hidden will-change-[height,transform]"
                         style={{
-                          height: "280px",
+                          height: "320px",
                           background:
-                            "linear-gradient(168deg, #FAF7F2 0%, #F5EFE6 45%, #ECE4D6 100%)",
+                            "linear-gradient(168deg, #FCFAF6 0%, #F7F2E8 42%, #ECE3D4 100%)",
                           boxShadow:
-                            "0 45px 95px -18px rgba(0, 0, 0, 0.70), 0 20px 45px -10px rgba(0, 0, 0, 0.40), inset 0 2px 3px rgba(255, 255, 255, 0.95), inset 0 -2px 3px rgba(0, 0, 0, 0.08)",
-                          border: "1px solid rgba(225, 215, 200, 0.85)",
+                            "0 45px 110px -20px rgba(0, 0, 0, 0.75), 0 20px 45px -10px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(215, 205, 190, 0.8), inset 0 2px 3px rgba(255, 255, 255, 0.95), inset 0 -2px 3px rgba(0, 0, 0, 0.06)",
+                          clipPath: "polygon(46px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 46px)",
+                          WebkitClipPath: "polygon(46px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 46px)",
                         }}
                       >
-                        {/* Tactile Fine Paper Texture & Soft Grain Sheen */}
+                        {/* Folded Paper Dog-Ear Flap (Top Left, Matching Reference Image) */}
+                        <div className="absolute top-0 left-0 w-[46px] h-[46px] pointer-events-none z-30">
+                          <svg className="w-full h-full" viewBox="0 0 46 46" fill="none">
+                            <defs>
+                              <filter id="dogEarShadow" x="-30%" y="-30%" width="160%" height="160%">
+                                <feDropShadow dx="2" dy="2.5" stdDeviation="3" floodColor="#000000" floodOpacity="0.30" />
+                              </filter>
+                              <linearGradient id="dogEarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#EDE3D2" />
+                                <stop offset="50%" stopColor="#F5EFE3" />
+                                <stop offset="100%" stopColor="#FAF7F0" />
+                              </linearGradient>
+                            </defs>
+                            <path
+                              d="M 0 46 L 46 0 L 46 46 Z"
+                              fill="url(#dogEarGrad)"
+                              filter="url(#dogEarShadow)"
+                            />
+                            <line x1="0" y1="46" x2="46" y2="0" stroke="rgba(255, 255, 255, 0.95)" strokeWidth="1.2" />
+                            <line x1="1" y1="46" x2="46" y2="1" stroke="rgba(180, 168, 148, 0.40)" strokeWidth="0.8" />
+                          </svg>
+                        </div>
+
+                        {/* Tactile Fine Paper Texture & Soft 3D Lighting Gradient */}
                         <div
-                          className="absolute inset-0 pointer-events-none opacity-45"
+                          className="absolute inset-0 pointer-events-none opacity-55"
                           style={{
                             background:
-                              "radial-gradient(ellipse 90% 60% at 50% 12%, rgba(255, 255, 255, 0.95), transparent 75%)",
+                              "linear-gradient(105deg, rgba(255, 255, 255, 0.70) 0%, rgba(255, 255, 255, 0.15) 30%, rgba(0, 0, 0, 0.02) 70%, rgba(0, 0, 0, 0.06) 100%)",
                           }}
                         />
 
                         {/* Top Subtle Emerald Watermark Accent Line */}
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-transparent via-[#22C55E]/70 to-transparent opacity-75" />
 
-                        {/* Top Editorial Pre-Header & Blind Debossed Seal (Visible upon flap opening, matching Panel 03) */}
+                        {/* Top Editorial Pre-Header & Unifolio Ring Logo */}
                         <div className="relative flex items-start justify-between w-full mb-6 sm:mb-8 pointer-events-none">
                           <div className="flex flex-col space-y-0.5 text-left">
-                            <span className="font-sans text-[10px] sm:text-[11px] md:text-[12px] font-semibold tracking-[0.26em] uppercase text-neutral-500/90 leading-tight">
-                              A Clearer
+                            <span className="font-sans text-[13px] sm:text-[15px] font-black tracking-[0.26em] uppercase text-neutral-950 leading-tight">
+                              UNIFOLIO
                             </span>
-                            <span className="font-sans text-[10px] sm:text-[11px] md:text-[12px] font-semibold tracking-[0.26em] uppercase text-neutral-500/90 leading-tight">
-                              Financial
+                            <span className="font-sans text-[11px] sm:text-[12px] font-bold tracking-[0.22em] uppercase text-neutral-700 leading-tight">
+                              THE PHILOSOPHY
                             </span>
-                            <span className="font-sans text-[10px] sm:text-[11px] md:text-[12px] font-semibold tracking-[0.26em] uppercase text-neutral-500/90 leading-tight">
-                              Tomorrow
-                            </span>
-                            <div className="w-9 h-[1.5px] bg-[#16A34A]/70 mt-1.5" />
                           </div>
 
-                          {/* Blind Debossed Unifolio Aperture Ring Seal (Matching Reference Panel 06 & 07) */}
-                          <div
-                            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full pointer-events-none flex items-center justify-center"
-                            style={{
-                              boxShadow:
-                                "inset 1.5px 2px 3px rgba(0, 0, 0, 0.22), inset -1px -1px 2px rgba(255, 255, 255, 0.9), 0.5px 1px 1px rgba(255, 255, 255, 0.8)",
-                              border: "2.5px solid rgba(175, 165, 150, 0.45)",
-                              background:
-                                "linear-gradient(135deg, rgba(245, 240, 230, 0.6) 0%, rgba(235, 225, 210, 0.3) 100%)",
-                            }}
-                          >
-                            <div className="absolute -top-1 w-1.5 h-1.5 bg-[#FAF7F2]" />
+                          <div className="flex items-center space-x-3.5 sm:space-x-4">
+                            <div className="flex flex-col space-y-0.5 text-right">
+                              <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
+                                A CLEARER
+                              </span>
+                              <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
+                                FINANCIAL
+                              </span>
+                              <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
+                                TOMORROW
+                              </span>
+                            </div>
+
+                            {/* Official Unifolio Ring Logo */}
+                            <div className="w-12 h-12 sm:w-14 sm:h-14 relative flex items-center justify-center shrink-0">
+                              <img
+                                src="/Logo/unifolio-ring-transparent.png"
+                                alt="Unifolio Ring"
+                                className="w-full h-full object-contain select-none pointer-events-none drop-shadow-sm"
+                              />
+                            </div>
                           </div>
                         </div>
 
@@ -6431,37 +6883,39 @@ export function BlueprintHero() {
                           }}
                         >
                           {/* First Stanza: Human Reality & Overwhelm */}
-                          <div className="space-y-3.5 sm:space-y-4 text-left">
-                            <p className="font-serif text-[21px] sm:text-[25px] md:text-[29px] lg:text-[32px] font-medium leading-[1.26] tracking-tight text-neutral-900">
+                          <div className="space-y-2.5 sm:space-y-3.5 text-left">
+                            <p className="font-serif text-[28px] sm:text-[34px] md:text-[38px] lg:text-[42px] font-black leading-[1.18] tracking-tight text-neutral-950">
                               In most families, someone ends up in charge of the money,
                             </p>
-                            <p className="font-serif italic text-[16px] sm:text-[19px] md:text-[22px] text-neutral-600 leading-snug">
+                            <p className="font-serif italic text-[20px] sm:text-[23px] md:text-[26px] text-neutral-800 font-bold leading-snug">
                               not because they trained for it, but because someone has to.
                             </p>
-                            <p className="font-sans text-[13.5px] sm:text-[15px] md:text-[16.5px] font-normal text-neutral-600/90 leading-relaxed pt-1.5 max-w-2xl">
+                            <p className="font-sans text-[16px] sm:text-[17.5px] md:text-[19px] font-semibold text-neutral-800 leading-relaxed pt-1 max-w-3xl">
                               Their financial data lives across a dozen apps and statements, and having it all in one place is not the same as understanding it.
                             </p>
                           </div>
 
                           {/* Subtle Hairline Watermark Divider */}
-                          <div className="w-full h-px bg-neutral-300/60 my-6 sm:my-8" />
+                          <div className="w-full h-[1.5px] bg-neutral-300/90 my-5 sm:my-7" />
 
-                          {/* Second Stanza: Unifolio Purpose & Punchline */}
-                          <div className="space-y-4 sm:space-y-5 text-left">
-                            <p className="font-serif text-[20px] sm:text-[24px] md:text-[27px] lg:text-[30px] font-bold text-neutral-950 tracking-tight leading-snug">
+                          {/* Second Stanza: Unifolio Purpose */}
+                          <div className="space-y-2.5 sm:space-y-3.5 text-left">
+                            <p className="font-serif text-[26px] sm:text-[31px] md:text-[35px] lg:text-[38px] font-black text-neutral-950 tracking-tight leading-snug">
                               Unifolio exists to close that gap,
                             </p>
-                            <p className="font-sans text-[13.5px] sm:text-[15px] md:text-[16.5px] font-normal text-neutral-600/90 leading-relaxed max-w-2xl">
+                            <p className="font-sans text-[16px] sm:text-[17.5px] md:text-[19px] font-semibold text-neutral-800 leading-relaxed max-w-3xl">
                               to give that person the same clarity a wealth manager gives their wealthiest clients, whether they hold ₹5 lakh or ₹5 crore, whether they've studied finance or never touched a balance sheet.
                             </p>
-                            <div className="pt-3">
-                              <p className="font-serif text-[17px] sm:text-[20px] md:text-[23px] font-medium text-neutral-900 leading-tight">
-                                Not just where their money is,
-                              </p>
-                              <p className="font-serif text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] font-bold italic text-[#16A34A] tracking-tight mt-1">
-                                but what it means.
-                              </p>
-                            </div>
+                          </div>
+
+                          {/* Third Stanza: Punchline */}
+                          <div className="space-y-1.5 sm:space-y-2 text-left pt-2">
+                            <p className="font-serif text-[22px] sm:text-[25px] md:text-[28px] font-black text-neutral-950 leading-tight">
+                              Not just where their money is,
+                            </p>
+                            <p className="font-serif text-[32px] sm:text-[38px] md:text-[44px] lg:text-[48px] font-black italic text-[#22C55E] tracking-tight mt-1.5 drop-shadow-[0_1px_2px_rgba(34,197,94,0.25)]">
+                              but what it means.
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -6523,6 +6977,18 @@ export function BlueprintHero() {
                         <line x1="0" y1="550" x2="480" y2="270" stroke="rgba(34, 197, 94, 0.40)" strokeWidth="1" />
                         <line x1="960" y1="550" x2="480" y2="270" stroke="rgba(34, 197, 94, 0.40)" strokeWidth="1" />
                       </svg>
+
+                      {/* Front Pocket Center Unifolio Aperture Ring Clasp (Matching Reference Image) */}
+                      <div
+                        className="absolute left-1/2 top-[49%] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                        style={{ zIndex: 25 }}
+                      >
+                        <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#051F14] border border-[#22C55E]/80 shadow-[0_0_26px_rgba(34,197,94,0.65),inset_0_1px_2px_rgba(255,255,255,0.45)] flex items-center justify-center">
+                          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-[#22C55E] relative flex items-center justify-center">
+                            <div className="absolute -top-1 w-1.5 h-1 bg-[#051F14]" />
+                          </div>
+                        </div>
+                      </div>
 
                       {/* Bottom Specular Highlight */}
                       <div
