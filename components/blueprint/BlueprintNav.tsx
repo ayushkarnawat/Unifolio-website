@@ -226,13 +226,19 @@ export function BlueprintNav() {
         />
       </Link>
 
-      {/* Center Navigation: Floating 3D Glass Illustrations with Fluid Soft-Green Expand-on-Hover */}
+      {/* Center Navigation: Translucent Crystal Glass Pill enclosing the 5 3D Glass Illustrations */}
       <div
         ref={navContainerRef}
-        className={`hidden md:flex relative items-center gap-7 sm:gap-8 lg:gap-10 py-1 transition-all duration-700 delay-100 ${
+        className={`hidden md:flex relative items-center gap-6 sm:gap-7 lg:gap-8 h-[52px] sm:h-[56px] px-6 sm:px-8 rounded-full transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${
           isLogoDocked ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
-        }`}
+        } bg-white/[0.05] dark:bg-white/[0.03] backdrop-blur-[10px] border border-white/50 dark:border-white/15 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.05),0_1px_3px_0_rgba(0,0,0,0.02),0_0_14px_-2px_rgba(34,197,94,0.10),inset_0_1px_1px_0_rgba(255,255,255,0.70),inset_0_-1px_1.5px_0_rgba(34,197,94,0.25)] dark:shadow-[0_12px_32px_-6px_rgba(0,0,0,0.5),0_0_16px_0_rgba(34,197,94,0.15),inset_0_1px_1px_0_rgba(255,255,255,0.18),inset_0_-1px_1.5px_0_rgba(34,197,94,0.32)]`}
       >
+        {/* Top Rim Specular Glass Highlight */}
+        <div className="pointer-events-none absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 dark:via-white/30 to-transparent rounded-full opacity-85" />
+
+        {/* Bottom Emerald Refractive Edge Line */}
+        <div className="pointer-events-none absolute inset-x-10 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-[#22C55E]/35 dark:via-[#22C55E]/55 to-transparent rounded-full opacity-75" />
+
         {NAV_ITEMS.map((item) => {
           const isActive = activeId === item.id;
           const isHovered = hoveredId === item.id;
@@ -250,9 +256,9 @@ export function BlueprintNav() {
               onFocus={() => setHoveredId(item.id)}
               onBlur={() => setHoveredId(null)}
               aria-label={item.label}
-              className={`group relative flex items-center h-[42px] rounded-full cursor-pointer transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${
+              className={`group relative flex items-center h-[38px] sm:h-[40px] rounded-full cursor-pointer transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${
                 isHovered
-                  ? "bg-[#22C55E]/[0.08] dark:bg-[#22C55E]/[0.15] border border-[#22C55E]/30 dark:border-[#22C55E]/40 backdrop-blur-md shadow-[0_4px_22px_-2px_rgba(34,197,94,0.25),0_0_14px_rgba(34,197,94,0.18)] pl-3 pr-4"
+                  ? "bg-[#22C55E]/[0.10] dark:bg-[#22C55E]/[0.18] border border-[#22C55E]/30 dark:border-[#22C55E]/45 backdrop-blur-md shadow-[0_4px_20px_-2px_rgba(34,197,94,0.22),0_0_12px_rgba(34,197,94,0.16)] pl-2.5 pr-3.5"
                   : "bg-transparent border border-transparent px-1 shadow-none"
               }`}
             >
@@ -270,12 +276,12 @@ export function BlueprintNav() {
                 <img
                   src={item.icon}
                   alt={item.label}
-                  className="h-[30px] sm:h-[32px] w-auto max-w-[46px] object-contain select-none pointer-events-none"
+                  className="h-[28px] sm:h-[30px] w-auto max-w-[44px] object-contain select-none pointer-events-none"
                 />
 
                 {/* Subtle active pip centered underneath the active illustration */}
                 {isActive && !isHovered && (
-                  <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E]" />
+                  <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E]" />
                 )}
               </div>
 
@@ -283,12 +289,12 @@ export function BlueprintNav() {
               <div
                 className={`overflow-hidden flex items-center transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
                   isHovered
-                    ? "max-w-[150px] opacity-100 translate-x-0 ml-2.5"
+                    ? "max-w-[150px] opacity-100 translate-x-0 ml-2"
                     : "max-w-0 opacity-0 -translate-x-2 ml-0 pointer-events-none"
                 }`}
               >
                 {/* Subtle emerald hairline vertical divider */}
-                <div className="w-[1px] h-3.5 bg-[#22C55E]/45 dark:bg-[#22C55E]/55 mr-2.5 shrink-0" />
+                <div className="w-[1px] h-3.5 bg-[#22C55E]/45 dark:bg-[#22C55E]/55 mr-2 shrink-0" />
 
                 {/* Section Name Label */}
                 <span className="font-sans text-[12.5px] sm:text-[13px] font-bold tracking-[0.06em] uppercase text-neutral-900 dark:text-white whitespace-nowrap">
