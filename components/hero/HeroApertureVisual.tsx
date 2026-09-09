@@ -63,7 +63,7 @@ export function HeroApertureVisual({
             preload="auto"
             className="w-full h-full object-cover object-[66%_48%] select-none pointer-events-none"
           >
-            <source src="/Final%20Hero%20Apeture%20Light.mp4" type="video/mp4" />
+            <source src="/Final%20Hero%20Apeture%20Light.mp4?v=2" type="video/mp4" />
           </video>
         </div>
       </div>
