@@ -150,7 +150,7 @@ const PRODUCT_CARDS: ProductCardData[] = [
 interface SecurityStateItem {
   type: "hero" | "principle" | "closing";
   headline?: string;
-  body?: string;
+  body?: React.ReactNode;
 }
 
 const SECURITY_STATES: SecurityStateItem[] = [
@@ -163,42 +163,73 @@ const SECURITY_STATES: SecurityStateItem[] = [
   {
     type: "principle",
     headline: "Read-only, always",
-    body: "Unifolio can see your accounts. It can never move your money.",
+    body: (
+      <>
+        Unifolio can see your accounts. <br />
+        It can never move your money.
+      </>
+    ),
   },
   // State 3
   {
     type: "principle",
     headline: "We never save your passwords",
-    body: "Your bank login stays with your bank. We connect through India's RBI-regulated Account Aggregator framework, so your credentials never reach us, by design.",
+    body: (
+      <>
+        Your bank login stays with your bank. <br />
+        <span className="sm:whitespace-nowrap">We connect through India&apos;s RBI-regulated Account Aggregator framework,</span> <br />
+        so your credentials never reach us.
+      </>
+    ),
   },
   // State 4
   {
     type: "principle",
     headline: "Locked down, everywhere",
-    body: "Your data is encrypted with AES-256 at rest and TLS in transit, the same standard banks use.",
+    body: (
+      <>
+        <span className="sm:whitespace-nowrap">Your data is encrypted with AES-256 at rest and TLS in transit,</span> <br />
+        the same standard banks use.
+      </>
+    ),
   },
   // State 5
   {
     type: "principle",
     headline: "You control the connection",
-    body: "Every account you link is approved by you and revocable anytime. Revoke it, and data sharing stops instantly.",
+    body: (
+      <>
+        <span className="sm:whitespace-nowrap">Every account you link is approved by you and revocable anytime.</span> <br />
+        Revoke it, and data sharing stops instantly.
+      </>
+    ),
   },
   // State 6
   {
     type: "principle",
     headline: "Stored in India",
-    body: "Your data stays on secure infrastructure based in India, meeting RBI's data localization requirements.",
+    body: (
+      <>
+        <span className="sm:whitespace-nowrap">Your data stays on secure infrastructure based in India,</span> <br />
+        meeting RBI&apos;s data localization requirements.
+      </>
+    ),
   },
   // State 7
   {
     type: "principle",
     headline: "We don't sell your data",
-    body: "It's used only to show you your own financial picture, never sold, never used for advertising, only ever with your consent, in line with India's DPDP Act.",
+    body: (
+      <>
+        <span className="sm:whitespace-nowrap">It&apos;s used only to show you your own financial picture, never sold,</span> <br />
+        never used for advertising, in line with India&apos;s DPDP Act.
+      </>
+    ),
   },
   // State 8 — Closing
   {
     type: "closing",
-    headline: "Security isn't a feature here. It's the baseline everything else is built on.",
+    headline: "Security isn't just a feature here, It's the baseline everything else is built on.",
   },
 ];
 
@@ -208,7 +239,7 @@ const CONNECTION_LETTERS = ["c", "o", "n", "n", "e", "c", "t", "i", "o", "n"];
 const INDIA_LETTERS = ["I", "n", "d", "i", "a"];
 const MONEY_LETTERS = ["m", "o", "n", "e", "y"];
 const SELL_LETTERS = ["s", "e", "l", "l"];
-const CLOSING_BLACK_WORDS = ["Security", "isn't", "a", "feature", "here."];
+const CLOSING_BLACK_WORDS = ["Security", "isn't", "just", "a", "feature", "here,"];
 const CLOSING_GREEN_WORDS = ["It's", "the", "baseline", "everything", "else", "is", "built", "on."];
 
 const ABOUT_PARA_1_WORDS = [
@@ -7074,29 +7105,17 @@ export function BlueprintHero() {
                             <div className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-transparent via-[#22C55E]/70 to-transparent opacity-75" />
 
                             {/* Top Editorial Pre-Header & Unifolio Ring Logo */}
-                            <div className="relative flex items-start justify-between w-full pointer-events-none">
-                              <div />
+                            <div className="relative flex items-center justify-between w-full pointer-events-none">
+                              <span className="font-sans text-[16px] sm:text-[18px] font-semibold tracking-[0.06em] text-neutral-950 leading-tight">
+                                About Us
+                              </span>
 
-                              <div className="flex items-center space-x-3.5 sm:space-x-4">
-                                <div className="flex flex-col space-y-0.5 text-right">
-                                  <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
-                                    A CLEARER
-                                  </span>
-                                  <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
-                                    FINANCIAL
-                                  </span>
-                                  <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
-                                    TOMORROW
-                                  </span>
-                                </div>
-
-                                <div className="w-12 h-12 sm:w-14 sm:h-14 relative flex items-center justify-center shrink-0">
-                                  <img
-                                    src="/Logo/unifolio-ring-transparent.png"
-                                    alt="Unifolio Ring"
-                                    className="w-full h-full object-contain select-none pointer-events-none drop-shadow-sm"
-                                  />
-                                </div>
+                              <div className="w-12 h-12 sm:w-14 sm:h-14 relative flex items-center justify-center shrink-0">
+                                <img
+                                  src="/Logo/unifolio-ring-transparent.png"
+                                  alt="Unifolio Ring"
+                                  className="w-full h-full object-contain select-none pointer-events-none drop-shadow-sm"
+                                />
                               </div>
                             </div>
 
@@ -7199,29 +7218,18 @@ export function BlueprintHero() {
                             <div className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-transparent via-[#22C55E]/70 to-transparent opacity-75" />
 
                             {/* Top Editorial Pre-Header & Unifolio Ring Logo */}
-                            <div className="relative flex items-start justify-between w-full pointer-events-none">
-                              <div />
+                            {/* Top Editorial Pre-Header & Unifolio Ring Logo */}
+                            <div className="relative flex items-center justify-between w-full pointer-events-none">
+                              <span className="font-sans text-[16px] sm:text-[18px] font-semibold tracking-[0.06em] text-neutral-950 leading-tight">
+                                About Us
+                              </span>
 
-                              <div className="flex items-center space-x-3.5 sm:space-x-4">
-                                <div className="flex flex-col space-y-0.5 text-right">
-                                  <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
-                                    A CLEARER
-                                  </span>
-                                  <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
-                                    FINANCIAL
-                                  </span>
-                                  <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
-                                    TOMORROW
-                                  </span>
-                                </div>
-
-                                <div className="w-12 h-12 sm:w-14 sm:h-14 relative flex items-center justify-center shrink-0">
-                                  <img
-                                    src="/Logo/unifolio-ring-transparent.png"
-                                    alt="Unifolio Ring"
-                                    className="w-full h-full object-contain select-none pointer-events-none drop-shadow-sm"
-                                  />
-                                </div>
+                              <div className="w-12 h-12 sm:w-14 sm:h-14 relative flex items-center justify-center shrink-0">
+                                <img
+                                  src="/Logo/unifolio-ring-transparent.png"
+                                  alt="Unifolio Ring"
+                                  className="w-full h-full object-contain select-none pointer-events-none drop-shadow-sm"
+                                />
                               </div>
                             </div>
 
@@ -7433,7 +7441,7 @@ export function BlueprintHero() {
                   className="font-black text-[#22C55E]"
                   style={{ color: "#22C55E" }}
                 >
-                  Not just see it.
+                  Don&apos;t just see it.
                 </span>
               </h2>
 
@@ -7490,7 +7498,7 @@ export function BlueprintHero() {
                       item.type === "hero"
                         ? "absolute top-1/2 left-1/2 -translate-y-1/2 w-auto max-w-none whitespace-nowrap overflow-visible will-change-transform pointer-events-none"
                         : `absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full ${
-                            idx === 2 || idx === 3 || idx === 4 || idx === 5 || idx === 6
+                            idx >= 2 && idx <= 7
                               ? "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl px-6 md:pl-16 lg:pl-28 xl:pl-36 text-left"
                               : "max-w-md sm:max-w-lg lg:max-w-xl xl:max-w-2xl px-6 text-left"
                           } will-change-transform pointer-events-none`
@@ -7505,7 +7513,7 @@ export function BlueprintHero() {
                         ref={securityHeroRibbonRef}
                         className="relative will-change-transform select-none inline-block"
                       >
-                        <h2 className="font-sans font-black text-xl sm:text-2xl md:text-3xl lg:text-[36px] xl:text-[42px] 2xl:text-[46px] text-neutral-950 tracking-[-0.03em] uppercase select-none flex flex-col items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12]">
+                        <h2 className="font-sans font-black text-xl sm:text-2xl md:text-3xl lg:text-[36px] xl:text-[42px] 2xl:text-[46px] text-neutral-950 tracking-[-0.03em] select-none flex flex-col items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12]">
                           {/* Line 1: We take your data as seriously */}
                           <div className="whitespace-nowrap flex items-baseline gap-[0.24em]">
                             <span ref={(el) => { securityHeroWordRefs.current[0] = el; }} className="inline-block will-change-transform">We</span>
@@ -8018,18 +8026,18 @@ export function BlueprintHero() {
                             {item.headline}
                           </h3>
                         )}
-                        <p className="font-sans text-base sm:text-lg md:text-xl lg:text-[21px] text-neutral-600 font-normal leading-relaxed max-w-xl">
+                        <p className="font-sans text-base sm:text-lg md:text-xl lg:text-[21px] text-neutral-600 font-normal leading-relaxed max-w-xl lg:max-w-3xl">
                           {item.body}
                         </p>
                       </div>
                     ) : (
-                      <div className="flex flex-col gap-1 sm:gap-1.5 select-none relative">
-                        {/* Black text portion: "Security isn't a feature here." */}
+                      <div className="flex flex-col gap-2.5 sm:gap-3.5 md:gap-4 select-none relative">
+                        {/* Black text portion: "Security isn't just a feature here," */}
                         <div
                           ref={closingBlackTextRef}
                           className="will-change-[clip-path,opacity]"
                         >
-                          <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 tracking-[-0.035em] uppercase leading-[1.04] flex flex-wrap gap-x-[0.26em] gap-y-0.5">
+                          <h2 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[44px] xl:text-[50px] text-neutral-950 tracking-[-0.035em] leading-[1.15] flex items-baseline gap-x-[0.26em] whitespace-nowrap">
                             {CLOSING_BLACK_WORDS.map((word, wIdx) => (
                               <span
                                 key={wIdx}
@@ -8049,18 +8057,38 @@ export function BlueprintHero() {
                           ref={closingGreenTextRef}
                           className="will-change-[clip-path,opacity]"
                         >
-                          <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-[#22C55E] tracking-[-0.035em] uppercase leading-[1.04] flex flex-wrap gap-x-[0.26em] gap-y-0.5">
-                            {CLOSING_GREEN_WORDS.map((word, wIdx) => (
-                              <span
-                                key={wIdx}
-                                ref={(el) => {
-                                  closingGreenWordRefs.current[wIdx] = el;
-                                }}
-                                className="inline-block will-change-transform"
-                              >
-                                {word}
-                              </span>
-                            ))}
+                          <h2 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[44px] xl:text-[50px] text-[#22C55E] tracking-[-0.035em] leading-[1.15] flex flex-col items-start gap-y-2.5 sm:gap-y-3.5 md:gap-y-4">
+                            {/* Line 1: It's the baseline everything */}
+                            <div className="flex items-baseline gap-x-[0.26em] whitespace-nowrap">
+                              {CLOSING_GREEN_WORDS.slice(0, 4).map((word, wIdx) => (
+                                <span
+                                  key={wIdx}
+                                  ref={(el) => {
+                                    closingGreenWordRefs.current[wIdx] = el;
+                                  }}
+                                  className="inline-block will-change-transform"
+                                >
+                                  {word}
+                                </span>
+                              ))}
+                            </div>
+                            {/* Line 2: else is built on. */}
+                            <div className="flex items-baseline gap-x-[0.26em] whitespace-nowrap">
+                              {CLOSING_GREEN_WORDS.slice(4).map((word, sliceIdx) => {
+                                const wIdx = sliceIdx + 4;
+                                return (
+                                  <span
+                                    key={wIdx}
+                                    ref={(el) => {
+                                      closingGreenWordRefs.current[wIdx] = el;
+                                    }}
+                                    className="inline-block will-change-transform"
+                                  >
+                                    {word}
+                                  </span>
+                                );
+                              })}
+                            </div>
                           </h2>
                         </div>
                       </div>

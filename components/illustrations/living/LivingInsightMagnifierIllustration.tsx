@@ -149,7 +149,7 @@ export function LivingInsightMagnifierIllustration({
           <text
             x="135"
             y="95"
-            fontFamily="var(--font-caveat, cursive)"
+            fontFamily="var(--font-dm-sans, sans-serif)"
             fontSize="14"
             fill="#1C241E"
           >
@@ -158,7 +158,7 @@ export function LivingInsightMagnifierIllustration({
           <text
             x="135"
             y="112"
-            fontFamily="var(--font-caveat, cursive)"
+            fontFamily="var(--font-dm-sans, sans-serif)"
             fontSize="14"
             fill="#1C241E"
           >
@@ -184,7 +184,7 @@ export function LivingInsightMagnifierIllustration({
           <text
             x="272"
             y="105"
-            fontFamily="var(--font-caveat, cursive)"
+            fontFamily="var(--font-dm-sans, sans-serif)"
             fontSize="14"
             fill="#1C241E"
           >
@@ -193,7 +193,7 @@ export function LivingInsightMagnifierIllustration({
           <text
             x="272"
             y="122"
-            fontFamily="var(--font-caveat, cursive)"
+            fontFamily="var(--font-dm-sans, sans-serif)"
             fontSize="14"
             fill="#1C241E"
           >
@@ -221,7 +221,7 @@ export function LivingInsightMagnifierIllustration({
           <text
             x="98"
             y="260"
-            fontFamily="var(--font-caveat, cursive)"
+            fontFamily="var(--font-dm-sans, sans-serif)"
             fontSize="14"
             fill="#1C241E"
           >
@@ -230,7 +230,7 @@ export function LivingInsightMagnifierIllustration({
           <text
             x="98"
             y="278"
-            fontFamily="var(--font-caveat, cursive)"
+            fontFamily="var(--font-dm-sans, sans-serif)"
             fontSize="14"
             fill="#1C241E"
           >

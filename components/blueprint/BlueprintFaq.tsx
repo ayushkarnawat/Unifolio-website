@@ -75,7 +75,7 @@ export function BlueprintFaq() {
         if (answerEl) {
           if (isActive) {
             gsap.to(answerEl, {
-              maxHeight: 240,
+              maxHeight: 160,
               opacity: 1,
               y: 0,
               duration: isInitial ? 0 : 0.5,
@@ -175,7 +175,7 @@ export function BlueprintFaq() {
     <section
       id="faq"
       ref={containerRef}
-      className="relative w-full bg-[#FAF8F5] py-24 sm:py-32 lg:py-36 px-6 sm:px-12 lg:px-20 text-[#111613] select-none overflow-hidden"
+      className="relative w-full bg-[#FAF8F5] px-6 sm:px-12 lg:px-20 text-[#111613] select-none h-screen overflow-hidden flex flex-col"
     >
       {/* Seamless Top Blend from About */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#FAF8F5] to-transparent z-10" />
@@ -283,85 +283,76 @@ export function BlueprintFaq() {
       </div>
 
       {/* Main Content Container */}
-      <div className="relative z-10 max-w-7xl mx-auto space-y-12 sm:space-y-16">
+      <div className="relative z-10 max-w-7xl mx-auto space-y-5 sm:space-y-6 w-full pt-[60px] pb-6 flex flex-col flex-1 justify-center">
         
         {/* =========================================================================
-            HEADER SECTION: Split Headline + Description + Navigation Buttons
+            HEADER SECTION: Headline + Navigation Buttons (no subtext)
            ========================================================================= */}
-        <div className="faq-header-elem flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-4 border-b border-black/[0.08]">
+        <div className="faq-header-elem flex flex-row items-end justify-between gap-8 pb-4 border-b border-black/[0.08]">
           
           {/* Left: Headline */}
-          <div className="space-y-4 max-w-xl">
-            <h2 className="font-sans font-light md:font-normal text-4xl sm:text-5xl lg:text-[58px] text-[#111613] tracking-tight leading-[1.06]">
-              Frequently <br />
-              Asked Questions
-            </h2>
-          </div>
+          <h2 className="font-sans font-light md:font-normal text-3xl sm:text-4xl lg:text-[46px] text-[#111613] tracking-tight leading-[1.06]">
+            Frequently <br />
+            Asked Questions
+          </h2>
 
-          {/* Right: Description & Carousel Navigation Controls */}
-          <div className="flex flex-col sm:flex-row sm:items-center lg:items-end justify-between lg:justify-end gap-6 sm:gap-10 max-w-md">
-            <p className="font-sans text-xs sm:text-sm text-[#5A685D] leading-relaxed max-w-xs">
-              Find answers to common questions about Unifolio&apos;s portfolio intelligence, fee dissection, security protocols, and direct migration.
-            </p>
-
-            {/* Circular Navigation Arrow Buttons */}
-            <div className="flex items-center gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={handlePrev}
-                disabled={activeIdx === 0}
-                aria-label="Previous question"
-                className={`relative group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 overflow-hidden ${
+          {/* Right: Circular Navigation Arrow Buttons — aligned with headline baseline */}
+          <div className="flex items-center gap-3 shrink-0 pb-1">
+            <button
+              type="button"
+              onClick={handlePrev}
+              disabled={activeIdx === 0}
+              aria-label="Previous question"
+              className={`relative group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 overflow-hidden ${
+                activeIdx === 0
+                  ? "opacity-30 border border-black/10 text-black/40 cursor-not-allowed bg-transparent"
+                  : "p-[1.25px] active:scale-95 cursor-pointer hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
+              }`}
+            >
+              {activeIdx !== 0 && (
+                <>
+                  <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin opacity-60 group-hover:opacity-100 will-change-transform" />
+                  <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin blur-[2px] opacity-35 group-hover:opacity-75 will-change-transform" />
+                </>
+              )}
+              <div
+                className={`relative z-10 w-full h-full rounded-full flex items-center justify-center transition-colors ${
                   activeIdx === 0
-                    ? "opacity-30 border border-black/10 text-black/40 cursor-not-allowed bg-transparent"
-                    : "p-[1.25px] active:scale-95 cursor-pointer hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
+                    ? ""
+                    : "bg-white/80 hover:bg-white text-[#111613] backdrop-blur-xl btn-physical-surface-light"
                 }`}
               >
-                {activeIdx !== 0 && (
-                  <>
-                    <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin opacity-60 group-hover:opacity-100 will-change-transform" />
-                    <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin blur-[2px] opacity-35 group-hover:opacity-75 will-change-transform" />
-                  </>
-                )}
-                <div
-                  className={`relative z-10 w-full h-full rounded-full flex items-center justify-center transition-colors ${
-                    activeIdx === 0
-                      ? ""
-                      : "bg-white/80 hover:bg-white text-[#111613] backdrop-blur-xl btn-physical-surface-light"
-                  }`}
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </div>
-              </button>
+                <ArrowLeft className="w-4 h-4" />
+              </div>
+            </button>
 
-              <button
-                type="button"
-                onClick={handleNext}
-                disabled={activeIdx === faqContent.length - 1}
-                aria-label="Next question"
-                className={`relative group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 overflow-hidden ${
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={activeIdx === faqContent.length - 1}
+              aria-label="Next question"
+              className={`relative group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 overflow-hidden ${
+                activeIdx === faqContent.length - 1
+                  ? "opacity-30 border border-black/10 text-black/40 cursor-not-allowed bg-transparent"
+                  : "p-[1.25px] active:scale-95 cursor-pointer hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
+              }`}
+            >
+              {activeIdx !== faqContent.length - 1 && (
+                <>
+                  <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin opacity-60 group-hover:opacity-100 will-change-transform" />
+                  <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin blur-[2px] opacity-35 group-hover:opacity-75 will-change-transform" />
+                </>
+              )}
+              <div
+                className={`relative z-10 w-full h-full rounded-full flex items-center justify-center transition-colors ${
                   activeIdx === faqContent.length - 1
-                    ? "opacity-30 border border-black/10 text-black/40 cursor-not-allowed bg-transparent"
-                    : "p-[1.25px] active:scale-95 cursor-pointer hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
+                    ? ""
+                    : "bg-white/80 hover:bg-white text-[#111613] backdrop-blur-xl btn-physical-surface-light"
                 }`}
               >
-                {activeIdx !== faqContent.length - 1 && (
-                  <>
-                    <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin opacity-60 group-hover:opacity-100 will-change-transform" />
-                    <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin blur-[2px] opacity-35 group-hover:opacity-75 will-change-transform" />
-                  </>
-                )}
-                <div
-                  className={`relative z-10 w-full h-full rounded-full flex items-center justify-center transition-colors ${
-                    activeIdx === faqContent.length - 1
-                      ? ""
-                      : "bg-white/80 hover:bg-white text-[#111613] backdrop-blur-xl btn-physical-surface-light"
-                  }`}
-                >
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </button>
-            </div>
+                <ArrowRight className="w-4 h-4" />
+              </div>
+            </button>
           </div>
 
         </div>
@@ -394,7 +385,7 @@ export function BlueprintFaq() {
                     width: isActive ? wActive : wInactive,
                     flexShrink: 0,
                   }}
-                  className={`faq-card group relative rounded-[28px] sm:rounded-[32px] border transition-[background-color,border-color,box-shadow] duration-500 ease-out cursor-pointer flex flex-col justify-between overflow-hidden select-none min-h-[360px] sm:min-h-[400px] ${
+                  className={`faq-card group relative rounded-[24px] sm:rounded-[28px] border transition-[background-color,border-color,box-shadow] duration-500 ease-out cursor-pointer flex flex-col justify-between overflow-hidden select-none h-[calc(100vh-360px)] min-h-[200px] max-h-[400px] ${
                     isActive
                       ? "bg-white border-[#22C55E]/50 shadow-[0_20px_45px_rgba(0,0,0,0.08),0_0_25px_rgba(34,197,94,0.12)] p-7 sm:p-9 md:p-10"
                       : "bg-black/[0.03] border-black/[0.08] hover:border-black/20 hover:bg-black/[0.05] p-6 sm:p-8"
@@ -423,7 +414,7 @@ export function BlueprintFaq() {
                         answerRefs.current[idx] = el;
                       }}
                       style={{
-                        maxHeight: isActive ? 240 : 0,
+                        maxHeight: isActive ? 160 : 0,
                         opacity: isActive ? 1 : 0,
                       }}
                       className="overflow-hidden transition-all duration-300"

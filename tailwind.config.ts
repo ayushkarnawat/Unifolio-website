@@ -29,11 +29,14 @@ const config: Config = {
         },
       },
       fontFamily: {
-        serif: ["var(--font-fraunces)", "Georgia", "serif"],
-        display: ["var(--font-fraunces)", "Georgia", "serif"],
+        heading: ["var(--font-manrope)", "sans-serif"],
+        subheading: ["var(--font-manrope)", "sans-serif"],
+        display: ["var(--font-manrope)", "sans-serif"],
+        serif: ["var(--font-manrope)", "sans-serif"],
         sans: ["var(--font-dm-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
-        handwriting: ["var(--font-caveat)", "cursive"],
-        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+        body: ["var(--font-dm-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-dm-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        handwriting: ["var(--font-dm-sans)", "sans-serif"],
       },
       maxWidth: {
         content: "1160px",

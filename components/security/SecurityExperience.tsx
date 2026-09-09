@@ -7,39 +7,70 @@ import { gsap, ScrollTrigger, prefersReducedMotion } from "@/lib/gsap";
 interface SecurityPrinciple {
   id: string;
   title: string;
-  body: string;
+  body: React.ReactNode;
 }
 
 export const PRINCIPLES: SecurityPrinciple[] = [
   {
     id: "read-only",
     title: "Read-only, always",
-    body: "Unifolio can see your accounts. It can never move your money.",
+    body: (
+      <>
+        Unifolio can see your accounts. <br />
+        It can never move your money.
+      </>
+    ),
   },
   {
     id: "no-passwords",
     title: "We never see your passwords",
-    body: "Your bank login stays with your bank. We connect through India's RBI-regulated Account Aggregator framework, so your credentials never reach us, by design.",
+    body: (
+      <>
+        Your bank login stays with your bank. <br />
+        <span className="sm:whitespace-nowrap">We connect through India&apos;s RBI-regulated Account Aggregator framework,</span> <br />
+        so your credentials never reach us.
+      </>
+    ),
   },
   {
     id: "encryption",
     title: "Locked down, everywhere",
-    body: "Your data is encrypted with AES-256 at rest and TLS in transit, the same standard banks use.",
+    body: (
+      <>
+        <span className="sm:whitespace-nowrap">Your data is encrypted with AES-256 at rest and TLS in transit,</span> <br />
+        the same standard banks use.
+      </>
+    ),
   },
   {
     id: "user-control",
     title: "You control the connection",
-    body: "Every account you link is approved by you and revocable anytime. Revoke it, and data sharing stops instantly.",
+    body: (
+      <>
+        <span className="sm:whitespace-nowrap">Every account you link is approved by you and revocable anytime.</span> <br />
+        Revoke it, and data sharing stops instantly.
+      </>
+    ),
   },
   {
     id: "india-stored",
     title: "Stored in India",
-    body: "Your data stays on secure infrastructure based in India, meeting RBI's data localization requirements.",
+    body: (
+      <>
+        <span className="sm:whitespace-nowrap">Your data stays on secure infrastructure based in India,</span> <br />
+        meeting RBI&apos;s data localization requirements.
+      </>
+    ),
   },
   {
     id: "no-sell",
     title: "We don't sell your data",
-    body: "It's used only to show you your own financial picture, never sold, never used for advertising, only ever with your consent, in line with India's DPDP Act.",
+    body: (
+      <>
+        <span className="sm:whitespace-nowrap">It&apos;s used only to show you your own financial picture, never sold,</span> <br />
+        never used for advertising, in line with India&apos;s DPDP Act.
+      </>
+    ),
   },
 ];
 
@@ -278,7 +309,7 @@ export function SecurityExperience() {
             className="absolute inset-0 flex flex-col items-center justify-center px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto text-center will-change-transform z-20 pointer-events-none"
           >
             <div className="max-w-4xl mx-auto flex flex-col items-center">
-              <h2 className="font-sans font-black text-3xl sm:text-5xl lg:text-[62px] text-[#111613] tracking-[-0.035em] uppercase leading-[0.98]">
+              <h2 className="font-sans font-black text-3xl sm:text-5xl lg:text-[62px] text-[#111613] tracking-[-0.035em] leading-[0.98]">
                 We take your data <br />
                 <span className="text-[#22C55E]">as seriously as you</span> <br />
                 take your money.
@@ -320,10 +351,11 @@ export function SecurityExperience() {
             className="absolute inset-0 flex flex-col items-center justify-center px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto text-center will-change-transform z-20 pointer-events-none"
           >
             <div className="max-w-4xl mx-auto flex flex-col items-center text-center -translate-y-8 sm:-translate-y-12">
-              <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[62px] text-[#111613] tracking-[-0.035em] uppercase leading-[0.98]">
-                Security isn&apos;t a feature here. <br />
-                <span className="text-[#22C55E]">
-                  It&apos;s the baseline everything else is built on.
+              <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[56px] text-[#111613] tracking-[-0.035em] leading-[1.18] flex flex-col gap-3 sm:gap-4 md:gap-5">
+                <span className="whitespace-nowrap">Security isn&apos;t just a feature here,</span>
+                <span className="text-[#22C55E] flex flex-col gap-3 sm:gap-4 md:gap-5">
+                  <span className="whitespace-nowrap">It&apos;s the baseline everything</span>
+                  <span className="whitespace-nowrap">else is built on.</span>
                 </span>
               </h3>
             </div>

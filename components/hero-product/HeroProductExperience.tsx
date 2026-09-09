@@ -609,7 +609,7 @@ export function HeroProductExperience() {
               className="font-medium text-[#22C55E]"
               style={{ color: "#22C55E" }}
             >
-              Not just see it.
+              Don&apos;t just see it.
             </span>
           </h2>
 

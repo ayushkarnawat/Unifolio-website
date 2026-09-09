@@ -163,7 +163,7 @@ export function LivingSecurityRibbonIllustration({
             x="540"
             y="76"
             textAnchor="middle"
-            fontFamily="var(--font-fraunces, serif)"
+            fontFamily="var(--font-manrope, sans-serif)"
             fontSize="15"
             fontWeight="bold"
             fill="#1C241E"

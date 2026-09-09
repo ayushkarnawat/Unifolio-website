@@ -63,6 +63,8 @@ export function BlueprintNav() {
 
   // Scroll listener for backdrop styling & active section sync
   useEffect(() => {
+    const NAVBAR_HEIGHT = 56; // fixed header py-3.5 + logo h-7
+
     const handleScroll = () => {
       const scrollY = window.scrollY;
       setScrolled(scrollY > 60);
@@ -71,44 +73,46 @@ export function BlueprintNav() {
       const faqEl = document.getElementById("faq");
       const aboutEl = document.getElementById("about");
 
-      const scrollMid = scrollY + window.innerHeight * 0.40;
-      const isAtBottom = scrollY + window.innerHeight >= document.documentElement.scrollHeight - 50;
+      // Trigger point: the pixel just below the navbar (+ a small 40px grace buffer).
+      // A section becomes "active" as soon as its top edge clears this line.
+      const triggerY = scrollY + NAVBAR_HEIGHT + 40;
+      const isAtBottom =
+        scrollY + window.innerHeight >= document.documentElement.scrollHeight - 50;
 
-      // 1. Bottom of page or within Contact section
-      if (isAtBottom || (contactEl && scrollMid >= contactEl.offsetTop)) {
+      // 1. Bottom of page  →  Contact
+      if (isAtBottom || (contactEl && triggerY >= contactEl.offsetTop)) {
         forcedSectionRef.current = null;
         setActiveId("contact");
         return;
       }
 
-      // 2. Within FAQ section
-      if (faqEl && scrollMid >= faqEl.offsetTop) {
+      // 2. FAQ section cleared the navbar
+      if (faqEl && triggerY >= faqEl.offsetTop) {
         forcedSectionRef.current = null;
         setActiveId("faq");
         return;
       }
 
-      // 3. Within About section
-      if (aboutEl && scrollMid >= aboutEl.offsetTop) {
+      // 3. About section cleared the navbar
+      if (aboutEl && triggerY >= aboutEl.offsetTop) {
         forcedSectionRef.current = null;
         setActiveId("about");
         return;
       }
 
-      // 3. Above About section (Hero / Product / Security)
-      // If an explicit section was signaled (e.g. user entered the card ring experience)
+      // 4. Above About — security driven by custom event (animation state machine)
       if (forcedSectionRef.current === "security") {
         setActiveId("security");
         return;
       }
 
-      // Otherwise, the user is in the Product section (landing hero, aperture zoom, product cards, or scrolled back)
+      // 5. Default: product / hero
       forcedSectionRef.current = null;
       setActiveId("product");
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
+    handleScroll(); // sync on mount
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 

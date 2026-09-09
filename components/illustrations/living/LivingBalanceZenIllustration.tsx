@@ -283,7 +283,7 @@ export function LivingBalanceZenIllustration({
             <text
               x="0"
               y="0"
-              fontFamily="var(--font-caveat, cursive)"
+              fontFamily="var(--font-dm-sans, sans-serif)"
               fontSize="20"
               fill="#1C241E"
               fontStyle="italic"

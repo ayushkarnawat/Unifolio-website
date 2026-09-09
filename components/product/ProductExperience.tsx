@@ -1914,7 +1914,7 @@ export function ProductExperience() {
               className="font-black text-[#22C55E]"
               style={{ color: "#22C55E" }}
             >
-              Not just see it.
+              Don&apos;t just see it.
             </span>
           </h2>
 
@@ -2275,7 +2275,7 @@ export function ProductExperience() {
                 ref={securityHeroRef}
                 className="absolute inset-0 flex flex-col justify-center text-left will-change-transform"
               >
-                <h2 className="font-sans font-black text-3xl sm:text-5xl lg:text-[46px] xl:text-[54px] 2xl:text-[62px] text-[#111613] tracking-[-0.035em] uppercase leading-[1.02] sm:leading-[0.98]">
+                <h2 className="font-sans font-black text-3xl sm:text-5xl lg:text-[46px] xl:text-[54px] 2xl:text-[62px] text-[#111613] tracking-[-0.035em] leading-[1.02] sm:leading-[0.98]">
                   We take your data <br />
                   <span className="text-[#22C55E]">as seriously as you</span> <br />
                   take your money.
@@ -2286,7 +2286,7 @@ export function ProductExperience() {
               </div>
 
               {/* 2. THE 6 PRINCIPLES */}
-              {PRINCIPLES.map((principle: { id: string; title: string; body: string }, idx: number) => (
+              {PRINCIPLES.map((principle: { id: string; title: string; body: React.ReactNode }, idx: number) => (
                 <div
                   key={principle.id}
                   ref={(el) => {
@@ -2294,10 +2294,10 @@ export function ProductExperience() {
                   }}
                   className="absolute inset-0 flex flex-col justify-center text-left opacity-0 pointer-events-none will-change-transform"
                 >
-                  <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[46px] xl:text-[54px] 2xl:text-[62px] text-[#111613] tracking-[-0.035em] uppercase leading-[1.02] sm:leading-[0.98] mb-4 sm:mb-6">
+                  <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[46px] xl:text-[54px] 2xl:text-[62px] text-[#111613] tracking-[-0.035em] leading-[1.02] sm:leading-[0.98] mb-4 sm:mb-6">
                     {principle.title}
                   </h3>
-                  <p className="font-sans text-base sm:text-lg lg:text-xl xl:text-2xl text-[#5A685D] font-light leading-relaxed max-w-xl">
+                  <p className="font-sans text-base sm:text-lg lg:text-xl xl:text-2xl text-[#5A685D] font-light leading-relaxed max-w-xl lg:max-w-3xl">
                     {principle.body}
                   </p>
                 </div>
@@ -2308,10 +2308,11 @@ export function ProductExperience() {
                 ref={securityClosingRef}
                 className="absolute inset-0 flex flex-col justify-center text-left opacity-0 pointer-events-none will-change-transform"
               >
-                <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[46px] xl:text-[54px] 2xl:text-[62px] text-[#111613] tracking-[-0.035em] uppercase leading-[1.02] sm:leading-[0.98]">
-                  Security isn&apos;t a feature here. <br />
-                  <span className="text-[#22C55E]">
-                    It&apos;s the baseline everything else is built on.
+                <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[46px] xl:text-[54px] 2xl:text-[62px] text-[#111613] tracking-[-0.035em] leading-[1.18] flex flex-col gap-3 sm:gap-4 md:gap-5">
+                  <span className="whitespace-nowrap">Security isn&apos;t just a feature here,</span>
+                  <span className="text-[#22C55E] flex flex-col gap-3 sm:gap-4 md:gap-5">
+                    <span className="whitespace-nowrap">It&apos;s the baseline everything</span>
+                    <span className="whitespace-nowrap">else is built on.</span>
                   </span>
                 </h3>
                 <p className="mt-5 sm:mt-7 text-sm sm:text-base lg:text-lg xl:text-xl text-[#5A685D] font-normal leading-relaxed max-w-xl">

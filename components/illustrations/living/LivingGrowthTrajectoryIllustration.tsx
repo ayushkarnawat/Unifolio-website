@@ -197,7 +197,7 @@ export function LivingGrowthTrajectoryIllustration({
             <text
               x="0"
               y="0"
-              fontFamily="var(--font-caveat, cursive)"
+              fontFamily="var(--font-dm-sans, sans-serif)"
               fontSize="20"
               fill="#1C241E"
               fontStyle="italic"
@@ -218,7 +218,7 @@ export function LivingGrowthTrajectoryIllustration({
             <text
               x="0"
               y="0"
-              fontFamily="var(--font-caveat, cursive)"
+              fontFamily="var(--font-dm-sans, sans-serif)"
               fontSize="19"
               fill="#1C241E"
               fontStyle="italic"
