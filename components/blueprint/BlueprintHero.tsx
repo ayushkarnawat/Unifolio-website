@@ -6904,8 +6904,9 @@ export function BlueprintHero() {
                               Unifolio exists to close that gap,
                             </p>
                             <p className="font-sans text-[16px] sm:text-[17.5px] md:text-[19px] font-semibold text-neutral-800 leading-relaxed max-w-3xl">
-                              to give that person the same clarity a wealth manager gives their wealthiest clients, whether they hold ₹5 lakh or ₹5 crore, whether they've studied finance or never touched a balance sheet.
+                              to give that person the same clarity a wealth manager gives their wealthiest clients, whether they hold ₹5 lakh or ₹5 crore, whether they’ve studied finance or never touched a balance sheet.
                             </p>
+
                           </div>
 
                           {/* Third Stanza: Punchline */}
