@@ -18,6 +18,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Product", href: "#product", id: "product" },
   { label: "Security", href: "#security", id: "security" },
   { label: "About", href: "#about", id: "about" },
+  { label: "FAQ", href: "#faq", id: "faq" },
   { label: "Contact", href: "#contact", id: "contact" },
 ];
 
@@ -70,6 +71,7 @@ export function BlueprintNav() {
       setScrolled(scrollY > 60);
 
       const contactEl = document.getElementById("contact");
+      const faqEl = document.getElementById("faq");
       const aboutEl = document.getElementById("about");
 
       const scrollMid = scrollY + window.innerHeight * 0.40;
@@ -82,7 +84,14 @@ export function BlueprintNav() {
         return;
       }
 
-      // 2. Within About section
+      // 2. Within FAQ section
+      if (faqEl && scrollMid >= faqEl.offsetTop) {
+        forcedSectionRef.current = null;
+        setActiveId("faq");
+        return;
+      }
+
+      // 3. Within About section
       if (aboutEl && scrollMid >= aboutEl.offsetTop) {
         forcedSectionRef.current = null;
         setActiveId("about");
@@ -198,6 +207,19 @@ export function BlueprintNav() {
       forcedSectionRef.current = "about";
       setActiveId("about");
       window.dispatchEvent(new CustomEvent("unifolio-show-about"));
+      const navbarOffset = 75;
+      smoothScrollTo(href, { offset: navbarOffset, duration: 0.85, ease: "power2.inOut" });
+      return;
+    }
+
+    if (href === "#faq" || id === "faq") {
+      forcedSectionRef.current = "faq";
+      setActiveId("faq");
+      window.dispatchEvent(new CustomEvent("unifolio-show-faq"));
+      if (typeof document !== "undefined") {
+        document.documentElement.style.overflow = "";
+        document.body.style.overflow = "";
+      }
       const navbarOffset = 75;
       smoothScrollTo(href, { offset: navbarOffset, duration: 0.85, ease: "power2.inOut" });
       return;

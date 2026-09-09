@@ -265,6 +265,9 @@ export function BlueprintHero() {
   const philosophyDocRef = useRef<HTMLDivElement | null>(null);
   const docPaperSheetRef = useRef<HTMLDivElement | null>(null);
   const docInkCopyRef = useRef<HTMLDivElement | null>(null);
+  const docFlipperRef = useRef<HTMLDivElement | null>(null);
+  const aboutDocPageRef = useRef<1 | 2>(1);
+  const isFlippingDocRef = useRef<boolean>(false);
   const envelopeSealRef = useRef<HTMLDivElement | null>(null);
   const aboutOrbitTweenRef = useRef<gsap.core.Tween | null>(null);
 
@@ -1215,11 +1218,11 @@ export function BlueprintHero() {
         isHoldingProductRef.current = false;
         productCompleteRef.current = false;
 
-        if (heroToProductTlRef.current) {
-          heroToProductTlRef.current.timeScale(1.3).reverse();
-        } else {
-          handleResetHero();
+        if (!heroToProductTlRef.current) {
+          heroToProductTlRef.current = createHeroToProductTimeline();
+          heroToProductTlRef.current.progress(1);
         }
+        heroToProductTlRef.current.timeScale(1.3).reverse();
       };
 
       // =======================================================================
@@ -3316,6 +3319,87 @@ export function BlueprintHero() {
         };
       };
 
+      const flipDocToPage = (targetPage: 1 | 2) => {
+        if (isFlippingDocRef.current) return;
+        if (!docFlipperRef.current) return;
+        if (aboutDocPageRef.current === targetPage) return;
+
+        isFlippingDocRef.current = true;
+        lastSecurityScrollTimeRef.current = Date.now();
+
+        const flipper = docFlipperRef.current;
+        const docContainer = philosophyDocRef.current;
+
+        const isForward = targetPage === 2;
+        const targetRotY = isForward ? -180 : 0;
+        const startRotY = isForward ? 0 : -180;
+
+        // Single continuous gesture: realistic 3D paper page turn
+        const flipTl = gsap.timeline({
+          onComplete: () => {
+            aboutDocPageRef.current = targetPage;
+            isFlippingDocRef.current = false;
+          },
+        });
+
+        // 1. Smooth 3D page turn around vertical axis
+        flipTl.fromTo(
+          flipper,
+          { rotateY: startRotY },
+          {
+            rotateY: targetRotY,
+            duration: 0.95,
+            ease: "power2.inOut",
+            force3D: true,
+          },
+          0
+        );
+
+        // 2. Physical 3D paper lift & momentum (z-lift during mid-flip)
+        flipTl.to(
+          flipper,
+          {
+            z: 75,
+            duration: 0.45,
+            ease: "power2.out",
+          },
+          0
+        );
+        flipTl.to(
+          flipper,
+          {
+            z: 0,
+            duration: 0.50,
+            ease: "power2.in",
+          },
+          0.45
+        );
+
+        // 3. Subtle aerodynamic paper curl & momentum along the edge
+        if (docContainer) {
+          const baseRotZ = -2.8;
+          const peakRotZ = isForward ? -5.4 : -0.6;
+          flipTl.to(
+            docContainer,
+            {
+              rotateZ: peakRotZ,
+              duration: 0.45,
+              ease: "sine.out",
+            },
+            0
+          );
+          flipTl.to(
+            docContainer,
+            {
+              rotateZ: baseRotZ,
+              duration: 0.50,
+              ease: "sine.inOut",
+            },
+            0.45
+          );
+        }
+      };
+
       const exitAboutToFaq = () => {
         if (isSecurityTransitioningRef.current) return;
         isSecurityTransitioningRef.current = true;
@@ -3362,7 +3446,7 @@ export function BlueprintHero() {
         });
       };
 
-      const jumpToAboutState = () => {
+      const jumpToAboutState = (targetPage: 1 | 2 = 1) => {
         if (stateRef.current === "about") return;
         if (stateRef.current === "ring") {
           consolidateRingToStack();
@@ -3374,6 +3458,7 @@ export function BlueprintHero() {
         setIsAperturePaused(true);
         productCompleteRef.current = true;
 
+        gsap.killTweensOf(window);
         lockScrollYRef.current = 0;
         window.scrollTo(0, 0);
 
@@ -3387,14 +3472,40 @@ export function BlueprintHero() {
           stageRef.current.style.width = "100%";
           stageRef.current.style.height = "100vh";
           stageRef.current.style.zIndex = "40";
+          gsap.set(stageRef.current, { scale: 1, scaleX: 1, scaleY: 1, x: 0, y: 0 });
         }
 
         if (irisPortalRef.current) gsap.set(irisPortalRef.current, { opacity: 1, clipPath: "circle(150% at 50% 50%)" });
         if (headerRef.current) gsap.set(headerRef.current, { opacity: 0 });
-        if (securityStageRef.current) gsap.set(securityStageRef.current, { opacity: 0 });
+        if (securityStageRef.current) gsap.set(securityStageRef.current, { opacity: 0, visibility: "hidden" });
         securityStateRefs.current.forEach((el) => {
           if (el) gsap.set(el, { opacity: 0, visibility: "hidden" });
         });
+
+        if (productWorldRef.current) {
+          gsap.set(productWorldRef.current, {
+            scale: 1,
+            scaleX: 1,
+            scaleY: 1,
+            xPercent: 0,
+            yPercent: 0,
+            x: 0,
+            y: 0,
+            opacity: 1,
+            visibility: "visible",
+          });
+        }
+
+        if (cardsStageRef.current) {
+          gsap.set(cardsStageRef.current, {
+            scale: 1,
+            scaleX: 1,
+            scaleY: 1,
+            x: 0,
+            y: 0,
+            perspective: "1400px",
+          });
+        }
 
         const allProductCards = cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
         const allCompanionCards = companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
@@ -3402,6 +3513,7 @@ export function BlueprintHero() {
 
         const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
         const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
+        const stackCardScale = isDesk ? 0.60 : isTab ? 0.56 : 0.52;
         const targetEnvelopeY = isDesk ? 95 : isTab ? 80 : 65;
 
         // Hide all 26 individual cards — morph into single physical envelope is complete
@@ -3415,6 +3527,14 @@ export function BlueprintHero() {
             opacity: 1,
             visibility: "visible",
             scale: 1,
+            scaleX: 1,
+            scaleY: 1,
+            x: 0,
+            y: 0,
+            z: 0,
+            rotateX: 0,
+            rotateY: 0,
+            rotateZ: 0,
           });
         }
 
@@ -3439,11 +3559,14 @@ export function BlueprintHero() {
             rotateY: 2.2,
             z: 55,
             scale: 1,
+            scaleX: 1,
+            scaleY: 1,
+            transformOrigin: "50% 0%",
           });
         }
 
         if (docPaperSheetRef.current) {
-          gsap.set(docPaperSheetRef.current, { height: 930 });
+          gsap.set(docPaperSheetRef.current, { height: 930, scale: 1, scaleX: 1, scaleY: 1 });
         }
 
         if (docInkCopyRef.current) {
@@ -3456,6 +3579,12 @@ export function BlueprintHero() {
           });
         }
 
+        aboutDocPageRef.current = targetPage;
+        isFlippingDocRef.current = false;
+        if (docFlipperRef.current) {
+          gsap.set(docFlipperRef.current, { rotateY: targetPage === 2 ? -180 : 0, z: 0 });
+        }
+
         if (cardsClusterRef.current) {
           gsap.fromTo(
             cardsClusterRef.current,
@@ -3465,7 +3594,9 @@ export function BlueprintHero() {
               rotateZ: 0,
               rotateX: 0,
               rotateY: 0,
-              scale: 0.95,
+              scale: stackCardScale,
+              scaleX: stackCardScale,
+              scaleY: stackCardScale,
               opacity: 0,
             },
             {
@@ -3474,7 +3605,9 @@ export function BlueprintHero() {
               rotateZ: 0,
               rotateX: 0,
               rotateY: 0,
-              scale: 1,
+              scale: stackCardScale,
+              scaleX: stackCardScale,
+              scaleY: stackCardScale,
               opacity: 1,
               duration: 0.55,
               ease: "power2.out",
@@ -3485,10 +3618,13 @@ export function BlueprintHero() {
         if (aboutContentRef.current) {
           gsap.fromTo(
             aboutContentRef.current,
-            { opacity: 0, y: -40 },
+            { opacity: 0, y: -40, scale: 1, scaleX: 1, scaleY: 1 },
             {
               opacity: 1,
               y: 0,
+              scale: 1,
+              scaleX: 1,
+              scaleY: 1,
               visibility: "visible",
               duration: 0.55,
               ease: "power2.out",
@@ -3666,6 +3802,8 @@ export function BlueprintHero() {
             isRingConsolidatedRef.current = true;
             isSecurityTransitioningRef.current = false;
             stateRef.current = "about";
+            aboutDocPageRef.current = 1;
+            isFlippingDocRef.current = false;
 
             // Update Navbar
             window.dispatchEvent(
@@ -3676,6 +3814,9 @@ export function BlueprintHero() {
             isSecurityTransitioningRef.current = false;
             isRingConsolidatedRef.current = false;
             stateRef.current = "ring";
+            aboutDocPageRef.current = 1;
+            isFlippingDocRef.current = false;
+            if (docFlipperRef.current) gsap.set(docFlipperRef.current, { rotateY: 0, z: 0 });
 
             if (unifiedEnvelopeRef.current) {
               gsap.set(unifiedEnvelopeRef.current, { opacity: 0, visibility: "hidden" });
@@ -4400,8 +4541,6 @@ export function BlueprintHero() {
             docPaperSheetRef.current,
             {
               height: 930,
-              boxShadow:
-                "0 45px 110px -20px rgba(0, 0, 0, 0.75), 0 20px 45px -10px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(215, 205, 190, 0.8), inset 0 2px 3px rgba(255, 255, 255, 0.95), inset 0 -2px 3px rgba(0, 0, 0, 0.06)",
               duration: 0.85,
               ease: "power2.inOut",
             },
@@ -4493,6 +4632,12 @@ export function BlueprintHero() {
           consolidationTlRef.current = null;
         }
 
+        aboutDocPageRef.current = 1;
+        isFlippingDocRef.current = false;
+        if (docFlipperRef.current) {
+          gsap.set(docFlipperRef.current, { rotateY: 0, z: 0 });
+        }
+
         const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
         const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
         const vh = typeof window !== "undefined" ? window.innerHeight : 800;
@@ -4528,7 +4673,15 @@ export function BlueprintHero() {
             isSecurityTransitioningRef.current = false;
             isRingConsolidatedRef.current = false;
             stateRef.current = "ring";
+            transitionCompleteRef.current = true;
+            transitionStartedRef.current = true;
             currentSecurityStateRef.current = 7;
+            if (cardsStageRef.current) {
+              cardsStageRef.current.style.pointerEvents = "";
+            }
+            if (securityStageRef.current) {
+              gsap.set(securityStageRef.current, { autoAlpha: 1, opacity: 1, visibility: "visible", zIndex: 35 });
+            }
 
             // Restore ambient ring rotation seamlessly
             if (cardsClusterRef.current && (!ringRotateTweenRef.current || !ringRotateTweenRef.current.isActive())) {
@@ -4720,6 +4873,19 @@ export function BlueprintHero() {
           );
           revTl.set(aboutContentRef.current, { visibility: "hidden" }, 1.18);
         }
+
+        if (securityStageRef.current) {
+          revTl.set(
+            securityStageRef.current,
+            { autoAlpha: 1, opacity: 1, visibility: "visible", zIndex: 35 },
+            0.76
+          );
+        }
+        securityStateRefs.current.forEach((el, idx) => {
+          if (el && idx !== 7) {
+            revTl.set(el, { opacity: 0, visibility: "hidden" }, 0.76);
+          }
+        });
 
         if (closingBlackTextRef.current) {
           closingBlackTextRef.current.style.clipPath = "none";
@@ -5215,10 +5381,11 @@ export function BlueprintHero() {
           if (cardsClusterRef.current) {
             gsap.set(cardsClusterRef.current, { rotateZ: 376 });
           }
-          if (productToRingTlRef.current) {
-            productToRingTlRef.current.seek(productToRingTlRef.current.duration(), false);
-            productToRingTlRef.current.reverse();
+          if (!productToRingTlRef.current) {
+            productToRingTlRef.current = createProductToRingTimeline();
           }
+          productToRingTlRef.current.seek(productToRingTlRef.current.duration(), false);
+          productToRingTlRef.current.reverse();
         };
 
         if (clusterEl && angleDelta > 0.5) {
@@ -5243,19 +5410,27 @@ export function BlueprintHero() {
           return;
         }
 
-        // 1b. If in About section: scroll-driven moving mask text reveal (matching reference video)
+        // 1b. If in About section: scroll-driven 3D physical page flip
         if (stateRef.current === "about") {
           e.preventDefault();
           e.stopImmediatePropagation();
-          if (isSecurityTransitioningRef.current) return;
+          if (isSecurityTransitioningRef.current || isFlippingDocRef.current) return;
 
           if (e.deltaY > 8) {
             if (Date.now() - lastSecurityScrollTimeRef.current < 280) return;
-            exitAboutToFaq();
+            if (aboutDocPageRef.current === 1) {
+              flipDocToPage(2);
+            } else {
+              exitAboutToFaq();
+            }
             return;
           } else if (e.deltaY < -8) {
             if (Date.now() - lastSecurityScrollTimeRef.current < 280) return;
-            restoreStackToRing();
+            if (aboutDocPageRef.current === 2) {
+              flipDocToPage(1);
+            } else {
+              restoreStackToRing();
+            }
             return;
           }
           return;
@@ -5274,7 +5449,7 @@ export function BlueprintHero() {
             if (Date.now() - lastSecurityScrollTimeRef.current < 300) return;
             e.preventDefault();
             e.stopImmediatePropagation();
-            jumpToAboutState();
+            jumpToAboutState(2);
             return;
           }
           return;
@@ -5385,7 +5560,7 @@ export function BlueprintHero() {
         if (stateRef.current === "about") {
           e.preventDefault();
           e.stopImmediatePropagation();
-          if (isSecurityTransitioningRef.current) return;
+          if (isSecurityTransitioningRef.current || isFlippingDocRef.current) return;
 
           const touchY = e.touches[0].clientY;
           const touchDeltaY = touchStartY - touchY;
@@ -5393,12 +5568,20 @@ export function BlueprintHero() {
           if (touchDeltaY > 12) {
             touchStartY = touchY;
             if (Date.now() - lastSecurityScrollTimeRef.current < 300) return;
-            exitAboutToFaq();
+            if (aboutDocPageRef.current === 1) {
+              flipDocToPage(2);
+            } else {
+              exitAboutToFaq();
+            }
             return;
           } else if (touchDeltaY < -12) {
             touchStartY = touchY;
             if (Date.now() - lastSecurityScrollTimeRef.current < 300) return;
-            restoreStackToRing();
+            if (aboutDocPageRef.current === 2) {
+              flipDocToPage(1);
+            } else {
+              restoreStackToRing();
+            }
             return;
           }
           return;
@@ -5417,7 +5600,7 @@ export function BlueprintHero() {
             if (Date.now() - lastSecurityScrollTimeRef.current < 300) return;
             e.preventDefault();
             e.stopImmediatePropagation();
-            jumpToAboutState();
+            jumpToAboutState(2);
             return;
           }
           return;
@@ -5513,16 +5696,24 @@ export function BlueprintHero() {
           if (["ArrowDown", "PageDown", " "].includes(e.key) && !e.shiftKey) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            if (isSecurityTransitioningRef.current) return;
+            if (isSecurityTransitioningRef.current || isFlippingDocRef.current) return;
             if (Date.now() - lastSecurityScrollTimeRef.current < 250) return;
-            exitAboutToFaq();
+            if (aboutDocPageRef.current === 1) {
+              flipDocToPage(2);
+            } else {
+              exitAboutToFaq();
+            }
             return;
           } else if (["ArrowUp", "PageUp"].includes(e.key) || (e.key === " " && e.shiftKey)) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            if (isSecurityTransitioningRef.current) return;
+            if (isSecurityTransitioningRef.current || isFlippingDocRef.current) return;
             if (Date.now() - lastSecurityScrollTimeRef.current < 250) return;
-            restoreStackToRing();
+            if (aboutDocPageRef.current === 2) {
+              flipDocToPage(1);
+            } else {
+              restoreStackToRing();
+            }
             return;
           }
         }
@@ -5583,7 +5774,7 @@ export function BlueprintHero() {
             if (window.scrollY <= faqTop + 30) {
               e.preventDefault();
               e.stopImmediatePropagation();
-              jumpToAboutState();
+              jumpToAboutState(2);
               return;
             }
           }
@@ -5841,6 +6032,27 @@ export function BlueprintHero() {
         exitSecurityToAbout();
       };
 
+      const handleShowFaq = () => {
+        if (stateRef.current === "about") {
+          exitAboutToFaq();
+        } else {
+          stateRef.current = "faq";
+          lockScrollYRef.current = -1;
+          document.documentElement.style.overflow = "";
+          document.body.style.overflow = "";
+          document.documentElement.style.removeProperty("overflow");
+          document.body.style.removeProperty("overflow");
+          if (stageRef.current) {
+            stageRef.current.style.position = "";
+            stageRef.current.style.top = "";
+            stageRef.current.style.left = "";
+            stageRef.current.style.width = "";
+            stageRef.current.style.height = "";
+            stageRef.current.style.zIndex = "";
+          }
+        }
+      };
+
       const handleShowSecurity = () => {
         if (aboutOrbitTweenRef.current) {
           aboutOrbitTweenRef.current.kill();
@@ -6077,6 +6289,7 @@ export function BlueprintHero() {
       window.addEventListener("unifolio-reset-hero", handleResetHero);
       window.addEventListener("unifolio-show-about", handleShowAbout);
       window.addEventListener("unifolio-show-security", handleShowSecurity);
+      window.addEventListener("unifolio-show-faq", handleShowFaq);
 
       return () => {
         window.removeEventListener("scroll", handleScrollLock, { capture: true });
@@ -6091,6 +6304,7 @@ export function BlueprintHero() {
         window.removeEventListener("unifolio-reset-hero", handleResetHero);
         window.removeEventListener("unifolio-show-about", handleShowAbout);
         window.removeEventListener("unifolio-show-security", handleShowSecurity);
+        window.removeEventListener("unifolio-show-faq", handleShowFaq);
         window.removeEventListener("resize", handleResizeLines);
         if (wheelGestureEndTimerRef.current) {
           clearTimeout(wheelGestureEndTimerRef.current);
@@ -6791,132 +7005,263 @@ export function BlueprintHero() {
                       >
                       <div
                         ref={docPaperSheetRef}
-                        className="relative w-[95vw] max-w-[620px] sm:max-w-[700px] md:max-w-[780px] lg:max-w-[860px] xl:max-w-[920px] rounded-[18px] sm:rounded-[24px] p-7 sm:p-10 md:p-12 lg:p-14 overflow-hidden will-change-[height,transform]"
+                        className="relative w-[95vw] max-w-[620px] sm:max-w-[700px] md:max-w-[780px] lg:max-w-[860px] xl:max-w-[920px] will-change-[height,transform]"
                         style={{
                           height: "320px",
-                          background:
-                            "linear-gradient(168deg, #FCFAF6 0%, #F7F2E8 42%, #ECE3D4 100%)",
-                          boxShadow:
-                            "0 45px 110px -20px rgba(0, 0, 0, 0.75), 0 20px 45px -10px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(215, 205, 190, 0.8), inset 0 2px 3px rgba(255, 255, 255, 0.95), inset 0 -2px 3px rgba(0, 0, 0, 0.06)",
-                          clipPath: "polygon(46px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 46px)",
-                          WebkitClipPath: "polygon(46px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 46px)",
+                          perspective: "2500px",
+                          transformStyle: "preserve-3d",
                         }}
                       >
-                        {/* Folded Paper Dog-Ear Flap (Top Left, Matching Reference Image) */}
-                        <div className="absolute top-0 left-0 w-[46px] h-[46px] pointer-events-none z-30">
-                          <svg className="w-full h-full" viewBox="0 0 46 46" fill="none">
-                            <defs>
-                              <filter id="dogEarShadow" x="-30%" y="-30%" width="160%" height="160%">
-                                <feDropShadow dx="2" dy="2.5" stdDeviation="3" floodColor="#000000" floodOpacity="0.30" />
-                              </filter>
-                              <linearGradient id="dogEarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#EDE3D2" />
-                                <stop offset="50%" stopColor="#F5EFE3" />
-                                <stop offset="100%" stopColor="#FAF7F0" />
-                              </linearGradient>
-                            </defs>
-                            <path
-                              d="M 0 46 L 46 0 L 46 46 Z"
-                              fill="url(#dogEarGrad)"
-                              filter="url(#dogEarShadow)"
-                            />
-                            <line x1="0" y1="46" x2="46" y2="0" stroke="rgba(255, 255, 255, 0.95)" strokeWidth="1.2" />
-                            <line x1="1" y1="46" x2="46" y2="1" stroke="rgba(180, 168, 148, 0.40)" strokeWidth="0.8" />
-                          </svg>
-                        </div>
-
-                        {/* Tactile Fine Paper Texture & Soft 3D Lighting Gradient */}
+                        {/* 3D Double-Sided Flipping Paper Sheet */}
                         <div
-                          className="absolute inset-0 pointer-events-none opacity-55"
+                          ref={docFlipperRef}
+                          className="relative w-full h-full will-change-transform"
                           style={{
-                            background:
-                              "linear-gradient(105deg, rgba(255, 255, 255, 0.70) 0%, rgba(255, 255, 255, 0.15) 30%, rgba(0, 0, 0, 0.02) 70%, rgba(0, 0, 0, 0.06) 100%)",
-                          }}
-                        />
-
-                        {/* Top Subtle Emerald Watermark Accent Line */}
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-transparent via-[#22C55E]/70 to-transparent opacity-75" />
-
-                        {/* Top Editorial Pre-Header & Unifolio Ring Logo */}
-                        <div className="relative flex items-start justify-between w-full mb-6 sm:mb-8 pointer-events-none">
-                          <div className="flex flex-col space-y-0.5 text-left">
-                            <span className="font-sans text-[13px] sm:text-[15px] font-black tracking-[0.26em] uppercase text-neutral-950 leading-tight">
-                              UNIFOLIO
-                            </span>
-                            <span className="font-sans text-[11px] sm:text-[12px] font-bold tracking-[0.22em] uppercase text-neutral-700 leading-tight">
-                              THE PHILOSOPHY
-                            </span>
-                          </div>
-
-                          <div className="flex items-center space-x-3.5 sm:space-x-4">
-                            <div className="flex flex-col space-y-0.5 text-right">
-                              <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
-                                A CLEARER
-                              </span>
-                              <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
-                                FINANCIAL
-                              </span>
-                              <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
-                                TOMORROW
-                              </span>
-                            </div>
-
-                            {/* Official Unifolio Ring Logo */}
-                            <div className="w-12 h-12 sm:w-14 sm:h-14 relative flex items-center justify-center shrink-0">
-                              <img
-                                src="/Logo/unifolio-ring-transparent.png"
-                                alt="Unifolio Ring"
-                                className="w-full h-full object-contain select-none pointer-events-none drop-shadow-sm"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Printed Ink Copy Container (Revealed via Printing Press Ink Sweep) */}
-                        <div
-                          ref={docInkCopyRef}
-                          className="relative z-10 space-y-6 sm:space-y-8 select-text pointer-events-auto will-change-[clip-path,opacity,filter]"
-                          style={{
-                            clipPath: "inset(0 0 100% 0)",
-                            WebkitClipPath: "inset(0 0 100% 0)",
-                            opacity: 0,
+                            transformStyle: "preserve-3d",
+                            transformOrigin: "50% 50%",
                           }}
                         >
-                          {/* First Stanza: Human Reality & Overwhelm */}
-                          <div className="space-y-2.5 sm:space-y-3.5 text-left">
-                            <p className="font-serif text-[28px] sm:text-[34px] md:text-[38px] lg:text-[42px] font-black leading-[1.18] tracking-tight text-neutral-950">
-                              In most families, someone ends up in charge of the money,
-                            </p>
-                            <p className="font-serif italic text-[20px] sm:text-[23px] md:text-[26px] text-neutral-800 font-bold leading-snug">
-                              not because they trained for it, but because someone has to.
-                            </p>
-                            <p className="font-sans text-[16px] sm:text-[17.5px] md:text-[19px] font-semibold text-neutral-800 leading-relaxed pt-1 max-w-3xl">
-                              Their financial data lives across a dozen apps and statements, and having it all in one place is not the same as understanding it.
-                            </p>
+                          {/* ============================================================ */}
+                          {/* FRONT FACE: PAGE 1 (First Paragraph Only)                    */}
+                          {/* ============================================================ */}
+                          <div
+                            className="absolute inset-0 w-full h-full rounded-[18px] sm:rounded-[24px] p-7 sm:p-10 md:p-12 lg:p-14 overflow-hidden flex flex-col justify-between"
+                            style={{
+                              backfaceVisibility: "hidden",
+                              WebkitBackfaceVisibility: "hidden",
+                              transform: "rotateY(0deg) translateZ(0.5px)",
+                              background:
+                                "linear-gradient(168deg, #FCFAF6 0%, #F7F2E8 42%, #ECE3D4 100%)",
+                              boxShadow:
+                                "0 45px 110px -20px rgba(0, 0, 0, 0.75), 0 20px 45px -10px rgba(0, 0, 0, 0.45), 0 0 0 1.5px rgba(215, 205, 190, 0.85), inset 0 2px 3px rgba(255, 255, 255, 0.95), inset 0 -2px 3px rgba(0, 0, 0, 0.06)",
+                              clipPath: "polygon(46px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 46px)",
+                              WebkitClipPath: "polygon(46px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 46px)",
+                            }}
+                          >
+                            {/* Folded Paper Dog-Ear Flap (Top Left, Matching Original Document) */}
+                            <div className="absolute top-0 left-0 w-[46px] h-[46px] pointer-events-none z-30">
+                              <svg className="w-full h-full" viewBox="0 0 46 46" fill="none">
+                                <defs>
+                                  <filter id="dogEarShadowFront" x="-30%" y="-30%" width="160%" height="160%">
+                                    <feDropShadow dx="2" dy="2.5" stdDeviation="3" floodColor="#000000" floodOpacity="0.30" />
+                                  </filter>
+                                  <linearGradient id="dogEarGradFront" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stopColor="#EDE3D2" />
+                                    <stop offset="50%" stopColor="#F5EFE3" />
+                                    <stop offset="100%" stopColor="#FAF7F0" />
+                                  </linearGradient>
+                                </defs>
+                                <path
+                                  d="M 0 46 L 46 0 L 46 46 Z"
+                                  fill="url(#dogEarGradFront)"
+                                  filter="url(#dogEarShadowFront)"
+                                />
+                                <line x1="0" y1="46" x2="46" y2="0" stroke="rgba(255, 255, 255, 0.95)" strokeWidth="1.2" />
+                                <line x1="1" y1="46" x2="46" y2="1" stroke="rgba(180, 168, 148, 0.40)" strokeWidth="0.8" />
+                              </svg>
+                            </div>
+
+                            {/* Tactile Fine Paper Texture & Soft 3D Lighting Gradient */}
+                            <div
+                              className="absolute inset-0 pointer-events-none opacity-55"
+                              style={{
+                                background:
+                                  "linear-gradient(105deg, rgba(255, 255, 255, 0.70) 0%, rgba(255, 255, 255, 0.15) 30%, rgba(0, 0, 0, 0.02) 70%, rgba(0, 0, 0, 0.06) 100%)",
+                              }}
+                            />
+
+                            {/* Top Subtle Emerald Watermark Accent Line */}
+                            <div className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-transparent via-[#22C55E]/70 to-transparent opacity-75" />
+
+                            {/* Top Editorial Pre-Header & Unifolio Ring Logo */}
+                            <div className="relative flex items-start justify-between w-full pointer-events-none">
+                              <div />
+
+                              <div className="flex items-center space-x-3.5 sm:space-x-4">
+                                <div className="flex flex-col space-y-0.5 text-right">
+                                  <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
+                                    A CLEARER
+                                  </span>
+                                  <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
+                                    FINANCIAL
+                                  </span>
+                                  <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
+                                    TOMORROW
+                                  </span>
+                                </div>
+
+                                <div className="w-12 h-12 sm:w-14 sm:h-14 relative flex items-center justify-center shrink-0">
+                                  <img
+                                    src="/Logo/unifolio-ring-transparent.png"
+                                    alt="Unifolio Ring"
+                                    className="w-full h-full object-contain select-none pointer-events-none drop-shadow-sm"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Subtle Hairline Watermark Divider */}
+                            <div className="w-full h-[1px] bg-neutral-300/80 my-3 sm:my-5" />
+
+                            {/* Printed Ink Copy: FIRST PARAGRAPH (Large, Bold, Editorial, Premium) */}
+                            <div
+                              ref={docInkCopyRef}
+                              className="relative z-10 flex-1 flex flex-col justify-start select-text pointer-events-auto will-change-[clip-path,opacity,filter] pt-3 sm:pt-5 md:pt-7"
+                              style={{
+                                clipPath: "inset(0 0 100% 0)",
+                                WebkitClipPath: "inset(0 0 100% 0)",
+                                opacity: 0,
+                              }}
+                            >
+                              {/* Dominant Editorial Opening Statement */}
+                              <h2 className="font-serif font-bold text-[32px] sm:text-[42px] md:text-[50px] lg:text-[58px] text-neutral-950 leading-[1.08] tracking-tight text-left">
+                                In most families,<br />
+                                someone ends up<br />
+                                in charge of the <span className="text-[#22C55E]">money</span>.
+                              </h2>
+
+                              {/* Supporting sentence 1 (Larger & bolder, capital 'Not') */}
+                              <div className="mt-6 sm:mt-8 md:mt-10 space-y-1 text-left">
+                                <p className="font-serif font-bold text-[26px] sm:text-[32px] md:text-[38px] lg:text-[42px] text-neutral-900 leading-[1.22]">
+                                  Not because they trained for it,<br />
+                                  but because someone has to.
+                                </p>
+                              </div>
+
+                              {/* Supporting sentence 2 (Larger & bolder) */}
+                              <p className="mt-6 sm:mt-8 md:mt-10 font-serif font-semibold text-[20px] sm:text-[24px] md:text-[28px] lg:text-[30px] text-neutral-900 leading-[1.38] max-w-[720px] text-left">
+                                Their financial data lives across a dozen apps and statements, and having it all in one place is not the same as understanding it.
+                              </p>
+                            </div>
+
+                            {/* Footer Indicator on Page 1 */}
+                            <div className="pt-3 sm:pt-4 flex items-center justify-between border-t border-neutral-300/80 text-neutral-700">
+                              <span className="font-mono text-[11px] sm:text-[12px] font-bold tracking-[0.2em] uppercase text-neutral-700">
+                                01 / 02
+                              </span>
+                              <span className="font-sans text-[10.5px] sm:text-[12px] font-bold tracking-[0.16em] uppercase flex items-center gap-1.5 text-neutral-900">
+                                SCROLL DOWN TO TURN PAGE &rarr;
+                              </span>
+                            </div>
                           </div>
 
-                          {/* Subtle Hairline Watermark Divider */}
-                          <div className="w-full h-[1.5px] bg-neutral-300/90 my-5 sm:my-7" />
+                          {/* ============================================================ */}
+                          {/* REVERSE FACE: PAGE 2 (Second Paragraph Only)                  */}
+                          {/* Physically attached reverse side of the same sheet            */}
+                          {/* ============================================================ */}
+                          <div
+                            className="absolute inset-0 w-full h-full rounded-[18px] sm:rounded-[24px] p-7 sm:p-10 md:p-12 lg:p-14 overflow-hidden flex flex-col justify-between"
+                            style={{
+                              backfaceVisibility: "hidden",
+                              WebkitBackfaceVisibility: "hidden",
+                              transform: "rotateY(180deg) translateZ(0.5px)",
+                              background:
+                                "linear-gradient(168deg, #FAF7F2 0%, #F5EFE3 42%, #E9DFC9 100%)",
+                              boxShadow:
+                                "0 45px 110px -20px rgba(0, 0, 0, 0.75), 0 20px 45px -10px rgba(0, 0, 0, 0.45), 0 0 0 1.5px rgba(215, 205, 190, 0.85), inset 0 2px 3px rgba(255, 255, 255, 0.95), inset 0 -2px 3px rgba(0, 0, 0, 0.06)",
+                              clipPath: "polygon(0% 0%, calc(100% - 46px) 0%, 100% 46px, 100% 100%, 0% 100%)",
+                              WebkitClipPath: "polygon(0% 0%, calc(100% - 46px) 0%, 100% 46px, 100% 100%, 0% 100%)",
+                            }}
+                          >
+                            {/* Folded Paper Dog-Ear Flap (Top Right from back view) */}
+                            <div className="absolute top-0 right-0 w-[46px] h-[46px] pointer-events-none z-30 -scale-x-100">
+                              <svg className="w-full h-full" viewBox="0 0 46 46" fill="none">
+                                <defs>
+                                  <filter id="dogEarShadowBack" x="-30%" y="-30%" width="160%" height="160%">
+                                    <feDropShadow dx="2" dy="2.5" stdDeviation="3" floodColor="#000000" floodOpacity="0.30" />
+                                  </filter>
+                                  <linearGradient id="dogEarGradBack" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stopColor="#EDE3D2" />
+                                    <stop offset="50%" stopColor="#F5EFE3" />
+                                    <stop offset="100%" stopColor="#FAF7F0" />
+                                  </linearGradient>
+                                </defs>
+                                <path
+                                  d="M 0 46 L 46 0 L 46 46 Z"
+                                  fill="url(#dogEarGradBack)"
+                                  filter="url(#dogEarShadowBack)"
+                                />
+                                <line x1="0" y1="46" x2="46" y2="0" stroke="rgba(255, 255, 255, 0.95)" strokeWidth="1.2" />
+                                <line x1="1" y1="46" x2="46" y2="1" stroke="rgba(180, 168, 148, 0.40)" strokeWidth="0.8" />
+                              </svg>
+                            </div>
 
-                          {/* Second Stanza: Unifolio Purpose */}
-                          <div className="space-y-2.5 sm:space-y-3.5 text-left">
-                            <p className="font-serif text-[26px] sm:text-[31px] md:text-[35px] lg:text-[38px] font-black text-neutral-950 tracking-tight leading-snug">
-                              Unifolio exists to close that gap,
-                            </p>
-                            <p className="font-sans text-[16px] sm:text-[17.5px] md:text-[19px] font-semibold text-neutral-800 leading-relaxed max-w-3xl">
-                              to give that person the same clarity a wealth manager gives their wealthiest clients, whether they hold ₹5 lakh or ₹5 crore, whether they’ve studied finance or never touched a balance sheet.
-                            </p>
+                            {/* Tactile Fine Paper Texture & Soft 3D Lighting Gradient */}
+                            <div
+                              className="absolute inset-0 pointer-events-none opacity-55"
+                              style={{
+                                background:
+                                  "linear-gradient(105deg, rgba(255, 255, 255, 0.70) 0%, rgba(255, 255, 255, 0.15) 30%, rgba(0, 0, 0, 0.02) 70%, rgba(0, 0, 0, 0.06) 100%)",
+                              }}
+                            />
 
-                          </div>
+                            {/* Top Subtle Emerald Watermark Accent Line */}
+                            <div className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-transparent via-[#22C55E]/70 to-transparent opacity-75" />
 
-                          {/* Third Stanza: Punchline */}
-                          <div className="space-y-1.5 sm:space-y-2 text-left pt-2">
-                            <p className="font-serif text-[22px] sm:text-[25px] md:text-[28px] font-black text-neutral-950 leading-tight">
-                              Not just where their money is,
-                            </p>
-                            <p className="font-serif text-[32px] sm:text-[38px] md:text-[44px] lg:text-[48px] font-black italic text-[#22C55E] tracking-tight mt-1.5 drop-shadow-[0_1px_2px_rgba(34,197,94,0.25)]">
-                              but what it means.
-                            </p>
+                            {/* Top Editorial Pre-Header & Unifolio Ring Logo */}
+                            <div className="relative flex items-start justify-between w-full pointer-events-none">
+                              <div />
+
+                              <div className="flex items-center space-x-3.5 sm:space-x-4">
+                                <div className="flex flex-col space-y-0.5 text-right">
+                                  <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
+                                    A CLEARER
+                                  </span>
+                                  <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
+                                    FINANCIAL
+                                  </span>
+                                  <span className="font-sans text-[12px] sm:text-[13.5px] font-black tracking-[0.24em] uppercase text-neutral-950 leading-tight">
+                                    TOMORROW
+                                  </span>
+                                </div>
+
+                                <div className="w-12 h-12 sm:w-14 sm:h-14 relative flex items-center justify-center shrink-0">
+                                  <img
+                                    src="/Logo/unifolio-ring-transparent.png"
+                                    alt="Unifolio Ring"
+                                    className="w-full h-full object-contain select-none pointer-events-none drop-shadow-sm"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Subtle Hairline Watermark Divider */}
+                            <div className="w-full h-[1px] bg-neutral-300/80 my-3 sm:my-5" />
+
+                            {/* Printed Ink Copy: SECOND PARAGRAPH (Large, Bold, Premium, Editorial) */}
+                            <div className="relative z-10 flex-1 flex flex-col justify-start select-text pointer-events-auto pt-3 sm:pt-5 md:pt-7">
+                              {/* Dominant Large Editorial Statement */}
+                              <h2 className="font-serif font-bold text-[32px] sm:text-[42px] md:text-[50px] lg:text-[58px] text-neutral-950 leading-[1.08] tracking-tight text-left">
+                                Unifolio exists<br />
+                                to close that gap.
+                              </h2>
+
+                              {/* Supporting sentence beneath it (Enlarged size, positioned further down, capital 'To') */}
+                              <p className="mt-10 sm:mt-14 md:mt-18 lg:mt-20 font-serif font-semibold text-[19px] sm:text-[23px] md:text-[26px] lg:text-[28px] text-neutral-900 leading-[1.38] max-w-[700px] text-left">
+                                To give that person the same clarity a wealth manager gives their wealthiest clients, whether they hold ₹5 lakh or ₹5 crore, whether they’ve studied finance or never touched a balance sheet.
+                              </p>
+
+                              {/* Thin hairline divider rule between supporting sentence and closing statement (Centered with equal spacing) */}
+                              <div className="w-full h-[1px] bg-neutral-300/70 my-5 sm:my-7 md:my-9 lg:my-10" />
+
+                              {/* Closing Statement (Evenly spaced) */}
+                              <div className="space-y-1.5 sm:space-y-2 text-left">
+                                <p className="font-serif font-semibold text-[20px] sm:text-[25px] md:text-[29px] text-neutral-950 leading-snug">
+                                  Not just where their money is,
+                                </p>
+                                <p className="font-serif font-bold text-[32px] sm:text-[40px] md:text-[48px] lg:text-[54px] text-[#22C55E] tracking-tight leading-[1.08]">
+                                  but what it means.
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Footer Indicator on Page 2 */}
+                            <div className="pt-3 sm:pt-4 flex items-center justify-between border-t border-neutral-300/80 text-neutral-700">
+                              <span className="font-mono text-[11px] sm:text-[12px] font-bold tracking-[0.2em] uppercase text-neutral-700">
+                                02 / 02
+                              </span>
+                              <span />
+                            </div>
                           </div>
                         </div>
                       </div>
