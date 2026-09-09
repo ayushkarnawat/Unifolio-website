@@ -6366,7 +6366,7 @@ export function BlueprintHero() {
     <section
       id="hero"
       ref={containerRef}
-      className="relative w-full bg-[#FAF8F5] dark:bg-[#000000] select-none transition-colors duration-500 overflow-hidden"
+      className="relative w-full bg-[#FAF8F5] select-none overflow-hidden"
     >
       {/* Anchor for Navbar #product navigation */}
       <div id="product" className="absolute top-[80vh] pointer-events-none" />
@@ -6376,7 +6376,7 @@ export function BlueprintHero() {
       {/* Master Viewport Stage: Fixed/Pinned at 100vh */}
       <div
         ref={stageRef}
-        className="relative h-screen w-full overflow-hidden bg-[#FAF8F5] dark:bg-[#000000] flex flex-col justify-center transition-colors duration-500"
+        className="relative h-screen w-full overflow-hidden bg-[#FAF8F5] flex flex-col justify-center"
       >
         {/* =================================================================== */}
         {/* LAYER 1 (z-10): MASTER HERO VISUAL (Aperture Video Ring)            */}
@@ -6398,7 +6398,7 @@ export function BlueprintHero() {
         {/* =================================================================== */}
         <div
           ref={irisPortalRef}
-          className="absolute inset-0 z-20 w-full h-full overflow-hidden pointer-events-auto bg-[#FAF8F5] dark:bg-[#000000] transition-colors duration-500 will-change-[clip-path,opacity]"
+          className="absolute inset-0 z-20 w-full h-full overflow-hidden pointer-events-auto bg-[#FAF8F5] will-change-[clip-path,opacity]"
           style={{
             opacity: 0,
           }}
@@ -7426,7 +7426,7 @@ export function BlueprintHero() {
             >
               <h2
                 ref={headlineRef}
-                className="font-sans font-black text-2xl sm:text-3xl md:text-[36px] lg:text-[42px] xl:text-[46px] tracking-[-0.03em] leading-tight sm:whitespace-nowrap text-neutral-950 dark:text-white transition-colors duration-500 will-change-transform"
+                className="font-sans font-black text-2xl sm:text-3xl md:text-[36px] lg:text-[42px] xl:text-[46px] tracking-[-0.03em] leading-tight sm:whitespace-nowrap text-neutral-950 will-change-transform"
               >
                 Understand your wealth.{" "}
                 <span
@@ -7439,7 +7439,7 @@ export function BlueprintHero() {
 
               <p
                 ref={subheadRef}
-                className="mt-2.5 sm:mt-3 max-w-xl text-xs sm:text-sm md:text-base text-neutral-600 dark:text-neutral-400 font-medium leading-snug sm:leading-relaxed transition-colors duration-500 will-change-transform"
+                className="mt-2.5 sm:mt-3 max-w-xl text-xs sm:text-sm md:text-base text-neutral-600 font-medium leading-snug sm:leading-relaxed will-change-transform"
               >
                 Every account, every fund, every rupee, in one place, finally clear.
               </p>
@@ -7461,7 +7461,7 @@ export function BlueprintHero() {
                 >
                   <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_10px_#22C55E] group-hover:scale-125 transition-transform" />
                   <span className="font-bold text-sm sm:text-base tracking-tight">Join the waitlist</span>
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 text-neutral-600 dark:text-neutral-300 stroke-[2.5]" />
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 text-neutral-600 stroke-[2.5]" />
                 </LinkButton>
               </div>
             </div>
@@ -7469,7 +7469,7 @@ export function BlueprintHero() {
             {/* Ambient Floor Reflection Line */}
             <div
               ref={floorLineRef}
-              className="w-full max-w-xl mx-auto h-[1.5px] bg-gradient-to-r from-transparent via-[#22C55E] to-transparent shrink-0 z-20 mt-5 sm:mt-6 md:mt-7 opacity-75 dark:opacity-85"
+              className="w-full max-w-xl mx-auto h-[1.5px] bg-gradient-to-r from-transparent via-[#22C55E] to-transparent shrink-0 z-20 mt-5 sm:mt-6 md:mt-7 opacity-75"
             />
 
             {/* Minimal Editorial Security Content Experience */}
@@ -7505,7 +7505,7 @@ export function BlueprintHero() {
                         ref={securityHeroRibbonRef}
                         className="relative will-change-transform select-none inline-block"
                       >
-                        <h2 className="font-sans font-black text-xl sm:text-2xl md:text-3xl lg:text-[36px] xl:text-[42px] 2xl:text-[46px] text-neutral-950 dark:text-white tracking-[-0.03em] uppercase select-none flex flex-col items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12]">
+                        <h2 className="font-sans font-black text-xl sm:text-2xl md:text-3xl lg:text-[36px] xl:text-[42px] 2xl:text-[46px] text-neutral-950 tracking-[-0.03em] uppercase select-none flex flex-col items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12]">
                           {/* Line 1: We take your data as seriously */}
                           <div className="whitespace-nowrap flex items-baseline gap-[0.24em]">
                             <span ref={(el) => { securityHeroWordRefs.current[0] = el; }} className="inline-block will-change-transform">We</span>
@@ -7525,7 +7525,7 @@ export function BlueprintHero() {
                             <span ref={(el) => { securityHeroWordRefs.current[10] = el; }} className="inline-block will-change-transform">
                               <span className="relative inline-flex items-center justify-center align-baseline">
                                 {/* The 5 letters of "money" in black */}
-                                <span className="inline-flex items-baseline text-neutral-950 dark:text-white font-black">
+                                <span className="inline-flex items-baseline text-neutral-950 font-black">
                                   {MONEY_LETTERS.map((char, charIdx) => (
                                     <span
                                       key={charIdx}
@@ -7548,7 +7548,7 @@ export function BlueprintHero() {
                                 >
                                   <svg
                                     viewBox="-56 -28 112 56"
-                                    className="w-full h-full max-h-[1.15em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.35)] dark:drop-shadow-[0_6px_20px_rgba(34,197,94,0.45)]"
+                                    className="w-full h-full max-h-[1.15em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.35)]"
                                     fill="none"
                                     xmlns="http://www.w3.org/2000/svg"
                                   >
@@ -7612,7 +7612,7 @@ export function BlueprintHero() {
                       <div className="flex flex-col">
                         {idx === 1 ? (
                           // State 2: "Read-only, always" - focal point, bigger and bolder typography with embedded eyes Easter egg
-                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[52px] xl:text-[60px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.05] mb-4 sm:mb-5 select-none relative inline-flex flex-wrap items-baseline">
+                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[52px] xl:text-[60px] text-neutral-950 tracking-[-0.035em] leading-[1.05] mb-4 sm:mb-5 select-none relative inline-flex flex-wrap items-baseline">
                             {/* Left Word Segment: "Read-only," */}
                             <span
                               ref={typoLeftWordRef}
@@ -7638,7 +7638,7 @@ export function BlueprintHero() {
                                 <span className="absolute inset-0 -m-3 sm:-m-4 bg-emerald-500/35 rounded-full blur-xl -z-10 pointer-events-none" />
 
                                 {/* Left Eye */}
-                                <span className="relative w-[38px] h-[38px] sm:w-[46px] sm:h-[46px] md:w-[54px] md:h-[54px] rounded-full overflow-hidden flex items-center justify-center border-2 border-white/50 dark:border-white/25 shadow-[0_6px_20px_rgba(0,0,0,0.65),inset_0_2px_4px_rgba(0,0,0,0.25)] shrink-0">
+                                <span className="relative w-[38px] h-[38px] sm:w-[46px] sm:h-[46px] md:w-[54px] md:h-[54px] rounded-full overflow-hidden flex items-center justify-center border-2 border-white/50 shadow-[0_6px_20px_rgba(0,0,0,0.65),inset_0_2px_4px_rgba(0,0,0,0.25)] shrink-0">
                                   {/* Sclera 3D sphere gradient */}
                                   <span
                                     className="absolute inset-0 rounded-full pointer-events-none"
@@ -7669,7 +7669,7 @@ export function BlueprintHero() {
                                     ref={(el) => {
                                       typoEyelidsRef.current[0] = el;
                                     }}
-                                    className="absolute inset-0 bg-[#06180e] dark:bg-[#000000] rounded-full pointer-events-none origin-top will-change-transform"
+                                    className="absolute inset-0 bg-[#06180e] rounded-full pointer-events-none origin-top will-change-transform"
                                     style={{
                                       transform: "scaleY(0)",
                                       boxShadow: "inset 0 -3px 6px rgba(34, 197, 94, 0.45)",
@@ -7678,7 +7678,7 @@ export function BlueprintHero() {
                                 </span>
 
                                 {/* Right Eye */}
-                                <span className="relative w-[38px] h-[38px] sm:w-[46px] sm:h-[46px] md:w-[54px] md:h-[54px] rounded-full overflow-hidden flex items-center justify-center border-2 border-white/50 dark:border-white/25 shadow-[0_6px_20px_rgba(0,0,0,0.65),inset_0_2px_4px_rgba(0,0,0,0.25)] shrink-0">
+                                <span className="relative w-[38px] h-[38px] sm:w-[46px] sm:h-[46px] md:w-[54px] md:h-[54px] rounded-full overflow-hidden flex items-center justify-center border-2 border-white/50 shadow-[0_6px_20px_rgba(0,0,0,0.65),inset_0_2px_4px_rgba(0,0,0,0.25)] shrink-0">
                                   {/* Sclera 3D sphere gradient */}
                                   <span
                                     className="absolute inset-0 rounded-full pointer-events-none"
@@ -7709,7 +7709,7 @@ export function BlueprintHero() {
                                     ref={(el) => {
                                       typoEyelidsRef.current[1] = el;
                                     }}
-                                    className="absolute inset-0 bg-[#06180e] dark:bg-[#000000] rounded-full pointer-events-none origin-top will-change-transform"
+                                    className="absolute inset-0 bg-[#06180e] rounded-full pointer-events-none origin-top will-change-transform"
                                     style={{
                                       transform: "scaleY(0)",
                                       boxShadow: "inset 0 -3px 6px rgba(34, 197, 94, 0.45)",
@@ -7729,7 +7729,7 @@ export function BlueprintHero() {
                           </h3>
                         ) : idx === 2 ? (
                           // State 3: "We never save your passwords" - Password Masking Interaction
-                          <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[46px] xl:text-[52px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.08] whitespace-nowrap mb-4 sm:mb-5 select-none">
+                          <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[46px] xl:text-[52px] text-neutral-950 tracking-[-0.035em] leading-[1.08] whitespace-nowrap mb-4 sm:mb-5 select-none">
                             <span>We never save your </span>
                             <span className="text-[#22C55E] inline-flex items-baseline font-black">
                               {PASSWORD_LETTERS.map((char, charIdx) => (
@@ -7763,7 +7763,7 @@ export function BlueprintHero() {
                           </h3>
                         ) : idx === 3 ? (
                           // State 4: "Locked down, everywhere" - Typography Transformation Animation
-                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[52px] xl:text-[58px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.06] mb-4 sm:mb-5 select-none whitespace-normal sm:whitespace-nowrap">
+                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[52px] xl:text-[58px] text-neutral-950 tracking-[-0.035em] leading-[1.06] mb-4 sm:mb-5 select-none whitespace-normal sm:whitespace-nowrap">
                             {/* The entire word "Locked" transforms into the lock */}
                             <span className="relative inline-flex items-center justify-center align-baseline">
                               {/* The 6 letters of "Locked" */}
@@ -7809,7 +7809,7 @@ export function BlueprintHero() {
                                     stroke="currentColor"
                                     strokeWidth="4.8"
                                     strokeLinecap="round"
-                                    className="text-neutral-900 dark:text-neutral-100 will-change-transform"
+                                    className="text-neutral-900 will-change-transform"
                                   />
 
                                   {/* Lock Body (Unifolio green rounded squircle) */}
@@ -7840,7 +7840,7 @@ export function BlueprintHero() {
                           </h3>
                         ) : idx === 4 ? (
                           // State 5: "You control the connection" - Typography Transformation on "connection"
-                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.06] mb-4 sm:mb-5 select-none whitespace-normal lg:whitespace-nowrap">
+                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 tracking-[-0.035em] leading-[1.06] mb-4 sm:mb-5 select-none whitespace-normal lg:whitespace-nowrap">
                             <span>You control the </span>
 
                             {/* The word "connection" in Unifolio green transforms into the animated connection SVG */}
@@ -7872,7 +7872,7 @@ export function BlueprintHero() {
                                   <img
                                     src="/connection.svg"
                                     alt="Connection animation"
-                                    className="w-[3.4em] h-[3.4em] sm:w-[3.8em] sm:h-[3.8em] md:w-[4.2em] md:h-[4.2em] object-contain drop-shadow-[0_4px_16px_rgba(34,197,94,0.35)] dark:drop-shadow-[0_6px_20px_rgba(34,197,94,0.45)] select-none pointer-events-none"
+                                    className="w-[3.4em] h-[3.4em] sm:w-[3.8em] sm:h-[3.8em] md:w-[4.2em] md:h-[4.2em] object-contain drop-shadow-[0_4px_16px_rgba(34,197,94,0.35)] select-none pointer-events-none"
                                   />
                                 </span>
                               </span>
@@ -7880,7 +7880,7 @@ export function BlueprintHero() {
                           </h3>
                         ) : idx === 5 ? (
                           // State 6: "Stored in India" - Typography Transformation into Minimal India Map Outline
-                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.06] mb-5 sm:mb-6 md:mb-7 select-none whitespace-normal lg:whitespace-nowrap">
+                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 tracking-[-0.035em] leading-[1.06] mb-5 sm:mb-6 md:mb-7 select-none whitespace-normal lg:whitespace-nowrap">
                             <span>Stored in </span>
 
                             {/* The word "India" transforms into the minimal outline map */}
@@ -7910,7 +7910,7 @@ export function BlueprintHero() {
                                 <span className="inline-flex items-center justify-center translate-x-8 sm:translate-x-10 md:translate-x-12 -translate-y-9 sm:-translate-y-12 md:-translate-y-15">
                                   <svg
                                     viewBox="0 0 200 200"
-                                    className="w-[2.8em] h-[2.8em] sm:w-[3.2em] sm:h-[3.2em] md:w-[3.6em] md:h-[3.6em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.35)] dark:drop-shadow-[0_6px_20px_rgba(34,197,94,0.45)]"
+                                    className="w-[2.8em] h-[2.8em] sm:w-[3.2em] sm:h-[3.2em] md:w-[3.6em] md:h-[3.6em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.35)]"
                                     fill="none"
                                     xmlns="http://www.w3.org/2000/svg"
                                   >
@@ -7932,7 +7932,7 @@ export function BlueprintHero() {
                           </h3>
                         ) : idx === 6 ? (
                           // State 7: "We don't sell your data" - Typography Transformation into Security Shield Badge
-                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] leading-[1.06] mb-4 sm:mb-5 select-none whitespace-normal lg:whitespace-nowrap">
+                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 tracking-[-0.035em] leading-[1.06] mb-4 sm:mb-5 select-none whitespace-normal lg:whitespace-nowrap">
                             <span>We don&apos;t </span>
 
                             {/* The word "sell" in Unifolio green transforms into the animated Security Shield Badge */}
@@ -7962,7 +7962,7 @@ export function BlueprintHero() {
                                 <svg
                                   ref={sellShieldIconRef}
                                   viewBox="0 0 100 100"
-                                  className="w-[2.4em] h-[2.4em] sm:w-[2.7em] sm:h-[2.7em] md:w-[3.0em] md:h-[3.0em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.40)] dark:drop-shadow-[0_6px_22px_rgba(34,197,94,0.55)] will-change-transform"
+                                  className="w-[2.4em] h-[2.4em] sm:w-[2.7em] sm:h-[2.7em] md:w-[3.0em] md:h-[3.0em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.40)] will-change-transform"
                                   fill="none"
                                   xmlns="http://www.w3.org/2000/svg"
                                   style={{ transformStyle: "preserve-3d" }}
@@ -8014,11 +8014,11 @@ export function BlueprintHero() {
                             <span> your data</span>
                           </h3>
                         ) : (
-                          <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[40px] xl:text-[46px] text-neutral-950 dark:text-white tracking-[-0.03em] leading-[1.08] mb-3 sm:mb-4">
+                          <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[40px] xl:text-[46px] text-neutral-950 tracking-[-0.03em] leading-[1.08] mb-3 sm:mb-4">
                             {item.headline}
                           </h3>
                         )}
-                        <p className="font-sans text-base sm:text-lg md:text-xl lg:text-[21px] text-neutral-600 dark:text-[#94A3B8] font-normal leading-relaxed max-w-xl">
+                        <p className="font-sans text-base sm:text-lg md:text-xl lg:text-[21px] text-neutral-600 font-normal leading-relaxed max-w-xl">
                           {item.body}
                         </p>
                       </div>
@@ -8029,7 +8029,7 @@ export function BlueprintHero() {
                           ref={closingBlackTextRef}
                           className="will-change-[clip-path,opacity]"
                         >
-                          <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 dark:text-white tracking-[-0.035em] uppercase leading-[1.04] flex flex-wrap gap-x-[0.26em] gap-y-0.5">
+                          <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 tracking-[-0.035em] uppercase leading-[1.04] flex flex-wrap gap-x-[0.26em] gap-y-0.5">
                             {CLOSING_BLACK_WORDS.map((word, wIdx) => (
                               <span
                                 key={wIdx}
@@ -8078,7 +8078,7 @@ export function BlueprintHero() {
         {/* =================================================================== */}
         <div
           ref={portalRimRef}
-          className="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-emerald-400/70 dark:border-emerald-400/80 shadow-[0_0_45px_rgba(16,185,129,0.5),inset_0_0_25px_rgba(16,185,129,0.3)] z-25 opacity-0 will-change-[width,height,left,top,opacity]"
+          className="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-emerald-400/70 shadow-[0_0_45px_rgba(16,185,129,0.5),inset_0_0_25px_rgba(16,185,129,0.3)] z-25 opacity-0 will-change-[width,height,left,top,opacity]"
           style={{
             width: 0,
             height: 0,
@@ -8090,7 +8090,7 @@ export function BlueprintHero() {
         {/* LAYER 2C (z-24): OPTION 2 CONCENTRIC GRAVITATIONAL PULSE RIPPLE      */}
         <div
           ref={portalRippleRef}
-          className="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-400/40 dark:border-emerald-400/50 shadow-[0_0_60px_rgba(16,185,129,0.3)] z-24 opacity-0 will-change-[width,height,left,top,opacity]"
+          className="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-400/40 shadow-[0_0_60px_rgba(16,185,129,0.3)] z-24 opacity-0 will-change-[width,height,left,top,opacity]"
           style={{
             width: 0,
             height: 0,
@@ -8108,7 +8108,7 @@ export function BlueprintHero() {
           className="absolute inset-0 z-10 flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-20 pb-8 max-w-7xl mx-auto w-full pointer-events-none will-change-transform"
         >
           <div className="flex-1 flex flex-col justify-center max-w-lg -translate-x-6 sm:-translate-x-10 lg:-translate-x-14 -translate-y-4 sm:-translate-y-6 lg:-translate-y-8">
-            <h1 className="font-sans font-black text-4xl sm:text-5xl md:text-6xl lg:text-[62px] xl:text-[70px] text-neutral-950 dark:text-white tracking-[-0.03em] uppercase leading-[0.92] transition-colors duration-500 select-none">
+            <h1 className="font-sans font-black text-4xl sm:text-5xl md:text-6xl lg:text-[62px] xl:text-[70px] text-neutral-950 tracking-[-0.03em] uppercase leading-[0.92] select-none">
               SEE WHAT <br />
               YOU ACTUALLY <br />
               OWN.

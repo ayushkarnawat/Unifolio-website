@@ -533,7 +533,7 @@ export function HeroProductExperience() {
   return (
     <section
       ref={containerRef}
-      className="relative w-full bg-[#FAF8F5] dark:bg-[#000000] text-neutral-900 dark:text-white transition-colors duration-500 overflow-hidden"
+      className="relative w-full bg-[#FAF8F5] text-neutral-900 overflow-hidden"
       style={{ height: "220vh" }}
     >
       {/* Navigation Anchors for Smooth In-Page Linking */}
@@ -558,7 +558,7 @@ export function HeroProductExperience() {
             className="absolute inset-0 flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-20 pb-8 max-w-7xl mx-auto w-full z-40 will-change-transform"
           >
             <div className="flex-1 flex flex-col justify-center max-w-lg -translate-x-6 sm:-translate-x-10 lg:-translate-x-14 -translate-y-4 sm:-translate-y-6 lg:-translate-y-8">
-              <h1 className="font-sans font-black text-4xl sm:text-5xl md:text-6xl lg:text-[62px] xl:text-[70px] text-neutral-950 dark:text-white tracking-[-0.03em] uppercase leading-[0.92] transition-colors duration-500">
+              <h1 className="font-sans font-black text-4xl sm:text-5xl md:text-6xl lg:text-[62px] xl:text-[70px] text-neutral-950 tracking-[-0.03em] uppercase leading-[0.92]">
                 SEE WHAT <br />
                 YOU ACTUALLY <br />
                 OWN.
@@ -584,7 +584,7 @@ export function HeroProductExperience() {
         />
 
         {/* Ambient Glow for Product Scene */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-emerald-500/[0.04] dark:bg-emerald-500/[0.07] rounded-full blur-[140px] pointer-events-none -z-10" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-emerald-500/[0.04] rounded-full blur-[140px] pointer-events-none -z-10" />
 
         {/* ================================================================= */}
         {/* SCENE 2: TOP PRODUCT HEADER (Headline, Supporting Text, CTA) */}
@@ -596,7 +596,7 @@ export function HeroProductExperience() {
           {/* Main Product Headline */}
           <h2
             ref={headlineRef}
-            className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[52px] tracking-[-0.03em] leading-[1.08] text-neutral-950 dark:text-white transition-colors duration-500 will-change-transform"
+            className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[52px] tracking-[-0.03em] leading-[1.08] text-neutral-950 will-change-transform"
           >
             Understand your wealth.{" "}
             <span
@@ -610,7 +610,7 @@ export function HeroProductExperience() {
           {/* Supporting Subhead */}
           <p
             ref={subheadRef}
-            className="mt-3 max-w-2xl text-sm sm:text-base md:text-lg text-neutral-600 dark:text-neutral-400 font-normal leading-relaxed transition-colors duration-500 will-change-transform"
+            className="mt-3 max-w-2xl text-sm sm:text-base md:text-lg text-neutral-600 font-normal leading-relaxed will-change-transform"
           >
             Every account, every fund, every rupee, in one place, finally clear.
           </p>
@@ -633,7 +633,7 @@ export function HeroProductExperience() {
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E] group-hover:scale-125 transition-transform" />
               <span>Join the waitlist</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 text-neutral-500 dark:text-neutral-400" />
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 text-neutral-500" />
             </LinkButton>
           </div>
         </div>
@@ -689,7 +689,7 @@ export function HeroProductExperience() {
                       ref={(el) => {
                         cardFrontRefs.current[idx] = el;
                       }}
-                      className="absolute inset-0 w-full h-full rounded-[24px] overflow-hidden bg-neutral-950 border border-neutral-300/40 dark:border-white/15 shadow-2xl transition-all duration-500 will-change-transform"
+                      className="absolute inset-0 w-full h-full rounded-[24px] overflow-hidden bg-neutral-950 border border-neutral-300/40 shadow-2xl transition-all duration-500 will-change-transform"
                       style={{
                         backfaceVisibility: "hidden",
                         WebkitBackfaceVisibility: "hidden",
@@ -795,7 +795,7 @@ export function HeroProductExperience() {
         </div>
 
         {/* Ambient Floor Reflection Line */}
-        <div className="w-full max-w-3xl mx-auto h-[1px] bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-800 to-transparent shrink-0 opacity-60 z-20" />
+        <div className="w-full max-w-3xl mx-auto h-[1px] bg-gradient-to-r from-transparent via-neutral-300 to-transparent shrink-0 opacity-60 z-20" />
       </div>
     </section>
   );

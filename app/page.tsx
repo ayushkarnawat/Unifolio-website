@@ -17,7 +17,7 @@ export default function HomePage() {
   const softwareSchema = buildSoftwareApplicationSchema();
 
   return (
-    <main className="relative bg-[#FAF8F5] dark:bg-[#000000] transition-colors duration-500">
+    <main className="relative bg-[#FAF8F5]">
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger

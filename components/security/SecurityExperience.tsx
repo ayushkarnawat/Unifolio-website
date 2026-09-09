@@ -247,7 +247,7 @@ export function SecurityExperience() {
     <section
       id="security"
       ref={containerRef}
-      className="relative w-full bg-[#FAF8F5] dark:bg-[#000000] select-none transition-colors duration-500 overflow-hidden"
+      className="relative w-full bg-[#FAF8F5] select-none overflow-hidden"
       style={{ height: "700vh" }}
     >
       {/* Anchor for direct jump */}
@@ -256,14 +256,14 @@ export function SecurityExperience() {
       {/* Pinned Viewport Stage */}
       <div
         ref={stageRef}
-        className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-[#FAF8F5] dark:bg-[#000000] transition-colors duration-500"
+        className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-[#FAF8F5]"
       >
         {/* Subtle Architectural Reference Lines — Continuity with Product & About Section */}
-        <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1px] bg-gradient-to-r from-transparent via-black/[0.03] dark:via-white/[0.04] to-transparent z-0" />
-        <div className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1px] bg-gradient-to-b from-transparent via-black/[0.02] dark:via-white/[0.03] to-transparent z-0" />
+        <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1px] bg-gradient-to-r from-transparent via-black/[0.03] to-transparent z-0" />
+        <div className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1px] bg-gradient-to-b from-transparent via-black/[0.02] to-transparent z-0" />
 
         {/* Ambient emerald radial glow matching Unifolio atmosphere */}
-        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] rounded-full bg-[#22C55E]/[0.025] dark:bg-[#22C55E]/[0.035] blur-[120px] z-0" />
+        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] rounded-full bg-[#22C55E]/[0.025] blur-[120px] z-0" />
 
         {/* ZOOM PORTAL: Wraps the spatial storytelling elements for the cinematic ending zoom */}
         <div
@@ -278,7 +278,7 @@ export function SecurityExperience() {
             className="absolute inset-0 flex flex-col items-center justify-center px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto text-center will-change-transform z-20 pointer-events-none"
           >
             <div className="max-w-4xl mx-auto flex flex-col items-center">
-              <h2 className="font-sans font-black text-3xl sm:text-5xl lg:text-[62px] text-[#111613] dark:text-white tracking-[-0.035em] uppercase leading-[0.98]">
+              <h2 className="font-sans font-black text-3xl sm:text-5xl lg:text-[62px] text-[#111613] tracking-[-0.035em] uppercase leading-[0.98]">
                 We take your data <br />
                 <span className="text-[#22C55E]">as seriously as you</span> <br />
                 take your money.
@@ -300,12 +300,12 @@ export function SecurityExperience() {
             >
               <div className="max-w-4xl mx-auto flex flex-col items-center text-center -translate-y-8 sm:-translate-y-12">
                 {/* Primary Headline: Centered, Large, Sculptural */}
-                <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[56px] text-[#111613] dark:text-white tracking-[-0.035em] uppercase leading-[1.0] mb-5">
+                <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[56px] text-[#111613] tracking-[-0.035em] uppercase leading-[1.0] mb-5">
                   {principle.title}
                 </h3>
 
                 {/* High-Readability Editorial Body: Centered */}
-                <p className="font-sans text-base sm:text-xl lg:text-2xl text-[#5A685D] dark:text-[#8E9B91] font-light leading-relaxed max-w-2xl mx-auto">
+                <p className="font-sans text-base sm:text-xl lg:text-2xl text-[#5A685D] font-light leading-relaxed max-w-2xl mx-auto">
                   {principle.body}
                 </p>
               </div>
@@ -320,7 +320,7 @@ export function SecurityExperience() {
             className="absolute inset-0 flex flex-col items-center justify-center px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto text-center will-change-transform z-20 pointer-events-none"
           >
             <div className="max-w-4xl mx-auto flex flex-col items-center text-center -translate-y-8 sm:-translate-y-12">
-              <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[62px] text-[#111613] dark:text-white tracking-[-0.035em] uppercase leading-[0.98]">
+              <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[62px] text-[#111613] tracking-[-0.035em] uppercase leading-[0.98]">
                 Security isn&apos;t a feature here. <br />
                 <span className="text-[#22C55E]">
                   It&apos;s the baseline everything else is built on.

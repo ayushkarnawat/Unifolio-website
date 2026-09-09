@@ -82,20 +82,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `(function() {
               try {
-                var t = localStorage.getItem('unifolio-theme');
-                if (t === 'dark') {
-                  document.documentElement.classList.add('dark');
-                  document.documentElement.classList.remove('light');
-                } else {
-                  document.documentElement.classList.add('light');
-                  document.documentElement.classList.remove('dark');
-                }
+                localStorage.removeItem('unifolio-theme');
               } catch(e) {}
+              if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+              }
+              document.documentElement.classList.add('light');
             })()`,
           }}
         />
       </head>
-      <body className="flex min-h-screen flex-col font-sans bg-[#FAF8F5] dark:bg-[#000000] text-[#111613] dark:text-[#FAF8F5] selection:bg-[#22C55E]/40 selection:text-white overflow-x-hidden antialiased transition-colors duration-500">
+      <body className="flex min-h-screen flex-col font-sans bg-[#FAF8F5] text-[#111613] selection:bg-[#22C55E]/40 selection:text-white overflow-x-hidden antialiased">
         <ThemeProvider>
           <script
             type="application/ld+json"

@@ -405,10 +405,10 @@ export function BlueprintContact() {
         mode === "intro"
           ? "min-h-screen flex flex-col justify-between"
           : "min-h-[680px] sm:min-h-[740px] lg:min-h-[820px] py-20 sm:py-28 lg:py-32 px-6 sm:px-12 lg:px-16 xl:px-20 flex items-center justify-center"
-      } bg-[#FAF8F5] dark:bg-[#000000] text-[#111613] dark:text-[#FAF8F5] select-none overflow-hidden border-t border-black/[0.08] dark:border-white/[0.08] transition-colors duration-500`}
+      } bg-[#FAF8F5] text-[#111613] select-none overflow-hidden border-t border-black/[0.08]`}
     >
       {/* Seamless Top Blend from FAQ */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#FAF8F5] dark:from-[#000000] to-transparent z-20 transition-colors duration-500" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#FAF8F5] to-transparent z-20" />
 
       {/* =========================================================================
           SUBTLE AMBIENT RADIAL CURSOR GLOW (Soft Green Accent at Low Opacity)
@@ -434,7 +434,7 @@ export function BlueprintContact() {
           <div className="absolute right-[15%] bottom-[10%] w-[480px] h-[480px] rounded-full bg-[#06B6D4]/10 blur-[120px] opacity-40" />
 
           {/* Fine Star Dust & Micro Particle Flecks */}
-          <div className="absolute inset-0 bg-[radial-gradient(rgba(0,0,0,0.06)_1px,transparent_1px)] dark:bg-[radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:48px_48px] opacity-30" />
+          <div className="absolute inset-0 bg-[radial-gradient(rgba(0,0,0,0.06)_1px,transparent_1px)] [background-size:48px_48px] opacity-30" />
         </div>
       </div>
 
@@ -452,12 +452,12 @@ export function BlueprintContact() {
             {/* Left Column: Oversized Monumental Headline & Interactive CTA */}
             <div className="contact-hero-left lg:col-span-7 space-y-9 sm:space-y-11">
               <div className="space-y-4">
-                <h2 className="font-sans font-light md:font-normal text-5xl sm:text-7xl lg:text-[84px] xl:text-[96px] text-[#111613] dark:text-white tracking-tight leading-[0.98]">
+                <h2 className="font-sans font-light md:font-normal text-5xl sm:text-7xl lg:text-[84px] xl:text-[96px] text-[#111613] tracking-tight leading-[0.98]">
                   Challenge us <br />
                   with your brief.
                 </h2>
 
-                <p className="font-sans text-sm sm:text-base text-[#5A685D] dark:text-[#8E9B91] leading-relaxed max-w-lg font-light pt-2">
+                <p className="font-sans text-sm sm:text-base text-[#5A685D] leading-relaxed max-w-lg font-light pt-2">
                   Share your portfolio goals through our interactive briefing flow, and explore how Unifolio brings absolute clarity to your assets.
                 </p>
               </div>
@@ -484,12 +484,12 @@ export function BlueprintContact() {
               
               {/* Email Block */}
               <div className="space-y-2">
-                <p className="font-mono text-[11px] text-[#5A685D] dark:text-[#8E9B91] uppercase tracking-[0.24em] font-medium">
+                <p className="font-mono text-[11px] text-[#5A685D] uppercase tracking-[0.24em] font-medium">
                   EMAIL
                 </p>
                 <a
                   href="mailto:hello@unifolio.in"
-                  className="font-sans text-xl sm:text-2xl text-[#111613] dark:text-white hover:text-[#22C55E] transition-colors duration-200 block"
+                  className="font-sans text-xl sm:text-2xl text-[#111613] hover:text-[#22C55E] transition-colors duration-200 block"
                 >
                   hello@unifolio.in
                 </a>
@@ -499,22 +499,22 @@ export function BlueprintContact() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-2">
                 {/* Location */}
                 <div className="space-y-2">
-                  <p className="font-mono text-[11px] text-[#5A685D] dark:text-[#8E9B91] uppercase tracking-[0.24em] font-medium">
+                  <p className="font-mono text-[11px] text-[#5A685D] uppercase tracking-[0.24em] font-medium">
                     LOCATION
                   </p>
-                  <p className="font-sans text-sm sm:text-base text-[#111613]/90 dark:text-white/90 leading-relaxed">
+                  <p className="font-sans text-sm sm:text-base text-[#111613]/90 leading-relaxed">
                     Bengaluru, India
                   </p>
                 </div>
 
                 {/* Direct Line */}
                 <div className="space-y-2">
-                  <p className="font-mono text-[11px] text-[#5A685D] dark:text-[#8E9B91] uppercase tracking-[0.24em] font-medium">
+                  <p className="font-mono text-[11px] text-[#5A685D] uppercase tracking-[0.24em] font-medium">
                     DIRECT LINE
                   </p>
                   <a
                     href="tel:+919876543210"
-                    className="font-sans text-sm sm:text-base text-[#111613]/90 dark:text-white/90 hover:text-[#22C55E] transition-colors duration-200 block"
+                    className="font-sans text-sm sm:text-base text-[#111613]/90 hover:text-[#22C55E] transition-colors duration-200 block"
                   >
                     +91 98765 43210
                   </a>
@@ -523,7 +523,7 @@ export function BlueprintContact() {
 
               {/* Follow Us / Social Links */}
               <div className="space-y-3 pt-2">
-                <p className="font-mono text-[11px] text-[#5A685D] dark:text-[#8E9B91] uppercase tracking-[0.24em] font-medium">
+                <p className="font-mono text-[11px] text-[#5A685D] uppercase tracking-[0.24em] font-medium">
                   FOLLOW US
                 </p>
                 <div className="flex items-center gap-4">
@@ -533,7 +533,7 @@ export function BlueprintContact() {
                     target="_blank"
                     rel="noreferrer"
                     aria-label="LinkedIn"
-                    className="w-9 h-9 rounded-full border border-black/15 dark:border-white/15 bg-black/[0.02] dark:bg-white/[0.02] flex items-center justify-center text-[#111613] dark:text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 transition-all duration-300"
+                    className="w-9 h-9 rounded-full border border-black/15 bg-black/[0.02] flex items-center justify-center text-[#111613] hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 transition-all duration-300"
                   >
                     <span className="font-sans font-bold text-xs">in</span>
                   </a>
@@ -544,7 +544,7 @@ export function BlueprintContact() {
                     target="_blank"
                     rel="noreferrer"
                     aria-label="Twitter / X"
-                    className="w-9 h-9 rounded-full border border-black/15 dark:border-white/15 bg-black/[0.02] dark:bg-white/[0.02] flex items-center justify-center text-[#111613] dark:text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 transition-all duration-300"
+                    className="w-9 h-9 rounded-full border border-black/15 bg-black/[0.02] flex items-center justify-center text-[#111613] hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 transition-all duration-300"
                   >
                     <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -555,7 +555,7 @@ export function BlueprintContact() {
                   <a
                     href="mailto:hello@unifolio.in"
                     aria-label="Email"
-                    className="w-9 h-9 rounded-full border border-black/15 dark:border-white/15 bg-black/[0.02] dark:bg-white/[0.02] flex items-center justify-center text-[#111613] dark:text-white hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 transition-all duration-300"
+                    className="w-9 h-9 rounded-full border border-black/15 bg-black/[0.02] flex items-center justify-center text-[#111613] hover:border-[#22C55E] hover:text-[#22C55E] hover:bg-[#22C55E]/10 transition-all duration-300"
                   >
                     <Mail className="w-3.5 h-3.5" />
                   </a>
@@ -567,22 +567,22 @@ export function BlueprintContact() {
           </div>
 
           {/* Bottom Integrated Footer Bar: Seamless Minimal Strip */}
-          <div className="contact-footer-bar pt-10 border-t border-black/[0.08] dark:border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 font-sans text-xs text-[#5A685D] dark:text-[#8E9B91]/80">
+          <div className="contact-footer-bar pt-10 border-t border-black/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 font-sans text-xs text-[#5A685D]">
             <div>
               Copyright © 2025 Unifolio. All Rights Reserved.
             </div>
 
             <div className="flex items-center gap-6 sm:gap-8 font-mono text-[11px] uppercase tracking-wider">
-              <Link href="/privacy" className="hover:text-[#111613] dark:hover:text-white transition-colors duration-200">
+              <Link href="/privacy" className="hover:text-[#111613] transition-colors duration-200">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="hover:text-[#111613] dark:hover:text-white transition-colors duration-200">
+              <Link href="/terms" className="hover:text-[#111613] transition-colors duration-200">
                 Terms of Service
               </Link>
               <Link
                 href="#hero"
                 onClick={(e) => handleAnchorClick(e, "#hero")}
-                className="hover:text-[#111613] dark:hover:text-white transition-colors duration-200 hidden sm:inline-block"
+                className="hover:text-[#111613] transition-colors duration-200 hidden sm:inline-block"
               >
                 Back to Top ↑
               </Link>
@@ -609,7 +609,7 @@ export function BlueprintContact() {
               className={`inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] transition-all duration-300 cursor-pointer ${
                 currentStep === 0
                   ? "opacity-0 pointer-events-none"
-                  : "text-[#5A685D] dark:text-[#8E9B91] hover:text-[#111613] dark:hover:text-white"
+                  : "text-[#5A685D] hover:text-[#111613]"
               }`}
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -619,18 +619,11 @@ export function BlueprintContact() {
             {/* Official Logo Asset */}
             <div className="flex items-center justify-center">
               <Image
-                src="/Logo/unifolio-wordmark-white.png"
-                alt="Unifolio"
-                width={125}
-                height={28}
-                className="hidden dark:block h-6 sm:h-7 w-auto object-contain select-none opacity-90 transition-opacity hover:opacity-100"
-              />
-              <Image
                 src="/Logo/unifolio-wordmark-dark.png"
                 alt="Unifolio"
                 width={125}
                 height={28}
-                className="block dark:hidden h-6 sm:h-7 w-auto object-contain select-none opacity-90 transition-opacity hover:opacity-100"
+                className="h-6 sm:h-7 w-auto object-contain select-none opacity-90 transition-opacity hover:opacity-100"
               />
             </div>
 
@@ -638,7 +631,7 @@ export function BlueprintContact() {
             <button
               type="button"
               onClick={closeConversation}
-              className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.2em] text-[#5A685D] dark:text-[#8E9B91] hover:text-[#111613] dark:hover:text-white transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.2em] text-[#5A685D] hover:text-[#111613] transition-colors cursor-pointer"
             >
               <span>CLOSE</span>
               <X className="w-3.5 h-3.5" />
@@ -655,7 +648,7 @@ export function BlueprintContact() {
               {Array.from({ length: totalSteps }).map((_, idx) => (
                 <div
                   key={idx}
-                  className="h-[2px] flex-1 rounded-full overflow-hidden bg-black/10 dark:bg-white/10 relative transition-all duration-500"
+                  className="h-[2px] flex-1 rounded-full overflow-hidden bg-black/10 relative transition-all duration-500"
                 >
                   <div
                     className={`h-full w-full rounded-full transition-all duration-500 ease-out ${
@@ -673,7 +666,7 @@ export function BlueprintContact() {
             {/* Step 1: Name */}
             {currentStep === 0 && (
               <div className="space-y-6 w-full max-w-xl">
-                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] dark:text-white tracking-tight leading-tight">
+                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] tracking-tight leading-tight">
                   Hi, my name is
                 </h3>
                 <div
@@ -697,7 +690,7 @@ export function BlueprintContact() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     onKeyDown={handleKeyDown}
                     placeholder="John Doe"
-                    className="relative w-full text-center bg-black/[0.03] dark:bg-white/[0.05] border border-black/15 dark:border-white/15 focus:border-[#22C55E] focus:bg-black/[0.06] dark:focus:bg-white/[0.09] rounded-2xl px-6 py-4 text-xl sm:text-2xl text-[#111613] dark:text-white placeholder-black/30 dark:placeholder-white/25 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
+                    className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-xl sm:text-2xl text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
                   />
                 </div>
               </div>
@@ -706,7 +699,7 @@ export function BlueprintContact() {
             {/* Step 2: Organization / Portfolio Type */}
             {currentStep === 1 && (
               <div className="space-y-6 w-full max-w-xl">
-                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] dark:text-white tracking-tight leading-tight">
+                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] tracking-tight leading-tight">
                   I represent / invest as
                 </h3>
                 <div
@@ -730,7 +723,7 @@ export function BlueprintContact() {
                     onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
                     onKeyDown={handleKeyDown}
                     placeholder="Family Office / Fund / Private Portfolio"
-                    className="relative w-full text-center bg-black/[0.03] dark:bg-white/[0.05] border border-black/15 dark:border-white/15 focus:border-[#22C55E] focus:bg-black/[0.06] dark:focus:bg-white/[0.09] rounded-2xl px-6 py-4 text-lg sm:text-xl text-[#111613] dark:text-white placeholder-black/30 dark:placeholder-white/25 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
+                    className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-lg sm:text-xl text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
                   />
                 </div>
               </div>
@@ -739,7 +732,7 @@ export function BlueprintContact() {
             {/* Step 3: Focus Area with Refined Tactile Option Buttons */}
             {currentStep === 2 && (
               <div className="space-y-6 w-full max-w-2xl">
-                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] dark:text-white tracking-tight leading-tight">
+                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] tracking-tight leading-tight">
                   I would like to explore
                 </h3>
                 <div
@@ -763,7 +756,7 @@ export function BlueprintContact() {
                     onChange={(e) => setFormData({ ...formData, focusArea: e.target.value })}
                     onKeyDown={handleKeyDown}
                     placeholder="Choose below or type custom..."
-                    className="relative w-full text-center bg-black/[0.03] dark:bg-white/[0.05] border border-black/15 dark:border-white/15 focus:border-[#22C55E] focus:bg-black/[0.06] dark:focus:bg-white/[0.09] rounded-2xl px-6 py-4 text-base sm:text-lg text-[#111613] dark:text-white placeholder-black/30 dark:placeholder-white/25 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
+                    className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-base sm:text-lg text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
                   />
                 </div>
 
@@ -778,8 +771,8 @@ export function BlueprintContact() {
                         onClick={() => setFormData({ ...formData, focusArea: pill })}
                         className={`group relative flex items-center gap-3.5 px-5 py-3.5 rounded-2xl border transition-all duration-300 cursor-pointer active:scale-[0.98] overflow-hidden ${
                           isSelected
-                            ? "border-[#22C55E]/60 bg-[#22C55E]/10 dark:bg-[#0B150E]/85 text-[#0A2E14] dark:text-white shadow-[0_4px_24px_rgba(34,197,94,0.22)] -translate-y-0.5"
-                            : "border-black/[0.08] dark:border-white/[0.1] bg-white/60 dark:bg-white/[0.03] text-[#111613]/80 dark:text-white/80 hover:border-black/20 dark:hover:border-white/25 hover:bg-white/90 dark:hover:bg-white/[0.06] hover:text-[#111613] dark:hover:text-white hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
+                            ? "border-[#22C55E]/60 bg-[#22C55E]/10 text-[#0A2E14] shadow-[0_4px_24px_rgba(34,197,94,0.22)] -translate-y-0.5"
+                            : "border-black/[0.08] bg-white/60 text-[#111613]/80 hover:border-black/20 hover:bg-white/90 hover:text-[#111613] hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
                         }`}
                       >
                         <div
@@ -793,7 +786,7 @@ export function BlueprintContact() {
                           className={`relative z-10 w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-300 ${
                             isSelected
                               ? "border-[#22C55E] bg-[#22C55E] text-black"
-                              : "border-black/20 dark:border-white/20 group-hover:border-[#22C55E]/60"
+                              : "border-black/20 group-hover:border-[#22C55E]/60"
                           }`}
                         >
                           {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
@@ -811,7 +804,7 @@ export function BlueprintContact() {
             {/* Step 4: Primary Goal with Refined Tactile Option Buttons */}
             {currentStep === 3 && (
               <div className="space-y-6 w-full max-w-2xl">
-                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] dark:text-white tracking-tight leading-tight">
+                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] tracking-tight leading-tight">
                   My primary goal is
                 </h3>
                 <div
@@ -835,7 +828,7 @@ export function BlueprintContact() {
                     onChange={(e) => setFormData({ ...formData, primaryGoal: e.target.value })}
                     onKeyDown={handleKeyDown}
                     placeholder="Choose below or type custom..."
-                    className="relative w-full text-center bg-black/[0.03] dark:bg-white/[0.05] border border-black/15 dark:border-white/15 focus:border-[#22C55E] focus:bg-black/[0.06] dark:focus:bg-white/[0.09] rounded-2xl px-6 py-4 text-base sm:text-lg text-[#111613] dark:text-white placeholder-black/30 dark:placeholder-white/25 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
+                    className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-base sm:text-lg text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
                   />
                 </div>
 
@@ -850,8 +843,8 @@ export function BlueprintContact() {
                         onClick={() => setFormData({ ...formData, primaryGoal: pill })}
                         className={`group relative flex items-center gap-3.5 px-5 py-3.5 rounded-2xl border transition-all duration-300 cursor-pointer active:scale-[0.98] overflow-hidden ${
                           isSelected
-                            ? "border-[#22C55E]/60 bg-[#22C55E]/10 dark:bg-[#0B150E]/85 text-[#0A2E14] dark:text-white shadow-[0_4px_24px_rgba(34,197,94,0.22)] -translate-y-0.5"
-                            : "border-black/[0.08] dark:border-white/[0.1] bg-white/60 dark:bg-white/[0.03] text-[#111613]/80 dark:text-white/80 hover:border-black/20 dark:hover:border-white/25 hover:bg-white/90 dark:hover:bg-white/[0.06] hover:text-[#111613] dark:hover:text-white hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
+                            ? "border-[#22C55E]/60 bg-[#22C55E]/10 text-[#0A2E14] shadow-[0_4px_24px_rgba(34,197,94,0.22)] -translate-y-0.5"
+                            : "border-black/[0.08] bg-white/60 text-[#111613]/80 hover:border-black/20 hover:bg-white/90 hover:text-[#111613] hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
                         }`}
                       >
                         <div
@@ -865,7 +858,7 @@ export function BlueprintContact() {
                           className={`relative z-10 w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-300 ${
                             isSelected
                               ? "border-[#22C55E] bg-[#22C55E] text-black"
-                              : "border-black/20 dark:border-white/20 group-hover:border-[#22C55E]/60"
+                              : "border-black/20 group-hover:border-[#22C55E]/60"
                           }`}
                         >
                           {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
@@ -883,7 +876,7 @@ export function BlueprintContact() {
             {/* Step 5: Email & Final Submission */}
             {currentStep === 4 && (
               <div className="space-y-6 w-full max-w-xl">
-                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] dark:text-white tracking-tight leading-tight">
+                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] tracking-tight leading-tight">
                   You can reach me at
                 </h3>
                 <div
@@ -907,7 +900,7 @@ export function BlueprintContact() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     onKeyDown={handleKeyDown}
                     placeholder="hello@example.com"
-                    className="relative w-full text-center bg-black/[0.03] dark:bg-white/[0.05] border border-black/15 dark:border-white/15 focus:border-[#22C55E] focus:bg-black/[0.06] dark:focus:bg-white/[0.09] rounded-2xl px-6 py-4 text-lg sm:text-xl text-[#111613] dark:text-white placeholder-black/30 dark:placeholder-white/25 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
+                    className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-lg sm:text-xl text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
                   />
                 </div>
               </div>
@@ -944,7 +937,7 @@ export function BlueprintContact() {
               ) : (
                 <>
                   <div
-                    className="relative group inline-flex rounded-full p-[1.5px] overflow-hidden transition-all duration-300 will-change-transform active:scale-90 hover:-translate-y-0.5 cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.6)]"
+                    className="relative group inline-flex rounded-full p-[1.5px] overflow-hidden transition-all duration-300 will-change-transform active:scale-90 hover:-translate-y-0.5 cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
                   >
                     <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin opacity-80 group-hover:opacity-100 will-change-transform" />
                     <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin blur-[2.5px] opacity-50 group-hover:opacity-80 will-change-transform" />
@@ -956,14 +949,14 @@ export function BlueprintContact() {
                       onMouseLeave={handleBtnMouseLeave}
                       disabled={loading || !canProceed()}
                       aria-label="Next Step"
-                      className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/80 hover:bg-white/95 dark:bg-[#0B0F0D]/85 dark:hover:bg-[#101612]/95 backdrop-blur-xl flex items-center justify-center text-[#111613] dark:text-white transition-all duration-300 btn-physical-surface-light dark:btn-physical-surface-dark cursor-pointer"
+                      className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/80 hover:bg-white/95 backdrop-blur-xl flex items-center justify-center text-[#111613] transition-all duration-300 btn-physical-surface-light cursor-pointer"
                     >
-                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.8] text-[#111613] dark:text-white group-hover:translate-x-0.5 transition-all duration-200" />
+                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.8] text-[#111613] group-hover:translate-x-0.5 transition-all duration-200" />
                     </button>
                   </div>
 
                   {/* Minimal Bottom Pill Indicator Under Button */}
-                  <div className="w-7 h-1 rounded-full bg-black/10 dark:bg-white/10 mt-3" />
+                  <div className="w-7 h-1 rounded-full bg-black/10 mt-3" />
                 </>
               )}
             </div>
@@ -982,10 +975,10 @@ export function BlueprintContact() {
           </div>
 
           <div className="space-y-3">
-            <h3 className="font-sans font-light text-3xl sm:text-4xl text-[#111613] dark:text-white tracking-tight">
+            <h3 className="font-sans font-light text-3xl sm:text-4xl text-[#111613] tracking-tight">
               Brief received, {formData.name || "friend"}.
             </h3>
-            <p className="font-sans text-sm sm:text-base text-[#5A685D] dark:text-[#8E9B91] leading-relaxed max-w-md mx-auto font-light">
+            <p className="font-sans text-sm sm:text-base text-[#5A685D] leading-relaxed max-w-md mx-auto font-light">
               Thank you for sharing your portfolio brief. Our intelligence specialist will review your details and connect within 24 hours.
             </p>
           </div>
@@ -1004,7 +997,7 @@ export function BlueprintContact() {
                   email: "",
                 });
               }}
-              className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#22C55E] hover:text-[#111613] dark:hover:text-white transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#22C55E] hover:text-[#111613] transition-colors cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
               <span>START ANOTHER CONVERSATION</span>

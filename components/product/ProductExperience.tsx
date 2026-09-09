@@ -1879,7 +1879,7 @@ export function ProductExperience() {
     <section
       id="product"
       ref={sectionRef}
-      className="relative w-full h-screen min-h-screen bg-[#FAF8F5] dark:bg-[#000000] text-neutral-900 dark:text-white transition-colors duration-500 overflow-hidden"
+      className="relative w-full h-screen min-h-screen bg-[#FAF8F5] text-neutral-900 overflow-hidden"
     >
       {/* =================================================================== */}
       {/* FULL-SCREEN BLACK SURFACE OVERLAY (Takes over Hero on 1st scroll)   */}
@@ -1892,10 +1892,10 @@ export function ProductExperience() {
       {/* Main Viewport Stage: Sized precisely to fit comfortably within 100vh */}
       <div
         ref={stageRef}
-        className="relative h-screen max-h-screen w-full flex flex-col justify-between items-center px-4 sm:px-6 lg:px-8 pt-20 sm:pt-22 md:pt-24 lg:pt-26 pb-3 sm:pb-4 overflow-hidden select-none bg-[#FAF8F5] dark:bg-[#000000]"
+        className="relative h-screen max-h-screen w-full flex flex-col justify-between items-center px-4 sm:px-6 lg:px-8 pt-20 sm:pt-22 md:pt-24 lg:pt-26 pb-3 sm:pb-4 overflow-hidden select-none bg-[#FAF8F5]"
       >
         {/* Ambient Glow for Product Stage */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-emerald-500/[0.04] dark:bg-emerald-500/[0.07] rounded-full blur-[120px] pointer-events-none -z-10" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-emerald-500/[0.04] rounded-full blur-[120px] pointer-events-none -z-10" />
 
         {/* ================================================================= */}
         {/* TOP HEADER: Headline, Supporting Text, CTA (Spacious & Balanced)  */}
@@ -1907,7 +1907,7 @@ export function ProductExperience() {
           {/* Main Headline */}
           <h2
             ref={headlineRef}
-            className="font-sans font-black text-2xl sm:text-3xl md:text-[40px] lg:text-[48px] xl:text-[54px] 2xl:text-[60px] tracking-[-0.035em] leading-[1.08] text-neutral-950 dark:text-white transition-colors duration-500 will-change-transform md:whitespace-nowrap"
+            className="font-sans font-black text-2xl sm:text-3xl md:text-[40px] lg:text-[48px] xl:text-[54px] 2xl:text-[60px] tracking-[-0.035em] leading-[1.08] text-neutral-950 will-change-transform md:whitespace-nowrap"
           >
             Understand your wealth.{" "}
             <span
@@ -1921,7 +1921,7 @@ export function ProductExperience() {
           {/* Supporting Text */}
           <p
             ref={subheadRef}
-            className="mt-4 sm:mt-5 md:mt-6 max-w-2xl lg:max-w-3xl text-sm sm:text-base md:text-lg lg:text-[19px] text-neutral-700 dark:text-neutral-300 font-medium md:font-semibold leading-relaxed transition-colors duration-500 will-change-transform"
+            className="mt-4 sm:mt-5 md:mt-6 max-w-2xl lg:max-w-3xl text-sm sm:text-base md:text-lg lg:text-[19px] text-neutral-700 font-medium md:font-semibold leading-relaxed will-change-transform"
           >
             Every account, every fund, every rupee, in one place, finally clear.
           </p>
@@ -1944,7 +1944,7 @@ export function ProductExperience() {
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E] group-hover:scale-125 transition-transform" />
               <span>Join the waitlist</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 text-neutral-500 dark:text-neutral-400" />
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 text-neutral-500" />
             </LinkButton>
           </div>
         </div>
@@ -2256,7 +2256,7 @@ export function ProductExperience() {
         </div>
 
         {/* Ambient Floor Reflection Line */}
-        <div className="w-full max-w-2xl mx-auto h-[1px] bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-800 to-transparent shrink-0 opacity-50 z-20" />
+        <div className="w-full max-w-2xl mx-auto h-[1px] bg-gradient-to-r from-transparent via-neutral-300 to-transparent shrink-0 opacity-50 z-20" />
 
         {/* ================================================================= */}
         {/* IN-PLACE SECURITY NARRATIVE (Occupies Right Side When Ring is Left) */}
@@ -2275,12 +2275,12 @@ export function ProductExperience() {
                 ref={securityHeroRef}
                 className="absolute inset-0 flex flex-col justify-center text-left will-change-transform"
               >
-                <h2 className="font-sans font-black text-3xl sm:text-5xl lg:text-[46px] xl:text-[54px] 2xl:text-[62px] text-[#111613] dark:text-white tracking-[-0.035em] uppercase leading-[1.02] sm:leading-[0.98]">
+                <h2 className="font-sans font-black text-3xl sm:text-5xl lg:text-[46px] xl:text-[54px] 2xl:text-[62px] text-[#111613] tracking-[-0.035em] uppercase leading-[1.02] sm:leading-[0.98]">
                   We take your data <br />
                   <span className="text-[#22C55E]">as seriously as you</span> <br />
                   take your money.
                 </h2>
-                <p className="mt-5 sm:mt-7 text-sm sm:text-base lg:text-lg xl:text-xl text-[#5A685D] dark:text-[#9BA89F] font-normal leading-relaxed max-w-xl">
+                <p className="mt-5 sm:mt-7 text-sm sm:text-base lg:text-lg xl:text-xl text-[#5A685D] font-normal leading-relaxed max-w-xl">
                   India&apos;s RBI-regulated Account Aggregator framework guarantees that your wealth intelligence runs on your terms, with zero compromise.
                 </p>
               </div>
@@ -2294,10 +2294,10 @@ export function ProductExperience() {
                   }}
                   className="absolute inset-0 flex flex-col justify-center text-left opacity-0 pointer-events-none will-change-transform"
                 >
-                  <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[46px] xl:text-[54px] 2xl:text-[62px] text-[#111613] dark:text-white tracking-[-0.035em] uppercase leading-[1.02] sm:leading-[0.98] mb-4 sm:mb-6">
+                  <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[46px] xl:text-[54px] 2xl:text-[62px] text-[#111613] tracking-[-0.035em] uppercase leading-[1.02] sm:leading-[0.98] mb-4 sm:mb-6">
                     {principle.title}
                   </h3>
-                  <p className="font-sans text-base sm:text-lg lg:text-xl xl:text-2xl text-[#5A685D] dark:text-[#9BA89F] font-light leading-relaxed max-w-xl">
+                  <p className="font-sans text-base sm:text-lg lg:text-xl xl:text-2xl text-[#5A685D] font-light leading-relaxed max-w-xl">
                     {principle.body}
                   </p>
                 </div>
@@ -2308,13 +2308,13 @@ export function ProductExperience() {
                 ref={securityClosingRef}
                 className="absolute inset-0 flex flex-col justify-center text-left opacity-0 pointer-events-none will-change-transform"
               >
-                <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[46px] xl:text-[54px] 2xl:text-[62px] text-[#111613] dark:text-white tracking-[-0.035em] uppercase leading-[1.02] sm:leading-[0.98]">
+                <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[46px] xl:text-[54px] 2xl:text-[62px] text-[#111613] tracking-[-0.035em] uppercase leading-[1.02] sm:leading-[0.98]">
                   Security isn&apos;t a feature here. <br />
                   <span className="text-[#22C55E]">
                     It&apos;s the baseline everything else is built on.
                   </span>
                 </h3>
-                <p className="mt-5 sm:mt-7 text-sm sm:text-base lg:text-lg xl:text-xl text-[#5A685D] dark:text-[#9BA89F] font-normal leading-relaxed max-w-xl">
+                <p className="mt-5 sm:mt-7 text-sm sm:text-base lg:text-lg xl:text-xl text-[#5A685D] font-normal leading-relaxed max-w-xl">
                   Built from the ground up for bank-grade protection, complete transparency, and personal privacy.
                 </p>
               </div>

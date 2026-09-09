@@ -47,7 +47,7 @@ function PhysicalButtonInner({
   return (
     <>
       {/* 1. Dimensional Outer Track Base Border */}
-      <div className="pointer-events-none absolute inset-0 rounded-full border border-black/[0.08] dark:border-white/[0.12] transition-colors duration-300" />
+      <div className="pointer-events-none absolute inset-0 rounded-full border border-black/[0.08] transition-colors duration-300" />
 
       {/* 2. Delicate Iridescent Light Beams Orbiting the Perimeter (From Reference Video) */}
       <div
@@ -75,17 +75,17 @@ function PhysicalButtonInner({
           sizeInnerClasses[size]
         } ${
           isPrimary
-            ? "bg-white/80 hover:bg-white/92 dark:bg-[#0B0F0D]/85 dark:hover:bg-[#101612]/92 text-[#111613] dark:text-white backdrop-blur-xl btn-physical-surface-light dark:btn-physical-surface-dark"
+            ? "bg-white/80 hover:bg-white/92 text-[#111613] backdrop-blur-xl btn-physical-surface-light"
             : isSecondary
-            ? "bg-black/[0.03] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-[#111613]/90 dark:text-white/90 backdrop-blur-xl btn-physical-surface-light dark:btn-physical-surface-dark"
-            : "bg-white/70 hover:bg-white/85 dark:bg-white/[0.03] dark:hover:bg-white/[0.06] text-[#111613]/85 dark:text-white/85 backdrop-blur-lg"
+            ? "bg-black/[0.03] hover:bg-black/[0.06] text-[#111613]/90 backdrop-blur-xl btn-physical-surface-light"
+            : "bg-white/70 hover:bg-white/85 text-[#111613]/85 backdrop-blur-lg"
         } ${innerClassName}`}
       >
         {/* Fine Specular Top Horizon Highlight */}
-        <div className="pointer-events-none absolute inset-x-3 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/90 dark:via-white/35 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-3 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/90 to-transparent" />
 
         {/* Subtle Ambient Sheen */}
-        <div className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-b from-white/[0.12] dark:from-white/[0.06] to-transparent opacity-70 group-hover:opacity-100 transition-opacity" />
+        <div className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-b from-white/[0.12] to-transparent opacity-70 group-hover:opacity-100 transition-opacity" />
 
         {/* Content */}
         <span className="relative z-10 inline-flex items-center gap-2 font-medium tracking-wide">

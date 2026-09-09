@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ProductPage() {
   return (
-    <main className="relative bg-[#FAF8F5] dark:bg-[#000000] transition-colors duration-500 pt-16">
+    <main className="relative bg-[#FAF8F5] pt-16">
       {/* Floating Pill Navigation Bar */}
       <BlueprintNav />
 

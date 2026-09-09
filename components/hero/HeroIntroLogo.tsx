@@ -371,7 +371,7 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#FAF8F5] dark:bg-[#000000] pointer-events-none select-none overflow-hidden"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#FAF8F5] pointer-events-none select-none overflow-hidden"
     >
       {/* Moving Brand Container: Cinematic monumental centerpiece scale */}
       <div
@@ -406,16 +406,7 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
               width={1050}
               height={463}
               priority
-              className="w-full h-full object-contain select-none block dark:hidden"
-            />
-            {/* White UNIF for Dark Mode */}
-            <Image
-              src="/Logo/logo-unif-white.png"
-              alt="Unif"
-              width={1050}
-              height={463}
-              priority
-              className="w-full h-full object-contain select-none hidden dark:block"
+              className="w-full h-full object-contain select-none block"
             />
           </div>
         </div>
@@ -438,15 +429,7 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
               width={380}
               height={463}
               priority
-              className="w-full h-full object-contain select-none block dark:hidden"
-            />
-            <Image
-              src="/Logo/logo-ring-main-white.png"
-              alt="Unifolio Ring Base"
-              width={380}
-              height={463}
-              priority
-              className="w-full h-full object-contain select-none hidden dark:block"
+              className="w-full h-full object-contain select-none block"
             />
           </div>
 
@@ -462,15 +445,7 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
               width={380}
               height={463}
               priority
-              className="w-full h-full object-contain select-none block dark:hidden"
-            />
-            <Image
-              src="/Logo/logo-ring-solid-white.png"
-              alt="Complete Solid Ring"
-              width={380}
-              height={463}
-              priority
-              className="w-full h-full object-contain select-none hidden dark:block"
+              className="w-full h-full object-contain select-none block"
             />
           </div>
 
@@ -483,7 +458,7 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
             }}
             className="absolute inset-0 w-full h-full will-change-transform pointer-events-none"
           >
-            {/* Black Segment for Light Mode / White Segment for Dark Mode */}
+            {/* Black Segment */}
             <div
               ref={segmentBlackRef}
               style={{ opacity: 1 }}
@@ -495,15 +470,7 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
                 width={380}
                 height={463}
                 priority
-                className="w-full h-full object-contain select-none block dark:hidden"
-              />
-              <Image
-                src="/Logo/logo-ring-segment-white.png"
-                alt="Unifolio Ring Segment White"
-                width={380}
-                height={463}
-                priority
-                className="w-full h-full object-contain select-none hidden dark:block"
+                className="w-full h-full object-contain select-none block"
               />
             </div>
             {/* Green Segment (#22C55E) */}
@@ -536,21 +503,10 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
               width={380}
               height={463}
               priority
-              className="w-full h-full object-contain select-none block dark:hidden"
-            />
-            {/* White Ring for Dark Mode (Full white ring body + green arc) */}
-            <Image
-              src="/Logo/logo-ring-white.png"
-              alt="Unifolio Ring"
-              width={380}
-              height={463}
-              priority
-              className="w-full h-full object-contain select-none hidden dark:block"
+              className="w-full h-full object-contain select-none block"
             />
           </div>
         </div>
-
-
 
         {/* Right Letters: LIO (emerges expanding towards the right - completely hidden at initial load) */}
         <div
@@ -576,16 +532,7 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
               width={611}
               height={463}
               priority
-              className="w-full h-full object-contain select-none block dark:hidden"
-            />
-            {/* White LIO for Dark Mode */}
-            <Image
-              src="/Logo/logo-lio-white.png"
-              alt="lio"
-              width={611}
-              height={463}
-              priority
-              className="w-full h-full object-contain select-none hidden dark:block"
+              className="w-full h-full object-contain select-none block"
             />
           </div>
         </div>
