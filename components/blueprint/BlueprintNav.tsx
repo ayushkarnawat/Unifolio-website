@@ -12,20 +12,22 @@ interface NavItem {
   label: string;
   href: string;
   id: string;
+  icon: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Product", href: "#product", id: "product" },
-  { label: "Security", href: "#security", id: "security" },
-  { label: "About", href: "#about", id: "about" },
-  { label: "FAQ", href: "#faq", id: "faq" },
-  { label: "Contact", href: "#contact", id: "contact" },
+  { label: "Product", href: "#product", id: "product", icon: "/navbar/product.png" },
+  { label: "Security", href: "#security", id: "security", icon: "/navbar/security.png" },
+  { label: "About", href: "#about", id: "about", icon: "/navbar/about.png" },
+  { label: "FAQ", href: "#faq", id: "faq", icon: "/navbar/faq.png" },
+  { label: "Contact", href: "#contact", id: "contact", icon: "/navbar/contact.png" },
 ];
 
 export function BlueprintNav() {
   const { theme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [activeId, setActiveId] = useState<string>("product");
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isLogoDocked, setIsLogoDocked] = useState(false);
 
   useEffect(() => {
@@ -45,9 +47,7 @@ export function BlueprintNav() {
   }, []);
 
   const navContainerRef = useRef<HTMLDivElement | null>(null);
-  const indicatorRef = useRef<HTMLDivElement | null>(null);
   const linkRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
-  const textRefs = useRef<Record<string, HTMLSpanElement | null>>({});
 
   const forcedSectionRef = useRef<string | null>(null);
 
@@ -115,59 +115,6 @@ export function BlueprintNav() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Smooth Gliding Active Indicator Movement (GSAP Interpolation to exact text span)
-  useEffect(() => {
-    const updateIndicator = () => {
-      const activeElement = textRefs.current[activeId] || linkRefs.current[activeId];
-      const containerElement = navContainerRef.current;
-      if (!activeElement || !containerElement || !indicatorRef.current) return;
-
-      const activeRect = activeElement.getBoundingClientRect();
-      const containerRect = containerElement.getBoundingClientRect();
-
-      const x = activeRect.left - containerRect.left;
-      const width = activeRect.width;
-
-      if (width === 0) return;
-
-      if (prefersReducedMotion()) {
-        gsap.set(indicatorRef.current, { x, width, opacity: 1 });
-      } else {
-        gsap.to(indicatorRef.current, {
-          x,
-          width,
-          opacity: 1,
-          duration: 0.35,
-          ease: "power2.out",
-        });
-      }
-    };
-
-    updateIndicator();
-    const rafId = requestAnimationFrame(updateIndicator);
-    return () => cancelAnimationFrame(rafId);
-  }, [activeId, isLogoDocked]);
-
-  // Window resize handler to reposition indicator precisely
-  useEffect(() => {
-    const handleResize = () => {
-      const activeElement = textRefs.current[activeId] || linkRefs.current[activeId];
-      const containerElement = navContainerRef.current;
-      if (!activeElement || !containerElement || !indicatorRef.current) return;
-
-      const activeRect = activeElement.getBoundingClientRect();
-      const containerRect = containerElement.getBoundingClientRect();
-
-      gsap.set(indicatorRef.current, {
-        x: activeRect.left - containerRect.left,
-        width: activeRect.width,
-        opacity: 1,
-      });
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [activeId]);
 
   const handleAnchorClick = (
     event: React.MouseEvent<HTMLAnchorElement>,
@@ -279,15 +226,17 @@ export function BlueprintNav() {
         />
       </Link>
 
-      {/* Center Navigation Links with Smooth Gliding Active Indicator */}
+      {/* Center Navigation: Floating 3D Glass Illustrations with Fluid Soft-Green Expand-on-Hover */}
       <div
         ref={navContainerRef}
-        className={`hidden md:flex relative items-center gap-7 lg:gap-9 py-1 transition-all duration-700 delay-100 ${
+        className={`hidden md:flex relative items-center gap-7 sm:gap-8 lg:gap-10 py-1 transition-all duration-700 delay-100 ${
           isLogoDocked ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
         }`}
       >
         {NAV_ITEMS.map((item) => {
           const isActive = activeId === item.id;
+          const isHovered = hoveredId === item.id;
+
           return (
             <Link
               key={item.id}
@@ -296,29 +245,59 @@ export function BlueprintNav() {
               }}
               href={item.href}
               onClick={(e) => handleAnchorClick(e, item.href, item.id)}
-              className={`relative py-1 font-sans text-[13px] sm:text-[14px] tracking-[0.03em] transition-colors duration-200 cursor-pointer ${
-                isActive
-                  ? "text-[#111613] dark:text-white font-medium"
-                  : "text-[#5A685D] dark:text-[#8E9B91]/80 hover:text-[#111613] dark:hover:text-white font-normal"
+              onMouseEnter={() => setHoveredId(item.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              onFocus={() => setHoveredId(item.id)}
+              onBlur={() => setHoveredId(null)}
+              aria-label={item.label}
+              className={`group relative flex items-center h-[42px] rounded-full cursor-pointer transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${
+                isHovered
+                  ? "bg-[#22C55E]/[0.08] dark:bg-[#22C55E]/[0.15] border border-[#22C55E]/30 dark:border-[#22C55E]/40 backdrop-blur-md shadow-[0_4px_22px_-2px_rgba(34,197,94,0.25),0_0_14px_rgba(34,197,94,0.18)] pl-3 pr-4"
+                  : "bg-transparent border border-transparent px-1 shadow-none"
               }`}
             >
-              <span
-                ref={(el) => {
-                  textRefs.current[item.id] = el;
-                }}
-                className="inline-block"
+              {/* Illustration element */}
+              <div
+                className={`relative flex items-center justify-center shrink-0 transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  isHovered
+                    ? "scale-[1.08] drop-shadow-[0_2px_10px_rgba(34,197,94,0.45)]"
+                    : isActive
+                    ? "scale-100 opacity-100 drop-shadow-[0_2px_8px_rgba(34,197,94,0.30)]"
+                    : "scale-100 opacity-80 dark:opacity-75 group-hover:opacity-100 group-hover:scale-[1.04]"
+                }`}
               >
-                {item.label}
-              </span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={item.icon}
+                  alt={item.label}
+                  className="h-[30px] sm:h-[32px] w-auto max-w-[46px] object-contain select-none pointer-events-none"
+                />
+
+                {/* Subtle active pip centered underneath the active illustration */}
+                {isActive && !isHovered && (
+                  <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E]" />
+                )}
+              </div>
+
+              {/* Expanding Label Container: Smooth horizontal reveal */}
+              <div
+                className={`overflow-hidden flex items-center transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  isHovered
+                    ? "max-w-[150px] opacity-100 translate-x-0 ml-2.5"
+                    : "max-w-0 opacity-0 -translate-x-2 ml-0 pointer-events-none"
+                }`}
+              >
+                {/* Subtle emerald hairline vertical divider */}
+                <div className="w-[1px] h-3.5 bg-[#22C55E]/45 dark:bg-[#22C55E]/55 mr-2.5 shrink-0" />
+
+                {/* Section Name Label */}
+                <span className="font-sans text-[12.5px] sm:text-[13px] font-bold tracking-[0.06em] uppercase text-neutral-900 dark:text-white whitespace-nowrap">
+                  {item.label}
+                </span>
+              </div>
             </Link>
           );
         })}
-
-        {/* Gliding Hairline Emerald Active Indicator (Fitted Exactly to Text) */}
-        <div
-          ref={indicatorRef}
-          className="pointer-events-none absolute bottom-0 left-0 h-[1.5px] bg-[#22C55E] shadow-[0_0_8px_#22C55E] rounded-full will-change-transform opacity-0"
-        />
       </div>
 
       {/* Right Navigation Actions: 3D Theme Toggle + Login + Sign Up */}
