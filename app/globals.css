@@ -316,3 +316,15 @@ html.dark {
   }
 }
 
+@keyframes dustDrift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(4px, -10px, 0);
+  }
+  100% {
+    transform: translate3d(-3px, -20px, 0);
+  }
+}
+

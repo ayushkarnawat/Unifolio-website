@@ -258,17 +258,15 @@ export function BlueprintHero() {
   const lastSecurityScrollTimeRef = useRef<number>(0);
   const securityStateTransitionTlRef = useRef<gsap.core.Timeline | null>(null);
 
-  // About Section Scroll-Mask Reveal Refs
-  const aboutScrollProgressRef = useRef<number>(0);
-  const aboutProgressTweenRef = useRef<gsap.core.Tween | null>(null);
-  const aboutWordOverlayRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const lastAboutRevealTimeRef = useRef<number>(0);
-  const linesCacheRef = useRef<{
-    words: { el: HTMLElement; left: number; right: number; width: number }[];
-    left: number;
-    right: number;
-    width: number;
-  }[] | null>(null);
+  // About Section Envelope & Philosophy Document Refs
+  const unifiedEnvelopeRef = useRef<HTMLDivElement | null>(null);
+  const envelopeTopFlapRef = useRef<HTMLDivElement | null>(null);
+  const docCavityWrapperRef = useRef<HTMLDivElement | null>(null);
+  const philosophyDocRef = useRef<HTMLDivElement | null>(null);
+  const docPaperSheetRef = useRef<HTMLDivElement | null>(null);
+  const docInkCopyRef = useRef<HTMLDivElement | null>(null);
+  const envelopeSealRef = useRef<HTMLDivElement | null>(null);
+  const aboutOrbitTweenRef = useRef<gsap.core.Tween | null>(null);
 
   const cardsStageRef = useRef<HTMLDivElement | null>(null);
   const cardsClusterRef = useRef<HTMLDivElement | null>(null);
@@ -302,11 +300,6 @@ export function BlueprintHero() {
 
   // About Section Continuum Refs
   const aboutContentRef = useRef<HTMLDivElement | null>(null);
-  const aboutEyebrowRef = useRef<HTMLDivElement | null>(null);
-  const aboutPara1Ref = useRef<HTMLParagraphElement | null>(null);
-  const aboutPara2Ref = useRef<HTMLParagraphElement | null>(null);
-  const aboutOrbitTweenRef = useRef<gsap.core.Tween | null>(null);
-  const aboutOrbitStateRef = useRef<{ angle: number }>({ angle: 0 });
 
   // Typographic Eyes Easter Egg ("Read-only, always")
   const typoEyesRef = useRef<HTMLSpanElement | null>(null);
@@ -3279,336 +3272,54 @@ export function BlueprintHero() {
         return slots;
       };
 
-      const computeSemicircleParams = () => {
+      const computeEnvelopeParams = () => {
         const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
         const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
-        const w = typeof window !== "undefined" ? window.innerWidth : 1440;
-        const h = typeof window !== "undefined" ? window.innerHeight : 900;
+        const envScale = isDesk ? 0.72 : isTab ? 0.60 : 0.50;
 
-        // Massive circular formation radius (~3x larger than original)
-        const radius = isDesk
-          ? Math.min(Math.max(h * 0.94, 820), 1020)
-          : isTab
-          ? Math.min(Math.max(h * 0.78, 600), 760)
-          : Math.min(Math.max(h * 0.65, 440), 540);
+        // Converge & Fold Slots: Cards fold directly from the center stack into the 4 envelope facets
+        const convergeSlots = [
+          // Left diagonal fold facet (Cards 0..5)
+          { x: -195, y: -45, z: 12, rotZ: 38,  rotX: 4,  rotY: 16,  scale: envScale * 0.98, zIndex: 20 },
+          { x: -150, y: 15,  z: 14, rotZ: 38,  rotX: 4,  rotY: 16,  scale: envScale * 0.98, zIndex: 21 },
+          { x: -105, y: 75,  z: 16, rotZ: 38,  rotX: 4,  rotY: 14,  scale: envScale * 0.98, zIndex: 22 },
+          { x: -60,  y: 120, z: 18, rotZ: 35,  rotX: 2,  rotY: 12,  scale: envScale * 0.98, zIndex: 23 },
+          { x: -235, y: -65, z: 10, rotZ: 40,  rotX: 6,  rotY: 18,  scale: envScale * 0.94, zIndex: 18 },
+          { x: -175, y: 45,  z: 15, rotZ: 38,  rotX: 4,  rotY: 15,  scale: envScale * 0.96, zIndex: 21 },
 
-        // Keep current card size as requested
-        const baseCardScale = isDesk ? 0.64 : isTab ? 0.54 : 0.44;
+          // Right diagonal fold facet (Cards 6..11)
+          { x: 195,  y: -45, z: 12, rotZ: -38, rotX: 4,  rotY: -16, scale: envScale * 0.98, zIndex: 20 },
+          { x: 150,  y: 15,  z: 14, rotZ: -38, rotX: 4,  rotY: -16, scale: envScale * 0.98, zIndex: 21 },
+          { x: 105,  y: 75,  z: 16, rotZ: -38, rotX: 4,  rotY: -14, scale: envScale * 0.98, zIndex: 22 },
+          { x: 60,   y: 120, z: 18, rotZ: -35, rotX: 2,  rotY: -12, scale: envScale * 0.98, zIndex: 23 },
+          { x: 235,  y: -65, z: 10, rotZ: -40, rotX: 6,  rotY: -18, scale: envScale * 0.94, zIndex: 18 },
+          { x: 175,  y: 45,  z: 15, rotZ: -38, rotX: 4,  rotY: -15, scale: envScale * 0.96, zIndex: 21 },
 
-        // Bring the semicircles a little down to frame the editorial content centered in viewport
-        const centerY = isDesk ? 55 : isTab ? 45 : 35;
+          // Bottom pocket facet (Cards 12..18)
+          { x: -115, y: 110, z: 20, rotZ: 6,   rotX: -14, rotY: 0,  scale: envScale * 1.00, zIndex: 24 },
+          { x: -40,  y: 135, z: 22, rotZ: 2,   rotX: -15, rotY: 0,  scale: envScale * 1.02, zIndex: 25 },
+          { x: 40,   y: 135, z: 22, rotZ: -2,  rotX: -15, rotY: 0,  scale: envScale * 1.02, zIndex: 25 },
+          { x: 115,  y: 110, z: 20, rotZ: -6,  rotX: -14, rotY: 0,  scale: envScale * 1.00, zIndex: 24 },
+          { x: 0,    y: 145, z: 24, rotZ: 0,   rotX: -16, rotY: 0,  scale: envScale * 1.04, zIndex: 26 },
+          { x: -75,  y: 120, z: 21, rotZ: 4,   rotX: -15, rotY: 0,  scale: envScale * 1.00, zIndex: 25 },
+          { x: 75,   y: 120, z: 21, rotZ: -4,  rotX: -15, rotY: 0,  scale: envScale * 1.00, zIndex: 25 },
 
-        // Push left semicircle further toward left edge and right semicircle further toward right edge
-        const gapFromCenter = isDesk
-          ? Math.min(Math.max(w * 0.44, 630), 780)
-          : isTab
-          ? Math.min(Math.max(w * 0.48, 440), 560)
-          : Math.max(w * 0.60, 260);
-
-        // Circle centers positioned far outside viewport boundaries so only inner arcs intersect screen
-        const leftCenterX = -(gapFromCenter + radius);
-        const rightCenterX = -leftCenterX;
-
-        // Arc angle spread calibrated so both top and bottom edges are DEEPLY outside the screen (>240px offscreen)
-        const spanDeg = isDesk ? 66 : isTab ? 60 : 54;
-        const totalSpan = 2 * spanDeg;
-        const step = totalSpan / 13;
-
-        // 13 slots along Left Circle inner arc (-spanDeg to +spanDeg)
-        const leftAngles = Array.from({ length: 13 }).map((_, i) => -spanDeg + i * step);
-
-        // 13 slots along Right Circle inner arc (180 - spanDeg to 180 + spanDeg)
-        const rightAngles = Array.from({ length: 13 }).map((_, j) => 180 - spanDeg + j * step);
+          // Top folding flap facet (Cards 19..25)
+          { x: -110, y: -65, z: 24, rotZ: -20, rotX: 16, rotY: 0,  scale: envScale * 0.98, zIndex: 27 },
+          { x: 110,  y: -65, z: 24, rotZ: 20,  rotX: 16, rotY: 0,  scale: envScale * 0.98, zIndex: 27 },
+          { x: -55,  y: -90, z: 26, rotZ: -10, rotX: 18, rotY: 0,  scale: envScale * 1.00, zIndex: 28 },
+          { x: 55,   y: -90, z: 26, rotZ: 10,  rotX: 18, rotY: 0,  scale: envScale * 1.00, zIndex: 28 },
+          { x: 0,    y: -105, z: 28, rotZ: 0,  rotX: 20, rotY: 0,  scale: envScale * 1.02, zIndex: 29 },
+          { x: 0,    y: -35, z: 30, rotZ: 0,   rotX: 14, rotY: 0,  scale: envScale * 1.00, zIndex: 30 },
+          { x: 0,    y: 15,  z: 32, rotZ: 0,   rotX: 8,  rotY: 0,  scale: envScale * 0.96, zIndex: 31 },
+        ];
 
         return {
-          w,
-          h,
-          radius,
-          gapFromCenter,
-          baseCardScale,
-          leftCenterX,
-          rightCenterX,
-          centerY,
-          spanDeg,
-          totalSpan,
-          step,
-          leftAngles,
-          rightAngles,
           isDesk,
           isTab,
+          envScale,
+          convergeSlots,
         };
-      };
-
-      const applyAbout3DRotation = (orbitAngle: number) => {
-        const {
-          radius,
-          baseCardScale,
-          leftCenterX,
-          rightCenterX,
-          centerY,
-          spanDeg,
-          totalSpan,
-          leftAngles,
-          rightAngles,
-        } = computeSemicircleParams();
-
-        const allCards = [
-          ...cardWrapperRefs.current.slice(0, 5),
-          ...companionCardRefs.current.slice(0, 21),
-        ].filter(Boolean) as HTMLElement[];
-
-        // Subtle, elegant continuous stream velocity
-        const streamOffset = orbitAngle * 0.28;
-
-        // 1. Left Semicircle (Cards 0..12):
-        // Stream flows continuously downward along the arc: enters top offscreen, exits bottom offscreen,
-        // and wraps seamlessly behind the offscreen boundary so the edges are NEVER shown on screen.
-        for (let i = 0; i < 13; i++) {
-          const el = allCards[i];
-          if (!el) continue;
-
-          let raw = (leftAngles[i] - (-spanDeg) + streamOffset) % totalSpan;
-          if (raw < 0) raw += totalSpan;
-          const angleDeg = -spanDeg + raw;
-
-          const rad = (angleDeg * Math.PI) / 180;
-          const x = leftCenterX + radius * Math.cos(rad);
-          const y = centerY + radius * Math.sin(rad);
-
-          const cosVal = Math.cos(rad);
-          const sinVal = Math.sin(rad);
-          const z = 40 * cosVal;
-          const scale = baseCardScale * (0.95 + 0.08 * cosVal);
-          const opacity = 1.0;
-          const zIndex = 30 + Math.round(cosVal * 25);
-
-          const rotZ = angleDeg;
-          const rotY = 20 - 26 * cosVal;
-          const rotX = -sinVal * 12;
-
-          const origX = i < 5 ? (origCentersRef.current[i]?.x ?? 0) : 0;
-          const origY = i < 5 ? (origCentersRef.current[i]?.y ?? 0) : 0;
-
-          gsap.set(el, {
-            x: x - origX,
-            y: y - origY,
-            z,
-            rotateZ: rotZ,
-            rotateY: rotY,
-            rotateX: rotX,
-            scale,
-            opacity,
-            visibility: "visible",
-            zIndex,
-            force3D: true,
-          });
-        }
-
-        // 2. Right Semicircle (Cards 13..25):
-        // Symmetrically streams downward: enters top offscreen, exits bottom offscreen,
-        // wrapping seamlessly outside the viewport boundaries.
-        const rightMin = 180 - spanDeg;
-        for (let j = 0; j < 13; j++) {
-          const cardIdx = 13 + j;
-          const el = allCards[cardIdx];
-          if (!el) continue;
-
-          let raw = (rightAngles[j] - rightMin - streamOffset) % totalSpan;
-          if (raw < 0) raw += totalSpan;
-          const angleDeg = rightMin + raw;
-
-          const rad = (angleDeg * Math.PI) / 180;
-          const x = rightCenterX + radius * Math.cos(rad);
-          const y = centerY + radius * Math.sin(rad);
-
-          const cosVal = Math.abs(Math.cos(rad));
-          const sinVal = -Math.sin(rad);
-          const z = 40 * cosVal;
-          const scale = baseCardScale * (0.95 + 0.08 * cosVal);
-          const opacity = 1.0;
-          const zIndex = 30 + Math.round(cosVal * 25);
-
-          const rotZ = angleDeg - 180;
-          const rotY = -(20 - 26 * cosVal);
-          const rotX = sinVal * 12;
-
-          gsap.set(el, {
-            x,
-            y,
-            z,
-            rotateZ: rotZ,
-            rotateY: rotY,
-            rotateX: rotX,
-            scale,
-            opacity,
-            visibility: "visible",
-            zIndex,
-            force3D: true,
-          });
-        }
-      };
-
-      const startSemicirclesOrbit = () => {
-        if (aboutOrbitTweenRef.current) {
-          aboutOrbitTweenRef.current.kill();
-        }
-        aboutOrbitStateRef.current = { angle: 0 };
-        aboutOrbitTweenRef.current = gsap.to(aboutOrbitStateRef.current, {
-          angle: 360,
-          duration: 32,
-          repeat: -1,
-          ease: "none",
-          onUpdate: () => {
-            applyAbout3DRotation(aboutOrbitStateRef.current.angle);
-          },
-        });
-      };
-
-      const measureAboutLines = () => {
-        const words = aboutWordOverlayRefs.current.filter(Boolean) as HTMLElement[];
-        if (words.length === 0) return null;
-
-        // Ensure words have laid out with non-zero dimensions
-        const firstRect = words[0].getBoundingClientRect();
-        if (firstRect.width === 0 && firstRect.height === 0) return null;
-
-        const lineGroups: { el: HTMLElement; left: number; right: number; width: number }[][] = [];
-        let currentGroup: { el: HTMLElement; left: number; right: number; width: number }[] = [];
-        let currentTop = -1;
-
-        for (let i = 0; i < words.length; i++) {
-          const el = words[i];
-          const rect = el.getBoundingClientRect();
-          const top = Math.round(rect.top);
-
-          if (currentTop === -1 || Math.abs(top - currentTop) > 6) {
-            if (currentGroup.length > 0) {
-              lineGroups.push(currentGroup);
-            }
-            currentGroup = [];
-            currentTop = top;
-          }
-
-          currentGroup.push({
-            el,
-            left: rect.left,
-            right: rect.right,
-            width: rect.width,
-          });
-        }
-
-        if (currentGroup.length > 0) {
-          lineGroups.push(currentGroup);
-        }
-
-        return lineGroups.map((group) => {
-          const lLeft = group[0].left;
-          const lRight = group[group.length - 1].right;
-          return {
-            words: group,
-            left: lLeft,
-            right: lRight,
-            width: Math.max(1, lRight - lLeft),
-          };
-        });
-      };
-
-      const applyAboutTextReveal = (progress: number) => {
-        if (!linesCacheRef.current || linesCacheRef.current.length === 0) {
-          linesCacheRef.current = measureAboutLines();
-        }
-        const lines = linesCacheRef.current;
-        if (!lines || lines.length === 0) return;
-
-        const totalWidth = lines.reduce((acc, l) => acc + l.width, 0);
-        if (totalWidth <= 0) return;
-
-        const clampedP = Math.max(0, Math.min(1, progress));
-        let remainingDist = clampedP * totalWidth;
-        const feather = 26; // subtle soft edge in px (matching reference video)
-
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
-
-          if (remainingDist >= line.width) {
-            // Line is fully behind the mask sweep -> 100% solid dark revealed
-            remainingDist -= line.width;
-            for (let j = 0; j < line.words.length; j++) {
-              const w = line.words[j];
-              w.el.style.opacity = "1";
-              w.el.style.maskImage = "none";
-              (w.el.style as any).webkitMaskImage = "none";
-              w.el.style.clipPath = "none";
-              (w.el.style as any).webkitClipPath = "none";
-            }
-          } else if (remainingDist <= 0) {
-            // Line is ahead of the mask sweep -> 0% revealed (unrevealed muted grey shows)
-            for (let j = 0; j < line.words.length; j++) {
-              const w = line.words[j];
-              w.el.style.opacity = "0";
-              w.el.style.maskImage = "none";
-              (w.el.style as any).webkitMaskImage = "none";
-              w.el.style.clipPath = "none";
-              (w.el.style as any).webkitClipPath = "none";
-            }
-          } else {
-            // ACTIVE LINE: moving mask reveal is physically traversing across this line
-            const xReveal = line.left + remainingDist;
-            remainingDist = 0; // consumed! All subsequent lines will have remainingDist <= 0
-
-            for (let j = 0; j < line.words.length; j++) {
-              const w = line.words[j];
-
-              if (w.right <= xReveal - feather / 2) {
-                // Word is fully to the left of the moving brush -> solid dark
-                w.el.style.opacity = "1";
-                w.el.style.maskImage = "none";
-                (w.el.style as any).webkitMaskImage = "none";
-                w.el.style.clipPath = "none";
-                (w.el.style as any).webkitClipPath = "none";
-              } else if (w.left >= xReveal + feather / 2) {
-                // Word is fully to the right of the moving brush -> unrevealed
-                w.el.style.opacity = "0";
-                w.el.style.maskImage = "none";
-                (w.el.style as any).webkitMaskImage = "none";
-                w.el.style.clipPath = "none";
-                (w.el.style as any).webkitClipPath = "none";
-              } else {
-                // Word intersects the feathered edge of the mask -> soft inking-in gradient
-                w.el.style.opacity = "1";
-                w.el.style.clipPath = "none";
-                (w.el.style as any).webkitClipPath = "none";
-
-                const stopStart = Math.max(0, (xReveal - feather / 2) - w.left);
-                const stopEnd = Math.max(stopStart + 1, (xReveal + feather / 2) - w.left);
-                const maskGrad = `linear-gradient(to right, black 0px, black ${stopStart.toFixed(1)}px, transparent ${stopEnd.toFixed(1)}px)`;
-
-                w.el.style.maskImage = maskGrad;
-                (w.el.style as any).webkitMaskImage = maskGrad;
-              }
-            }
-          }
-        }
-      };
-
-      const animateAboutTextReveal = (targetP: number) => {
-        if (aboutProgressTweenRef.current) {
-          aboutProgressTweenRef.current.kill();
-        }
-        const state = { p: aboutScrollProgressRef.current };
-        aboutProgressTweenRef.current = gsap.to(state, {
-          p: targetP,
-          duration: 0.26,
-          ease: "power1.out",
-          onUpdate: () => {
-            aboutScrollProgressRef.current = state.p;
-            applyAboutTextReveal(state.p);
-          },
-          onComplete: () => {
-            aboutScrollProgressRef.current = targetP;
-            applyAboutTextReveal(targetP);
-          },
-        });
       };
 
       const exitAboutToFaq = () => {
@@ -3619,10 +3330,6 @@ export function BlueprintHero() {
         if (aboutOrbitTweenRef.current) {
           aboutOrbitTweenRef.current.kill();
           aboutOrbitTweenRef.current = null;
-        }
-        if (aboutProgressTweenRef.current) {
-          aboutProgressTweenRef.current.kill();
-          aboutProgressTweenRef.current = null;
         }
 
         gsap.to([cardsClusterRef.current, aboutContentRef.current], {
@@ -3689,53 +3396,81 @@ export function BlueprintHero() {
           if (el) gsap.set(el, { opacity: 0, visibility: "hidden" });
         });
 
+        const allProductCards = cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
+        const allCompanionCards = companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
+        const allCards = [...allProductCards, ...allCompanionCards];
+
+        const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
+        const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
+        const targetEnvelopeY = isDesk ? 95 : isTab ? 80 : 65;
+
         if (cardsClusterRef.current) {
-          gsap.set(cardsClusterRef.current, { x: 0, y: 0, rotateZ: 0, rotateX: 0, rotateY: 0, opacity: 1 });
+          gsap.set(cardsClusterRef.current, {
+            x: 0,
+            y: targetEnvelopeY + 55,
+            rotateZ: 0,
+            rotateX: 0,
+            rotateY: 0,
+            scale: 1,
+            opacity: 1,
+          });
         }
 
-        // Apply dark obsidian glass styling to product card fronts
-        for (let i = 0; i < 5; i++) {
-          const front = cardFrontRefs.current[i];
-          const angleNorm = (i / 26) * 2 * Math.PI;
-          const cosA = Math.cos(angleNorm);
-          const baseAlpha = 0.26 + 0.08 * cosA;
-          const specularTop = Math.min(Math.max(0.55 + 0.30 * cosA, 0.20), 0.88);
-          const emeraldRefract = 0.20 + 0.10 * Math.sin(angleNorm + Math.PI / 3);
-          const borderAlpha = Math.min(Math.max(0.14 + 0.08 * cosA, 0.09), 0.26);
-          if (front) {
-            gsap.set(front, {
-              background: `linear-gradient(140deg, rgba(6, 28, 18, ${baseAlpha.toFixed(2)}) 0%, rgba(3, 18, 11, ${(baseAlpha + 0.07).toFixed(2)}) 50%, rgba(1, 10, 6, ${(baseAlpha + 0.14).toFixed(2)}) 100%)`,
-              borderColor: `rgba(255, 255, 255, ${borderAlpha.toFixed(2)})`,
-              boxShadow:
-                `inset 0 1.5px 1px 0 rgba(255, 255, 255, ${(specularTop * 0.55).toFixed(2)}), ` +
-                "inset 1px 0 1px 0 rgba(255, 255, 255, 0.20), " +
-                `inset 0 -1.5px 2px 0 rgba(34, 197, 94, ${(emeraldRefract * 1.1).toFixed(2)}), ` +
-                "inset -1px 0 1.5px 0 rgba(34, 197, 94, 0.20), " +
-                "0 12px 26px -6px rgba(0, 0, 0, 0.36), " +
-                "0 2px 6px -1px rgba(2, 16, 9, 0.22)",
-            });
-          }
-          if (cardGlassOverlayRefs.current[i]) gsap.set(cardGlassOverlayRefs.current[i], { opacity: 1 });
-          if (cardBackRefs.current[i]) gsap.set(cardBackRefs.current[i], { opacity: 0 });
-        }
-
-        companionCardRefs.current.forEach((compEl) => {
-          if (compEl) gsap.set(compEl, { opacity: 1, visibility: "visible" });
+        // Hide all 26 individual cards — morph into single physical envelope is complete
+        allCards.forEach((cardEl) => {
+          if (cardEl) gsap.set(cardEl, { opacity: 0, visibility: "hidden" });
         });
 
-        applyAbout3DRotation(0);
+        // Show single physical envelope centered in viewport with flap open and emerged document
+        if (unifiedEnvelopeRef.current) {
+          gsap.set(unifiedEnvelopeRef.current, {
+            opacity: 1,
+            visibility: "visible",
+            scale: 1,
+          });
+        }
+
+        if (envelopeTopFlapRef.current) {
+          gsap.set(envelopeTopFlapRef.current, { rotateX: -175, zIndex: 0 });
+        }
+
+        if (envelopeSealRef.current) {
+          gsap.set(envelopeSealRef.current, { opacity: 0, visibility: "hidden" });
+        }
+
+        if (docCavityWrapperRef.current) {
+          gsap.set(docCavityWrapperRef.current, { zIndex: 35, clipPath: "none", WebkitClipPath: "none" });
+        }
+        if (philosophyDocRef.current) {
+          gsap.set(philosophyDocRef.current, {
+            opacity: 1,
+            visibility: "visible",
+            y: -250,
+            rotateX: 0,
+            z: 50,
+            scale: 1,
+          });
+        }
+
+        if (docPaperSheetRef.current) {
+          gsap.set(docPaperSheetRef.current, { height: 640 });
+        }
+
+        if (docInkCopyRef.current) {
+          gsap.set(docInkCopyRef.current, {
+            clipPath: "inset(0 0 0% 0)",
+            WebkitClipPath: "inset(0 0 0% 0)",
+            opacity: 1,
+            visibility: "visible",
+            filter: "none",
+          });
+        }
 
         if (aboutContentRef.current) {
           gsap.set(aboutContentRef.current, { opacity: 1, visibility: "visible" });
         }
-        linesCacheRef.current = null;
-        aboutScrollProgressRef.current = 0;
-        if (aboutEyebrowRef.current) gsap.to(aboutEyebrowRef.current, { opacity: 1, y: 0, duration: 0.6, delay: 0.1 });
-        if (aboutPara1Ref.current) gsap.set(aboutPara1Ref.current, { opacity: 1, y: 0 });
-        if (aboutPara2Ref.current) gsap.set(aboutPara2Ref.current, { opacity: 1, y: 0 });
-        applyAboutTextReveal(0);
 
-        startSemicirclesOrbit();
+        isRingConsolidatedRef.current = true;
         isSecurityTransitioningRef.current = false;
         window.dispatchEvent(
           new CustomEvent("unifolio-active-section", { detail: { section: "about" } })
@@ -3755,13 +3490,6 @@ export function BlueprintHero() {
           consolidationTlRef.current = null;
         }
 
-        // Initialize About text reveal at 0 (fully muted) so it rests quietly in subtle light grey
-        linesCacheRef.current = null;
-        aboutScrollProgressRef.current = 0;
-        if (aboutPara1Ref.current) gsap.set(aboutPara1Ref.current, { opacity: 1, y: 0 });
-        if (aboutPara2Ref.current) gsap.set(aboutPara2Ref.current, { opacity: 1, y: 0 });
-        applyAboutTextReveal(0);
-
         // 1. Capture current ambient rotation angle and pause ambient tween
         const currentRot = Number(gsap.getProperty(clusterEl, "rotateZ")) || 376;
         if (ringRotateTweenRef.current) {
@@ -3772,6 +3500,7 @@ export function BlueprintHero() {
         const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
         const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
         const stackCardScale = isDesktop ? 0.60 : isTablet ? 0.56 : 0.52;
+        const targetEnvelopeY = isDesktop ? 95 : isTablet ? 80 : 65;
 
         const allProductCards = cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
         const allCompanionCards = companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
@@ -3836,8 +3565,8 @@ export function BlueprintHero() {
         const dxArc = curX + (pxArc - clusterCenterX);
         const dyArc = curY + (pyArc - clusterCenterY);
 
-        const { radius, baseCardScale, leftCenterX, rightCenterX, centerY: sCenterY, leftAngles, rightAngles } =
-          computeSemicircleParams();
+        const { isDesk, envScale, convergeSlots } =
+          computeEnvelopeParams();
 
         const tl = gsap.timeline({
           onUpdate: () => {
@@ -3908,17 +3637,7 @@ export function BlueprintHero() {
             isSecurityTransitioningRef.current = false;
             stateRef.current = "about";
 
-            // 1. Start continuous 3D rotation of semicircles
-            startSemicirclesOrbit();
-
-            // 2. Initialize About text in subtle muted state (no sudden block fade-in)
-            linesCacheRef.current = null;
-            aboutScrollProgressRef.current = 0;
-            if (aboutPara1Ref.current) gsap.set(aboutPara1Ref.current, { opacity: 1, y: 0 });
-            if (aboutPara2Ref.current) gsap.set(aboutPara2Ref.current, { opacity: 1, y: 0 });
-            applyAboutTextReveal(0);
-
-            // 3. Update Navbar
+            // Update Navbar
             window.dispatchEvent(
               new CustomEvent("unifolio-active-section", { detail: { section: "about" } })
             );
@@ -3928,17 +3647,43 @@ export function BlueprintHero() {
             isRingConsolidatedRef.current = false;
             stateRef.current = "ring";
 
-            if (aboutOrbitTweenRef.current) {
-              aboutOrbitTweenRef.current.kill();
-              aboutOrbitTweenRef.current = null;
+            if (unifiedEnvelopeRef.current) {
+              gsap.set(unifiedEnvelopeRef.current, { opacity: 0, visibility: "hidden" });
             }
-            if (aboutProgressTweenRef.current) {
-              aboutProgressTweenRef.current.kill();
-              aboutProgressTweenRef.current = null;
+            if (envelopeTopFlapRef.current) {
+              gsap.set(envelopeTopFlapRef.current, { rotateX: 0, zIndex: 25 });
             }
-            linesCacheRef.current = null;
-            aboutScrollProgressRef.current = 0;
-            applyAboutTextReveal(0);
+            if (envelopeSealRef.current) {
+              gsap.set(envelopeSealRef.current, { opacity: 1, scale: 1 });
+            }
+            if (docCavityWrapperRef.current) {
+              gsap.set(docCavityWrapperRef.current, {
+                zIndex: 10,
+                clipPath: "inset(-2000px 0px 0px 0px round 0 0 22px 22px)",
+                WebkitClipPath: "inset(-2000px 0px 0px 0px round 0 0 22px 22px)",
+              });
+            }
+            if (philosophyDocRef.current) {
+              gsap.set(philosophyDocRef.current, { opacity: 1, visibility: "visible", y: 200, rotateX: 0, z: 0, scale: 1 });
+            }
+            if (docPaperSheetRef.current) {
+              gsap.set(docPaperSheetRef.current, { height: 260 });
+            }
+            if (docInkCopyRef.current) {
+              gsap.set(docInkCopyRef.current, {
+                clipPath: "inset(0 0 100% 0)",
+                WebkitClipPath: "inset(0 0 100% 0)",
+                opacity: 0,
+                visibility: "hidden",
+                filter: "contrast(1.25) brightness(0.85)",
+              });
+            }
+
+            allCards.forEach((cardEl) => {
+              if (cardEl) {
+                gsap.set(cardEl, { opacity: 1, visibility: "visible", borderRadius: "20px" });
+              }
+            });
 
             if (aboutContentRef.current) {
               gsap.set(aboutContentRef.current, { opacity: 0, visibility: "hidden" });
@@ -3976,6 +3721,11 @@ export function BlueprintHero() {
           },
         });
         consolidationTlRef.current = tl;
+
+        // Initialize About cinematic atmosphere to hidden at time 0
+        if (aboutContentRef.current) {
+          tl.set(aboutContentRef.current, { visibility: "hidden", opacity: 0 }, 0);
+        }
 
         // Cluster counter-rotates backward along the unwind, settling to neutral upright orientation
         tl.to(
@@ -4287,160 +4037,357 @@ export function BlueprintHero() {
           2.60
         );
 
-        // Downward arrival: About atmosphere fades in smoothly
-        tl.set(aboutContentRef.current, { visibility: "visible" }, 2.70);
+        // Continuous Cinematic Background Transition:
+        // As the cards initiate their downward drop from Security into About (2.40s),
+        // smoothly transition the background from clean/light into the cinematic dark forest-green atmosphere.
+        // Fully established by 3.45s as the cards land and begin morphing into the envelope.
+        if (aboutContentRef.current) {
+          tl.set(aboutContentRef.current, { visibility: "visible" }, 2.40);
+          tl.fromTo(
+            aboutContentRef.current,
+            { opacity: 0 },
+            {
+              opacity: 1,
+              duration: 1.05,
+              ease: "power2.inOut",
+            },
+            2.40
+          );
+        }
+
+        // =========================================================================
+        // DIRECT MORPH: DROPPED CARDS MORPH DIRECTLY INTO ENVELOPE (3.25s -> 4.55s)
+        // Cards drop and immediately fold & expand outward into the envelope geometry.
+        // Cluster glides to dead-center, cards flatten radii & merge surfaces,
+        // and the single unified physical envelope emerges at screen center.
+        // =========================================================================
+        // Glide cluster from drop landing (-20) downwards toward the center of the viewport
         tl.to(
-          aboutContentRef.current,
+          cardsClusterRef.current,
           {
-            opacity: 1,
-            duration: 0.55,
+            y: targetEnvelopeY,
+            duration: 0.78,
+            ease: "power2.out",
+          },
+          3.25
+        );
+
+        // 26 cards expand & fold directly outward from stack into envelope facets
+        allCards.forEach((cardEl, idx) => {
+          const slot = convergeSlots[idx];
+          const origX = idx < 5 ? (origCentersRef.current[idx]?.x ?? 0) : 0;
+          const origY = idx < 5 ? (origCentersRef.current[idx]?.y ?? 0) : 0;
+          const stagger = (idx % 6) * 0.020;
+
+          tl.to(
+            cardEl,
+            {
+              x: slot.x - origX,
+              y: slot.y - origY,
+              z: slot.z,
+              rotateZ: slot.rotZ,
+              rotateX: slot.rotX,
+              rotateY: slot.rotY,
+              scale: slot.scale,
+              borderRadius: "2px",
+              duration: 0.82,
+              ease: "power3.inOut",
+              force3D: true,
+            },
+            3.25 + stagger
+          );
+          tl.set(cardEl, { zIndex: slot.zIndex }, 3.25 + stagger + 0.04);
+
+          // Surfaces merge and fade out as unified envelope material emerges
+          tl.to(
+            cardEl,
+            {
+              opacity: 0,
+              duration: 0.38,
+              ease: "power2.inOut",
+            },
+            3.70 + stagger * 0.35
+          );
+          tl.set(cardEl, { visibility: "hidden" }, 4.10);
+        });
+
+        // Unified physical envelope emerges seamlessly at screen center
+        if (unifiedEnvelopeRef.current) {
+          tl.set(
+            unifiedEnvelopeRef.current,
+            {
+              visibility: "visible",
+              opacity: 0,
+              scale: 0.90,
+            },
+            3.52
+          );
+          tl.to(
+            unifiedEnvelopeRef.current,
+            {
+              opacity: 1,
+              scale: 1.0,
+              duration: 0.62,
+              ease: "power2.out",
+            },
+            3.58
+          );
+        }
+
+        // Settle envelope with subtle tactile weight directly at screen center (settled by 4.53s)
+        tl.to(
+          cardsClusterRef.current,
+          {
+            y: "+=4",
+            duration: 0.18,
             ease: "power1.out",
           },
-          2.70
+          4.15
+        );
+        tl.to(
+          cardsClusterRef.current,
+          {
+            y: "-=4",
+            duration: 0.20,
+            ease: "sine.inOut",
+          },
+          4.33
         );
 
         // =========================================================================
-        // PHASE 3: PHYSICAL SPLIT OF THE STACK INTO LEFT & RIGHT GROUPS (3.25s)
+        // NEXT STEP: ENVELOPE -> OPEN FLAP -> DOCUMENT EMERGENCE -> PRINTED COPY
+        // Matching reference storyboard (Panels 01 - 08):
+        // 1. Envelope flap hinges open in authentic 3D perspective (-175°)
+        // 2. Document peeks out from the pocket opening (Panel 03)
+        // 3. Document is pulled upward and 3D unfurls (Panel 04)
+        // 4. Document settles flat in front of envelope (Panel 06 & 08)
+        // 5. About copy reveals via printed ink press treatment (Pan        // =========================================================================
+        // PHYSICAL EMERGENCE CHOREOGRAPHY:
+        // 1. Envelope flap finishes opening completely (4.68s -> 5.30s)
+        // 2. Document is physically occluded deep inside pocket (y: 200, height: 260)
+        //    Once flap opens, only its top edge (220px to 275px) is exposed at the mouth.
+        // 3. Document pulls upward 540px (y: 200 -> -340) with 3D paper bend (5.30s -> 6.20s).
+        //    Envelope stays COMPLETELY stationary. Document visibly clears the envelope.
+        // 4. Once completely outside, wrapper switches zIndex: 35 in front, document
+        //    unfurls and expands into final 640px form (6.20s -> 7.00s).
+        // 5. Once settled flat, About copy reveals via printed ink sweep (7.05s -> 8.20s).
         // =========================================================================
-        allCards.slice(0, 13).forEach((cardEl, i) => {
-          const origX = i < 5 ? (origCentersRef.current[i]?.x ?? 0) : 0;
-          const currentStackX = frontX - i * 2.8;
-          tl.to(
-            cardEl,
+
+        // 1. Initial positions before flap opens (envelope is fully settled at 4.55s)
+        if (envelopeTopFlapRef.current) {
+          tl.set(envelopeTopFlapRef.current, { rotateX: 0, zIndex: 30 }, 0);
+        }
+        if (envelopeSealRef.current) {
+          tl.set(envelopeSealRef.current, { opacity: 1, scale: 1 }, 0);
+        }
+        // Document starts deep inside pocket (y: 200, height: 280)
+        // Strictly hidden until top flap opens! (0.0s -> 5.15s)
+        if (docCavityWrapperRef.current) {
+          tl.set(
+            docCavityWrapperRef.current,
             {
-              x: currentStackX - 28 - origX,
-              rotateZ: -1.2 - (12 - i) * 0.10,
-              duration: 0.32,
-              ease: "power1.inOut",
+              zIndex: 10,
+              visibility: "hidden",
+              opacity: 0,
+              clipPath: "inset(-2000px 0px 0px 0px round 0 0 22px 22px)",
+              WebkitClipPath: "inset(-2000px 0px 0px 0px round 0 0 22px 22px)",
             },
-            3.25
+            0
           );
-        });
-
-        allCards.slice(13, 26).forEach((cardEl, j) => {
-          const k = 13 + j;
-          const currentStackX = frontX - k * 2.8;
-          tl.to(
-            cardEl,
+        }
+        if (philosophyDocRef.current) {
+          tl.set(
+            philosophyDocRef.current,
             {
-              x: currentStackX + 28,
-              rotateZ: 1.2 + j * 0.10,
-              duration: 0.32,
-              ease: "power1.inOut",
+              visibility: "hidden",
+              opacity: 0,
+              y: 200,
+              rotateX: 0,
+              z: 0,
+              scale: 1,
+              transformOrigin: "50% 0%",
             },
-            3.25
+            0
           );
-        });
-
-        // =========================================================================
-        // PHASE 4: STAGGERED ORGANIC FANNING INTO TWO SEMICIRCLES (3.55s -> 4.80s)
-        // =========================================================================
-        // 4A. Left Semicircle: 13 cards peel outward toward the left flanking arc
-        allCards.slice(0, 13).forEach((cardEl, i) => {
-          const angle = leftAngles[i];
-          const rad = (angle * Math.PI) / 180;
-          const targetX = leftCenterX + radius * Math.cos(rad);
-          const targetY = sCenterY + radius * Math.sin(rad);
-          const depthFactor = Math.sin(rad);
-          const targetZ = 40 * depthFactor;
-          const targetScale = baseCardScale * (1.0 + 0.08 * depthFactor);
-          const rotZ = angle;
-          const rotY = 22 - 28 * Math.cos(rad);
-          const rotX = -depthFactor * 12;
-
-          const origX = i < 5 ? (origCentersRef.current[i]?.x ?? 0) : 0;
-          const origY = i < 5 ? (origCentersRef.current[i]?.y ?? 0) : 0;
-
-          const delay = 3.55 + (12 - i) * 0.038;
-          const midX = targetX * 0.55;
-          const midY = (targetY - 20) * 0.5;
-
-          tl.to(
-            cardEl,
+        }
+        if (docPaperSheetRef.current) {
+          tl.set(docPaperSheetRef.current, { height: 280, scale: 1 }, 0);
+        }
+        if (docInkCopyRef.current) {
+          tl.set(
+            docInkCopyRef.current,
             {
-              keyframes: [
-                {
-                  x: midX - origX,
-                  y: midY - origY,
-                  z: targetZ * 0.5,
-                  rotateZ: rotZ * 0.6,
-                  rotateY: rotY * 0.5,
-                  rotateX: rotX * 0.5,
-                  scale: targetScale * 0.88,
-                  duration: 0.42,
-                  ease: "power2.out",
-                },
-                {
-                  x: targetX - origX,
-                  y: targetY - origY,
-                  z: targetZ,
-                  rotateZ: rotZ,
-                  rotateY: rotY,
-                  rotateX: rotX,
-                  scale: targetScale,
-                  duration: 0.70,
-                  ease: "power3.out",
-                },
-              ],
+              clipPath: "inset(0 0 100% 0)",
+              WebkitClipPath: "inset(0 0 100% 0)",
+              opacity: 0,
+              visibility: "hidden",
+              filter: "contrast(1.25) brightness(0.85)",
+            },
+            0
+          );
+        }
+
+        // 2. Unifolio Ring Seal unlocks: subtle pulse & dissolve as seal breaks
+        if (envelopeSealRef.current) {
+          tl.to(
+            envelopeSealRef.current,
+            {
+              scale: 1.16,
+              opacity: 0,
+              duration: 0.20,
+              ease: "power2.out",
+            },
+            4.60
+          );
+        }
+
+        // 3. Top Flap hinges open naturally along its fold line (rotateX: 0 -> -175deg)
+        // Flap finishes opening completely (4.68s -> 5.30s)
+        if (envelopeTopFlapRef.current) {
+          tl.to(
+            envelopeTopFlapRef.current,
+            {
+              rotateX: -175,
+              duration: 0.62,
+              ease: "power2.inOut",
               force3D: true,
             },
-            delay
+            4.68
           );
+          // Halfway through rotation (-90deg), switch zIndex behind the backplate
+          tl.set(envelopeTopFlapRef.current, { zIndex: 0 }, 4.98);
+        }
 
-          tl.set(cardEl, { zIndex: 25 + Math.round(depthFactor * 15) }, delay + 0.1);
-        });
+        // 4A. Once the top flap opens enough to reveal the inside cavity (5.15s):
+        // Make the document inside visible, resting in the pocket mouth
+        if (docCavityWrapperRef.current) {
+          tl.set(docCavityWrapperRef.current, { visibility: "visible", opacity: 1 }, 5.15);
+        }
+        if (philosophyDocRef.current) {
+          tl.set(philosophyDocRef.current, { visibility: "visible", opacity: 1 }, 5.15);
+        }
 
-        // 4B. Right Semicircle: 13 cards peel outward symmetrically toward the right flanking arc
-        allCards.slice(13, 26).forEach((cardEl, j) => {
-          const angle = rightAngles[j];
-          const rad = (angle * Math.PI) / 180;
-          const targetX = rightCenterX + radius * Math.cos(rad);
-          const targetY = sCenterY + radius * Math.sin(rad);
-          const depthFactor = -Math.sin(rad);
-          const targetZ = 40 * depthFactor;
-          const targetScale = baseCardScale * (1.0 + 0.08 * depthFactor);
-          const rotZ = angle - 180;
-          const rotY = -(22 - 28 * Math.abs(Math.cos(rad)));
-          const rotX = depthFactor * 12;
-
-          const delay = 3.55 + (12 - j) * 0.038;
-          const midX = targetX * 0.55;
-          const midY = (targetY - 20) * 0.5;
-
+        // Physical pull-out: Document emerges upward and outward from inside envelope!
+        // The envelope remains stationary. The document travels 500px upward (y: 200 -> -300),
+        // with realistic 3D paper perspective (rotateX: 18, z: 45), smoothly emerging
+        // from behind the front pocket and crossing the envelope mouth until it completely clears.
+        if (philosophyDocRef.current) {
           tl.to(
-            cardEl,
+            philosophyDocRef.current,
             {
-              keyframes: [
-                {
-                  x: midX,
-                  y: midY,
-                  z: targetZ * 0.5,
-                  rotateZ: rotZ * 0.6,
-                  rotateY: rotY * 0.5,
-                  rotateX: rotX * 0.5,
-                  scale: targetScale * 0.88,
-                  duration: 0.42,
-                  ease: "power2.out",
-                },
-                {
-                  x: targetX,
-                  y: targetY,
-                  z: targetZ,
-                  rotateZ: rotZ,
-                  rotateY: rotY,
-                  rotateX: rotX,
-                  scale: targetScale,
-                  duration: 0.70,
-                  ease: "power3.out",
-                },
-              ],
+              y: -300,
+              rotateX: 18,
+              z: 45,
+              duration: 0.95,
+              ease: "power2.out",
               force3D: true,
             },
-            delay
+            5.30
           );
+        }
 
-          tl.set(cardEl, { zIndex: 25 + Math.round(depthFactor * 15) }, delay + 0.1);
-        });
+        // 4B. Once bottom edge has cleared the pocket mouth (6.25s):
+        // Seamlessly promote zIndex to 35 (in front of stationary envelope),
+        // remove bottom cavity clipping, and dramatically unfurl & expand into Hero State!
+        if (docCavityWrapperRef.current) {
+          tl.set(
+            docCavityWrapperRef.current,
+            {
+              zIndex: 35,
+              clipPath: "none",
+              WebkitClipPath: "none",
+            },
+            6.25
+          );
+        }
+        if (docPaperSheetRef.current) {
+          tl.to(
+            docPaperSheetRef.current,
+            {
+              height: 740,
+              scale: 1.14,
+              boxShadow:
+                "0 55px 110px -20px rgba(0, 0, 0, 0.75), 0 25px 50px -10px rgba(0, 0, 0, 0.45), inset 0 2px 3px rgba(255, 255, 255, 0.95), inset 0 -2px 3px rgba(0, 0, 0, 0.08)",
+              duration: 0.75,
+              ease: "power2.inOut",
+            },
+            6.25
+          );
+        }
+        if (philosophyDocRef.current) {
+          tl.to(
+            philosophyDocRef.current,
+            {
+              y: -190,
+              duration: 0.75,
+              ease: "power2.inOut",
+              force3D: true,
+            },
+            6.25
+          );
+          // Paper curl counter-flexes and straightens into elegant editorial presentation
+          tl.to(
+            philosophyDocRef.current,
+            {
+              rotateX: -3,
+              duration: 0.40,
+              ease: "sine.inOut",
+              force3D: true,
+            },
+            6.25
+          );
+          tl.to(
+            philosophyDocRef.current,
+            {
+              rotateX: 0,
+              z: 50,
+              duration: 0.35,
+              ease: "power1.out",
+              force3D: true,
+            },
+            6.65
+          );
+        }
+
+        // 5. Only after the document is completely outside, unfurled, and settled flat (7.00s):
+        // Reveal the About copy via high-contrast letterpress printing ink sweep!
+        if (docInkCopyRef.current) {
+          tl.set(docInkCopyRef.current, { visibility: "visible" }, 7.00);
+          tl.fromTo(
+            docInkCopyRef.current,
+            { opacity: 0 },
+            {
+              opacity: 1,
+              duration: 0.35,
+              ease: "power1.in",
+            },
+            7.00
+          );
+          tl.fromTo(
+            docInkCopyRef.current,
+            {
+              clipPath: "inset(0 0 100% 0)",
+            },
+            {
+              clipPath: "inset(0 0 0% 0)",
+              duration: 1.15,
+              ease: "power2.inOut",
+            },
+            7.00
+          );
+          tl.fromTo(
+            docInkCopyRef.current,
+            {
+              filter: "contrast(1.25) brightness(0.85)",
+            },
+            {
+              filter: "contrast(1) brightness(1)",
+              duration: 1.15,
+              ease: "power2.out",
+            },
+            7.00
+          );
+        }
       };
 
       const restoreStackToRing = () => {
@@ -4451,35 +4398,7 @@ export function BlueprintHero() {
         isSecurityTransitioningRef.current = true;
         lastSecurityScrollTimeRef.current = Date.now();
 
-        // Stop 3D orbit & text reveal tweens
-        if (aboutOrbitTweenRef.current) {
-          aboutOrbitTweenRef.current.kill();
-          aboutOrbitTweenRef.current = null;
-        }
-        if (aboutProgressTweenRef.current) {
-          aboutProgressTweenRef.current.kill();
-          aboutProgressTweenRef.current = null;
-        }
-
-        // Quickly fade out editorial text before reversing card trajectory
-        const textElements = [aboutPara1Ref.current, aboutPara2Ref.current].filter(Boolean);
-        if (textElements.length > 0) {
-          gsap.to(textElements, {
-            opacity: 0,
-            y: 16,
-            duration: 0.22,
-            ease: "power2.in",
-            onComplete: () => {
-              aboutScrollProgressRef.current = 0;
-              applyAboutTextReveal(0);
-              consolidationTlRef.current?.reverse();
-            },
-          });
-        } else {
-          aboutScrollProgressRef.current = 0;
-          applyAboutTextReveal(0);
-          consolidationTlRef.current.reverse();
-        }
+        consolidationTlRef.current.reverse();
       };
 
       const goToSecurityState = (nextIdx: number, direction: 1 | -1) => {
@@ -4962,31 +4881,13 @@ export function BlueprintHero() {
           if (isSecurityTransitioningRef.current) return;
 
           if (e.deltaY > 8) {
-            const curP = aboutScrollProgressRef.current;
-            if (curP < 0.999) {
-              const step = Math.min(0.16, Math.max(0.035, Math.abs(e.deltaY) * 0.00075));
-              lastAboutRevealTimeRef.current = Date.now();
-              animateAboutTextReveal(Math.min(1, curP + step));
-              return;
-            } else {
-              // Once fully revealed, subsequent intentional downward scroll exits smoothly to FAQ
-              if (Date.now() - lastAboutRevealTimeRef.current < 280) return;
-              exitAboutToFaq();
-              return;
-            }
+            if (Date.now() - lastSecurityScrollTimeRef.current < 280) return;
+            exitAboutToFaq();
+            return;
           } else if (e.deltaY < -8) {
-            const curP = aboutScrollProgressRef.current;
-            if (curP > 0.001) {
-              const step = Math.min(0.16, Math.max(0.035, Math.abs(e.deltaY) * 0.00075));
-              lastAboutRevealTimeRef.current = Date.now();
-              animateAboutTextReveal(Math.max(0, curP - step));
-              return;
-            } else {
-              // When rewound to 0, subsequent upward scroll returns cleanly to Security
-              if (Date.now() - lastAboutRevealTimeRef.current < 280) return;
-              restoreStackToRing();
-              return;
-            }
+            if (Date.now() - lastSecurityScrollTimeRef.current < 280) return;
+            restoreStackToRing();
+            return;
           }
           return;
         }
@@ -5103,30 +5004,14 @@ export function BlueprintHero() {
 
           if (touchDeltaY > 12) {
             touchStartY = touchY;
-            const curP = aboutScrollProgressRef.current;
-            if (curP < 0.999) {
-              const step = Math.min(0.18, Math.max(0.045, Math.abs(touchDeltaY) * 0.0015));
-              lastAboutRevealTimeRef.current = Date.now();
-              animateAboutTextReveal(Math.min(1, curP + step));
-              return;
-            } else {
-              if (Date.now() - lastAboutRevealTimeRef.current < 300) return;
-              exitAboutToFaq();
-              return;
-            }
+            if (Date.now() - lastSecurityScrollTimeRef.current < 300) return;
+            exitAboutToFaq();
+            return;
           } else if (touchDeltaY < -12) {
             touchStartY = touchY;
-            const curP = aboutScrollProgressRef.current;
-            if (curP > 0.001) {
-              const step = Math.min(0.18, Math.max(0.045, Math.abs(touchDeltaY) * 0.0015));
-              lastAboutRevealTimeRef.current = Date.now();
-              animateAboutTextReveal(Math.max(0, curP - step));
-              return;
-            } else {
-              if (Date.now() - lastAboutRevealTimeRef.current < 300) return;
-              restoreStackToRing();
-              return;
-            }
+            if (Date.now() - lastSecurityScrollTimeRef.current < 300) return;
+            restoreStackToRing();
+            return;
           }
           return;
         }
@@ -5222,30 +5107,16 @@ export function BlueprintHero() {
             e.preventDefault();
             e.stopImmediatePropagation();
             if (isSecurityTransitioningRef.current) return;
-            const curP = aboutScrollProgressRef.current;
-            if (curP < 0.999) {
-              lastAboutRevealTimeRef.current = Date.now();
-              animateAboutTextReveal(Math.min(1, curP + 0.12));
-              return;
-            } else {
-              if (Date.now() - lastAboutRevealTimeRef.current < 250) return;
-              exitAboutToFaq();
-              return;
-            }
+            if (Date.now() - lastSecurityScrollTimeRef.current < 250) return;
+            exitAboutToFaq();
+            return;
           } else if (["ArrowUp", "PageUp"].includes(e.key) || (e.key === " " && e.shiftKey)) {
             e.preventDefault();
             e.stopImmediatePropagation();
             if (isSecurityTransitioningRef.current) return;
-            const curP = aboutScrollProgressRef.current;
-            if (curP > 0.001) {
-              lastAboutRevealTimeRef.current = Date.now();
-              animateAboutTextReveal(Math.max(0, curP - 0.12));
-              return;
-            } else {
-              if (Date.now() - lastAboutRevealTimeRef.current < 250) return;
-              restoreStackToRing();
-              return;
-            }
+            if (Date.now() - lastSecurityScrollTimeRef.current < 250) return;
+            restoreStackToRing();
+            return;
           }
         }
 
@@ -5325,10 +5196,7 @@ export function BlueprintHero() {
       window.addEventListener("keydown", handleKeyDown, { capture: true });
 
       const handleResizeLines = () => {
-        linesCacheRef.current = null;
-        if (stateRef.current === "about") {
-          applyAboutTextReveal(aboutScrollProgressRef.current);
-        }
+        // No-op
       };
       window.addEventListener("resize", handleResizeLines);
 
@@ -5903,11 +5771,167 @@ export function BlueprintHero() {
             ref={productWorldRef}
             className="relative w-full h-full flex flex-col justify-start items-center px-4 sm:px-6 lg:px-8 pt-14 sm:pt-16 md:pt-18 lg:pt-20 pb-4 sm:pb-6 overflow-hidden select-none will-change-transform"
           >
+            {/* =================================================================== */}
+            {/* LAYER: ABOUT SECTION CINEMATIC BACKGROUND & VOLUMETRIC ATMOSPHERE   */}
+            {/* Strictly background layer positioned behind envelope and document   */}
+            {/* =================================================================== */}
+            <div
+              ref={aboutContentRef}
+              className="absolute inset-0 pointer-events-none overflow-hidden will-change-[opacity]"
+              style={{ opacity: 0, visibility: "hidden", zIndex: 0 }}
+            >
+              {/* 1. Lighter, subtle, luminous ambient sage-green wash over clean base */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "radial-gradient(ellipse 120% 90% at 50% 18%, rgba(228, 242, 234, 0.85) 0%, rgba(220, 238, 227, 0.60) 35%, rgba(235, 246, 240, 0.35) 70%, transparent 100%)",
+                }}
+              />
+
+              {/* 2. Soft, ultra-delicate peripheral light falloff (very subtle, non-intrusive) */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "radial-gradient(ellipse 95% 85% at 50% 50%, transparent 60%, rgba(12, 38, 24, 0.04) 85%, rgba(6, 22, 14, 0.09) 100%)",
+                }}
+              />
+
+              {/* 3. Volumetric God Ray 1: Soft, translucent shaft from top-left */}
+              <div
+                className="absolute -top-24 -left-20 w-[60vw] h-[120vh] pointer-events-none -rotate-[22deg] origin-top-left opacity-60"
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(34, 197, 94, 0.12) 0%, rgba(74, 222, 128, 0.05) 25%, rgba(16, 185, 129, 0.01) 55%, transparent 75%)",
+                  filter: "blur(35px)",
+                }}
+              />
+
+              {/* 4. Volumetric God Ray 2: Soft, translucent shaft from top-right */}
+              <div
+                className="absolute -top-24 -right-20 w-[55vw] h-[120vh] pointer-events-none rotate-[25deg] origin-top-right opacity-50"
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(52, 211, 153, 0.10) 0%, rgba(34, 197, 94, 0.04) 25%, rgba(16, 185, 129, 0.01) 50%, transparent 70%)",
+                  filter: "blur(40px)",
+                }}
+              />
+
+              {/* 5. Overhead Central Luminous Light Cone */}
+              <div
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-[75vw] max-w-[1000px] h-[50vh] pointer-events-none opacity-60"
+                style={{
+                  background:
+                    "radial-gradient(ellipse 65% 50% at 50% 0%, rgba(34, 197, 94, 0.13) 0%, rgba(74, 222, 128, 0.05) 35%, transparent 75%)",
+                  filter: "blur(30px)",
+                }}
+              />
+
+              {/* 6. Atmospheric Backlight Halo behind Envelope for pristine edge definition */}
+              <div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] max-w-[900px] h-[420px] pointer-events-none opacity-70"
+                style={{
+                  background:
+                    "radial-gradient(ellipse 70% 55% at 50% 50%, rgba(34, 197, 94, 0.10) 0%, rgba(74, 222, 128, 0.03) 40%, transparent 75%)",
+                  filter: "blur(45px)",
+                }}
+              />
+
+              {/* 7. Subtle Ethereal Ribbon Waves (Delicate translucent emerald caustics) */}
+              <svg
+                className="absolute inset-0 w-full h-full pointer-events-none opacity-20 overflow-visible"
+                preserveAspectRatio="none"
+                viewBox="0 0 1440 900"
+              >
+                <defs>
+                  <linearGradient id="causticRibbon1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="rgba(74, 222, 128, 0)" />
+                    <stop offset="25%" stopColor="rgba(74, 222, 128, 0.22)" />
+                    <stop offset="50%" stopColor="rgba(34, 197, 94, 0.30)" />
+                    <stop offset="75%" stopColor="rgba(34, 197, 94, 0.12)" />
+                    <stop offset="100%" stopColor="rgba(34, 197, 94, 0)" />
+                  </linearGradient>
+                  <linearGradient id="causticRibbon2" x1="100%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="rgba(52, 211, 153, 0)" />
+                    <stop offset="30%" stopColor="rgba(52, 211, 153, 0.18)" />
+                    <stop offset="60%" stopColor="rgba(34, 197, 94, 0.22)" />
+                    <stop offset="85%" stopColor="rgba(34, 197, 94, 0.08)" />
+                    <stop offset="100%" stopColor="rgba(34, 197, 94, 0)" />
+                  </linearGradient>
+                  <filter id="ribbonGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="12" />
+                  </filter>
+                </defs>
+                <path
+                  d="M -100 520 C 320 680, 600 320, 960 460 C 1200 560, 1400 420, 1600 480"
+                  fill="none"
+                  stroke="url(#causticRibbon1)"
+                  strokeWidth="3.5"
+                  filter="url(#ribbonGlow)"
+                />
+                <path
+                  d="M -80 380 C 260 260, 580 540, 920 380 C 1180 260, 1380 440, 1560 360"
+                  fill="none"
+                  stroke="url(#causticRibbon2)"
+                  strokeWidth="2.8"
+                  filter="url(#ribbonGlow)"
+                />
+              </svg>
+
+              {/* 8. Restrained Floating Atmospheric Dust Motes */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {[
+                  { left: "18%", top: "22%", size: 2.2, delay: "0s", dur: "10s", op: 0.25 },
+                  { left: "26%", top: "34%", size: 1.8, delay: "2.5s", dur: "12s", op: 0.20 },
+                  { left: "35%", top: "18%", size: 2.0, delay: "1.2s", dur: "9s", op: 0.28 },
+                  { left: "42%", top: "28%", size: 1.5, delay: "4.1s", dur: "14s", op: 0.16 },
+                  { left: "55%", top: "15%", size: 2.0, delay: "0.8s", dur: "11s", op: 0.26 },
+                  { left: "64%", top: "25%", size: 1.6, delay: "3.2s", dur: "13s", op: 0.20 },
+                  { left: "72%", top: "19%", size: 2.2, delay: "1.8s", dur: "10s", op: 0.30 },
+                  { left: "80%", top: "32%", size: 1.7, delay: "5.0s", dur: "12s", op: 0.18 },
+                  { left: "22%", top: "58%", size: 1.8, delay: "2.1s", dur: "11s", op: 0.22 },
+                  { left: "78%", top: "54%", size: 2.0, delay: "3.8s", dur: "13s", op: 0.24 },
+                  { left: "85%", top: "42%", size: 1.5, delay: "1.5s", dur: "15s", op: 0.15 },
+                  { left: "14%", top: "40%", size: 1.8, delay: "4.7s", dur: "12s", op: 0.18 },
+                ].map((mote, mIdx) => (
+                  <div
+                    key={mIdx}
+                    className="absolute rounded-full pointer-events-none will-change-transform"
+                    style={{
+                      left: mote.left,
+                      top: mote.top,
+                      width: `${mote.size}px`,
+                      height: `${mote.size}px`,
+                      backgroundColor: "rgba(34, 197, 94, 0.75)",
+                      boxShadow: "0 0 5px rgba(74, 222, 128, 0.5)",
+                      opacity: mote.op,
+                      animation: `dustDrift ${mote.dur} ease-in-out infinite alternate`,
+                      animationDelay: mote.delay,
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* 9. Delicate Analog Cinematic Grain Texture */}
+              <div
+                className="absolute inset-0 pointer-events-none opacity-[0.02] mix-blend-multiply"
+                style={{
+                  backgroundImage:
+                    "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")",
+                }}
+              />
+
+              {/* Ambient Top and Bottom Hairlines */}
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-500/15 to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-500/15 to-transparent" />
+            </div>
+
             {/* 3D Perspective Cards Amphitheater Stage - Prominently in upper/middle viewport */}
             <div
               ref={cardsStageRef}
-              className="w-full flex items-center justify-center relative z-25 shrink-0 pt-1 sm:pt-2 pb-1"
-              style={{ perspective: "1400px" }}
+              className="w-full flex items-center justify-center relative shrink-0 pt-1 sm:pt-2 pb-1"
+              style={{ perspective: "1400px", zIndex: 30 }}
               onMouseLeave={() => {
                 if (stateRef.current === "product" && !transitionStartedRef.current && !transitionAnimatingRef.current && !isSecurityTransitioningRef.current) {
                   handleCardHover(null);
@@ -6268,6 +6292,318 @@ export function BlueprintHero() {
                     </div>
                   );
                 })}
+
+                {/* Unified Physical Envelope (Morphed Single Object) */}
+                <div
+                  ref={unifiedEnvelopeRef}
+                  className="absolute pointer-events-none will-change-transform flex items-center justify-center"
+                  style={{
+                    left: "50%",
+                    top: "50%",
+                    transform: "translate(-50%, -50%)",
+                    opacity: 0,
+                    visibility: "hidden",
+                    zIndex: 30,
+                  }}
+                >
+                  <div
+                    className="relative w-[94vw] max-w-[760px] sm:max-w-[840px] md:max-w-[900px] lg:max-w-[960px] h-[420px] sm:h-[480px] md:h-[520px] lg:h-[550px] rounded-[16px] sm:rounded-[22px]"
+                    style={{
+                      perspective: "1400px",
+                      transformStyle: "preserve-3d",
+                      boxShadow:
+                        "0 40px 90px -15px rgba(0, 0, 0, 0.80), 0 20px 40px -8px rgba(0, 0, 0, 0.60)",
+                    }}
+                  >
+                    {/* LAYER 1 (z-1): Envelope Backplate / Back Wall */}
+                    <div
+                      className="absolute inset-0 rounded-[16px] sm:rounded-[22px] overflow-hidden"
+                      style={{
+                        zIndex: 1,
+                        background:
+                          "linear-gradient(145deg, rgba(8, 32, 21, 0.98) 0%, rgba(4, 20, 13, 0.99) 55%, rgba(1, 10, 6, 1.0) 100%)",
+                        border: "1px solid rgba(255, 255, 255, 0.16)",
+                      }}
+                    >
+                      {/* Deep Cavity Shadow & Ambient Glow */}
+                      <div
+                        className="absolute inset-0 pointer-events-none opacity-50"
+                        style={{
+                          background:
+                            "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(34, 197, 94, 0.15), transparent 70%)",
+                        }}
+                      />
+                      {/* Interior Top Shadow */}
+                      <div
+                        className="absolute inset-x-0 top-0 h-28 pointer-events-none"
+                        style={{
+                          background:
+                            "linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, transparent 100%)",
+                        }}
+                      />
+                    </div>
+
+                    {/* LAYER 2 (z-10 -> z-35): Editorial Document (Emerges from inside envelope cavity) */}
+                    {/* Cavity clipping wrapper: strictly occludes document within envelope bottom and sides, open at top */}
+                    <div
+                      ref={docCavityWrapperRef}
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        zIndex: 10,
+                        visibility: "hidden",
+                        opacity: 0,
+                        clipPath: "inset(-2000px 0px 0px 0px round 0 0 22px 22px)",
+                        WebkitClipPath: "inset(-2000px 0px 0px 0px round 0 0 22px 22px)",
+                      }}
+                    >
+                      <div
+                        ref={philosophyDocRef}
+                        className="absolute left-1/2 -translate-x-1/2 pointer-events-none will-change-transform"
+                        style={{
+                          top: "20px",
+                          opacity: 0,
+                          visibility: "hidden",
+                          transformOrigin: "50% 0%",
+                        }}
+                      >
+                      <div
+                        ref={docPaperSheetRef}
+                        className="relative w-[92vw] max-w-[620px] sm:max-w-[700px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[960px] rounded-[18px] sm:rounded-[24px] p-8 sm:p-11 md:p-13 lg:p-16 overflow-hidden will-change-[height,transform]"
+                        style={{
+                          height: "280px",
+                          background:
+                            "linear-gradient(168deg, #FAF7F2 0%, #F5EFE6 45%, #ECE4D6 100%)",
+                          boxShadow:
+                            "0 45px 95px -18px rgba(0, 0, 0, 0.70), 0 20px 45px -10px rgba(0, 0, 0, 0.40), inset 0 2px 3px rgba(255, 255, 255, 0.95), inset 0 -2px 3px rgba(0, 0, 0, 0.08)",
+                          border: "1px solid rgba(225, 215, 200, 0.85)",
+                        }}
+                      >
+                        {/* Tactile Fine Paper Texture & Soft Grain Sheen */}
+                        <div
+                          className="absolute inset-0 pointer-events-none opacity-45"
+                          style={{
+                            background:
+                              "radial-gradient(ellipse 90% 60% at 50% 12%, rgba(255, 255, 255, 0.95), transparent 75%)",
+                          }}
+                        />
+
+                        {/* Top Subtle Emerald Watermark Accent Line */}
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-transparent via-[#22C55E]/70 to-transparent opacity-75" />
+
+                        {/* Top Editorial Pre-Header & Blind Debossed Seal (Visible upon flap opening, matching Panel 03) */}
+                        <div className="relative flex items-start justify-between w-full mb-6 sm:mb-8 pointer-events-none">
+                          <div className="flex flex-col space-y-0.5 text-left">
+                            <span className="font-sans text-[10px] sm:text-[11px] md:text-[12px] font-semibold tracking-[0.26em] uppercase text-neutral-500/90 leading-tight">
+                              A Clearer
+                            </span>
+                            <span className="font-sans text-[10px] sm:text-[11px] md:text-[12px] font-semibold tracking-[0.26em] uppercase text-neutral-500/90 leading-tight">
+                              Financial
+                            </span>
+                            <span className="font-sans text-[10px] sm:text-[11px] md:text-[12px] font-semibold tracking-[0.26em] uppercase text-neutral-500/90 leading-tight">
+                              Tomorrow
+                            </span>
+                            <div className="w-9 h-[1.5px] bg-[#16A34A]/70 mt-1.5" />
+                          </div>
+
+                          {/* Blind Debossed Unifolio Aperture Ring Seal (Matching Reference Panel 06 & 07) */}
+                          <div
+                            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full pointer-events-none flex items-center justify-center"
+                            style={{
+                              boxShadow:
+                                "inset 1.5px 2px 3px rgba(0, 0, 0, 0.22), inset -1px -1px 2px rgba(255, 255, 255, 0.9), 0.5px 1px 1px rgba(255, 255, 255, 0.8)",
+                              border: "2.5px solid rgba(175, 165, 150, 0.45)",
+                              background:
+                                "linear-gradient(135deg, rgba(245, 240, 230, 0.6) 0%, rgba(235, 225, 210, 0.3) 100%)",
+                            }}
+                          >
+                            <div className="absolute -top-1 w-1.5 h-1.5 bg-[#FAF7F2]" />
+                          </div>
+                        </div>
+
+                        {/* Printed Ink Copy Container (Revealed via Printing Press Ink Sweep) */}
+                        <div
+                          ref={docInkCopyRef}
+                          className="relative z-10 space-y-6 sm:space-y-8 select-text pointer-events-auto will-change-[clip-path,opacity,filter]"
+                          style={{
+                            clipPath: "inset(0 0 100% 0)",
+                            WebkitClipPath: "inset(0 0 100% 0)",
+                            opacity: 0,
+                          }}
+                        >
+                          {/* First Stanza: Human Reality & Overwhelm */}
+                          <div className="space-y-3.5 sm:space-y-4 text-left">
+                            <p className="font-serif text-[21px] sm:text-[25px] md:text-[29px] lg:text-[32px] font-medium leading-[1.26] tracking-tight text-neutral-900">
+                              In most families, someone ends up in charge of the money,
+                            </p>
+                            <p className="font-serif italic text-[16px] sm:text-[19px] md:text-[22px] text-neutral-600 leading-snug">
+                              not because they trained for it, but because someone has to.
+                            </p>
+                            <p className="font-sans text-[13.5px] sm:text-[15px] md:text-[16.5px] font-normal text-neutral-600/90 leading-relaxed pt-1.5 max-w-2xl">
+                              Their financial data lives across a dozen apps and statements, and having it all in one place is not the same as understanding it.
+                            </p>
+                          </div>
+
+                          {/* Subtle Hairline Watermark Divider */}
+                          <div className="w-full h-px bg-neutral-300/60 my-6 sm:my-8" />
+
+                          {/* Second Stanza: Unifolio Purpose & Punchline */}
+                          <div className="space-y-4 sm:space-y-5 text-left">
+                            <p className="font-serif text-[20px] sm:text-[24px] md:text-[27px] lg:text-[30px] font-bold text-neutral-950 tracking-tight leading-snug">
+                              Unifolio exists to close that gap,
+                            </p>
+                            <p className="font-sans text-[13.5px] sm:text-[15px] md:text-[16.5px] font-normal text-neutral-600/90 leading-relaxed max-w-2xl">
+                              to give that person the same clarity a wealth manager gives their wealthiest clients, whether they hold ₹5 lakh or ₹5 crore, whether they've studied finance or never touched a balance sheet.
+                            </p>
+                            <div className="pt-3">
+                              <p className="font-serif text-[17px] sm:text-[20px] md:text-[23px] font-medium text-neutral-900 leading-tight">
+                                Not just where their money is,
+                              </p>
+                              <p className="font-serif text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] font-bold italic text-[#16A34A] tracking-tight mt-1">
+                                but what it means.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                    {/* LAYER 3 (z-20): Front Pocket & Side Triangular Flaps */}
+                    {/* This sits in front of the document so the document emerges out of the cavity */}
+                    <div
+                      className="absolute inset-0 pointer-events-none rounded-[16px] sm:rounded-[22px] overflow-hidden"
+                      style={{ zIndex: 20 }}
+                    >
+                      <svg
+                        className="absolute inset-0 w-full h-full pointer-events-none"
+                        preserveAspectRatio="none"
+                        viewBox="0 0 960 550"
+                      >
+                        <defs>
+                          <filter id="pocketCreaseShadow" x="-10%" y="-10%" width="120%" height="120%">
+                            <feDropShadow dx="0" dy="-3" stdDeviation="4" floodColor="#000000" floodOpacity="0.70" />
+                          </filter>
+                          <linearGradient id="pocketSeamGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="rgba(255, 255, 255, 0.40)" />
+                            <stop offset="45%" stopColor="rgba(34, 197, 94, 0.65)" />
+                            <stop offset="100%" stopColor="rgba(255, 255, 255, 0.20)" />
+                          </linearGradient>
+                          <linearGradient id="pocketBodyGradient" x1="50%" y1="100%" x2="50%" y2="0%">
+                            <stop offset="0%" stopColor="rgba(8, 30, 20, 0.98)" />
+                            <stop offset="100%" stopColor="rgba(3, 16, 11, 0.99)" />
+                          </linearGradient>
+                        </defs>
+
+                        {/* Side Left Flap Polygon */}
+                        <polygon
+                          points="0,0 0,550 480,275"
+                          fill="rgba(4, 18, 12, 0.98)"
+                          stroke="rgba(255, 255, 255, 0.08)"
+                          strokeWidth="1"
+                        />
+
+                        {/* Side Right Flap Polygon */}
+                        <polygon
+                          points="960,0 960,550 480,275"
+                          fill="rgba(6, 24, 16, 0.98)"
+                          stroke="rgba(255, 255, 255, 0.08)"
+                          strokeWidth="1"
+                        />
+
+                        {/* Bottom Front Pocket Polygon (Upward Triangle) */}
+                        <polygon
+                          points="0,550 960,550 480,270"
+                          fill="url(#pocketBodyGradient)"
+                          filter="url(#pocketCreaseShadow)"
+                          stroke="url(#pocketSeamGradient)"
+                          strokeWidth="1.2"
+                        />
+
+                        {/* Bottom diagonal seams */}
+                        <line x1="0" y1="550" x2="480" y2="270" stroke="rgba(34, 197, 94, 0.40)" strokeWidth="1" />
+                        <line x1="960" y1="550" x2="480" y2="270" stroke="rgba(34, 197, 94, 0.40)" strokeWidth="1" />
+                      </svg>
+
+                      {/* Bottom Specular Highlight */}
+                      <div
+                        className="absolute inset-x-0 bottom-0 h-[1.5px] pointer-events-none"
+                        style={{
+                          background:
+                            "linear-gradient(90deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.85) 50%, rgba(34, 197, 94, 0.2) 100%)",
+                        }}
+                      />
+                    </div>
+
+                    {/* LAYER 4 (z-30): 3D Hinged Top Flap with Seal Clasp */}
+                    {/* Hinged exactly at the top fold line (top: 0, transformOrigin: "50% 0%") */}
+                    <div
+                      ref={envelopeTopFlapRef}
+                      className="absolute inset-x-0 top-0 pointer-events-none will-change-transform"
+                      style={{
+                        zIndex: 30,
+                        height: "54%",
+                        transformOrigin: "50% 0%",
+                        transformStyle: "preserve-3d",
+                      }}
+                    >
+                      <svg
+                        className="w-full h-full pointer-events-none overflow-visible"
+                        preserveAspectRatio="none"
+                        viewBox="0 0 960 297"
+                      >
+                        <defs>
+                          <filter id="flapShadow" x="-10%" y="-10%" width="120%" height="135%">
+                            <feDropShadow dx="0" dy="4.5" stdDeviation="5.5" floodColor="#000000" floodOpacity="0.75" />
+                          </filter>
+                          <linearGradient id="flapGradient" x1="50%" y1="0%" x2="50%" y2="100%">
+                            <stop offset="0%" stopColor="rgba(14, 52, 34, 0.98)" />
+                            <stop offset="100%" stopColor="rgba(5, 22, 14, 0.99)" />
+                          </linearGradient>
+                          <linearGradient id="flapSeamGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="rgba(255, 255, 255, 0.45)" />
+                            <stop offset="50%" stopColor="rgba(34, 197, 94, 0.65)" />
+                            <stop offset="100%" stopColor="rgba(255, 255, 255, 0.25)" />
+                          </linearGradient>
+                        </defs>
+
+                        {/* Closed Top Triangular Flap Polygon */}
+                        <polygon
+                          points="0,0 960,0 480,295"
+                          fill="url(#flapGradient)"
+                          filter="url(#flapShadow)"
+                          stroke="url(#flapSeamGradient)"
+                          strokeWidth="1.4"
+                        />
+
+                        {/* Crisp Diagonal Bevel Highlights on Flap Edges */}
+                        <line x1="0" y1="0" x2="480" y2="295" stroke="rgba(255, 255, 255, 0.35)" strokeWidth="1" />
+                        <line x1="960" y1="0" x2="480" y2="295" stroke="rgba(255, 255, 255, 0.35)" strokeWidth="1" />
+                      </svg>
+
+                      {/* Top Fold Specular Rim Highlight */}
+                      <div
+                        className="absolute inset-x-0 top-0 h-[1.5px] pointer-events-none"
+                        style={{
+                          background:
+                            "linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.85) 50%, rgba(255, 255, 255, 0.1) 100%)",
+                        }}
+                      />
+
+                      {/* Center Clasp Unifolio Aperture Ring Seal (Mounted at apex of flap) */}
+                      <div
+                        ref={envelopeSealRef}
+                        className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none will-change-transform"
+                        style={{ top: "100%", zIndex: 30 }}
+                      >
+                        <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#051F14] border border-[#22C55E]/80 shadow-[0_0_26px_rgba(34,197,94,0.65),inset_0_1px_2px_rgba(255,255,255,0.45)] flex items-center justify-center">
+                          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-[#22C55E] relative flex items-center justify-center">
+                            <div className="absolute -top-1 w-1.5 h-1 bg-[#051F14]" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -6919,122 +7255,6 @@ export function BlueprintHero() {
                     )}
                   </div>
                 ))}
-              </div>
-            </div>
-
-            {/* =================================================================== */}
-            {/* LAYER: ABOUT SECTION EDITORIAL CONTENT & ATMOSPHERE                */}
-            {/* Positioned centered in viewport, revealed when semicircles form     */}
-            {/* =================================================================== */}
-            <div
-              ref={aboutContentRef}
-              className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 will-change-[opacity,transform]"
-              style={{ opacity: 0, visibility: "hidden" }}
-            >
-              {/* Soft atmospheric emerald depth field */}
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center z-0">
-                <div className="w-[500px] sm:w-[700px] lg:w-[900px] h-[350px] sm:h-[500px] rounded-full bg-emerald-500/[0.035] dark:bg-emerald-500/[0.05] blur-[100px] sm:blur-[130px]" />
-              </div>
-
-              {/* Ambient Top and Bottom Hairlines */}
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" />
-
-              {/* Central Editorial Content */}
-              <div
-                className="relative z-20 max-w-lg sm:max-w-xl lg:max-w-2xl xl:max-w-3xl mx-auto px-6 sm:px-8 text-center select-text pointer-events-auto will-change-transform"
-              >
-                {/* Paragraph 1: Human Reality & Overwhelm */}
-                <p
-                  ref={aboutPara1Ref}
-                  className="font-sans font-light text-xl sm:text-2xl md:text-3xl lg:text-[2.25rem] leading-[1.32] tracking-tight will-change-transform"
-                >
-                  {ABOUT_PARA_1_WORDS.map((word, wIdx) => {
-                    const globalIdx = wIdx;
-                    return (
-                      <span
-                        key={wIdx}
-                        className="relative inline-block whitespace-nowrap mr-[0.28em]"
-                      >
-                        {/* Base unrevealed layer: consistently muted light grey */}
-                        <span className="text-neutral-400 dark:text-neutral-500 select-none pointer-events-none">
-                          {word}
-                        </span>
-                        {/* Progressive moving mask reveal layer: solid dark */}
-                        <span
-                          ref={(el) => {
-                            aboutWordOverlayRefs.current[globalIdx] = el;
-                          }}
-                          className="absolute inset-0 text-[#111613] dark:text-[#FAF8F5] select-text will-change-[mask-image,opacity]"
-                          style={{ opacity: 0 }}
-                          aria-hidden="true"
-                        >
-                          {word}
-                        </span>
-                      </span>
-                    );
-                  })}
-                </p>
-
-                {/* Paragraph 2: Unifolio's Purpose & Mission */}
-                <p
-                  ref={aboutPara2Ref}
-                  className="mt-6 sm:mt-8 md:mt-10 font-sans font-light text-base sm:text-lg md:text-xl lg:text-[1.65rem] leading-[1.42] tracking-tight will-change-transform"
-                >
-                  {ABOUT_PARA_2_WORDS.map((word, wIdx) => {
-                    const globalIdx = ABOUT_PARA_1_WORDS.length + wIdx;
-                    return (
-                      <span
-                        key={wIdx}
-                        className="relative inline-block whitespace-nowrap mr-[0.28em]"
-                      >
-                        {/* Base unrevealed layer: consistently muted light grey */}
-                        <span className="text-neutral-400 dark:text-neutral-500 select-none pointer-events-none">
-                          {word}
-                        </span>
-                        {/* Progressive moving mask reveal layer: solid dark */}
-                        <span
-                          ref={(el) => {
-                            aboutWordOverlayRefs.current[globalIdx] = el;
-                          }}
-                          className="absolute inset-0 text-[#111613] dark:text-[#FAF8F5] select-text will-change-[mask-image,opacity]"
-                          style={{ opacity: 0 }}
-                          aria-hidden="true"
-                        >
-                          {word}
-                        </span>
-                      </span>
-                    );
-                  })}
-                  <span className="block mt-3.5 sm:mt-4 font-medium text-lg sm:text-xl md:text-2xl lg:text-[1.85rem] tracking-tight">
-                    {ABOUT_PUNCHLINE_WORDS.map((word, wIdx) => {
-                      const globalIdx =
-                        ABOUT_PARA_1_WORDS.length + ABOUT_PARA_2_WORDS.length + wIdx;
-                      return (
-                        <span
-                          key={wIdx}
-                          className="relative inline-block whitespace-nowrap mr-[0.28em]"
-                        >
-                          {/* Base unrevealed layer: consistently muted light grey */}
-                          <span className="text-neutral-400 dark:text-neutral-500 select-none pointer-events-none">
-                            {word}
-                          </span>
-                          {/* Progressive moving mask reveal layer: solid dark */}
-                          <span
-                            ref={(el) => {
-                              aboutWordOverlayRefs.current[globalIdx] = el;
-                            }}
-                            className="absolute inset-0 text-[#111613] dark:text-white select-text will-change-[mask-image,opacity]"
-                            style={{ opacity: 0 }}
-                            aria-hidden="true"
-                          >
-                            {word}
-                          </span>
-                        </span>
-                      );
-                    })}
-                  </span>
-                </p>
               </div>
             </div>
           </div>
