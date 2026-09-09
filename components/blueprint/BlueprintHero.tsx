@@ -188,8 +188,8 @@ const SECURITY_STATES: SecurityStateItem[] = [
     headline: "Locked down, everywhere",
     body: (
       <>
-        <span className="sm:whitespace-nowrap">Your data is encrypted with AES-256 at rest and TLS in transit,</span> <br />
-        the same standard banks use.
+        <span className="sm:whitespace-nowrap">Your data is encrypted with AES-256 at rest and TLS in transit.</span> <br />
+        The same standard banks use.
       </>
     ),
   },
