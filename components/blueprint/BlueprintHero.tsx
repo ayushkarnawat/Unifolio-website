@@ -8100,19 +8100,25 @@ export function BlueprintHero() {
         />
 
         {/* =================================================================== */}
-        {/* LAYER 1B (z-10): HERO HEADLINE ("SEE WHAT YOU ACTUALLY OWN.")       */}
+        {/* LAYER 1B (z-10): HERO HEADLINE & SUBTEXT                            */}
         {/* Positioned behind Iris Portal (z-20) so expanding iris covers it     */}
         {/* =================================================================== */}
         <div
           ref={heroIntroRef}
-          className="absolute inset-0 z-10 flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-20 pb-8 max-w-7xl mx-auto w-full pointer-events-none will-change-transform"
+          className="absolute inset-0 z-10 flex flex-col justify-center px-6 sm:px-10 lg:px-16 xl:px-20 pt-20 pb-8 max-w-7xl mx-auto w-full pointer-events-none will-change-transform"
         >
-          <div className="flex-1 flex flex-col justify-center max-w-lg -translate-x-6 sm:-translate-x-10 lg:-translate-x-14 -translate-y-4 sm:-translate-y-6 lg:-translate-y-8">
-            <h1 className="font-sans font-black text-4xl sm:text-5xl md:text-6xl lg:text-[62px] xl:text-[70px] text-neutral-950 tracking-[-0.03em] uppercase leading-[0.92] select-none">
-              SEE WHAT <br />
-              YOU ACTUALLY <br />
-              OWN.
+          <div className="flex-1 flex flex-col justify-center max-w-lg sm:max-w-xl lg:max-w-[580px] xl:max-w-[640px] -translate-x-8 sm:-translate-x-16 md:-translate-x-24 lg:-translate-x-32 xl:-translate-x-40 -translate-y-4 sm:-translate-y-6 lg:-translate-y-8">
+            <h1 className="font-sans font-black text-3xl sm:text-4xl md:text-[42px] lg:text-[46px] xl:text-[52px] text-neutral-950 tracking-[-0.035em] leading-[1.15] select-none flex flex-col gap-3 sm:gap-3.5 lg:gap-4.5">
+              <span>
+                See everything you <span className="text-[#22C55E]" style={{ color: "#22C55E" }}>own.</span>
+              </span>
+              <span>
+                Understand what it <span className="text-[#22C55E]" style={{ color: "#22C55E" }}>means.</span>
+              </span>
             </h1>
+            <p className="mt-5 sm:mt-6 text-base sm:text-lg md:text-xl lg:text-[21px] text-[#5A685D] font-medium tracking-tight leading-relaxed select-none">
+              Track. Understand. Act with confidence.
+            </p>
           </div>
         </div>
       </div>
