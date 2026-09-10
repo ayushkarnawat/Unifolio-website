@@ -243,20 +243,21 @@ const CLOSING_BLACK_WORDS = ["Security", "isn't", "just", "a", "feature", "here,
 const CLOSING_GREEN_WORDS = ["It's", "the", "baseline", "everything", "else", "is", "built", "on."];
 
 const ABOUT_PARA_1_WORDS = [
-  "In", "most", "families,", "someone", "ends", "up", "in", "charge", "of", "the", "money,",
-  "not", "because", "they", "trained", "for", "it,", "but", "because", "someone", "has", "to.",
-  "Their", "financial", "data", "lives", "across", "a", "dozen", "apps", "and", "statements,",
-  "and", "having", "it", "all", "in", "one", "place", "is", "not", "the", "same", "as", "understanding", "it."
+  "In", "most", "families,", "someone", "ends", "up", "in", "charge", "of", "the", "money.",
+  "Not", "because", "they", "trained", "for", "it.", "Because", "someone", "has", "to.",
+  "Their", "financial", "data", "lives", "across", "a", "dozen", "apps", "and", "statements.",
+  "There's", "a", "gap", "between", "seeing", "it", "all", "and", "actually", "understanding", "it."
 ];
 
 const ABOUT_PARA_2_WORDS = [
-  "Unifolio", "exists", "to", "close", "that", "gap,", "to", "give", "that", "person", "the", "same", "clarity",
-  "a", "wealth", "manager", "gives", "their", "wealthiest", "clients,", "whether", "they", "hold", "₹5", "lakh",
-  "or", "₹5", "crore,", "whether", "they've", "studied", "finance", "or", "never", "touched", "a", "balance", "sheet."
+  "Unifolio", "exists", "to", "close", "that", "gap.",
+  "The", "same", "clarity", "a", "wealth", "manager", "gives", "their", "wealthiest", "clients,",
+  "now", "available", "to", "anyone.", "Whether", "they", "hold", "₹5", "lakh", "or", "₹5", "crore.",
+  "Whether", "they've", "studied", "finance", "or", "never", "touched", "a", "balance", "sheet."
 ];
 
 const ABOUT_PUNCHLINE_WORDS = [
-  "Not", "just", "where", "their", "money", "is,", "but", "what", "it", "means."
+  "Seeing", "your", "money", "isn't", "the", "same", "as", "understanding", "it."
 ];
 
 export function BlueprintHero() {
@@ -1368,11 +1369,7 @@ export function BlueprintHero() {
           : isTablet
           ? Math.round(viewportCenterX * 0.30)
           : Math.round(viewportCenterX * 0.16);
-        const heroShiftX = isDesktop
-          ? Math.round(ringRightEdgeRelX + 40)
-          : isTablet
-          ? Math.round(ringRightEdgeRelX + 30)
-          : 0;
+        const heroShiftX = rightShiftX;
 
         targetLeftXRef.current = targetLeftX;
         targetRingYRef.current = targetRingY;
@@ -1489,13 +1486,9 @@ export function BlueprintHero() {
             if (securityStageRef.current) {
               gsap.set(securityStageRef.current, { opacity: 0, visibility: "hidden", zIndex: 15 });
             }
-            securityStateRefs.current.forEach((el, idx) => {
+            securityStateRefs.current.forEach((el) => {
               if (el) {
-                if (idx === 0) {
-                  gsap.set(el, { opacity: 0, visibility: "hidden", x: heroShiftX, y: 0, scale: 1, clipPath: "none" });
-                } else {
-                  gsap.set(el, { opacity: 0, visibility: "hidden", x: rightShiftX, y: 0 });
-                }
+                gsap.set(el, { opacity: 0, visibility: "hidden", x: rightShiftX, y: 0, scale: 1, clipPath: "none" });
               }
             });
 
@@ -1619,10 +1612,9 @@ export function BlueprintHero() {
 
         // Security Stage positioned & ready behind cards layer (z-15) from the beginning
         tl.set(securityStageRef.current, { autoAlpha: 1, opacity: 1, visibility: "visible", zIndex: 15 }, 0);
-        securityStateRefs.current.forEach((el, idx) => {
+        securityStateRefs.current.forEach((el) => {
           if (el) {
-            const sX = idx === 0 ? heroShiftX : rightShiftX;
-            tl.set(el, { autoAlpha: 0, opacity: 0, visibility: "hidden", x: sX, y: 0, clipPath: "none" }, 0);
+            tl.set(el, { autoAlpha: 0, opacity: 0, visibility: "hidden", x: rightShiftX, y: 0, clipPath: "none" }, 0);
           }
         });
         if (securityHeroRibbonRef.current) {
@@ -1962,14 +1954,14 @@ export function BlueprintHero() {
         const ribbonEl = securityHeroRibbonRef.current;
 
         if (state0El && ribbonEl) {
-          // In state0El local coordinates (where 0 is center of state0El at heroShiftX):
+          // In state0El local coordinates (where 0 is center of state0El at rightShiftX):
           // Stack center relative to state0El center:
-          const stackLocalCenterX = stackTargetX - heroShiftX;
+          const stackLocalCenterX = stackTargetX - rightShiftX;
           // Smooth entrance offset tucked behind the card stack:
           const enterOffset = Math.max(Math.min(stackLocalCenterX, 140), 60);
 
           // Phase 1 (0.0s): Completely hidden behind the stack
-          tl.set(state0El, { autoAlpha: 0, opacity: 0, visibility: "hidden", x: heroShiftX, y: 0, clipPath: "none" }, 0);
+          tl.set(state0El, { autoAlpha: 0, opacity: 0, visibility: "hidden", x: rightShiftX, y: 0, clipPath: "none" }, 0);
           tl.set(ribbonEl, { x: enterOffset, opacity: 0 }, 0);
 
           // Phase 2: As cards depart from stack (unfurlBase = 0.52s):
@@ -5143,14 +5135,11 @@ export function BlueprintHero() {
         const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
         const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
         const vCenterX = (typeof window !== "undefined" ? window.innerWidth : 1440) / 2;
-        const vhVal = typeof window !== "undefined" ? window.innerHeight : 800;
-        const rRadius = Math.min(Math.max(vhVal * 0.22, 160), 220);
-        const lShift = isDesk ? Math.round(vCenterX * 0.44) : isTab ? Math.round(vCenterX * 0.32) : Math.round(vCenterX * 0.20);
-        const ringEdgeRel = -lShift + rRadius + 55;
-        const heroShift = isDesk ? Math.round(ringEdgeRel + 40) : isTab ? Math.round(ringEdgeRel + 30) : 0;
-        const shiftX = nextIdx === 0
-          ? heroShift
-          : (isDesk ? Math.round(vCenterX * 0.42) : isTab ? Math.round(vCenterX * 0.30) : Math.round(vCenterX * 0.16));
+        const shiftX = isDesk
+          ? Math.round(vCenterX * 0.42)
+          : isTab
+          ? Math.round(vCenterX * 0.30)
+          : Math.round(vCenterX * 0.16);
 
         // 2. New text smoothly enters with a slight directional movement & subtle stagger
         if (nextEl) {
@@ -5369,11 +5358,7 @@ export function BlueprintHero() {
           const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
           const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
           const vCenterX = (typeof window !== "undefined" ? window.innerWidth : 1440) / 2;
-          const vhVal = typeof window !== "undefined" ? window.innerHeight : 800;
-          const rRadius = Math.min(Math.max(vhVal * 0.22, 160), 220);
-          const lShift = isDesk ? Math.round(vCenterX * 0.44) : isTab ? Math.round(vCenterX * 0.32) : Math.round(vCenterX * 0.20);
-          const ringEdgeRel = -lShift + rRadius + 55;
-          const shiftX = isDesk ? Math.round(ringEdgeRel + 40) : isTab ? Math.round(ringEdgeRel + 30) : 0;
+          const shiftX = isDesk ? Math.round(vCenterX * 0.42) : isTab ? Math.round(vCenterX * 0.30) : Math.round(vCenterX * 0.16);
           if (state0El) gsap.set(state0El, { opacity: 1, visibility: "visible", x: shiftX, y: 0, scale: 1, clipPath: "none" });
           currentSecurityStateRef.current = 0;
         }
@@ -6146,10 +6131,8 @@ export function BlueprintHero() {
         const vhVal = typeof window !== "undefined" ? window.innerHeight : 800;
         const rRadius = Math.min(Math.max(vhVal * 0.22, 160), 220);
         const lShift = isDesk ? Math.round(vCenterX * 0.44) : isTab ? Math.round(vCenterX * 0.32) : Math.round(vCenterX * 0.20);
-        const ringEdgeRel = -lShift + rRadius + 55;
-        const heroShift = isDesk ? Math.round(ringEdgeRel + 40) : isTab ? Math.round(ringEdgeRel + 30) : 0;
-        const shiftX = heroShiftXRef.current || heroShift;
         const rightShift = rightShiftXRef.current || (isDesk ? Math.round(vCenterX * 0.42) : isTab ? Math.round(vCenterX * 0.30) : Math.round(vCenterX * 0.16));
+        const shiftX = rightShift;
 
         // Reconstruct 3D ring cards
         const ringSlots = computeRingSlots();
@@ -7125,31 +7108,21 @@ export function BlueprintHero() {
                             {/* Printed Ink Copy: FIRST PARAGRAPH (Large, Bold, Editorial, Premium) */}
                             <div
                               ref={docInkCopyRef}
-                              className="relative z-10 flex-1 flex flex-col justify-start select-text pointer-events-auto will-change-[clip-path,opacity,filter] pt-3 sm:pt-5 md:pt-7"
+                              className="relative z-10 flex-1 flex flex-col justify-center select-text pointer-events-auto will-change-[clip-path,opacity,filter] py-4 sm:py-6"
                               style={{
                                 clipPath: "inset(0 0 100% 0)",
                                 WebkitClipPath: "inset(0 0 100% 0)",
                                 opacity: 0,
                               }}
                             >
-                              {/* Dominant Editorial Opening Statement */}
-                              <h2 className="font-serif font-bold text-[32px] sm:text-[42px] md:text-[50px] lg:text-[58px] text-neutral-950 leading-[1.08] tracking-tight text-left">
-                                In most families,<br />
-                                someone ends up<br />
-                                in charge of the <span className="text-[#22C55E]">money</span>.
+                              {/* Dominant Editorial Opening Statement - Unified Single Paragraph */}
+                              <h2 className="font-serif font-bold text-[28px] sm:text-[36px] md:text-[44px] lg:text-[50px] xl:text-[54px] text-neutral-950 leading-[1.16] tracking-tight text-left">
+                                In most families, someone ends up in charge of the <span className="text-[#22C55E]">money</span>. Not because they trained for it. Because someone has to.
                               </h2>
 
-                              {/* Supporting sentence 1 (Larger & bolder, capital 'Not') */}
-                              <div className="mt-6 sm:mt-8 md:mt-10 space-y-1 text-left">
-                                <p className="font-serif font-bold text-[26px] sm:text-[32px] md:text-[38px] lg:text-[42px] text-neutral-900 leading-[1.22]">
-                                  Not because they trained for it,<br />
-                                  but because someone has to.
-                                </p>
-                              </div>
-
-                              {/* Supporting sentence 2 (Larger & bolder) */}
-                              <p className="mt-6 sm:mt-8 md:mt-10 font-serif font-semibold text-[20px] sm:text-[24px] md:text-[28px] lg:text-[30px] text-neutral-900 leading-[1.38] max-w-[720px] text-left">
-                                Their financial data lives across a dozen apps and statements, and having it all in one place is not the same as understanding it.
+                              {/* Supporting sentence (Small text) */}
+                              <p className="mt-8 sm:mt-10 md:mt-12 font-serif font-semibold text-[18px] sm:text-[22px] md:text-[25px] lg:text-[28px] text-neutral-800 leading-[1.4] max-w-[720px] text-left">
+                                Their financial data lives across a dozen apps and statements. There&apos;s a gap between seeing it all and actually understanding it.
                               </p>
                             </div>
 
@@ -7244,9 +7217,9 @@ export function BlueprintHero() {
                                 to close that gap.
                               </h2>
 
-                              {/* Supporting sentence beneath it (Enlarged size, positioned further down, capital 'To') */}
+                              {/* Supporting sentence beneath it (Enlarged size, positioned further down) */}
                               <p className="mt-10 sm:mt-14 md:mt-18 lg:mt-20 font-serif font-semibold text-[19px] sm:text-[23px] md:text-[26px] lg:text-[28px] text-neutral-900 leading-[1.38] max-w-[700px] text-left">
-                                To give that person the same clarity a wealth manager gives their wealthiest clients, whether they hold ₹5 lakh or ₹5 crore, whether they’ve studied finance or never touched a balance sheet.
+                                The same clarity a wealth manager gives their wealthiest clients, now available to anyone. Whether they hold ₹5 lakh or ₹5 crore. Whether they&apos;ve studied finance or never touched a balance sheet.
                               </p>
 
                               {/* Thin hairline divider rule between supporting sentence and closing statement (Centered with equal spacing) */}
@@ -7255,10 +7228,10 @@ export function BlueprintHero() {
                               {/* Closing Statement (Evenly spaced) */}
                               <div className="space-y-1.5 sm:space-y-2 text-left">
                                 <p className="font-serif font-semibold text-[20px] sm:text-[25px] md:text-[29px] text-neutral-950 leading-snug">
-                                  Not just where their money is,
+                                  Seeing your money isn&apos;t the same as
                                 </p>
                                 <p className="font-serif font-bold text-[32px] sm:text-[40px] md:text-[48px] lg:text-[54px] text-[#22C55E] tracking-tight leading-[1.08]">
-                                  but what it means.
+                                  understanding it.
                                 </p>
                               </div>
                             </div>
@@ -7494,15 +7467,7 @@ export function BlueprintHero() {
                     ref={(el) => {
                       securityStateRefs.current[idx] = el;
                     }}
-                    className={
-                      item.type === "hero"
-                        ? "absolute top-1/2 left-1/2 -translate-y-1/2 w-auto max-w-none whitespace-nowrap overflow-visible will-change-transform pointer-events-none"
-                        : `absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full ${
-                            idx >= 2 && idx <= 7
-                              ? "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl px-6 md:pl-16 lg:pl-28 xl:pl-36 text-left"
-                              : "max-w-md sm:max-w-lg lg:max-w-xl xl:max-w-2xl px-6 text-left"
-                          } will-change-transform pointer-events-none`
-                    }
+                    className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl px-6 md:pl-16 lg:pl-28 xl:pl-36 text-left will-change-transform pointer-events-none"
                     style={{
                       opacity: 0,
                       visibility: "hidden",
@@ -7511,9 +7476,9 @@ export function BlueprintHero() {
                     {item.type === "hero" ? (
                       <div
                         ref={securityHeroRibbonRef}
-                        className="relative will-change-transform select-none inline-block"
+                        className="relative will-change-transform select-none flex flex-col items-start text-left"
                       >
-                        <h2 className="font-sans font-black text-xl sm:text-2xl md:text-3xl lg:text-[36px] xl:text-[42px] 2xl:text-[46px] text-neutral-950 tracking-[-0.03em] select-none flex flex-col items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12]">
+                        <h2 className="font-sans font-black text-xl sm:text-2xl md:text-3xl lg:text-[36px] xl:text-[42px] 2xl:text-[46px] text-neutral-950 tracking-[-0.03em] select-none flex flex-col items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12] text-left">
                           {/* Line 1: We take your data as seriously */}
                           <div className="whitespace-nowrap flex items-baseline gap-[0.24em]">
                             <span ref={(el) => { securityHeroWordRefs.current[0] = el; }} className="inline-block will-change-transform">We</span>
@@ -7583,7 +7548,7 @@ export function BlueprintHero() {
                                         <circle cx="27" cy="0" r="5" fill="#15803D" />
                                         {/* Center Circle */}
                                         <circle cx="0" cy="0" r="15" fill="#15803D" />
-                                        {/* Center Dollar Sign */}
+                                        {/* Center Rupee Sign */}
                                         <text
                                           x="0"
                                           y="6.5"
@@ -7594,7 +7559,7 @@ export function BlueprintHero() {
                                           textAnchor="middle"
                                           className="select-none"
                                         >
-                                          $
+                                          ₹
                                         </text>
                                       </g>
                                     </defs>
@@ -7617,7 +7582,7 @@ export function BlueprintHero() {
                         </h2>
                       </div>
                     ) : item.type === "principle" ? (
-                      <div className="flex flex-col">
+                      <div className="flex flex-col items-start text-left">
                         {idx === 1 ? (
                           // State 2: "Read-only, always" - focal point, bigger and bolder typography with embedded eyes Easter egg
                           <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[52px] xl:text-[60px] text-neutral-950 tracking-[-0.035em] leading-[1.05] mb-4 sm:mb-5 select-none relative inline-flex flex-wrap items-baseline">
@@ -8031,7 +7996,7 @@ export function BlueprintHero() {
                         </p>
                       </div>
                     ) : (
-                      <div className="flex flex-col gap-2.5 sm:gap-3.5 md:gap-4 select-none relative">
+                      <div className="flex flex-col items-start text-left gap-2.5 sm:gap-3.5 md:gap-4 select-none relative">
                         {/* Black text portion: "Security isn't just a feature here," */}
                         <div
                           ref={closingBlackTextRef}

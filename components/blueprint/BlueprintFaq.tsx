@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { faqContent } from "@/content/faq";
 import { gsap, prefersReducedMotion } from "@/lib/gsap";
@@ -175,7 +175,7 @@ export function BlueprintFaq() {
     <section
       id="faq"
       ref={containerRef}
-      className="relative w-full bg-[#FAF8F5] px-6 sm:px-12 lg:px-20 text-[#111613] select-none h-screen overflow-hidden flex flex-col"
+      className="relative w-full bg-[#FAF8F5] px-6 sm:px-12 lg:px-20 text-[#111613] select-none min-h-screen h-screen overflow-hidden flex flex-col justify-center items-center"
     >
       {/* Seamless Top Blend from About */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#FAF8F5] to-transparent z-10" />
@@ -282,153 +282,142 @@ export function BlueprintFaq() {
         </svg>
       </div>
 
-      {/* Main Content Container */}
-      <div className="relative z-10 max-w-7xl mx-auto space-y-5 sm:space-y-6 w-full pt-[60px] pb-6 flex flex-col flex-1 justify-center">
+      {/* Main Content Container: Shifted downwards for balanced viewport positioning */}
+      <div className="relative z-10 max-w-7xl mx-auto space-y-4 sm:space-y-5 lg:space-y-6 w-full my-auto pt-10 sm:pt-14 lg:pt-16 pb-4 sm:pb-6 flex flex-col justify-center">
         
         {/* =========================================================================
-            HEADER SECTION: Headline + Navigation Buttons (no subtext)
+            HEADER SECTION: Headline + Clean Divider (Old buttons removed)
            ========================================================================= */}
-        <div className="faq-header-elem flex flex-row items-end justify-between gap-8 pb-4 border-b border-black/[0.08]">
-          
-          {/* Left: Headline */}
+        <div className="faq-header-elem pb-3 sm:pb-4 border-b border-black/[0.08]">
           <h2 className="font-sans font-light md:font-normal text-3xl sm:text-4xl lg:text-[46px] text-[#111613] tracking-tight leading-[1.06]">
             Frequently <br />
             Asked Questions
           </h2>
-
-          {/* Right: Circular Navigation Arrow Buttons — aligned with headline baseline */}
-          <div className="flex items-center gap-3 shrink-0 pb-1">
-            <button
-              type="button"
-              onClick={handlePrev}
-              disabled={activeIdx === 0}
-              aria-label="Previous question"
-              className={`relative group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 overflow-hidden ${
-                activeIdx === 0
-                  ? "opacity-30 border border-black/10 text-black/40 cursor-not-allowed bg-transparent"
-                  : "p-[1.25px] active:scale-95 cursor-pointer hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
-              }`}
-            >
-              {activeIdx !== 0 && (
-                <>
-                  <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin opacity-60 group-hover:opacity-100 will-change-transform" />
-                  <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin blur-[2px] opacity-35 group-hover:opacity-75 will-change-transform" />
-                </>
-              )}
-              <div
-                className={`relative z-10 w-full h-full rounded-full flex items-center justify-center transition-colors ${
-                  activeIdx === 0
-                    ? ""
-                    : "bg-white/80 hover:bg-white text-[#111613] backdrop-blur-xl btn-physical-surface-light"
-                }`}
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={activeIdx === faqContent.length - 1}
-              aria-label="Next question"
-              className={`relative group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 overflow-hidden ${
-                activeIdx === faqContent.length - 1
-                  ? "opacity-30 border border-black/10 text-black/40 cursor-not-allowed bg-transparent"
-                  : "p-[1.25px] active:scale-95 cursor-pointer hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
-              }`}
-            >
-              {activeIdx !== faqContent.length - 1 && (
-                <>
-                  <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin opacity-60 group-hover:opacity-100 will-change-transform" />
-                  <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-subtle animate-iridescent-spin blur-[2px] opacity-35 group-hover:opacity-75 will-change-transform" />
-                </>
-              )}
-              <div
-                className={`relative z-10 w-full h-full rounded-full flex items-center justify-center transition-colors ${
-                  activeIdx === faqContent.length - 1
-                    ? ""
-                    : "bg-white/80 hover:bg-white text-[#111613] backdrop-blur-xl btn-physical-surface-light"
-                }`}
-              >
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </button>
-          </div>
-
         </div>
 
         {/* =========================================================================
-            FLUID HORIZONTAL ACCORDION SLIDER TRACK
+            FLUID HORIZONTAL ACCORDION SLIDER TRACK (STREAMING-STYLE NAVIGATION)
            ========================================================================= */}
-        <div
-          ref={viewportRef}
-          className="faq-track-elem relative w-full overflow-hidden py-4 -my-4"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          <div
-            ref={trackRef}
-            className="flex items-stretch gap-4 sm:gap-5 w-max will-change-transform pb-2"
-            style={{ transform: "translateX(0px)" }}
-          >
-            {faqContent.map((item, idx) => {
-              const isActive = activeIdx === idx;
+        <div className="relative group/carousel w-full">
+          {/* Subtle streaming-style edge gradient fades on hover */}
+          {activeIdx > 0 && (
+            <div className="pointer-events-none absolute left-0 inset-y-0 w-16 sm:w-24 bg-gradient-to-r from-[#FAF8F5]/90 to-transparent z-20 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 rounded-l-[28px]" />
+          )}
+          {activeIdx < faqContent.length - 1 && (
+            <div className="pointer-events-none absolute right-0 inset-y-0 w-16 sm:w-24 bg-gradient-to-l from-[#FAF8F5]/90 to-transparent z-20 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 rounded-r-[28px]" />
+          )}
 
-              return (
-                <div
-                  key={item.id}
-                  ref={(el) => {
-                    cardRefs.current[idx] = el;
-                  }}
-                  onClick={() => goToSlide(idx)}
-                  style={{
-                    width: isActive ? wActive : wInactive,
-                    flexShrink: 0,
-                  }}
-                  className={`faq-card group relative rounded-[24px] sm:rounded-[28px] border transition-[background-color,border-color,box-shadow] duration-500 ease-out cursor-pointer flex flex-col justify-between overflow-hidden select-none h-[calc(100vh-360px)] min-h-[200px] max-h-[400px] ${
-                    isActive
-                      ? "bg-white border-[#22C55E]/50 shadow-[0_20px_45px_rgba(0,0,0,0.08),0_0_25px_rgba(34,197,94,0.12)] p-7 sm:p-9 md:p-10"
-                      : "bg-black/[0.03] border-black/[0.08] hover:border-black/20 hover:bg-black/[0.05] p-6 sm:p-8"
-                  }`}
+          {/* Left Navigation Button (Matching Contact Form Popup Button Style) */}
+          {activeIdx > 0 && (
+            <div className="absolute left-1 sm:-left-3 lg:-left-5 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover/carousel:opacity-100 transition-all duration-300 ease-out focus-within:opacity-100">
+              <div
+                className="relative group/btn inline-flex rounded-full p-[1.5px] overflow-hidden transition-all duration-300 will-change-transform active:scale-90 hover:-translate-y-0.5 cursor-pointer shadow-[0_2px_14px_rgba(0,0,0,0.08),0_0_12px_rgba(34,197,94,0.18)]"
+              >
+                <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin opacity-80 group-hover/btn:opacity-100 will-change-transform" />
+                <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin blur-[2.5px] opacity-50 group-hover/btn:opacity-80 will-change-transform" />
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  aria-label="Previous question"
+                  className="relative z-10 w-11 h-11 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-white/80 hover:bg-white/95 backdrop-blur-xl flex items-center justify-center text-[#111613] transition-all duration-300 btn-physical-surface-light cursor-pointer"
                 >
-                  {/* Active Top Specular Highlight Edge */}
-                  {isActive && (
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#22C55E]/50 to-transparent" />
-                  )}
+                  <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.8] text-[#111613] -translate-x-0.5 group-hover/btn:-translate-x-1 transition-all duration-200" />
+                </button>
+              </div>
+            </div>
+          )}
 
-                  {/* Question Title & (if active) Smooth Answer Content */}
-                  <div className="my-auto py-2 flex flex-col justify-center space-y-4">
-                    <h3
-                      className={`font-sans transition-colors duration-300 leading-snug ${
-                        isActive
-                          ? "text-2xl sm:text-3xl lg:text-[30px] text-[#111613] font-normal tracking-tight"
-                          : "text-lg sm:text-xl text-[#5A685D] group-hover:text-[#111613] font-light leading-snug"
-                      }`}
-                    >
-                      {item.question}
-                    </h3>
+          {/* Right Navigation Button (Matching Contact Form Popup Button Style) */}
+          {activeIdx < faqContent.length - 1 && (
+            <div className="absolute right-1 sm:-right-3 lg:-right-5 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover/carousel:opacity-100 transition-all duration-300 ease-out focus-within:opacity-100">
+              <div
+                className="relative group/btn inline-flex rounded-full p-[1.5px] overflow-hidden transition-all duration-300 will-change-transform active:scale-90 hover:-translate-y-0.5 cursor-pointer shadow-[0_2px_14px_rgba(0,0,0,0.08),0_0_12px_rgba(34,197,94,0.18)]"
+              >
+                <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin opacity-80 group-hover/btn:opacity-100 will-change-transform" />
+                <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin blur-[2.5px] opacity-50 group-hover/btn:opacity-80 will-change-transform" />
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  aria-label="Next question"
+                  className="relative z-10 w-11 h-11 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-white/80 hover:bg-white/95 backdrop-blur-xl flex items-center justify-center text-[#111613] transition-all duration-300 btn-physical-surface-light cursor-pointer"
+                >
+                  <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.8] text-[#111613] translate-x-0.5 group-hover/btn:translate-x-1 transition-all duration-200" />
+                </button>
+              </div>
+            </div>
+          )}
 
-                    {/* Answer Reveal Container */}
-                    <div
-                      ref={(el) => {
-                        answerRefs.current[idx] = el;
-                      }}
-                      style={{
-                        maxHeight: isActive ? 160 : 0,
-                        opacity: isActive ? 1 : 0,
-                      }}
-                      className="overflow-hidden transition-all duration-300"
-                    >
-                      <div className="pt-4 border-t border-black/[0.08]">
-                        <p className="font-sans text-xs sm:text-sm md:text-base text-[#5A685D] leading-relaxed font-normal">
-                          {item.answer}
-                        </p>
+          {/* Carousel Track Viewport */}
+          <div
+            ref={viewportRef}
+            className="faq-track-elem relative w-full overflow-hidden py-4 -my-4"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div
+              ref={trackRef}
+              className="flex items-stretch gap-4 sm:gap-5 w-max will-change-transform pb-2"
+              style={{ transform: "translateX(0px)" }}
+            >
+              {faqContent.map((item, idx) => {
+                const isActive = activeIdx === idx;
+
+                return (
+                  <div
+                    key={item.id}
+                    ref={(el) => {
+                      cardRefs.current[idx] = el;
+                    }}
+                    onClick={() => goToSlide(idx)}
+                    style={{
+                      width: isActive ? wActive : wInactive,
+                      flexShrink: 0,
+                    }}
+                    className={`faq-card group relative rounded-[24px] sm:rounded-[28px] border transition-[background-color,border-color,box-shadow] duration-500 ease-out cursor-pointer flex flex-col justify-between overflow-hidden select-none h-[calc(100vh-380px)] min-h-[200px] max-h-[380px] ${
+                      isActive
+                        ? "bg-white border-[#22C55E]/50 shadow-[0_20px_45px_rgba(0,0,0,0.08),0_0_25px_rgba(34,197,94,0.12)] p-7 sm:p-9 md:p-10"
+                        : "bg-black/[0.03] border-black/[0.08] hover:border-black/20 hover:bg-black/[0.05] p-6 sm:p-8"
+                    }`}
+                  >
+                    {/* Active Top Specular Highlight Edge */}
+                    {isActive && (
+                      <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#22C55E]/50 to-transparent" />
+                    )}
+
+                    {/* Question Title & (if active) Smooth Answer Content */}
+                    <div className="my-auto py-2 flex flex-col justify-center space-y-4">
+                      <h3
+                        className={`font-sans transition-colors duration-300 leading-snug ${
+                          isActive
+                            ? "text-2xl sm:text-3xl lg:text-[30px] text-[#111613] font-normal tracking-tight"
+                            : "text-lg sm:text-xl text-[#5A685D] group-hover:text-[#111613] font-light leading-snug"
+                        }`}
+                      >
+                        {item.question}
+                      </h3>
+
+                      {/* Answer Reveal Container */}
+                      <div
+                        ref={(el) => {
+                          answerRefs.current[idx] = el;
+                        }}
+                        style={{
+                          maxHeight: isActive ? 160 : 0,
+                          opacity: isActive ? 1 : 0,
+                        }}
+                        className="overflow-hidden transition-all duration-300"
+                      >
+                        <div className="pt-4 border-t border-black/[0.08]">
+                          <p className="font-sans text-xs sm:text-sm md:text-base text-[#5A685D] leading-relaxed font-normal">
+                            {item.answer}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
 

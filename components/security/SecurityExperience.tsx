@@ -302,14 +302,14 @@ export function SecurityExperience() {
           className="relative w-full h-full flex items-center justify-center pointer-events-none z-10 will-change-transform"
         >
           {/* =========================================================================
-              HERO / OPENING STATEMENT — CENTERED
+              HERO / OPENING STATEMENT — ALIGNED
              ========================================================================= */}
           <div
             ref={heroRef}
-            className="absolute inset-0 flex flex-col items-center justify-center px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto text-center will-change-transform z-20 pointer-events-none"
+            className="absolute inset-0 flex flex-col items-center justify-center px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto text-left will-change-transform z-20 pointer-events-none"
           >
-            <div className="max-w-4xl mx-auto flex flex-col items-center">
-              <h2 className="font-sans font-black text-3xl sm:text-5xl lg:text-[62px] text-[#111613] tracking-[-0.035em] leading-[0.98]">
+            <div className="w-full max-w-2xl mx-auto flex flex-col items-start text-left">
+              <h2 className="font-sans font-black text-3xl sm:text-5xl lg:text-[62px] text-[#111613] tracking-[-0.035em] leading-[0.98] text-left">
                 We take your data <br />
                 <span className="text-[#22C55E]">as seriously as you</span> <br />
                 take your money.
@@ -318,8 +318,8 @@ export function SecurityExperience() {
           </div>
 
           {/* =========================================================================
-              THE 6 PRINCIPLES: CENTERED SPATIAL TYPOGRAPHY
-              (All statements share the exact same central focal anchor as the opening text)
+              THE 6 PRINCIPLES: SPATIAL TYPOGRAPHY WITH UNIFIED LEFT ANCHOR
+              (All statements share the exact same left-aligned anchor as the opening text)
              ========================================================================= */}
           {PRINCIPLES.map((principle, idx) => (
             <div
@@ -327,16 +327,16 @@ export function SecurityExperience() {
               ref={(el) => {
                 principleRefs.current[idx] = el;
               }}
-              className="absolute inset-0 flex flex-col items-center justify-center px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto text-center will-change-transform z-20 pointer-events-none"
+              className="absolute inset-0 flex flex-col items-center justify-center px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto text-left will-change-transform z-20 pointer-events-none"
             >
-              <div className="max-w-4xl mx-auto flex flex-col items-center text-center -translate-y-8 sm:-translate-y-12">
-                {/* Primary Headline: Centered, Large, Sculptural */}
-                <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[56px] text-[#111613] tracking-[-0.035em] uppercase leading-[1.0] mb-5">
+              <div className="w-full max-w-2xl mx-auto flex flex-col items-start text-left -translate-y-8 sm:-translate-y-12">
+                {/* Primary Headline: Left-Aligned, Large, Sculptural */}
+                <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[56px] text-[#111613] tracking-[-0.035em] uppercase leading-[1.0] mb-5 text-left">
                   {principle.title}
                 </h3>
 
-                {/* High-Readability Editorial Body: Centered */}
-                <p className="font-sans text-base sm:text-xl lg:text-2xl text-[#5A685D] font-light leading-relaxed max-w-2xl mx-auto">
+                {/* High-Readability Editorial Body: Left-Aligned directly beneath heading */}
+                <p className="font-sans text-base sm:text-xl lg:text-2xl text-[#5A685D] font-light leading-relaxed text-left">
                   {principle.body}
                 </p>
               </div>
@@ -344,16 +344,16 @@ export function SecurityExperience() {
           ))}
 
           {/* =========================================================================
-              CLOSING LINE: CENTERED BASELINE RESOLUTION
+              CLOSING LINE: BASELINE RESOLUTION
              ========================================================================= */}
           <div
             ref={closingRef}
-            className="absolute inset-0 flex flex-col items-center justify-center px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto text-center will-change-transform z-20 pointer-events-none"
+            className="absolute inset-0 flex flex-col items-center justify-center px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto text-left will-change-transform z-20 pointer-events-none"
           >
-            <div className="max-w-4xl mx-auto flex flex-col items-center text-center -translate-y-8 sm:-translate-y-12">
-              <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[56px] text-[#111613] tracking-[-0.035em] leading-[1.18] flex flex-col gap-3 sm:gap-4 md:gap-5">
+            <div className="w-full max-w-2xl mx-auto flex flex-col items-start text-left -translate-y-8 sm:-translate-y-12">
+              <h3 className="font-sans font-black text-3xl sm:text-5xl lg:text-[56px] text-[#111613] tracking-[-0.035em] leading-[1.18] flex flex-col items-start gap-3 sm:gap-4 md:gap-5 text-left">
                 <span className="whitespace-nowrap">Security isn&apos;t just a feature here,</span>
-                <span className="text-[#22C55E] flex flex-col gap-3 sm:gap-4 md:gap-5">
+                <span className="text-[#22C55E] flex flex-col items-start gap-3 sm:gap-4 md:gap-5">
                   <span className="whitespace-nowrap">It&apos;s the baseline everything</span>
                   <span className="whitespace-nowrap">else is built on.</span>
                 </span>

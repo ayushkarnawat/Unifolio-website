@@ -7,7 +7,7 @@ export const siteConfig = {
   webAppUrl: "https://app.unifolio.in",
   appStoreUrl: "https://apps.apple.com/app/unifolio/[PLACEHOLDER]",
   playStoreUrl: "https://play.google.com/store/apps/details?id=in.unifolio.app.[PLACEHOLDER]",
-  contactEmail: "hello@unifolio.in",
+  contactEmail: "support@unifolio.in",
   social: {
     twitter: "https://twitter.com/unifolio",
     linkedin: "https://www.linkedin.com/company/unifolio",
