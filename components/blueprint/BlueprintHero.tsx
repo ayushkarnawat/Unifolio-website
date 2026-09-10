@@ -425,6 +425,7 @@ export function BlueprintHero() {
   const onRingToProductCompletedRef = useRef<(() => void) | null>(null);
   const onConsolidateCompletedRef = useRef<(() => void) | null>(null);
   const onRestoreStackCompletedRef = useRef<(() => void) | null>(null);
+  const pendingNavSectionRef = useRef<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -608,6 +609,26 @@ export function BlueprintHero() {
       if (!containerRef.current || !stageRef.current) return;
 
       const reduced = prefersReducedMotion();
+
+      // Single choke point for announcing the landed section to the navbar dots.
+      // Every call site marks a genuinely settled, stable state (never mid-animation),
+      // so this is also the correct moment to flush any navbar click that arrived
+      // while a transition was in flight (see navigateToSection's re-entrancy guard).
+      const dispatchActiveSection = (section: string) => {
+        window.dispatchEvent(new CustomEvent("unifolio-active-section", { detail: { section } }));
+        // Defer the queue check to the next frame: some completion callbacks dispatch
+        // here and only clear isNavigatingRef a few lines later in the same synchronous
+        // callback (e.g. restoreStackToRing's onComplete). Checking on the next frame
+        // guarantees that later, still-synchronous cleanup has already run.
+        requestAnimationFrame(() => {
+          if (isNavigatingRef.current || stateRef.current === "sculpting") return;
+          const pending = pendingNavSectionRef.current;
+          if (pending) {
+            pendingNavSectionRef.current = null;
+            navigateToSection(pending);
+          }
+        });
+      };
 
       // Ensure Hero text and visual are immediately visible
       gsap.set(heroIntroRef.current, { opacity: 1, y: 0 });
@@ -834,8 +855,8 @@ export function BlueprintHero() {
         const hRow2 = bentoH - gapY - hRow1;
 
         // Row 1 (Top):
-        // Card 1 is narrower (~39%), Card 2 is wider (~61%)
-        const w1 = Math.round(availRowW * 0.39);
+        // Card 1 (Skip the dashboards. Just ask.) is wider (~61%), Card 2 (See everything) is narrower (~39%)
+        const w1 = availRowW - Math.round(availRowW * 0.39);
         const h1 = hRow1;
         const w2 = availRowW - w1;
         const h2 = hRow1;
@@ -906,8 +927,8 @@ export function BlueprintHero() {
       const initClusterW = cardsClusterRef.current?.offsetWidth || Math.min(initVw, 1340);
       const initClusterH = cardsClusterRef.current?.offsetHeight || 370;
       const initBento = computeBentoLayout(initVw, initVh);
-      const initTargetCardLeft = Math.round(initBento.tileLefts[2] + (initBento.tileWidths[2] - initRestW) / 2);
-      const initTargetCardTop = Math.round(initBento.tileTops[2] + (initBento.tileHeights[2] - initHRest) / 2);
+      const initTargetCardLeft = Math.round(initBento.tileLefts[1] + (initBento.tileWidths[1] - initRestW) / 2);
+      const initTargetCardTop = Math.round(initBento.tileTops[1] + (initBento.tileHeights[1] - initHRest) / 2);
       const initStackTargetX = Math.round(initTargetCardLeft + initRestW / 2 - initClusterW / 2);
       const initStackTargetY = Math.round(initTargetCardTop + initHRest / 2 - initClusterH / 2);
 
@@ -965,9 +986,7 @@ export function BlueprintHero() {
               [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
               { autoAlpha: 1, opacity: 1, visibility: "visible" }
             );
-            window.dispatchEvent(
-              new CustomEvent("unifolio-active-section", { detail: { section: "product" } })
-            );
+            dispatchActiveSection("product");
             if (onHeroToProductCompletedRef.current) {
               const cb = onHeroToProductCompletedRef.current;
               onHeroToProductCompletedRef.current = null;
@@ -995,9 +1014,7 @@ export function BlueprintHero() {
                 el.style.height = "";
               }
             });
-            window.dispatchEvent(
-              new CustomEvent("unifolio-active-section", { detail: { section: "hero" } })
-            );
+            dispatchActiveSection("hero");
             if (onProductToHeroCompletedRef.current) {
               const cb = onProductToHeroCompletedRef.current;
               onProductToHeroCompletedRef.current = null;
@@ -1299,9 +1316,7 @@ export function BlueprintHero() {
             transitionAnimatingRef.current = false;
             if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "";
             if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "";
-            window.dispatchEvent(
-              new CustomEvent("unifolio-active-section", { detail: { section: "product" } })
-            );
+            dispatchActiveSection("product");
           },
           onReverseComplete: () => {
             stateRef.current = "product-resting";
@@ -1331,9 +1346,7 @@ export function BlueprintHero() {
                 });
               }
             });
-            window.dispatchEvent(
-              new CustomEvent("unifolio-active-section", { detail: { section: "product" } })
-            );
+            dispatchActiveSection("product");
           },
         });
 
@@ -1563,9 +1576,9 @@ export function BlueprintHero() {
         // Current Bento layout coordinates
         const bento = computeBentoLayout(vWidth, vHeight);
 
-        // Destination stack point for Phase 1: Card 03 ("Skip the dashboards. Just ask.", idx === 2)
-        const targetCardLeft = Math.round(bento.tileLefts[2] + (bento.tileWidths[2] - restingWidth) / 2);
-        const targetCardTop = Math.round(bento.tileTops[2] + (bento.tileHeights[2] - hRest) / 2);
+        // Destination stack point for Phase 1: Card 02 ("Skip the dashboards. Just ask.", idx === 1)
+        const targetCardLeft = Math.round(bento.tileLefts[1] + (bento.tileWidths[1] - restingWidth) / 2);
+        const targetCardTop = Math.round(bento.tileTops[1] + (bento.tileHeights[1] - hRest) / 2);
         const stackTargetX = Math.round(targetCardLeft + restingWidth / 2 - clusterW / 2);
         const stackTargetY = Math.round(targetCardTop + hRest / 2 - clusterH / 2);
 
@@ -1704,6 +1717,8 @@ export function BlueprintHero() {
 
             playMoneyAnimation();
 
+            dispatchActiveSection("security");
+
             if (onProductToRingCompletedRef.current) {
               const cb = onProductToRingCompletedRef.current;
               onProductToRingCompletedRef.current = null;
@@ -1817,9 +1832,7 @@ export function BlueprintHero() {
               if (compEl) gsap.set(compEl, { opacity: 0, visibility: "hidden" });
             });
 
-            window.dispatchEvent(
-              new CustomEvent("unifolio-active-section", { detail: { section: "product" } })
-            );
+            dispatchActiveSection("product");
 
             if (onRingToProductCompletedRef.current) {
               const cb = onRingToProductCompletedRef.current;
@@ -1855,7 +1868,7 @@ export function BlueprintHero() {
                 rotateZ: 0,
                 scale: 1,
                 opacity: 1,
-                zIndex: i === 2 ? 30 : 20 + i,
+                zIndex: i === 1 ? 30 : 20 + i,
               },
               0
             );
@@ -1956,10 +1969,10 @@ export function BlueprintHero() {
           const wrapper = cardWrapperRefs.current[i];
           if (!wrapper) return;
 
-          // Card 2 ("Skip the dashboards. Just ask.") stays at front of the stack (destZ = 0)
+          // Card 1 ("Skip the dashboards. Just ask.") stays at front of the stack (destZ = 0)
           // Other cards layer neatly behind it with subtle depth stratification
-          const destZ = i === 2 ? 0 : (i < 2 ? -8 * (2 - i) : -8 * (i - 1));
-          const startDelay = i === 2 ? 0 : 0.015 * (i === 1 ? 1 : i === 0 ? 2 : i === 3 ? 3 : 4);
+          const destZ = i === 1 ? 0 : (i < 1 ? -8 * (1 - i) : -8 * i);
+          const startDelay = i === 1 ? 0 : 0.015 * (i === 2 ? 1 : i === 0 ? 2 : i === 3 ? 3 : 4);
 
           tl.to(
             wrapper,
@@ -1982,8 +1995,8 @@ export function BlueprintHero() {
           );
         });
 
-        // Fade out content on converging cards (0, 1, 3, 4) as they slide and disappear behind Card 2
-        [0, 1, 3, 4].forEach((i) => {
+        // Fade out content on converging cards (0, 2, 3, 4) as they slide and disappear behind Card 1
+        [0, 2, 3, 4].forEach((i) => {
           const content = bentoTileContentRefs.current[i];
           if (content) {
             tl.to(
@@ -1994,12 +2007,12 @@ export function BlueprintHero() {
           }
         });
 
-        // Card 2 ("Skip the dashboards. Just ask.") retains its content throughout the convergence,
+        // Card 1 ("Skip the dashboards. Just ask.") retains its content throughout the convergence,
         // and smoothly dissolves right as the stack settles into position
-        const card2Content = bentoTileContentRefs.current[2];
-        if (card2Content) {
+        const card1Content = bentoTileContentRefs.current[1];
+        if (card1Content) {
           tl.to(
-            card2Content,
+            card1Content,
             { autoAlpha: 0, opacity: 0, duration: 0.22, ease: "power2.out" },
             collapseDuration - 0.22
           );
@@ -3691,9 +3704,7 @@ export function BlueprintHero() {
               if (faqEl) {
                 smoothScrollTo(faqEl, { duration: 0.85, ease: "power2.inOut" });
               }
-              window.dispatchEvent(
-                new CustomEvent("unifolio-active-section", { detail: { section: "faq" } })
-              );
+              dispatchActiveSection("faq");
             });
           },
         });
@@ -3873,6 +3884,8 @@ export function BlueprintHero() {
           );
         }
 
+        isRingConsolidatedRef.current = true;
+
         if (aboutContentRef.current) {
           gsap.fromTo(
             aboutContentRef.current,
@@ -3888,17 +3901,14 @@ export function BlueprintHero() {
               ease: "power2.out",
               onComplete: () => {
                 isSecurityTransitioningRef.current = false;
+                dispatchActiveSection("about");
               },
             }
           );
         } else {
           isSecurityTransitioningRef.current = false;
+          dispatchActiveSection("about");
         }
-
-        isRingConsolidatedRef.current = true;
-        window.dispatchEvent(
-          new CustomEvent("unifolio-active-section", { detail: { section: "about" } })
-        );
       };
 
       const consolidateRingToStack = () => {
@@ -4069,9 +4079,7 @@ export function BlueprintHero() {
             isFlippingDocRef.current = false;
 
             // Update Navbar
-            window.dispatchEvent(
-              new CustomEvent("unifolio-active-section", { detail: { section: "about" } })
-            );
+            dispatchActiveSection("about");
 
             if (onConsolidateCompletedRef.current) {
               const cb = onConsolidateCompletedRef.current;
@@ -4155,9 +4163,7 @@ export function BlueprintHero() {
                 }
               );
             }
-            window.dispatchEvent(
-              new CustomEvent("unifolio-active-section", { detail: { section: "security" } })
-            );
+            dispatchActiveSection("security");
           },
         });
         consolidationTlRef.current = tl;
@@ -4166,6 +4172,17 @@ export function BlueprintHero() {
         if (aboutContentRef.current) {
           tl.set(aboutContentRef.current, { visibility: "hidden", opacity: 0 }, 0);
         }
+
+        // Hide the Security stage/state text immediately: it otherwise keeps rendering
+        // on top of the About stack and doc reveal for the whole consolidation, since
+        // only the reverse (restoreStackToRing) timeline was clearing it. Mirrors what
+        // that reverse timeline already does for these same elements.
+        if (securityStageRef.current) {
+          tl.set(securityStageRef.current, { opacity: 0, visibility: "hidden" }, 0);
+        }
+        securityStateRefs.current.forEach((el) => {
+          if (el) tl.set(el, { opacity: 0, visibility: "hidden" }, 0);
+        });
 
         // Cluster counter-rotates backward along the unwind, settling to neutral upright orientation
         tl.to(
@@ -4973,9 +4990,7 @@ export function BlueprintHero() {
               );
             }
 
-            window.dispatchEvent(
-              new CustomEvent("unifolio-active-section", { detail: { section: "security" } })
-            );
+            dispatchActiveSection("security");
 
             if (onRestoreStackCompletedRef.current) {
               const cb = onRestoreStackCompletedRef.current;
@@ -5481,11 +5496,6 @@ export function BlueprintHero() {
           cardsStageRef.current.style.pointerEvents = "none";
         }
 
-        // Notify Navbar IMMEDIATELY to transition active indicator from Product to Security
-        window.dispatchEvent(
-          new CustomEvent("unifolio-active-section", { detail: { section: "security" } })
-        );
-
         // 1. Snapshot and snap the exact pinned scroll position so no shift occurs
         const pinEnd = apertureScrollTriggerRef.current?.end ?? window.scrollY;
         lockScrollYRef.current = pinEnd;
@@ -5623,10 +5633,6 @@ export function BlueprintHero() {
           currentSecurityStateRef.current = 0;
         }
 
-        // 3. Notify Navbar IMMEDIATELY that we are returning to Product
-        window.dispatchEvent(
-          new CustomEvent("unifolio-active-section", { detail: { section: "product" } })
-        );
 
         const pinEnd = apertureScrollTriggerRef.current?.end ?? window.scrollY;
         lockScrollYRef.current = pinEnd;
@@ -6143,7 +6149,7 @@ export function BlueprintHero() {
         transitionStartedRef.current = false;
         transitionAnimatingRef.current = false;
         transitionCompleteRef.current = false;
-        window.dispatchEvent(new CustomEvent("unifolio-active-section", { detail: { section: "product" } }));
+        dispatchActiveSection("product");
         if (arrivalIdleTimeoutRef.current) {
           clearTimeout(arrivalIdleTimeoutRef.current);
           arrivalIdleTimeoutRef.current = null;
@@ -6170,6 +6176,15 @@ export function BlueprintHero() {
         }
         companionCardRefs.current.forEach((compEl) => {
           if (compEl) gsap.set(compEl, { opacity: 0, visibility: "hidden" });
+        });
+        // Product has no Security content — clear any state (incl. state 7, which
+        // carries the About "closing statement" text) left visible from a prior
+        // visit to Security/About, so it can't bleed through behind the bento grid.
+        if (securityStageRef.current) {
+          gsap.set(securityStageRef.current, { opacity: 0, visibility: "hidden" });
+        }
+        securityStateRefs.current.forEach((el) => {
+          if (el) gsap.set(el, { opacity: 0, visibility: "hidden" });
         });
         if (stageRef.current) {
           stageRef.current.style.position = "";
@@ -6275,7 +6290,7 @@ export function BlueprintHero() {
         transitionStartedRef.current = false;
         transitionAnimatingRef.current = false;
         transitionCompleteRef.current = false;
-        window.dispatchEvent(new CustomEvent("unifolio-active-section", { detail: { section: "hero" } }));
+        dispatchActiveSection("hero");
         if (heroToProductTlRef.current) {
           heroToProductTlRef.current.kill();
           heroToProductTlRef.current = null;
@@ -6302,6 +6317,15 @@ export function BlueprintHero() {
         }
         companionCardRefs.current.forEach((compEl) => {
           if (compEl) gsap.set(compEl, { opacity: 0, visibility: "hidden" });
+        });
+        // Hero has no Security content — clear any state (incl. state 7, which
+        // carries the About "closing statement" text) left visible from a prior
+        // visit to Security/About, so it can't bleed through behind Hero/Product.
+        if (securityStageRef.current) {
+          gsap.set(securityStageRef.current, { opacity: 0, visibility: "hidden" });
+        }
+        securityStateRefs.current.forEach((el) => {
+          if (el) gsap.set(el, { opacity: 0, visibility: "hidden" });
         });
         if (stageRef.current) {
           stageRef.current.style.position = "";
@@ -6459,8 +6483,8 @@ export function BlueprintHero() {
         const clusterW = cardsClusterRef.current?.offsetWidth || Math.min(vwVal, 1340);
         const clusterH = cardsClusterRef.current?.offsetHeight || 370;
         const bento = computeBentoLayout(vwVal, vhVal);
-        const targetCardLeft = Math.round(bento.tileLefts[2] + (bento.tileWidths[2] - restingWidth) / 2);
-        const targetCardTop = Math.round(bento.tileTops[2] + (bento.tileHeights[2] - hRest) / 2);
+        const targetCardLeft = Math.round(bento.tileLefts[1] + (bento.tileWidths[1] - restingWidth) / 2);
+        const targetCardTop = Math.round(bento.tileTops[1] + (bento.tileHeights[1] - hRest) / 2);
         const stackTargetX = Math.round(targetCardLeft + restingWidth / 2 - clusterW / 2);
         const stackTargetY = Math.round(targetCardTop + hRest / 2 - clusterH / 2);
 
@@ -6636,7 +6660,7 @@ export function BlueprintHero() {
         }
 
         playMoneyAnimation();
-        window.dispatchEvent(new CustomEvent("unifolio-active-section", { detail: { section: "security" } }));
+        dispatchActiveSection("security");
       };
 
       // =======================================================================
@@ -6645,6 +6669,24 @@ export function BlueprintHero() {
       // animations and ensuring intended initial state at each destination.
       // =======================================================================
       const navigateToSection = (targetSection: string) => {
+        // Re-entrancy guard: a transition (nav-driven or scroll-driven) is already
+        // in flight. Starting a second one here would fall through every branch
+        // below unhandled (none of them account for a "sculpting" origin) and
+        // permanently strand isNavigatingRef at true, which in turn permanently
+        // blocks all scroll/wheel/touch/keyboard input site-wide. Instead, queue
+        // this click and replay it the moment the in-flight transition lands on a
+        // stable section — dispatchActiveSection flushes the queue on every such
+        // landing, whether reached by scroll or by a previous nav click.
+        if (
+          isNavigatingRef.current ||
+          transitionAnimatingRef.current ||
+          isSecurityTransitioningRef.current ||
+          stateRef.current === "sculpting"
+        ) {
+          pendingNavSectionRef.current = targetSection;
+          return;
+        }
+
         targetNavSectionRef.current = targetSection;
 
         // ---------------------------------------------------------------------
@@ -6820,8 +6862,17 @@ export function BlueprintHero() {
         // Destination: PRODUCT
         // ---------------------------------------------------------------------
         if (targetSection === "product") {
-          if (stateRef.current === "product" || stateRef.current === "product-resting") {
-            window.dispatchEvent(new CustomEvent("unifolio-active-section", { detail: { section: "product" } }));
+          if (stateRef.current === "product") {
+            dispatchActiveSection("product");
+            return;
+          }
+
+          // "product-resting" is only the teaser row reached mid-scroll from Hero —
+          // the actual Product section content is the full bento grid. Play the
+          // existing resting -> bento reveal so Product always opens fully, not
+          // half-rendered.
+          if (stateRef.current === "product-resting") {
+            triggerRestingToBento();
             return;
           }
 
@@ -6830,6 +6881,7 @@ export function BlueprintHero() {
             onHeroToProductCompletedRef.current = () => {
               isNavigatingRef.current = false;
               targetNavSectionRef.current = null;
+              triggerRestingToBento();
             };
             triggerHeroToProduct();
             return;
@@ -6868,7 +6920,7 @@ export function BlueprintHero() {
               });
               currentSecurityStateRef.current = 0;
             }
-            window.dispatchEvent(new CustomEvent("unifolio-active-section", { detail: { section: "security" } }));
+            dispatchActiveSection("security");
             return;
           }
 
@@ -6930,7 +6982,7 @@ export function BlueprintHero() {
               if (docFlipperRef.current) gsap.to(docFlipperRef.current, { rotateY: 0, duration: 0.4, ease: "power2.inOut" });
               aboutDocPageRef.current = 1;
             }
-            window.dispatchEvent(new CustomEvent("unifolio-active-section", { detail: { section: "about" } }));
+            dispatchActiveSection("about");
             return;
           }
 
@@ -7537,9 +7589,9 @@ export function BlueprintHero() {
                                   (idx === 0
                                     ? "radial-gradient(ellipse 85% 70% at 85% 85%, rgba(34, 197, 94, 0.18) 0%, rgba(16, 185, 129, 0.06) 45%, transparent 75%)"
                                     : idx === 1
-                                    ? "radial-gradient(ellipse 85% 70% at 50% 90%, rgba(34, 197, 94, 0.16) 0%, rgba(20, 184, 166, 0.06) 45%, transparent 75%)"
-                                    : idx === 2
                                     ? "radial-gradient(ellipse 80% 70% at 85% 85%, rgba(34, 197, 94, 0.18) 0%, rgba(16, 185, 129, 0.07) 45%, transparent 75%)"
+                                    : idx === 2
+                                    ? "radial-gradient(ellipse 85% 70% at 50% 90%, rgba(34, 197, 94, 0.16) 0%, rgba(20, 184, 166, 0.06) 45%, transparent 75%)"
                                     : idx === 3
                                     ? "radial-gradient(ellipse 85% 70% at 15% 85%, rgba(34, 197, 94, 0.16) 0%, rgba(5, 150, 105, 0.06) 45%, transparent 75%)"
                                     : "radial-gradient(ellipse 90% 75% at 85% 85%, rgba(34, 197, 94, 0.18) 0%, rgba(74, 222, 128, 0.07) 45%, transparent 75%)"),
@@ -7596,17 +7648,7 @@ export function BlueprintHero() {
                                 </div>
                               </div>
                             ) : idx === 1 ? (
-                              // TILE 02: See everything
-                              <div className="flex flex-col h-full justify-start">
-                                <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-[32px] tracking-[-0.035em] text-neutral-950 leading-[1.12]">
-                                  See everything
-                                </h3>
-                                <p className="mt-3 sm:mt-3.5 text-xs sm:text-[13.5px] lg:text-[14px] text-neutral-600 font-medium leading-relaxed">
-                                  Mutual funds, stocks, bank accounts, loans, credit cards, real estate. Every asset and liability, aggregated into one accurate number.
-                                </p>
-                              </div>
-                            ) : idx === 2 ? (
-                              // TILE 03: Skip the dashboards. Just ask
+                              // TILE 02: Skip the dashboards. Just ask
                               <div className="flex h-full items-center justify-between gap-3 sm:gap-4">
                                 <div className="max-w-[260px] sm:max-w-[285px] lg:max-w-[300px] flex flex-col justify-start shrink-0">
                                   <h3 className="font-sans font-black text-xl sm:text-2xl lg:text-[26px] tracking-[-0.03em] text-neutral-950 leading-tight">
@@ -7625,6 +7667,16 @@ export function BlueprintHero() {
                                     className="w-auto h-full max-h-[235px] sm:max-h-[258px] lg:max-h-[275px] object-contain drop-shadow-sm scale-115 sm:scale-120 origin-center"
                                   />
                                 </div>
+                              </div>
+                            ) : idx === 2 ? (
+                              // TILE 03: See everything
+                              <div className="flex flex-col h-full justify-start">
+                                <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-[32px] tracking-[-0.035em] text-neutral-950 leading-[1.12]">
+                                  See everything
+                                </h3>
+                                <p className="mt-3 sm:mt-3.5 text-xs sm:text-[13.5px] lg:text-[14px] text-neutral-600 font-medium leading-relaxed">
+                                  Mutual funds, stocks, bank accounts, loans, credit cards, real estate. Every asset and liability, aggregated into one accurate number.
+                                </p>
                               </div>
                             ) : idx === 3 ? (
                               // TILE 04: Know your risk
@@ -8350,11 +8402,10 @@ export function BlueprintHero() {
                   variant="primary"
                   className="shadow-md shadow-emerald-500/15"
                   onClick={(e) => {
-                    const target = document.getElementById("contact");
-                    if (target) {
-                      e.preventDefault();
-                      smoothScrollTo(target.offsetTop, { duration: 1.1, ease: "power2.inOut" });
-                    }
+                    e.preventDefault();
+                    window.dispatchEvent(
+                      new CustomEvent("unifolio-nav-click", { detail: { section: "contact" } })
+                    );
                   }}
                 >
                   <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_10px_#22C55E] group-hover:scale-125 transition-transform" />
@@ -9036,11 +9087,10 @@ export function BlueprintHero() {
                 variant="primary"
                 className="shadow-md shadow-emerald-500/15 pointer-events-auto group"
                 onClick={(e) => {
-                  const target = document.getElementById("contact");
-                  if (target) {
-                    e.preventDefault();
-                    smoothScrollTo(target.offsetTop, { duration: 1.1, ease: "power2.inOut" });
-                  }
+                  e.preventDefault();
+                  window.dispatchEvent(
+                    new CustomEvent("unifolio-nav-click", { detail: { section: "contact" } })
+                  );
                 }}
               >
                 <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_10px_#22C55E] group-hover:scale-125 transition-transform" />
@@ -9071,11 +9121,10 @@ export function BlueprintHero() {
             variant="primary"
             className="shadow-xl shadow-emerald-500/15 group"
             onClick={(e) => {
-              const target = document.getElementById("contact");
-              if (target) {
-                e.preventDefault();
-                smoothScrollTo(target.offsetTop, { duration: 1.1, ease: "power2.inOut" });
-              }
+              e.preventDefault();
+              window.dispatchEvent(
+                new CustomEvent("unifolio-nav-click", { detail: { section: "contact" } })
+              );
             }}
           >
             <span className="w-2.5 h-2.5 rounded-full bg-[#22C55E] shadow-[0_0_12px_#22C55E] group-hover:scale-125 transition-transform" />

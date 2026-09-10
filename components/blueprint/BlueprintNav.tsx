@@ -110,9 +110,10 @@ export function BlueprintNav() {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
 
-    const mapped = id === "hero" ? "product" : id;
-    setActiveId(mapped);
-
+    // Do not set activeId here: the dot must reflect where the user actually
+    // *is*, not where they just clicked. BlueprintHero's state machine is the
+    // single source of truth — it dispatches "unifolio-active-section" only
+    // once the cinematic transition has genuinely landed on the destination.
     window.dispatchEvent(
       new CustomEvent("unifolio-nav-click", { detail: { section: id } })
     );
@@ -136,7 +137,8 @@ export function BlueprintNav() {
           if (typeof window !== "undefined") {
             if (window.location.pathname === "/" || window.location.pathname === "") {
               e.preventDefault();
-              setActiveId("product");
+              // No local setActiveId: wait for BlueprintHero's own
+              // "unifolio-active-section" dispatch once Hero is actually reached.
               window.dispatchEvent(
                 new CustomEvent("unifolio-nav-click", { detail: { section: "hero" } })
               );

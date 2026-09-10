@@ -82,7 +82,10 @@ export function BlueprintContact() {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     if (href === "#hero") {
+      // unifolio-reset-hero already drives the full Hero transition, including
+      // its own scroll-to-top — a second raw smoothScrollTo here would race it.
       window.dispatchEvent(new CustomEvent("unifolio-reset-hero"));
+      return;
     }
     smoothScrollTo(href);
   };
