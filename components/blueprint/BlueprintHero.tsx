@@ -5233,10 +5233,12 @@ export function BlueprintHero() {
 
       const goToSecurityState = (nextIdx: number, direction: 1 | -1) => {
         if (nextIdx < 0 || nextIdx >= SECURITY_STATES.length) return;
+        if (isSecurityTransitioningRef.current) return;
 
         const prevIdx = currentSecurityStateRef.current;
         if (prevIdx === nextIdx) return;
 
+        isSecurityTransitioningRef.current = true;
         lastSecurityScrollTimeRef.current = Date.now();
         currentSecurityStateRef.current = nextIdx;
 
@@ -5369,6 +5371,7 @@ export function BlueprintHero() {
         const tl = gsap.timeline({
           onComplete: () => {
             securityStateTransitionTlRef.current = null;
+            isSecurityTransitioningRef.current = false;
             if (nextIdx === 0) {
               if (nextEl) gsap.set(nextEl, { clipPath: "none" });
               playMoneyAnimation();
@@ -5750,6 +5753,11 @@ export function BlueprintHero() {
           wheelGestureEndTimerRef.current = setTimeout(() => {
             wheelGestureActiveRef.current = false;
           }, 180);
+
+          // A state transition (or ring consolidation) is already animating:
+          // ignore every extra wheel tick from this gesture so one scroll
+          // — regardless of intensity — only ever advances a single state.
+          if (isSecurityTransitioningRef.current) return;
 
           // Allow responsive scrolling up and down between animations (220ms cadence)
           if (Date.now() - lastSecurityScrollTimeRef.current < 220) return;
