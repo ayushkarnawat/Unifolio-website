@@ -52,8 +52,9 @@ export function BlueprintNav() {
     const handleActiveSection = (e: Event) => {
       const ce = e as CustomEvent<{ section: string }>;
       if (ce.detail?.section) {
-        forcedSectionRef.current = ce.detail.section;
-        setActiveId(ce.detail.section);
+        const mapped = ce.detail.section === "hero" ? "product" : ce.detail.section;
+        forcedSectionRef.current = mapped;
+        setActiveId(mapped);
       }
     };
 
@@ -61,7 +62,7 @@ export function BlueprintNav() {
     return () => window.removeEventListener("unifolio-active-section", handleActiveSection);
   }, []);
 
-  // Scroll listener for backdrop styling & active section sync
+  // Scroll listener for backdrop styling & active section sync (only for unpinned sections FAQ/Contact)
   useEffect(() => {
     const NAVBAR_HEIGHT = 56; // fixed header py-3.5 + logo h-7
 
@@ -69,53 +70,36 @@ export function BlueprintNav() {
       const scrollY = window.scrollY;
       setScrolled(scrollY > 60);
 
+      // Pinned BlueprintHero manages sections while scrollY <= 120.
+      // Do not infer or clobber activeId when scrollY is in the pinned region.
+      if (scrollY <= 120) {
+        return;
+      }
+
       const contactEl = document.getElementById("contact");
       const faqEl = document.getElementById("faq");
-      const aboutEl = document.getElementById("about");
 
-      // Trigger point: the pixel just below the navbar (+ a small 40px grace buffer).
-      // A section becomes "active" as soon as its top edge clears this line.
       const triggerY = scrollY + NAVBAR_HEIGHT + 40;
       const isAtBottom =
         scrollY + window.innerHeight >= document.documentElement.scrollHeight - 50;
 
-      // 1. Bottom of page  →  Contact
+      // 1. Bottom of page or contact cleared navbar -> Contact
       if (isAtBottom || (contactEl && triggerY >= contactEl.offsetTop)) {
-        forcedSectionRef.current = null;
         setActiveId("contact");
         return;
       }
 
-      // 2. FAQ section cleared the navbar
+      // 2. FAQ section cleared navbar -> FAQ
       if (faqEl && triggerY >= faqEl.offsetTop) {
-        forcedSectionRef.current = null;
         setActiveId("faq");
         return;
       }
-
-      // 3. About section cleared the navbar
-      if (aboutEl && triggerY >= aboutEl.offsetTop) {
-        forcedSectionRef.current = null;
-        setActiveId("about");
-        return;
-      }
-
-      // 4. Above About — security driven by custom event (animation state machine)
-      if (forcedSectionRef.current === "security") {
-        setActiveId("security");
-        return;
-      }
-
-      // 5. Default: product / hero
-      forcedSectionRef.current = null;
-      setActiveId("product");
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll(); // sync on mount
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
 
   const handleAnchorClick = (
     event: React.MouseEvent<HTMLAnchorElement>,
@@ -126,56 +110,12 @@ export function BlueprintNav() {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
 
-    forcedSectionRef.current = id;
-    setActiveId(id);
+    const mapped = id === "hero" ? "product" : id;
+    setActiveId(mapped);
 
-    if (href === "#hero" || id === "hero") {
-      forcedSectionRef.current = null;
-      setActiveId("product");
-      window.dispatchEvent(new CustomEvent("unifolio-reset-hero"));
-      smoothScrollTo(0, { duration: 0.85, ease: "power2.inOut" });
-      return;
-    }
-
-    if (href === "#product" || id === "product") {
-      forcedSectionRef.current = "product";
-      setActiveId("product");
-      window.dispatchEvent(new CustomEvent("unifolio-show-product"));
-      return;
-    }
-
-    if (href === "#security" || id === "security") {
-      forcedSectionRef.current = "security";
-      setActiveId("security");
-      window.dispatchEvent(new CustomEvent("unifolio-show-security"));
-      return;
-    }
-
-    if (href === "#about" || id === "about") {
-      forcedSectionRef.current = "about";
-      setActiveId("about");
-      window.dispatchEvent(new CustomEvent("unifolio-show-about"));
-      const navbarOffset = 75;
-      smoothScrollTo(href, { offset: navbarOffset, duration: 0.85, ease: "power2.inOut" });
-      return;
-    }
-
-    if (href === "#faq" || id === "faq") {
-      forcedSectionRef.current = "faq";
-      setActiveId("faq");
-      window.dispatchEvent(new CustomEvent("unifolio-show-faq"));
-      if (typeof document !== "undefined") {
-        document.documentElement.style.overflow = "";
-        document.body.style.overflow = "";
-      }
-      const navbarOffset = 75;
-      smoothScrollTo(href, { offset: navbarOffset, duration: 0.85, ease: "power2.inOut" });
-      return;
-    }
-
-    // Direct, controlled smooth navigation with sticky navbar offset (75px)
-    const navbarOffset = 75;
-    smoothScrollTo(href, { offset: navbarOffset, duration: 0.85, ease: "power2.inOut" });
+    window.dispatchEvent(
+      new CustomEvent("unifolio-nav-click", { detail: { section: id } })
+    );
   };
 
   return (
@@ -196,10 +136,10 @@ export function BlueprintNav() {
           if (typeof window !== "undefined") {
             if (window.location.pathname === "/" || window.location.pathname === "") {
               e.preventDefault();
-              forcedSectionRef.current = null;
               setActiveId("product");
-              window.dispatchEvent(new CustomEvent("unifolio-reset-hero"));
-              smoothScrollTo(0, { duration: 0.85, ease: "power2.inOut" });
+              window.dispatchEvent(
+                new CustomEvent("unifolio-nav-click", { detail: { section: "hero" } })
+              );
             }
           }
         }}
