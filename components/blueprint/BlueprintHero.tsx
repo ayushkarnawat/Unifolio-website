@@ -5,7 +5,19 @@ import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
 import { HeroApertureVisual } from "@/components/hero/HeroApertureVisual";
 import { LinkButton } from "@/components/ui/Button";
-import { ArrowRight, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Sparkles,
+  Search,
+  Users,
+  Layers,
+  TrendingUp,
+  Activity,
+  CheckCircle2,
+  HelpCircle,
+  Coins,
+  Shield,
+} from "lucide-react";
 
 interface ProductCardData {
   id: string;
@@ -314,6 +326,8 @@ export function BlueprintHero() {
   const cardIllustrationRefs = useRef<(HTMLDivElement | null)[]>([]);
   const cardGradientBgRefs = useRef<(HTMLDivElement | null)[]>([]);
   const cardGlassOverlayRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const bentoTileContentRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const bentoClosingCtaRef = useRef<HTMLDivElement | null>(null);
   const companionCardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const COMPANION_COUNT = 21;
   const productToRingTlRef = useRef<gsap.core.Timeline | null>(null);
@@ -387,7 +401,7 @@ export function BlueprintHero() {
   const touchGestureActiveRef = useRef<boolean>(false);
 
   // State management & transition guards
-  const stateRef = useRef<"hero" | "product" | "sculpting" | "ring" | "about" | "faq">("hero");
+  const stateRef = useRef<"hero" | "product-resting" | "product" | "sculpting" | "ring" | "about" | "faq">("hero");
   const productCompleteRef = useRef<boolean>(false);
   const isHoldingProductRef = useRef<boolean>(false);
   const transitionStartedRef = useRef<boolean>(false);
@@ -400,6 +414,7 @@ export function BlueprintHero() {
   const currentHoverRef = useRef<number | null>(null);
   const hoverCommitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const heroToProductTlRef = useRef<gsap.core.Timeline | null>(null);
+  const restingToBentoTlRef = useRef<gsap.core.Timeline | null>(null);
 
   useEffect(() => {
     return () => {
@@ -409,6 +424,10 @@ export function BlueprintHero() {
       if (heroToProductTlRef.current) {
         heroToProductTlRef.current.kill();
         heroToProductTlRef.current = null;
+      }
+      if (restingToBentoTlRef.current) {
+        restingToBentoTlRef.current.kill();
+        restingToBentoTlRef.current = null;
       }
       if (ringRotateTweenRef.current) {
         ringRotateTweenRef.current.kill();
@@ -525,219 +544,18 @@ export function BlueprintHero() {
             "0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4)",
         });
       }
+
+      const bentoContent = bentoTileContentRefs.current[i];
+      if (bentoContent) {
+        gsap.killTweensOf(bentoContent);
+        gsap.set(bentoContent, { autoAlpha: 0, y: 14 });
+      }
     });
   };
 
-  // GSAP Interactive Card Hover Choreography: Unified, reversible, zero-glitch controller
-  const commitCardHover = (idx: number | null) => {
-    if (
-      stateRef.current !== "product" ||
-      transitionStartedRef.current ||
-      transitionAnimatingRef.current ||
-      isSecurityTransitioningRef.current
-    ) {
-      return;
-    }
-    isHoldingProductRef.current = true;
-    productCompleteRef.current = true;
-    if (currentHoverRef.current === idx) return;
-    currentHoverRef.current = idx;
-
-    const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
-    const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
-
-    const restingWidth = isDesktop ? 225 : isTablet ? 195 : 175;
-    const expandedWidth = isDesktop ? 365 : isTablet ? 315 : 280;
-    const compressedWidth = isDesktop ? 190 : isTablet ? 165 : 148;
-
-    PRODUCT_CARDS.forEach((card, i) => {
-      const wrapper = cardWrapperRefs.current[i];
-      const defaultEl = cardDefaultRefs.current[i];
-      const hoverEl = cardHoverRefs.current[i];
-      const front = cardFrontRefs.current[i];
-      const illus = cardIllustrationRefs.current[i];
-      if (!wrapper) return;
-
-      if (idx === null) {
-        gsap.to(wrapper, {
-          width: restingWidth,
-          scale: 1,
-          x: 0,
-          y: card.restY,
-          z: card.restZ,
-          rotateY: card.restRotateY,
-          rotateZ: card.restRotateZ,
-          opacity: 1,
-          zIndex: 10 + (2 - Math.abs(i - 2)),
-          duration: 0.35,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-
-        if (defaultEl) {
-          gsap.to(defaultEl, {
-            autoAlpha: 1,
-            scale: 1,
-            y: 0,
-            duration: 0.25,
-            ease: "power2.out",
-            overwrite: "auto",
-          });
-        }
-
-        if (hoverEl) {
-          gsap.to(hoverEl, {
-            autoAlpha: 0,
-            y: 8,
-            duration: 0.12,
-            ease: "power2.in",
-            overwrite: "auto",
-          });
-        }
-
-        if (illus) {
-          gsap.to(illus, {
-            opacity: 0.88,
-            scale: 1,
-            filter: "blur(0px)",
-            duration: 0.35,
-            ease: "power2.out",
-            overwrite: "auto",
-          });
-        }
-
-        if (front) {
-          gsap.to(front, {
-            boxShadow:
-              "0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4)",
-            borderColor: "rgba(255, 255, 255, 0.12)",
-            duration: 0.3,
-            ease: "power2.out",
-            overwrite: "auto",
-          });
-        }
-      } else if (i === idx) {
-        gsap.to(wrapper, {
-          width: expandedWidth,
-          scale: 1.02,
-          x: 0,
-          y: card.restY - 6,
-          z: card.restZ + 35,
-          rotateY: 0,
-          rotateZ: 0,
-          opacity: 1,
-          zIndex: 30,
-          duration: 0.38,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-
-        // Immediately fade out default centered heading so it NEVER overlaps reading copy
-        if (defaultEl) {
-          gsap.to(defaultEl, {
-            autoAlpha: 0,
-            scale: 0.94,
-            y: -6,
-            duration: 0.12,
-            ease: "power2.out",
-            overwrite: "auto",
-          });
-        }
-
-        // Cleanly reveal expanded reading layout (title + bullets / paragraph)
-        if (hoverEl) {
-          gsap.to(hoverEl, {
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.25,
-            delay: 0.04,
-            ease: "power2.out",
-            overwrite: "auto",
-          });
-        }
-
-        // Remove sketch completely on hover to avoid cluttering reading layout
-        if (illus) {
-          gsap.to(illus, {
-            opacity: 0,
-            scale: 0.95,
-            duration: 0.25,
-            ease: "power2.out",
-            overwrite: "auto",
-          });
-        }
-
-        if (front) {
-          gsap.to(front, {
-            boxShadow:
-              "0 25px 50px -12px rgba(16, 185, 129, 0.35), 0 0 0 1px rgba(16, 185, 129, 0.5)",
-            borderColor: "rgba(16, 185, 129, 0.5)",
-            duration: 0.3,
-            ease: "power2.out",
-            overwrite: "auto",
-          });
-        }
-      } else {
-        gsap.to(wrapper, {
-          width: compressedWidth,
-          scale: 0.98,
-          x: 0,
-          y: card.restY + 2,
-          z: card.restZ - 8,
-          rotateY: card.restRotateY,
-          rotateZ: card.restRotateZ,
-          opacity: 0.7,
-          zIndex: 10,
-          duration: 0.35,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-
-        if (defaultEl) {
-          gsap.to(defaultEl, {
-            autoAlpha: 0.65,
-            scale: 0.96,
-            y: 0,
-            duration: 0.25,
-            ease: "power2.out",
-            overwrite: "auto",
-          });
-        }
-
-        // Ensure non-hovered cards have their reading layout hidden with no delay
-        if (hoverEl) {
-          gsap.to(hoverEl, {
-            autoAlpha: 0,
-            y: 8,
-            duration: 0.12,
-            ease: "power2.in",
-            overwrite: "auto",
-          });
-        }
-
-        if (illus) {
-          gsap.to(illus, {
-            opacity: 0.65,
-            scale: 1,
-            filter: "blur(0px)",
-            duration: 0.35,
-            ease: "power2.out",
-            overwrite: "auto",
-          });
-        }
-
-        if (front) {
-          gsap.to(front, {
-            boxShadow:
-              "0 15px 30px -10px rgba(0, 0, 0, 0.7), 0 4px 10px -4px rgba(0, 0, 0, 0.5)",
-            borderColor: "rgba(255, 255, 255, 0.08)",
-            duration: 0.3,
-            ease: "power2.out",
-            overwrite: "auto",
-          });
-        }
-      }
-    });
+  // Card Hover logic disabled per requirement (nothing should happen on hover)
+  const commitCardHover = (_idx: number | null) => {
+    return;
   };
 
   const getHoverBandIndex = (clientX: number): number | null => {
@@ -771,35 +589,8 @@ export function BlueprintHero() {
     return closestIdx;
   };
 
-  const handleCardHover = (idx: number | null) => {
-    if (
-      stateRef.current !== "product" ||
-      transitionStartedRef.current ||
-      transitionAnimatingRef.current ||
-      isSecurityTransitioningRef.current
-    ) {
-      if (hoverCommitTimeoutRef.current) {
-        clearTimeout(hoverCommitTimeoutRef.current);
-        hoverCommitTimeoutRef.current = null;
-      }
-      return;
-    }
-    if (idx === currentHoverRef.current) {
-      if (hoverCommitTimeoutRef.current) {
-        clearTimeout(hoverCommitTimeoutRef.current);
-        hoverCommitTimeoutRef.current = null;
-      }
-      return;
-    }
-    if (hoverCommitTimeoutRef.current) {
-      clearTimeout(hoverCommitTimeoutRef.current);
-      hoverCommitTimeoutRef.current = null;
-    }
-    const delay = idx === null ? 70 : 10;
-    hoverCommitTimeoutRef.current = setTimeout(() => {
-      hoverCommitTimeoutRef.current = null;
-      commitCardHover(idx);
-    }, delay);
+  const handleCardHover = (_idx: number | null) => {
+    return;
   };
 
   useGSAP(
@@ -870,7 +661,14 @@ export function BlueprintHero() {
       applyPortalClip(initialRadiusPx, 57.0, 48.5);
 
       // Hero Intro initial state
-      gsap.set(heroIntroRef.current, { opacity: 1, x: 0, y: 0, scale: 1 });
+      gsap.set(heroIntroRef.current, { opacity: 0, autoAlpha: 1, x: 0, y: 16, scale: 1 });
+      gsap.set(heroVisualRef.current, {
+        opacity: 1,
+        scale: 1,
+        xPercent: 0,
+        yPercent: 0,
+        transformOrigin: "57.0% 48.5%",
+      });
 
       // OPTION 2: Atmospheric Stretch - Product world starts compressed in singularity void
       // Crossing through the singularity slingshots it outward into the amphitheater formation
@@ -883,10 +681,14 @@ export function BlueprintHero() {
         opacity: 0.25,
       });
 
-      // Product Header initially hidden
-      gsap.set(headlineRef.current, { opacity: 0, y: -25 });
-      gsap.set(subheadRef.current, { opacity: 0, y: -15 });
-      gsap.set(ctaRef.current, { opacity: 0, scale: 0.9, y: -10 });
+      // Product Header & Floor Line initially hidden
+      gsap.set(
+        [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+        { autoAlpha: 0, opacity: 0, visibility: "hidden" }
+      );
+      if (headlineRef.current) gsap.set(headlineRef.current, { y: 20 });
+      if (subheadRef.current) gsap.set(subheadRef.current, { y: 16 });
+      if (ctaRef.current) gsap.set(ctaRef.current, { y: 14, scale: 0.94 });
 
       // Cards cluster initially clustered together facing away (back face forward)
       gsap.set(cardsClusterRef.current, {
@@ -938,15 +740,158 @@ export function BlueprintHero() {
             ease: "power2.out",
           });
         }
+        if (heroVisualRef.current) {
+          gsap.to(heroVisualRef.current, {
+            opacity: 1,
+            scale: 1,
+            duration: 0.6,
+            ease: "power2.out",
+          });
+        }
       };
 
       window.addEventListener("unifolio-logo-docked", revealHeroAfterDocked);
       window.addEventListener("unifolio-intro-complete", revealHeroAfterDocked);
 
+      if (typeof window !== "undefined" && (window as any).__unifolio_logo_docked) {
+        revealHeroAfterDocked();
+      }
+
+      const heroRevealFallbackTimer = setTimeout(() => {
+        revealHeroAfterDocked();
+      }, 3500);
+
+
+      // =======================================================================
+      // BENTO GRID BOUNDING BOX & GEOMETRY CALCULATOR
+      // Calculates the single bounding box for the entire bento composition,
+      // positioning it comfortably centered inside the usable viewport area
+      // (accounting for fixed navbar height and safe clearances).
+      // Matches the exact spatial layout of reference image (media_1789027747685.png):
+      // - Card 0 (Left): Full-height tall card spanning rows 1 & 2 (~28.5% width)
+      // - Card 1 (Top-Middle): "Save Time" narrower card (~38% of remaining row)
+      // - Card 2 (Top-Right): "Buy And Sell Seamlessly" wider card (~62% of remaining row)
+      // - Card 3 (Bottom-Middle): "Instant Trade Alerts" wider card (~55% of remaining row)
+      // - Card 4 (Bottom-Right): "Cost Management" narrower card (~45% of remaining row)
+      // =======================================================================
+      const computeBentoLayout = (vWidth: number, vHeight: number) => {
+        // Fixed navbar height + safe clearances to ensure tiles never touch navbar or bottom edge
+        const NAVBAR_HEIGHT = 80;
+        const TOP_CLEARANCE = 14;
+        const BOTTOM_CLEARANCE = 18;
+
+        const usableTop = NAVBAR_HEIGHT + TOP_CLEARANCE;
+        const usableBottom = vHeight - BOTTOM_CLEARANCE;
+        const usableHeight = Math.max(380, usableBottom - usableTop);
+        const usableCenterY = usableTop + usableHeight / 2;
+
+        // Balanced widescreen bento aspect ratio (~1.82:1) giving comfortable vertical height to all rows
+        const targetAspect = 1.82;
+
+        // Generously expanded bounding box size so bento fills the page comfortably without overflowing
+        const maxBentoW = Math.min(vWidth * 0.92, 1540);
+        const maxBentoH = Math.min(usableHeight * 0.95, 750);
+
+        let bentoW = maxBentoW;
+        let bentoH = bentoW / targetAspect;
+
+        if (bentoH > maxBentoH) {
+          bentoH = maxBentoH;
+          bentoW = bentoH * targetAspect;
+        }
+        if (bentoW > maxBentoW) {
+          bentoW = maxBentoW;
+          bentoH = bentoW / targetAspect;
+        }
+
+        // Substantially increased spacing between boxes
+        const gapX = Math.max(18, Math.min(32, Math.round(bentoW * 0.022)));
+        const gapY = Math.max(16, Math.min(26, Math.round(bentoH * 0.036)));
+
+        // Column 1 (Left Tall Card - Card 0):
+        // Spans full height of the bento composition (~29.5% width)
+        const w0 = Math.round((bentoW - gapX * 2) * 0.295);
+        const h0 = bentoH;
+
+        // Remaining width for Columns 2 & 3:
+        const remW = bentoW - w0 - gapX;
+        const availRowW = remW - gapX;
+
+        // Asymmetric Row Heights:
+        // Row 1 (Cards 1 & 2 have minimal concise copy) gets ~43% height (~260px - 285px)
+        // Row 2 (Cards 3 & 4 have 4 & 5 detailed scenario clusters) gets ~57% height (~345px - 380px)
+        const hRow1 = Math.round((bentoH - gapY) * 0.43);
+        const hRow2 = bentoH - gapY - hRow1;
+
+        // Row 1 (Top):
+        // Card 1 is narrower (~39%), Card 2 is wider (~61%)
+        const w1 = Math.round(availRowW * 0.39);
+        const h1 = hRow1;
+        const w2 = availRowW - w1;
+        const h2 = hRow1;
+
+        // Row 2 (Bottom):
+        // Card 3 (Know your risk) gets ~49% width, Card 4 (Plan Ahead, 5 items) gets ~51% width
+        const w3 = Math.round(availRowW * 0.49);
+        const h3 = hRow2;
+        const w4 = availRowW - w3;
+        const h4 = hRow2;
+
+        const tileWidths = [w0, w1, w2, w3, w4];
+        const tileHeights = [h0, h1, h2, h3, h4];
+
+        // Known vertical offset of cardsClusterRef top edge within the viewport when settled:
+        // productWorldRef pt (80px on desktop lg, 72px on md, 64px on sm, 56px on mobile) + stage pt (8px) + cluster py (6px)
+        const ptRem = vWidth >= 1024 ? 5 : vWidth >= 768 ? 4.5 : vWidth >= 640 ? 4 : 3.5;
+        const clusterViewportTop = ptRem * 16 + 8 + 6;
+
+        const clusterViewportLeft = vWidth > 1340 ? (vWidth - 1340) / 2 : 0;
+
+        // Single Bounding Box position in viewport coordinates:
+        const bentoViewportLeft = (vWidth - bentoW) / 2;
+        const bentoViewportTop = usableCenterY - bentoH / 2;
+
+        // Convert bounding box origin to coordinates relative to cardsClusterRef:
+        const bentoClusterLeft = bentoViewportLeft - clusterViewportLeft;
+        const bentoClusterTop = bentoViewportTop - clusterViewportTop;
+
+        const rightColLeft = bentoClusterLeft + w0 + gapX;
+
+        // Absolute left coordinates of the 5 tiles relative to cardsClusterRef:
+        const tileLefts = [
+          bentoClusterLeft,             // Card 0 (Left Tall Tile)
+          rightColLeft,                 // Card 1 (Row 1 Left)
+          rightColLeft + w1 + gapX,     // Card 2 (Row 1 Right)
+          rightColLeft,                 // Card 3 (Row 2 Left)
+          rightColLeft + w3 + gapX,     // Card 4 (Row 2 Right)
+        ];
+
+        // Absolute top coordinates of the 5 tiles relative to cardsClusterRef:
+        const tileTops = [
+          bentoClusterTop,              // Card 0
+          bentoClusterTop,              // Card 1
+          bentoClusterTop,              // Card 2
+          bentoClusterTop + hRow1 + gapY,// Card 3 (Row 2 starts after Row 1)
+          bentoClusterTop + hRow1 + gapY,// Card 4 (Row 2 starts after Row 1)
+        ];
+
+        return {
+          bentoW,
+          bentoH,
+          gapX,
+          gapY,
+          tileWidths,
+          tileHeights,
+          tileLefts,
+          tileTops,
+        };
+      };
+
       // =======================================================================
       // HERO -> PRODUCT SINGLE-TRIGGER CINEMATIC TRANSITION
-      // Plays automatically at controlled speed upon first downward scroll gesture
-      // Sequence: Ring expands -> Cards emerge -> Cards flip one-by-one -> Product lands
+      // Sequence: Ring expands -> Cards emerge -> Cards flip one-by-one ->
+      // Settle into current resting amphitheater positions ->
+      // WAIT ~1 SECOND -> Cards gracefully glide & resize directly into Bento formation!
       // =======================================================================
       const createHeroToProductTimeline = () => {
         const vWidth = typeof window !== "undefined" ? window.innerWidth : 1440;
@@ -969,16 +914,28 @@ export function BlueprintHero() {
             productCompleteRef.current = false;
             if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "none";
             if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "none";
+            cardWrapperRefs.current.forEach((el) => {
+              if (el) {
+                el.style.position = "";
+                el.style.left = "";
+                el.style.top = "";
+                el.style.width = "";
+                el.style.height = "";
+              }
+            });
           },
           onComplete: () => {
-            stateRef.current = "product";
+            stateRef.current = "product-resting";
             productCompleteRef.current = true;
             isHoldingProductRef.current = true;
             transitionAnimatingRef.current = false;
             setIsAperturePaused(true);
             if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "";
             if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "";
-            forceResetAllCardsToBase();
+            gsap.set(
+              [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+              { autoAlpha: 1, opacity: 1, visibility: "visible" }
+            );
             window.dispatchEvent(
               new CustomEvent("unifolio-active-section", { detail: { section: "product" } })
             );
@@ -991,11 +948,34 @@ export function BlueprintHero() {
             setIsAperturePaused(false);
             if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "none";
             if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "none";
+            gsap.set(
+              [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+              { autoAlpha: 0, opacity: 0, visibility: "hidden" }
+            );
+            cardWrapperRefs.current.forEach((el) => {
+              if (el) {
+                el.style.position = "";
+                el.style.left = "";
+                el.style.top = "";
+                el.style.width = "";
+                el.style.height = "";
+              }
+            });
             window.dispatchEvent(
               new CustomEvent("unifolio-active-section", { detail: { section: "hero" } })
             );
           },
         });
+
+        // Ensure Product Header (headline, subhead, CTA) and floor line start hidden at t = 0
+        tl.set(
+          [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+          { autoAlpha: 0, opacity: 0, visibility: "hidden" },
+          0.0
+        );
+        tl.set(headlineRef.current, { y: 20 }, 0.0);
+        tl.set(subheadRef.current, { y: 16 }, 0.0);
+        tl.set(ctaRef.current, { y: 14, scale: 0.94 }, 0.0);
 
         // 1. Ring Expands:
         // - Hero Intro Text pulls toward singularity and fades
@@ -1109,40 +1089,6 @@ export function BlueprintHero() {
           0.28
         );
 
-        // - Product Header illuminates
-        tl.to(
-          headlineRef.current,
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.26,
-            ease: "power2.out",
-          },
-          0.42
-        );
-
-        tl.to(
-          subheadRef.current,
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.26,
-            ease: "power2.out",
-          },
-          0.46
-        );
-
-        tl.to(
-          ctaRef.current,
-          {
-            opacity: 1,
-            scale: 1,
-            y: 0,
-            duration: 0.28,
-            ease: "back.out(1.2)",
-          },
-          0.50
-        );
 
         // - Cards Cluster divides and expands into 5 individual cards
         tl.to(
@@ -1223,8 +1169,267 @@ export function BlueprintHero() {
           );
         });
 
+        // 4. Hero headline, supporting text and CTA enter during the card flip:
+        // Shortly after the flip begins (0.70s), hero text starts entering so animations overlap naturally
+        tl.set(
+          [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+          { autoAlpha: 1, visibility: "visible" },
+          0.70
+        );
+
+        tl.to(
+          headlineRef.current,
+          {
+            autoAlpha: 1,
+            opacity: 1,
+            y: 0,
+            duration: 0.30,
+            ease: "power2.out",
+          },
+          0.72
+        );
+
+        tl.to(
+          subheadRef.current,
+          {
+            autoAlpha: 1,
+            opacity: 1,
+            y: 0,
+            duration: 0.30,
+            ease: "power2.out",
+          },
+          0.76
+        );
+
+        tl.to(
+          ctaRef.current,
+          {
+            autoAlpha: 1,
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 0.32,
+            ease: "back.out(1.2)",
+          },
+          0.80
+        );
+
+        tl.to(
+          floorLineRef.current,
+          {
+            autoAlpha: 1,
+            opacity: 0.75,
+            duration: 0.30,
+            ease: "power2.out",
+          },
+          0.80
+        );
+
         // Buffer at end before settling
-        tl.to({}, { duration: 0.08 }, flipBaseStart + 4 * flipStagger + flipDuration);
+        // Buffer at end before settling into amphitheater resting state
+        const settleBuffer = 0.08;
+        tl.to({}, { duration: settleBuffer }, flipBaseStart + 4 * flipStagger + flipDuration);
+
+        return tl;
+      };
+
+      // =======================================================================
+      // SCROLL-TRIGGERED BENTO TRANSFORMATION
+      // Directly animates the 5 resting cards into the reference bento geometry
+      // when the user scrolls down from the resting amphitheater state.
+      // =======================================================================
+      const createRestingToBentoTimeline = () => {
+        const vWidth = typeof window !== "undefined" ? window.innerWidth : 1440;
+        const vHeight = typeof window !== "undefined" ? window.innerHeight : 800;
+
+        const tl = gsap.timeline({
+          paused: true,
+          onStart: () => {
+            stateRef.current = "sculpting";
+            transitionAnimatingRef.current = true;
+            if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "none";
+            if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "none";
+          },
+          onComplete: () => {
+            stateRef.current = "product";
+            transitionAnimatingRef.current = false;
+            if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "";
+            if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "";
+            window.dispatchEvent(
+              new CustomEvent("unifolio-active-section", { detail: { section: "product" } })
+            );
+          },
+          onReverseComplete: () => {
+            stateRef.current = "product-resting";
+            transitionAnimatingRef.current = false;
+            if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "";
+            if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "";
+            gsap.set(
+              [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+              { autoAlpha: 1, opacity: 1, y: 0, scale: 1, visibility: "visible" }
+            );
+            cardWrapperRefs.current.forEach((el, i) => {
+              if (el) {
+                el.style.position = "";
+                el.style.left = "";
+                el.style.top = "";
+                el.style.width = "";
+                el.style.height = "";
+                gsap.set(el, {
+                  x: 0,
+                  y: PRODUCT_CARDS[i].restY,
+                  z: PRODUCT_CARDS[i].restZ,
+                  rotateX: 0,
+                  rotateY: PRODUCT_CARDS[i].restRotateY,
+                  rotateZ: PRODUCT_CARDS[i].restRotateZ,
+                  scale: 1,
+                  opacity: 1,
+                });
+              }
+            });
+            window.dispatchEvent(
+              new CustomEvent("unifolio-active-section", { detail: { section: "product" } })
+            );
+          },
+        });
+
+        // 1. Smoothly fade out the headline, subhead, CTA, and floor reflection line before cards disperse
+        const heroFadeDuration = 0.28;
+        tl.to(
+          [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+          {
+            autoAlpha: 0,
+            y: 12,
+            duration: heroFadeDuration,
+            ease: "power2.inOut",
+          },
+          0.0
+        );
+
+        tl.set(
+          [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+          {
+            autoAlpha: 0,
+            opacity: 0,
+            visibility: "hidden",
+          },
+          heroFadeDuration
+        );
+
+        // 2. Physical Card-to-Bento Direct Movement
+        const bento = computeBentoLayout(vWidth, vHeight);
+        const clusterEl = cardsClusterRef.current;
+        const clusterW = clusterEl?.offsetWidth || Math.min(vWidth, 1340);
+        const clusterH = clusterEl?.offsetHeight || 370;
+
+        const wRest = vWidth >= 1536 ? 235 : vWidth >= 1280 ? 225 : vWidth >= 1024 ? 215 : vWidth >= 768 ? 205 : vWidth >= 640 ? 190 : 175;
+        const hRest = vWidth >= 1536 ? 375 : vWidth >= 1280 ? 360 : vWidth >= 1024 ? 345 : vWidth >= 768 ? 330 : vWidth >= 640 ? 310 : 285;
+        const gapRest = vWidth >= 1280 ? 16 : vWidth >= 768 ? 14 : vWidth >= 640 ? 12 : 10;
+
+        const bentoCardStartTime = 0.08;
+
+        PRODUCT_CARDS.forEach((card, i) => {
+          const wrapper = cardWrapperRefs.current[i];
+          if (!wrapper) return;
+
+          const targetL = Math.round(bento.tileLefts[i]);
+          const targetT = Math.round(bento.tileTops[i]);
+          const targetW = bento.tileWidths[i];
+          const targetH = bento.tileHeights[i];
+
+          const startL = Math.round((clusterW / 2) + (i - 2) * (wRest + gapRest) - wRest / 2);
+          const startT = Math.round((clusterH / 2) - hRest / 2);
+
+          tl.set(
+            wrapper,
+            {
+              position: "absolute",
+              left: startL,
+              top: startT,
+              width: wRest,
+              height: hRest,
+              transformOrigin: "center center",
+              rotateX: 0,
+              rotateY: 0,
+              rotateZ: 0,
+              scaleX: 1,
+              scaleY: 1,
+              scaleZ: 1,
+              zIndex: 20 + i,
+            },
+            bentoCardStartTime
+          );
+
+          tl.to(
+            wrapper,
+            {
+              left: targetL,
+              top: targetT,
+              width: targetW,
+              height: targetH,
+              x: 0,
+              y: 0,
+              z: 0,
+              rotateX: 0,
+              rotateY: 0,
+              rotateZ: 0,
+              duration: 1.15,
+              ease: "power3.inOut",
+            },
+            bentoCardStartTime + i * 0.035
+          );
+
+          // 1. Smoothly fade out initial dark-card text, dark gradient, and centered amphitheater illustration
+          const defContent = cardDefaultRefs.current[i];
+          const gradBg = cardGradientBgRefs.current[i];
+          const glassOverlay = cardGlassOverlayRefs.current[i];
+          const centerIllu = cardIllustrationRefs.current[i];
+          const frontFace = cardFrontRefs.current[i];
+          const bentoContent = bentoTileContentRefs.current[i];
+
+          if (defContent) {
+            tl.to(defContent, { autoAlpha: 0, duration: 0.4, ease: "power2.inOut" }, bentoCardStartTime + 0.15);
+          }
+          if (gradBg) {
+            tl.to(gradBg, { autoAlpha: 0, duration: 0.45, ease: "power2.inOut" }, bentoCardStartTime + 0.15);
+          }
+          if (glassOverlay) {
+            tl.to(glassOverlay, { autoAlpha: 0, duration: 0.45, ease: "power2.inOut" }, bentoCardStartTime + 0.15);
+          }
+          if (centerIllu) {
+            tl.to(centerIllu, { autoAlpha: 0, duration: 0.4, ease: "power2.inOut" }, bentoCardStartTime + 0.15);
+          }
+
+          // 2. Transition card surface into subtle premium frosted glass
+          if (frontFace) {
+            tl.to(
+              frontFace,
+              {
+                backgroundColor: "rgba(255, 255, 255, 0.72)",
+                borderColor: "rgba(255, 255, 255, 0.85)",
+                boxShadow:
+                  "0 24px 48px -12px rgba(12, 36, 22, 0.08), 0 4px 14px -3px rgba(0, 0, 0, 0.04), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95)",
+                borderRadius: "24px",
+                backdropFilter: "blur(20px)",
+                duration: 0.85,
+                ease: "power2.inOut",
+              },
+              bentoCardStartTime + 0.25
+            );
+          }
+
+          // 3. Smoothly fade in rich designed bento tile content
+          if (bentoContent) {
+            tl.fromTo(
+              bentoContent,
+              { autoAlpha: 0, y: 14 },
+              { autoAlpha: 1, y: 0, duration: 0.7, ease: "power2.out" },
+              bentoCardStartTime + 0.55 + i * 0.05
+            );
+          }
+        });
+
+        tl.to({}, { duration: 0.1 }, bentoCardStartTime + 1.30);
 
         return tl;
       };
@@ -1243,8 +1448,36 @@ export function BlueprintHero() {
         heroToProductTlRef.current.play(0);
       };
 
-      const triggerProductToHero = () => {
+      const triggerRestingToBento = () => {
+        if (transitionAnimatingRef.current || stateRef.current !== "product-resting") return;
+        transitionAnimatingRef.current = true;
+        stateRef.current = "sculpting";
+
+        if (restingToBentoTlRef.current) {
+          restingToBentoTlRef.current.kill();
+        }
+        restingToBentoTlRef.current = createRestingToBentoTimeline();
+        restingToBentoTlRef.current.play(0);
+      };
+
+      const triggerBentoToResting = () => {
         if (transitionAnimatingRef.current || stateRef.current !== "product") return;
+        transitionAnimatingRef.current = true;
+        stateRef.current = "sculpting";
+
+        if (!restingToBentoTlRef.current) {
+          restingToBentoTlRef.current = createRestingToBentoTimeline();
+          restingToBentoTlRef.current.progress(1);
+        }
+        restingToBentoTlRef.current.timeScale(1.3).reverse();
+      };
+
+      const triggerProductToHero = () => {
+        if (
+          transitionAnimatingRef.current ||
+          (stateRef.current !== "product-resting" && stateRef.current !== "product")
+        )
+          return;
         transitionAnimatingRef.current = true;
         stateRef.current = "sculpting";
         isHoldingProductRef.current = false;
@@ -1256,6 +1489,7 @@ export function BlueprintHero() {
         }
         heroToProductTlRef.current.timeScale(1.3).reverse();
       };
+
 
       // =======================================================================
       // PRODUCT -> RING TRANSITION (RECREATED EXACTLY FROM recreate.mp4)
@@ -5521,18 +5755,29 @@ export function BlueprintHero() {
           return;
         }
 
-        // 3. If in Product section:
+        // 3. If in Product section (Bento):
         if (stateRef.current === "product") {
-          if (e.deltaY > 8) {
+          if (e.deltaY < -8 && window.scrollY <= 10) {
+            // User scrolled upward: return to resting amphitheater state
             e.preventDefault();
             e.stopImmediatePropagation();
-            isHoldingProductRef.current = false;
-            transitionStartedRef.current = true;
-            transitionAnimatingRef.current = true;
-            triggerProductToRing();
+            triggerBentoToResting();
+            return;
+          }
+          // Allow natural scroll to closing CTA and rest of page
+          return;
+        }
+
+        // 3b. If in Product Resting section (Amphitheater with Hero content):
+        if (stateRef.current === "product-resting") {
+          if (e.deltaY > 8) {
+            // User scrolled downward: trigger bento transformation!
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            triggerRestingToBento();
             return;
           } else if (e.deltaY < -8) {
-            // User scrolled upward: return to hero cinematically
+            // User scrolled upward: return to Hero section
             e.preventDefault();
             e.stopImmediatePropagation();
             triggerProductToHero();
@@ -5660,13 +5905,20 @@ export function BlueprintHero() {
         const touchDeltaY = touchStartY - e.touches[0].clientY;
 
         if (stateRef.current === "product") {
+          if (touchDeltaY < -8 && window.scrollY <= 10) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            triggerBentoToResting();
+            return;
+          }
+          return;
+        }
+
+        if (stateRef.current === "product-resting") {
           if (touchDeltaY > 8) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            isHoldingProductRef.current = false;
-            transitionStartedRef.current = true;
-            transitionAnimatingRef.current = true;
-            triggerProductToRing();
+            triggerRestingToBento();
             return;
           } else if (touchDeltaY < -8) {
             e.preventDefault();
@@ -5766,20 +6018,32 @@ export function BlueprintHero() {
           }
         }
 
-        if (stateRef.current === "product") {
+        if (stateRef.current === "product-resting") {
           if (["ArrowDown", "PageDown", " "].includes(e.key) && !e.shiftKey) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            isHoldingProductRef.current = false;
-            transitionStartedRef.current = true;
-            transitionAnimatingRef.current = true;
-            triggerProductToRing();
+            triggerRestingToBento();
             return;
           } else if (["ArrowUp", "PageUp"].includes(e.key) || (e.key === " " && e.shiftKey)) {
             e.preventDefault();
             e.stopImmediatePropagation();
             triggerProductToHero();
             return;
+          }
+          return;
+        }
+
+        if (stateRef.current === "product") {
+          if (["ArrowDown", "PageDown", " "].includes(e.key) && !e.shiftKey) {
+            // Allow natural keyboard scroll down
+            return;
+          } else if (["ArrowUp", "PageUp"].includes(e.key) || (e.key === " " && e.shiftKey)) {
+            if (window.scrollY <= 10) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              triggerBentoToResting();
+              return;
+            }
           }
         }
 
@@ -5803,6 +6067,7 @@ export function BlueprintHero() {
         if (
           transitionAnimatingRef.current ||
           stateRef.current === "hero" ||
+          stateRef.current === "product-resting" ||
           stateRef.current === "product" ||
           (stateRef.current === "ring" && transitionCompleteRef.current)
         ) {
@@ -5852,6 +6117,10 @@ export function BlueprintHero() {
           heroToProductTlRef.current.kill();
           heroToProductTlRef.current = null;
         }
+        if (restingToBentoTlRef.current) {
+          restingToBentoTlRef.current.kill();
+          restingToBentoTlRef.current = null;
+        }
         if (ringRotateTweenRef.current) {
           ringRotateTweenRef.current.kill();
           ringRotateTweenRef.current = null;
@@ -5889,49 +6158,68 @@ export function BlueprintHero() {
         }
         if (heroIntroRef.current) gsap.set(heroIntroRef.current, { autoAlpha: 0 });
         if (heroVisualRef.current) gsap.set(heroVisualRef.current, { opacity: 0, scale: 5.5, xPercent: -7.0, yPercent: 1.5 });
-        if (headlineRef.current) gsap.set(headlineRef.current, { opacity: 1, y: 0 });
-        if (subheadRef.current) gsap.set(subheadRef.current, { opacity: 1, y: 0 });
-        if (ctaRef.current) gsap.set(ctaRef.current, { opacity: 1, scale: 1, y: 0 });
+        if (headerRef.current) gsap.set(headerRef.current, { autoAlpha: 0 });
+        if (headlineRef.current) gsap.set(headlineRef.current, { opacity: 0 });
+        if (subheadRef.current) gsap.set(subheadRef.current, { opacity: 0 });
+        if (ctaRef.current) gsap.set(ctaRef.current, { opacity: 0, scale: 0.9 });
         if (cardsClusterRef.current) gsap.set(cardsClusterRef.current, { scaleX: 1, scaleY: 1, x: 0, y: 0, rotateX: 0, rotateY: 0, rotateZ: 0 });
+
+        const vw = typeof window !== "undefined" ? window.innerWidth : 1440;
+        const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+        const bento = computeBentoLayout(vw, vh);
 
         PRODUCT_CARDS.forEach((card, i) => {
           const wrapper = cardWrapperRefs.current[i];
           const flipper = cardFlipperRefs.current[i];
           const front = cardFrontRefs.current[i];
           if (wrapper) {
+            const targetL = Math.round(bento.tileLefts[i]);
+            const targetT = Math.round(bento.tileTops[i]);
+            const targetW = bento.tileWidths[i];
+            const targetH = bento.tileHeights[i];
             gsap.set(wrapper, {
+              position: "absolute",
+              left: targetL,
+              top: targetT,
+              width: targetW,
+              height: targetH,
               x: 0,
-              y: card.restY,
-              z: card.restZ,
+              y: 0,
+              z: 0,
               rotateX: 0,
-              rotateY: card.restRotateY,
-              rotateZ: card.restRotateZ,
+              rotateY: 0,
+              rotateZ: 0,
               scale: 1,
-              zIndex: 10 + (2 - Math.abs(i - 2)),
+              zIndex: 10 + i,
             });
           }
           if (front) {
             gsap.set(front, {
-              borderRadius: "20px",
+              borderRadius: "24px",
               background: "",
-              backgroundColor: "#070908",
-              borderColor: "rgba(255, 255, 255, 0.12)",
-              boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4)",
+              backgroundColor: "rgba(255, 255, 255, 0.72)",
+              borderColor: "rgba(255, 255, 255, 0.85)",
+              boxShadow:
+                "0 24px 48px -12px rgba(12, 36, 22, 0.08), 0 4px 14px -3px rgba(0, 0, 0, 0.04), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95)",
+              backdropFilter: "blur(20px)",
             });
+          }
+          if (bentoTileContentRefs.current[i]) {
+            gsap.set(bentoTileContentRefs.current[i], { autoAlpha: 1, y: 0 });
           }
           const back = cardBackRefs.current[i];
           if (back) gsap.set(back, { opacity: 0, autoAlpha: 0, visibility: "hidden" });
           const grad = cardGradientBgRefs.current[i];
-          if (grad) gsap.set(grad, { opacity: 1, autoAlpha: 1, visibility: "visible" });
+          if (grad) gsap.set(grad, { opacity: 0, autoAlpha: 0, visibility: "hidden" });
           const glass = cardGlassOverlayRefs.current[i];
           if (glass) gsap.set(glass, { opacity: 0, autoAlpha: 0, visibility: "hidden" });
           if (flipper) gsap.set(flipper, { rotateY: 0 });
           const illus = cardIllustrationRefs.current[i];
-          if (illus) gsap.set(illus, { opacity: 0.88, autoAlpha: 1, scale: 1, filter: "blur(0px)", visibility: "visible" });
+          if (illus) gsap.set(illus, { autoAlpha: 0, visibility: "hidden" });
           const defEl = cardDefaultRefs.current[i];
-          if (defEl) gsap.set(defEl, { display: "flex", opacity: 1, autoAlpha: 1, visibility: "visible" });
+          if (defEl) gsap.set(defEl, { autoAlpha: 0, visibility: "hidden" });
           const hoverEl = cardHoverRefs.current[i];
-          if (hoverEl) gsap.set(hoverEl, { display: "flex", opacity: 0, autoAlpha: 0, visibility: "hidden" });
+          if (hoverEl) gsap.set(hoverEl, { autoAlpha: 0, visibility: "hidden" });
         });
 
         companionCardRefs.current.forEach((compEl) => {
@@ -5940,6 +6228,7 @@ export function BlueprintHero() {
       };
 
       const handleResetHero = () => {
+        smoothScrollTo(0, { duration: 0.6, ease: "power2.inOut" });
         stateRef.current = "hero";
         setIsAperturePaused(false);
         productCompleteRef.current = false;
@@ -5951,6 +6240,10 @@ export function BlueprintHero() {
         if (heroToProductTlRef.current) {
           heroToProductTlRef.current.kill();
           heroToProductTlRef.current = null;
+        }
+        if (restingToBentoTlRef.current) {
+          restingToBentoTlRef.current.kill();
+          restingToBentoTlRef.current = null;
         }
         if (arrivalIdleTimeoutRef.current) {
           clearTimeout(arrivalIdleTimeoutRef.current);
@@ -5998,19 +6291,30 @@ export function BlueprintHero() {
             opacity: 0.25,
           });
         }
-        if (heroIntroRef.current) gsap.set(heroIntroRef.current, { autoAlpha: 1, x: 0, y: 0, scale: 1 });
+        if (heroIntroRef.current) gsap.set(heroIntroRef.current, { autoAlpha: 1, opacity: 1, x: 0, y: 0, scale: 1 });
         if (heroVisualRef.current) gsap.set(heroVisualRef.current, { opacity: 1, scale: 1, xPercent: 0, yPercent: 0 });
+        if (headerRef.current) gsap.set(headerRef.current, { autoAlpha: 0, visibility: "hidden" });
         if (headlineRef.current) gsap.set(headlineRef.current, { opacity: 0, y: -25 });
         if (subheadRef.current) gsap.set(subheadRef.current, { opacity: 0, y: -15 });
         if (ctaRef.current) gsap.set(ctaRef.current, { opacity: 0, scale: 0.9, y: -10 });
-        if (cardsClusterRef.current) gsap.set(cardsClusterRef.current, { scaleX: 1.25, scaleY: 1.4, x: 0, y: 0, rotateX: 0, rotateY: 0, rotateZ: 0 });
+        if (floorLineRef.current) gsap.set(floorLineRef.current, { autoAlpha: 0, opacity: 0 });
+        if (cardsClusterRef.current) {
+          gsap.set(cardsClusterRef.current, { scaleX: 1.25, scaleY: 1.4, x: 0, y: 0, rotateX: 0, rotateY: 0, rotateZ: 0 });
+        }
 
         PRODUCT_CARDS.forEach((card, i) => {
           const wrapper = cardWrapperRefs.current[i];
           const flipper = cardFlipperRefs.current[i];
           const front = cardFrontRefs.current[i];
+          const bentoContent = bentoTileContentRefs.current[i];
+          if (bentoContent) gsap.set(bentoContent, { autoAlpha: 0, y: 14 });
           if (wrapper) {
             const initialXOffset = (i - 2) * -16;
+            wrapper.style.position = "";
+            wrapper.style.left = "";
+            wrapper.style.top = "";
+            wrapper.style.width = "";
+            wrapper.style.height = "";
             gsap.set(wrapper, {
               x: initialXOffset,
               y: card.restY,
@@ -6314,6 +6618,9 @@ export function BlueprintHero() {
         window.removeEventListener("keydown", handleKeyDown, { capture: true });
         window.removeEventListener("unifolio-logo-docked", revealHeroAfterDocked);
         window.removeEventListener("unifolio-intro-complete", revealHeroAfterDocked);
+        if (heroRevealFallbackTimer) {
+          clearTimeout(heroRevealFallbackTimer);
+        }
         window.removeEventListener("unifolio-show-product", handleShowProduct);
         window.removeEventListener("unifolio-reset-hero", handleResetHero);
         window.removeEventListener("unifolio-show-about", handleShowAbout);
@@ -6583,34 +6890,11 @@ export function BlueprintHero() {
               ref={cardsStageRef}
               className="w-full flex items-center justify-center relative shrink-0 pt-1 sm:pt-2 pb-1"
               style={{ perspective: "1400px", zIndex: 30 }}
-              onMouseLeave={() => {
-                if (stateRef.current === "product" && !transitionStartedRef.current && !transitionAnimatingRef.current && !isSecurityTransitioningRef.current) {
-                  handleCardHover(null);
-                }
-              }}
-              onPointerMove={(e) => {
-                if (e.target === cardsStageRef.current) {
-                  if (stateRef.current === "product" && !transitionStartedRef.current && !transitionAnimatingRef.current && !isSecurityTransitioningRef.current) {
-                    handleCardHover(null);
-                  }
-                }
-              }}
             >
               <div
                 ref={cardsClusterRef}
-                className="flex items-center justify-center gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-3.5 xl:gap-4 w-full max-w-[1340px] mx-auto overflow-x-auto lg:overflow-visible py-1.5 px-2 no-scrollbar will-change-transform"
+                className="relative flex items-center justify-center gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-3.5 xl:gap-4 w-full max-w-[1340px] mx-auto overflow-visible py-1.5 px-2 no-scrollbar will-change-transform"
                 style={{ transformStyle: "preserve-3d" }}
-                onMouseMove={(e) => {
-                  if (stateRef.current === "product" && !transitionStartedRef.current && !transitionAnimatingRef.current && !isSecurityTransitioningRef.current) {
-                    const band = getHoverBandIndex(e.clientX);
-                    handleCardHover(band);
-                  }
-                }}
-                onMouseLeave={() => {
-                  if (stateRef.current === "product" && !transitionStartedRef.current && !transitionAnimatingRef.current && !isSecurityTransitioningRef.current) {
-                    handleCardHover(null);
-                  }
-                }}
               >
                 {PRODUCT_CARDS.map((card, idx) => {
                   const slotK = idx;
@@ -6627,17 +6911,7 @@ export function BlueprintHero() {
                       ref={(el) => {
                         cardWrapperRefs.current[idx] = el;
                       }}
-                      onPointerEnter={() => {
-                        if (stateRef.current === "product" && !transitionStartedRef.current && !transitionAnimatingRef.current && !isSecurityTransitioningRef.current) {
-                          handleCardHover(idx);
-                        }
-                      }}
-                      onClick={() => {
-                        if (stateRef.current === "product" && !transitionStartedRef.current && !transitionAnimatingRef.current && !isSecurityTransitioningRef.current) {
-                          handleCardHover(idx);
-                        }
-                      }}
-                      className="relative shrink-0 w-[175px] sm:w-[190px] md:w-[205px] lg:w-[215px] xl:w-[225px] 2xl:w-[235px] h-[285px] sm:h-[310px] md:h-[330px] lg:h-[345px] xl:h-[360px] 2xl:h-[375px] cursor-pointer will-change-transform"
+                      className="relative shrink-0 w-[175px] sm:w-[190px] md:w-[205px] lg:w-[215px] xl:w-[225px] 2xl:w-[235px] h-[285px] sm:h-[310px] md:h-[330px] lg:h-[345px] xl:h-[360px] 2xl:h-[375px] cursor-default will-change-transform"
                       style={{ transformStyle: "preserve-3d" }}
                     >
                       <div
@@ -6816,6 +7090,204 @@ export function BlueprintHero() {
                                 </div>
                               )}
                             </div>
+                          </div>
+
+                          {/* =================================================================== */}
+                          {/* BENTO TILE RICH GLASS CONTENT (Activated during Bento State)        */}
+                          {/* =================================================================== */}
+                          <div
+                            ref={(el) => {
+                              bentoTileContentRefs.current[idx] = el;
+                            }}
+                            className="absolute inset-0 z-30 px-5 py-4 sm:px-6 sm:py-4.5 lg:px-6.5 lg:py-5 flex flex-col justify-between pointer-events-auto opacity-0 will-change-[opacity,transform] overflow-hidden select-text text-neutral-900"
+                          >
+                            {idx === 0 ? (
+                              // TILE 01: Understand what you own
+                              <div className="flex flex-col h-full justify-between">
+                                <div>
+                                  <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-[32px] tracking-[-0.035em] text-neutral-950 leading-[1.12]">
+                                    Understand what you own
+                                  </h3>
+                                </div>
+
+                                {/* Vertical Floating Information Layout */}
+                                <div className="flex flex-col justify-between flex-1 mt-6 sm:mt-7 gap-4 sm:gap-5">
+                                  {/* Item 1: Overlap Check */}
+                                  <div className="flex items-start gap-2.5 sm:gap-3">
+                                    <Layers className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
+                                    <p className="text-xs sm:text-[13px] lg:text-[13.5px] text-neutral-600 font-normal leading-relaxed">
+                                      <strong className="font-bold text-neutral-950">Overlap Check.</strong>{" "}
+                                      See if a &quot;diversified&quot; set of funds is secretly one concentrated bet on the same handful of companies.
+                                    </p>
+                                  </div>
+
+                                  {/* Item 2: Performance, in context */}
+                                  <div className="flex items-start gap-2.5 sm:gap-3">
+                                    <TrendingUp className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
+                                    <p className="text-xs sm:text-[13px] lg:text-[13.5px] text-neutral-600 font-normal leading-relaxed">
+                                      <strong className="font-bold text-neutral-950">Performance, in context.</strong>{" "}
+                                      How your funds, stocks and your portfolio as a whole, are actually doing against what matters, not just a raw return.
+                                    </p>
+                                  </div>
+
+                                  {/* Item 3: Hidden Fee Finder */}
+                                  <div className="flex items-start gap-2.5 sm:gap-3">
+                                    <Coins className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
+                                    <p className="text-xs sm:text-[13px] lg:text-[13.5px] text-neutral-600 font-normal leading-relaxed">
+                                      <strong className="font-bold text-neutral-950">Hidden Fee Finder.</strong>{" "}
+                                      What you&apos;re quietly losing to expense ratios, and what a cheaper option looks like.
+                                    </p>
+                                  </div>
+
+                                  {/* Item 4: Peer Benchmarking */}
+                                  <div className="flex items-start gap-2.5 sm:gap-3">
+                                    <Users className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
+                                    <p className="text-xs sm:text-[13px] lg:text-[13.5px] text-neutral-600 font-normal leading-relaxed">
+                                      <strong className="font-bold text-neutral-950">Peer Benchmarking.</strong>{" "}
+                                      See how your portfolio compares to others with a similar profile, not just a generic market index.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : idx === 1 ? (
+                              // TILE 02: See everything
+                              <div className="flex flex-col h-full justify-start">
+                                <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-[32px] tracking-[-0.035em] text-neutral-950 leading-[1.12]">
+                                  See everything
+                                </h3>
+                                <p className="mt-3 sm:mt-3.5 text-xs sm:text-[13.5px] lg:text-[14px] text-neutral-600 font-medium leading-relaxed">
+                                  From mutual funds and stocks to bank accounts, loans, credit cards, and real estate, every asset and liability you and your family hold, aggregated into a number that&apos;s actually accurate.
+                                </p>
+                              </div>
+                            ) : idx === 2 ? (
+                              // TILE 03: Skip the dashboards. Just ask.
+                              <div className="flex h-full items-center justify-between gap-3 sm:gap-4">
+                                <div className="max-w-[260px] sm:max-w-[285px] lg:max-w-[300px] flex flex-col justify-start shrink-0">
+                                  <h3 className="font-sans font-black text-xl sm:text-2xl lg:text-[26px] tracking-[-0.03em] text-neutral-950 leading-tight">
+                                    Skip the dashboards. <span className="text-[#22C55E]">Just ask.</span>
+                                  </h3>
+                                  <p className="mt-2.5 text-xs sm:text-[12.5px] lg:text-[13px] text-neutral-600 font-medium leading-relaxed">
+                                    The fastest way to understand your money isn&apos;t a chart, it&apos;s a question. Ask what&apos;s dragging your returns, whether you&apos;re overexposed, or if a decision makes sense, and get an answer based on your portfolio.
+                                  </p>
+                                </div>
+
+                                {/* Hand-drawn Speech Bubbles Sketch - Bigger & prominent */}
+                                <div className="relative flex-1 h-full min-h-0 flex items-center justify-center sm:justify-end pointer-events-none -my-1 sm:-my-1.5">
+                                  <img
+                                    src="/product-cards/card-2d-1.png"
+                                    alt="Conversational Question Intelligence"
+                                    className="w-auto h-full max-h-[235px] sm:max-h-[258px] lg:max-h-[275px] object-contain drop-shadow-sm scale-115 sm:scale-120 origin-center"
+                                    style={{ filter: "invert(0.92) hue-rotate(180deg) contrast(1.15)" }}
+                                  />
+                                </div>
+                              </div>
+                            ) : idx === 3 ? (
+                              // TILE 04: Know your risk
+                              <div className="relative flex flex-col h-full justify-start">
+                                <h3 className="font-sans font-black text-xl sm:text-2xl lg:text-[25px] tracking-[-0.03em] text-neutral-950 leading-tight mb-3 sm:mb-3.5 relative z-10">
+                                  Know your risk
+                                </h3>
+
+                                {/* 2 × 2 Floating Information Layout (No sub-cards, no borders, no backgrounds) */}
+                                <div className="grid grid-cols-2 gap-x-6 sm:gap-x-8 gap-y-3 sm:gap-y-3.5 flex-1 relative z-10">
+                                  {/* Item 1: Family Runway */}
+                                  <div className="flex items-start gap-2 sm:gap-2.5">
+                                    <Activity className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" />
+                                    <p className="text-xs sm:text-[12px] lg:text-[12.5px] text-neutral-600 font-normal leading-snug">
+                                      <strong className="font-bold text-neutral-950">Family Runway.</strong>{" "}
+                                      How long your family could cover expenses on liquid assets alone, pooled across everyone.
+                                    </p>
+                                  </div>
+
+                                  {/* Item 2: Real Safety Cushion */}
+                                  <div className="flex items-start gap-2 sm:gap-2.5">
+                                    <Shield className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" />
+                                    <p className="text-xs sm:text-[12px] lg:text-[12.5px] text-neutral-600 font-normal leading-snug">
+                                      <strong className="font-bold text-neutral-950">Real Safety Cushion.</strong>{" "}
+                                      Built from your real expenses and income stability, not a generic rule of thumb.
+                                    </p>
+                                  </div>
+
+                                  {/* Item 3: Sleeping Money */}
+                                  <div className="flex items-start gap-2 sm:gap-2.5">
+                                    <Coins className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" />
+                                    <p className="text-xs sm:text-[12px] lg:text-[12.5px] text-neutral-600 font-normal leading-snug">
+                                      <strong className="font-bold text-neutral-950">Sleeping Money.</strong>{" "}
+                                      Surplus cash doing nothing for you.
+                                    </p>
+                                  </div>
+
+                                  {/* Item 4: Family Risk Map */}
+                                  <div className="flex items-start gap-2 sm:gap-2.5">
+                                    <Users className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" />
+                                    <p className="text-xs sm:text-[12px] lg:text-[12.5px] text-neutral-600 font-normal leading-snug">
+                                      <strong className="font-bold text-neutral-950">Family Risk Map.</strong>{" "}
+                                      Where a single income, missing cover, or too many dependents leaves your family exposed.
+                                    </p>
+                                  </div>
+                                </div>
+
+                              </div>
+                            ) : (
+                              // TILE 05: Plan Ahead
+                              <div className="relative flex flex-col h-full justify-start">
+                                <h3 className="font-sans font-black text-xl sm:text-2xl lg:text-[25px] tracking-[-0.03em] text-neutral-950 leading-tight mb-2.5 sm:mb-3 relative z-10">
+                                  Plan Ahead
+                                </h3>
+
+                                {/* 5 Floating Information Clusters */}
+                                <div className="flex flex-col justify-start flex-1 relative z-10">
+                                  {/* Featured Anchor Item 1: Financial Snapshot */}
+                                  <div className="flex items-start gap-2 sm:gap-2.5 mb-2 sm:mb-2.5">
+                                    <TrendingUp className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" />
+                                    <p className="text-xs sm:text-[12px] lg:text-[12.5px] text-neutral-600 font-normal leading-snug">
+                                      <strong className="font-bold text-neutral-950">Financial Snapshot.</strong>{" "}
+                                      A single view of how your finances are trending, so you always know where you stand.
+                                    </p>
+                                  </div>
+
+                                  {/* 2 × 2 Balanced Floating Grid for the 4 Scenarios */}
+                                  <div className="grid grid-cols-2 gap-x-5 sm:gap-x-7 gap-y-2 sm:gap-y-2.5">
+                                    {/* Item 2: Stress test */}
+                                    <div className="flex items-start gap-2 sm:gap-2.5">
+                                      <Activity className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" />
+                                      <p className="text-xs sm:text-[12px] lg:text-[12.5px] text-neutral-600 font-normal leading-snug">
+                                        <strong className="font-bold text-neutral-950">Stress test.</strong>{" "}
+                                        See how your actual portfolio would hold up against a market crash.
+                                      </p>
+                                    </div>
+
+                                    {/* Item 3: "What if I..." */}
+                                    <div className="flex items-start gap-2 sm:gap-2.5">
+                                      <HelpCircle className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" />
+                                      <p className="text-xs sm:text-[12px] lg:text-[12.5px] text-neutral-600 font-normal leading-snug">
+                                        <strong className="font-bold text-neutral-950">&quot;What if I...&quot;</strong>{" "}
+                                        Model a job change, a loan, an early exit, before you act.
+                                      </p>
+                                    </div>
+
+                                    {/* Item 4: Goal Readiness Score */}
+                                    <div className="flex items-start gap-2 sm:gap-2.5">
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" />
+                                      <p className="text-xs sm:text-[12px] lg:text-[12.5px] text-neutral-600 font-normal leading-snug">
+                                        <strong className="font-bold text-neutral-950">Goal Readiness Score.</strong>{" "}
+                                        Retirement, house, education, tracked together, one score.
+                                      </p>
+                                    </div>
+
+                                    {/* Item 5: Succession Readiness */}
+                                    <div className="flex items-start gap-2 sm:gap-2.5">
+                                      <Users className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" />
+                                      <p className="text-xs sm:text-[12px] lg:text-[12.5px] text-neutral-600 font-normal leading-snug">
+                                        <strong className="font-bold text-neutral-950">Succession Readiness.</strong>{" "}
+                                        Is your family prepared without you.
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -7403,7 +7875,7 @@ export function BlueprintHero() {
             {/* Product Hero Content (Headline, Supporting Text, CTA) - Positioned underneath cards */}
             <div
               ref={headerRef}
-              className="w-full max-w-5xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mt-7 sm:mt-8 md:mt-10 lg:mt-12 mb-2 px-2"
+              className="w-full max-w-5xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mt-3 sm:mt-4 md:mt-5 lg:mt-6 mb-2 px-2 will-change-transform"
             >
               <h2
                 ref={headlineRef}
@@ -7414,18 +7886,18 @@ export function BlueprintHero() {
                   className="font-black text-[#22C55E]"
                   style={{ color: "#22C55E" }}
                 >
-                  Don&apos;t just see it.
+                  Not just see it.
                 </span>
               </h2>
 
               <p
                 ref={subheadRef}
-                className="mt-2.5 sm:mt-3 max-w-xl text-xs sm:text-sm md:text-base text-neutral-600 font-medium leading-snug sm:leading-relaxed will-change-transform"
+                className="mt-2 sm:mt-2.5 max-w-xl text-xs sm:text-sm md:text-base text-neutral-600 font-medium leading-snug sm:leading-relaxed will-change-transform"
               >
                 Every account, every fund, every rupee, in one place, finally clear.
               </p>
 
-              <div className="mt-4 sm:mt-5">
+              <div className="mt-3 sm:mt-4">
                 <LinkButton
                   ref={ctaRef}
                   href="#contact"
@@ -7450,7 +7922,7 @@ export function BlueprintHero() {
             {/* Ambient Floor Reflection Line */}
             <div
               ref={floorLineRef}
-              className="w-full max-w-xl mx-auto h-[1.5px] bg-gradient-to-r from-transparent via-[#22C55E] to-transparent shrink-0 z-20 mt-5 sm:mt-6 md:mt-7 opacity-75"
+              className="w-full max-w-xl mx-auto h-[1.5px] bg-gradient-to-r from-transparent via-[#22C55E] to-transparent shrink-0 z-20 mt-3 sm:mt-4 md:mt-5 opacity-75 will-change-transform"
             />
 
             {/* Minimal Editorial Security Content Experience */}
@@ -8112,7 +8584,59 @@ export function BlueprintHero() {
             <p className="mt-5 sm:mt-6 text-base sm:text-lg md:text-xl lg:text-[21px] text-[#5A685D] font-medium tracking-tight leading-relaxed select-none">
               Track. Understand. Act with confidence.
             </p>
+            <div className="mt-7 sm:mt-8">
+              <LinkButton
+                href="#contact"
+                size="md"
+                variant="primary"
+                className="shadow-md shadow-emerald-500/15 pointer-events-auto group"
+                onClick={(e) => {
+                  const target = document.getElementById("contact");
+                  if (target) {
+                    e.preventDefault();
+                    smoothScrollTo(target.offsetTop, { duration: 1.1, ease: "power2.inOut" });
+                  }
+                }}
+              >
+                <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_10px_#22C55E] group-hover:scale-125 transition-transform" />
+                <span className="font-bold text-sm sm:text-base tracking-tight">Join the waitlist</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 text-neutral-600 stroke-[2.5]" />
+              </LinkButton>
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* =================================================================== */}
+      {/* SECTION: BENTO CLOSING CTA                                          */}
+      {/* Spacious, minimal, centered closing statement and waitlist button   */}
+      {/* =================================================================== */}
+      <div
+        ref={bentoClosingCtaRef}
+        className="relative w-full bg-[#FAF8F5] py-28 sm:py-36 md:py-44 px-6 flex flex-col items-center justify-center text-center z-30"
+      >
+        <div className="max-w-3xl mx-auto flex flex-col items-center">
+          <h2 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[46px] text-neutral-950 tracking-[-0.035em] leading-[1.18] mb-7 sm:mb-9 text-center">
+            Your wealth already exists.{" "}
+            <span className="text-[#22C55E]">Now you'll actually understand it.</span>
+          </h2>
+          <LinkButton
+            href="#contact"
+            size="lg"
+            variant="primary"
+            className="shadow-xl shadow-emerald-500/15 group"
+            onClick={(e) => {
+              const target = document.getElementById("contact");
+              if (target) {
+                e.preventDefault();
+                smoothScrollTo(target.offsetTop, { duration: 1.1, ease: "power2.inOut" });
+              }
+            }}
+          >
+            <span className="w-2.5 h-2.5 rounded-full bg-[#22C55E] shadow-[0_0_12px_#22C55E] group-hover:scale-125 transition-transform" />
+            <span className="font-bold text-base sm:text-lg tracking-tight">Join the waitlist</span>
+            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1.5 text-neutral-600 stroke-[2.5]" />
+          </LinkButton>
         </div>
       </div>
     </section>
