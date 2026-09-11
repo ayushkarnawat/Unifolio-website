@@ -88,13 +88,14 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
         const unseatX = -28 * easeT;
         const unseatZ = 35 * Math.sin(t * Math.PI);
 
+        const doorOpacity = t > 0.88 ? Math.max(0, 1 - (t - 0.88) / 0.10) : 1;
         gsap.set(closedDoor, {
           transformOrigin: "8% 50%", // Left hinge
           rotateY: swingAngle,
           x: unseatX,
           z: unseatZ,
-          opacity: t > 0.65 ? Math.max(0, 1 - (t - 0.65) / 0.28) : 1,
-          visibility: t >= 0.96 ? "hidden" : "visible",
+          opacity: doorOpacity,
+          visibility: t >= 0.98 ? "hidden" : "visible",
         });
 
         // Open chamber becomes visible as door begins swinging
