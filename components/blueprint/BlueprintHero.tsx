@@ -331,6 +331,9 @@ export function BlueprintHero() {
   const bentoTileContentRefs = useRef<(HTMLDivElement | null)[]>([]);
   const companionCardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const COMPANION_COUNT = 21;
+  const cardInkRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const companionPaperRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const companionInkRefs = useRef<(HTMLDivElement | null)[]>([]);
   const productToRingTlRef = useRef<gsap.core.Timeline | null>(null);
   const ringRotateTweenRef = useRef<gsap.core.Tween | null>(null);
 
@@ -1911,6 +1914,17 @@ export function BlueprintHero() {
           tl.set(compEl, { opacity: 0, visibility: "hidden" }, 0);
         });
 
+        // Ensure ink sketch layers are hidden and paper layers visible at t = 0
+        cardInkRefs.current.forEach((inkEl) => {
+          if (inkEl) tl.set(inkEl, { opacity: 0, visibility: "hidden" }, 0);
+        });
+        companionInkRefs.current.forEach((inkEl) => {
+          if (inkEl) tl.set(inkEl, { opacity: 0, visibility: "hidden" }, 0);
+        });
+        companionPaperRefs.current.forEach((pEl) => {
+          if (pEl) tl.set(pEl, { opacity: 1, visibility: "visible" }, 0);
+        });
+
         // Safe pre-positioned on the left side of the viewport
         if (safeContainerRef.current) {
           tl.set(
@@ -2119,40 +2133,94 @@ export function BlueprintHero() {
         );
 
         // -------------------------------------------------------------------------
-        // PHASE 2: CARDS PHYSICALLY MOVE INTO THE VAULT (1.02s -> 1.70s)
-        // After vault door opens, animate the entire card stack toward the OPENING of the vault.
-        // The cards travel physically into the recessed interior with smooth acceleration/deceleration,
-        // shrinking perspective, passing behind the front rim, and disappearing deep into the cavity.
+        // PHASE 2: "PAPER -> INK" CARD TRANSFORMATION & ABSORPTION (1.02s -> 1.70s)
+        // Progression:
+        // 1. NORMAL CARD: Card travels along existing trajectory toward vault.
+        // 2. APPROACHES VAULT: Progressively converts from filled UI-card into thin ink line-art.
+        // 3. BECOMES SKETCH/INK: Edges, icons, text become fine drafting linework.
+        // 4. COLLAPSES TOWARD CENTER: Gently drawn into vault center, linework thins and dissolves.
+        // 5. INK DISAPPEARS: Collapses into center pinprick and disappears into the chamber.
+        // 6. Sequential trailing duplicate cards follow the exact same Paper -> Ink conversion.
         // -------------------------------------------------------------------------
         const cardEnterStart = 1.02;
-        const cardApproachDuration = 0.48; // DOM cards travel to vault opening mouth (1.02s -> 1.50s)
+        const cardApproachDuration = 0.58;
         const cardsToSafeDeltaX = targetLeftX - stackTargetX;
         const cardsToSafeDeltaY = targetRingY - stackTargetY;
 
+        // 1. Lead product cards: Paper -> Ink conversion -> Collapse into center
         PRODUCT_CARDS.forEach((_, i) => {
           const wrapper = cardWrapperRefs.current[i];
+          const paper = cardFrontRefs.current[i];
+          const ink = cardInkRefs.current[i];
           if (!wrapper) return;
 
-          // Physical 3D trajectory moving toward the circular vault opening with complete fade out
+          const cardStart = cardEnterStart + i * 0.035;
+
+          // Trajectory toward the vault opening
           tl.to(
             wrapper,
             {
-              x: cardsToSafeDeltaX + (4 - i) * -1.0,
-              y: cardsToSafeDeltaY + (4 - i) * 1.0,
-              z: -120,
-              scale: stackCardScale * 0.44,
-              rotateX: 18,
-              rotateY: -14,
-              rotateZ: -10,
-              opacity: 0,
-              autoAlpha: 0,
+              x: cardsToSafeDeltaX + (4 - i) * -0.4,
+              y: cardsToSafeDeltaY + (4 - i) * 0.4,
+              z: -110,
+              rotateX: 15,
+              rotateY: -12,
+              rotateZ: -10 + i * 4,
               duration: cardApproachDuration,
               ease: "power2.inOut",
             },
-            cardEnterStart
+            cardStart
           );
 
-          // Ensure cards remain completely hidden once faded into the vault opening
+          // Paper -> Ink conversion midway through approach
+          if (paper && ink) {
+            tl.set(ink, { opacity: 0, visibility: "visible" }, 0);
+            // Dissolve the filled paper UI card
+            tl.to(
+              paper,
+              {
+                opacity: 0,
+                duration: 0.24,
+                ease: "power1.inOut",
+              },
+              cardStart + 0.12
+            );
+            // Reveal the fine ink sketch lines in exact alignment
+            tl.to(
+              ink,
+              {
+                opacity: 1,
+                duration: 0.24,
+                ease: "power1.inOut",
+              },
+              cardStart + 0.12
+            );
+          }
+
+          // Once converted to ink: gently pull into the center and collapse
+          tl.to(
+            wrapper,
+            {
+              scale: 0.04,
+              duration: 0.25,
+              ease: "power2.in",
+            },
+            cardStart + 0.33
+          );
+
+          // The delicate ink lines fade and dissolve into the center
+          if (ink) {
+            tl.to(
+              ink,
+              {
+                opacity: 0,
+                duration: 0.22,
+                ease: "power2.in",
+              },
+              cardStart + 0.35
+            );
+          }
+
           tl.set(
             wrapper,
             {
@@ -2160,11 +2228,116 @@ export function BlueprintHero() {
               autoAlpha: 0,
               visibility: "hidden",
             },
-            cardEnterStart + cardApproachDuration
+            cardStart + cardApproachDuration + 0.05
           );
         });
 
-        // Ensure 3D cards inside Three.js remain completely absent from the vault
+        // 2. Trailing duplicate cards follow the same Paper -> Ink stream sequentially
+        const enterCompanionCards = companionCardRefs.current.slice(0, 15).filter(Boolean) as HTMLElement[];
+        enterCompanionCards.forEach((compEl, cIdx) => {
+          const leadIdx = cIdx % 5;
+          const trailTier = Math.floor(cIdx / 5); // 0, 1, 2
+          const trailDelay = cardEnterStart + leadIdx * 0.035 + (trailTier + 1) * 0.032;
+          const trailDur = cardApproachDuration * 0.88;
+          const paperEl = companionPaperRefs.current[cIdx];
+          const inkEl = companionInkRefs.current[cIdx];
+
+          tl.set(
+            compEl,
+            {
+              x: 0,
+              y: 0,
+              z: -(cIdx + 5) * 4,
+              scale: stackCardScale * (0.92 - trailTier * 0.12),
+              opacity: 0,
+              visibility: "visible",
+            },
+            cardEnterStart
+          );
+
+          // Fade in trail card as paper
+          tl.to(
+            compEl,
+            {
+              opacity: 0.75 - trailTier * 0.18,
+              duration: 0.10,
+              ease: "power1.out",
+            },
+            trailDelay
+          );
+
+          // Move toward vault
+          tl.to(
+            compEl,
+            {
+              x: cardsToSafeDeltaX,
+              y: cardsToSafeDeltaY,
+              z: -130,
+              rotateX: 16,
+              rotateY: -14,
+              rotateZ: -14,
+              duration: trailDur,
+              ease: "power2.inOut",
+            },
+            trailDelay + 0.02
+          );
+
+          // Paper -> Ink conversion for trail card
+          if (paperEl && inkEl) {
+            tl.set(inkEl, { opacity: 0, visibility: "visible" }, 0);
+            tl.to(
+              paperEl,
+              {
+                opacity: 0,
+                duration: 0.18,
+                ease: "power1.inOut",
+              },
+              trailDelay + 0.14
+            );
+            tl.to(
+              inkEl,
+              {
+                opacity: 0.85 - trailTier * 0.15,
+                duration: 0.18,
+                ease: "power1.inOut",
+              },
+              trailDelay + 0.14
+            );
+          }
+
+          // Ink collapses into center
+          tl.to(
+            compEl,
+            {
+              scale: 0.02,
+              duration: 0.20,
+              ease: "power2.in",
+            },
+            trailDelay + trailDur - 0.22
+          );
+
+          if (inkEl) {
+            tl.to(
+              inkEl,
+              {
+                opacity: 0,
+                duration: 0.18,
+                ease: "power2.in",
+              },
+              trailDelay + trailDur - 0.20
+            );
+          }
+
+          tl.set(
+            compEl,
+            {
+              opacity: 0,
+              visibility: "hidden",
+            },
+            trailDelay + trailDur + 0.04
+          );
+        });
+
         safeVault3DRef.current?.setCardsProgress?.(0);
 
         // -------------------------------------------------------------------------
@@ -4258,46 +4431,60 @@ export function BlueprintHero() {
           const destY = 0;
           const destZ = -i * 2.2;
 
+          const paper = cardFrontRefs.current[i];
+          const ink = cardInkRefs.current[i];
+
+          // Pre-position lead cards as ink lines at vault center
           tl.set(
             wrapper,
             {
-              x: (destX - origX) + cardsToSafeDeltaX + (4 - i) * -1.0,
-              y: (destY - origY) + cardsToSafeDeltaY + (4 - i) * 1.0,
+              x: (destX - origX) + cardsToSafeDeltaX,
+              y: (destY - origY) + cardsToSafeDeltaY,
               z: -120,
-              scale: stackCardScale * 0.44,
-              rotateX: 18,
-              rotateY: -14,
+              scale: 0.04, // Starts as subtle ink fragment at center
+              rotateX: 14,
+              rotateY: -12,
               rotateZ: -10,
-              opacity: 0,
-              autoAlpha: 0,
+              opacity: 1,
+              autoAlpha: 1,
               visibility: "visible",
               zIndex: 100 - i,
             },
             0
           );
+          if (paper) tl.set(paper, { opacity: 0 }, 0);
+          if (ink) tl.set(ink, { opacity: 1, visibility: "visible" }, 0);
         });
 
-        // Pre-position companion cards hidden in stack behind product cards
+        // Pre-position companion cards at vault center as ink lines
         allCompanionCards.forEach((compEl, cIdx) => {
           const k = 5 + cIdx;
+          const leadIdx = cIdx % 5;
+          const origX = origCentersRef.current[leadIdx]?.x ?? 0;
+          const origY = origCentersRef.current[leadIdx]?.y ?? 0;
           const destX = frontX - k * 2.8;
           const destZ = -k * 2.2;
+          const paperEl = companionPaperRefs.current[cIdx];
+          const inkEl = companionInkRefs.current[cIdx];
+
           tl.set(
             compEl,
             {
-              x: destX,
-              y: 0,
-              z: destZ,
-              rotateX: 0,
-              rotateY: 0,
-              rotateZ: 0,
-              scale: stackCardScale,
-              opacity: 0,
+              x: (destX - origX) + cardsToSafeDeltaX,
+              y: (0 - origY) + cardsToSafeDeltaY,
+              z: -140,
+              rotateX: 14,
+              rotateY: -12,
+              rotateZ: -10,
+              scale: 0.02,
+              opacity: 1,
               visibility: "hidden",
               zIndex: 100 - k,
             },
             0
           );
+          if (paperEl) tl.set(paperEl, { opacity: 0 }, 0);
+          if (inkEl) tl.set(inkEl, { opacity: 1, visibility: "visible" }, 0);
         });
 
         // Ensure safe container is visible & positioned on the left at start of exit
@@ -4314,11 +4501,10 @@ export function BlueprintHero() {
           );
         }
 
-        // Ensure vault cards remain completely absent
         safeVault3DRef.current?.setCardsProgress?.(0);
 
         // STEP 1: VAULT OPENS (0.00s -> 0.42s)
-        // Door opens to reveal the empty gold chamber
+        // Door opens to reveal the open sketch chamber
         const safeOpenProxy = { p: 0 };
         tl.fromTo(
           safeOpenProxy,
@@ -4334,10 +4520,13 @@ export function BlueprintHero() {
           0
         );
 
-        // STEP 2: Cards emerge from the vault opening toward their consolidated stack position,
-        // fading in completely as they exit
-        const cardExitStart = 0.30;
-        const cardExitDuration = 0.44;
+        // STEP 2: "INK -> PAPER" CARDS EMERGE & SOLIDIFY INTO STACK (0.28s -> 0.82s)
+        // 1. Ink fragments emerge from vault center, expanding into card outlines.
+        // 2. Outlines progressively gain the normal filled card appearance (Paper).
+        // 3. Cards return to original scale and opacity, forming the trail.
+        // 4. Trail coalesces into stack, ready for untouched hand-off into About!
+        const cardExitStart = 0.28;
+        const cardExitDuration = 0.52;
 
         allProductCards.forEach((wrapper, i) => {
           const origX = origCentersRef.current[i]?.x ?? 0;
@@ -4345,7 +4534,11 @@ export function BlueprintHero() {
           const destX = frontX - i * 2.8;
           const destY = 0;
           const destZ = -i * 2.2;
+          const paper = cardFrontRefs.current[i];
+          const ink = cardInkRefs.current[i];
+          const exitStart = cardExitStart + i * 0.028;
 
+          // 1. Ink outline emerges and expands outward
           tl.to(
             wrapper,
             {
@@ -4362,14 +4555,98 @@ export function BlueprintHero() {
               ease: "power2.out",
               force3D: true,
             },
-            cardExitStart
+            exitStart
           );
+
+          // 2. Outlines progressively gain normal filled card appearance (Paper)
+          if (paper && ink) {
+            tl.to(
+              paper,
+              {
+                opacity: 1,
+                duration: 0.24,
+                ease: "power2.out",
+              },
+              exitStart + 0.22
+            );
+            tl.to(
+              ink,
+              {
+                opacity: 0,
+                duration: 0.22,
+                ease: "power2.out",
+              },
+              exitStart + 0.24
+            );
+          }
         });
 
-        // Companion cards smoothly fade into place behind the stack
-        allCompanionCards.forEach((compEl) => {
-          tl.set(compEl, { visibility: "visible" }, cardExitStart + 0.12);
-          tl.to(compEl, { opacity: 1, duration: 0.32, ease: "power1.out" }, cardExitStart + 0.12);
+        // Companion duplicate cards emerge sequentially as ink, solidify into paper, and settle
+        allCompanionCards.forEach((compEl, cIdx) => {
+          const k = 5 + cIdx;
+          const leadIdx = cIdx % 5;
+          const trailTier = Math.floor(cIdx / 5);
+          const origX = origCentersRef.current[leadIdx]?.x ?? 0;
+          const origY = origCentersRef.current[leadIdx]?.y ?? 0;
+          const destX = frontX - k * 2.8;
+          const destZ = -k * 2.2;
+          const trailStart = cardExitStart + leadIdx * 0.028 + (trailTier + 1) * 0.025;
+          const paperEl = companionPaperRefs.current[cIdx];
+          const inkEl = companionInkRefs.current[cIdx];
+
+          tl.set(compEl, { visibility: "visible" }, trailStart);
+
+          // Emerge and expand outward
+          tl.to(
+            compEl,
+            {
+              x: destX - origX,
+              y: 0 - origY,
+              z: destZ,
+              scale: stackCardScale,
+              rotateX: 0,
+              rotateY: 0,
+              rotateZ: 0,
+              opacity: 0.85 - trailTier * 0.15,
+              duration: cardExitDuration * 0.88,
+              ease: "power2.out",
+              force3D: true,
+            },
+            trailStart
+          );
+
+          // Ink -> Paper solidification
+          if (paperEl && inkEl) {
+            tl.to(
+              paperEl,
+              {
+                opacity: 1,
+                duration: 0.22,
+                ease: "power1.out",
+              },
+              trailStart + 0.22
+            );
+            tl.to(
+              inkEl,
+              {
+                opacity: 0,
+                duration: 0.20,
+                ease: "power1.out",
+              },
+              trailStart + 0.24
+            );
+          }
+
+          // Smoothly coalesce into stack
+          tl.to(
+            compEl,
+            {
+              opacity: 1,
+              duration: 0.18,
+              ease: "power1.out",
+            },
+            cardExitStart + cardExitDuration - 0.04
+          );
         });
 
         // STEP 3: VAULT DISAPPEARS - Smoothly fades out as cards emerge (0.52s -> 0.80s)
@@ -7734,7 +8011,7 @@ export function BlueprintHero() {
                               <div className="flex flex-col h-full justify-between">
                                 <div>
                                   <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-[32px] tracking-[-0.035em] text-neutral-950 leading-[1.12]">
-                                    Understand what you own
+                                    <span className="text-[#22C55E]">Understand</span> what you own
                                   </h3>
                                 </div>
 
@@ -7818,7 +8095,7 @@ export function BlueprintHero() {
                               // TILE 03: See everything
                               <div className="flex flex-col h-full justify-start">
                                 <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-[32px] tracking-[-0.035em] text-neutral-950 leading-[1.12]">
-                                  See everything
+                                  See <span className="text-[#22C55E]">everything</span>
                                 </h3>
                                 <p className="mt-3 sm:mt-3.5 text-[13.5px] sm:text-[14.5px] lg:text-[15.5px] text-neutral-700 font-medium leading-relaxed">
                                   Mutual funds, stocks, bank accounts, loans, credit cards, real estate. Every asset and liability, aggregated into one accurate number.
@@ -7828,7 +8105,7 @@ export function BlueprintHero() {
                               // TILE 04: Know your risk
                               <div className="relative flex flex-col h-full justify-start">
                                 <h3 className="font-sans font-black text-xl sm:text-2xl lg:text-[25px] tracking-[-0.03em] text-neutral-950 leading-tight mb-3 sm:mb-3.5 relative z-10">
-                                  Know your risk
+                                  Know your <span className="text-[#22C55E]">risk</span>
                                 </h3>
 
                                 {/* 2 × 2 Floating Information Layout (No sub-cards, no borders, no backgrounds) */}
@@ -7891,7 +8168,7 @@ export function BlueprintHero() {
                               // TILE 05: Plan Ahead
                               <div className="relative flex flex-col h-full justify-start">
                                 <h3 className="font-sans font-black text-xl sm:text-2xl lg:text-[25px] tracking-[-0.03em] text-neutral-950 leading-tight mb-2.5 sm:mb-3 relative z-10">
-                                  Plan Ahead
+                                  <span className="text-[#22C55E]">Plan</span> Ahead
                                 </h3>
 
                                 {/* 5 Floating Information Clusters */}
@@ -8010,6 +8287,139 @@ export function BlueprintHero() {
                             <div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
                           </div>
                         </div>
+
+                        {/* INK / SKETCH LAYER: Architectural drafting style matching sketch vault */}
+                        <div
+                          ref={(el) => {
+                            cardInkRefs.current[idx] = el;
+                          }}
+                          className="absolute inset-0 w-full h-full rounded-[20px] pointer-events-none will-change-[opacity,transform] overflow-hidden"
+                          style={{
+                            opacity: 0,
+                            transformStyle: "preserve-3d",
+                          }}
+                        >
+                          {/* Outer Fine Drafting Pen Border */}
+                          <div
+                            className="absolute inset-0 rounded-[20px] pointer-events-none"
+                            style={{
+                              border: "1.2px solid rgba(42, 50, 46, 0.85)",
+                              boxShadow: "inset 0 0 0 1px rgba(255, 255, 255, 0.25)",
+                            }}
+                          />
+
+                          {/* Inner Technical Border Guideline */}
+                          <div
+                            className="absolute inset-[6px] rounded-[15px] pointer-events-none"
+                            style={{
+                              border: "0.8px dashed rgba(60, 72, 66, 0.45)",
+                            }}
+                          />
+
+                          {/* Technical Crosshairs at Corners */}
+                          <div className="absolute top-0 left-4 w-3.5 h-[1px] bg-neutral-700/60" />
+                          <div className="absolute top-4 left-0 w-[1px] h-3.5 bg-neutral-700/60" />
+                          <div className="absolute bottom-0 right-4 w-3.5 h-[1px] bg-neutral-700/60" />
+                          <div className="absolute bottom-4 right-0 w-[1px] h-3.5 bg-neutral-700/60" />
+
+                          {/* Ink Content: Monospace metadata & technical lineart */}
+                          <div className="relative z-10 p-4 sm:p-5 flex flex-col justify-between h-full">
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-[10px] tracking-[0.2em] text-neutral-800 font-semibold">
+                                INK // {card.num}
+                              </span>
+                              <div className="w-3.5 h-3.5 rounded-full border border-neutral-700/75 flex items-center justify-center">
+                                <div className="w-1 h-1 rounded-full bg-neutral-800" />
+                              </div>
+                            </div>
+
+                            {/* Center Blueprint Emblem: Concentric circles with crosshairs like vault dial */}
+                            <div className="flex flex-col items-center justify-center my-auto">
+                              <div className="relative w-12 h-12 rounded-full border border-neutral-700/75 flex items-center justify-center">
+                                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[0.8px] bg-neutral-700/55" />
+                                <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[0.8px] bg-neutral-700/55" />
+                                <div className="w-6 h-6 rounded-full border border-neutral-600/60 flex items-center justify-center">
+                                  <div className="w-2 h-2 rounded-full border border-[#16a34a] bg-[#22c55e]/20" />
+                                </div>
+                              </div>
+                              <span className="mt-2.5 font-mono text-[8.5px] tracking-[0.22em] text-neutral-700 uppercase font-semibold">
+                                {card.title}
+                              </span>
+                            </div>
+
+                            {/* Bottom Technical Line */}
+                            <div className="flex items-center justify-between border-t border-neutral-700/50 pt-2">
+                              <span className="font-mono text-[9px] tracking-wider text-neutral-700 font-bold uppercase">
+                                UNIFOLIO
+                              </span>
+                              <span className="font-mono text-[8px] text-neutral-500">
+                                SEC.CAD // 0{idx + 1}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* DUPLICATED TRAIL CARDS FOR PAPER -> INK CHOREOGRAPHY */}
+                {Array.from({ length: COMPANION_COUNT }).map((_, cIdx) => {
+                  const cardIdx = cIdx % 5;
+                  const card = PRODUCT_CARDS[cardIdx];
+                  return (
+                    <div
+                      key={`companion-trail-${cIdx}`}
+                      ref={(el) => {
+                        companionCardRefs.current[cIdx] = el;
+                      }}
+                      className="absolute shrink-0 w-[175px] sm:w-[190px] md:w-[205px] lg:w-[215px] xl:w-[225px] 2xl:w-[235px] h-[285px] sm:h-[310px] md:h-[330px] lg:h-[345px] xl:h-[360px] 2xl:h-[375px] rounded-[20px] overflow-hidden pointer-events-none will-change-transform"
+                      style={{
+                        transformStyle: "preserve-3d",
+                        opacity: 0,
+                        visibility: "hidden",
+                      }}
+                    >
+                      {/* Trail Card Paper Layer */}
+                      <div
+                        ref={(el) => {
+                          companionPaperRefs.current[cIdx] = el;
+                        }}
+                        className="absolute inset-0 rounded-[20px] overflow-hidden will-change-[opacity]"
+                        style={{
+                          backdropFilter: "blur(20px)",
+                          WebkitBackdropFilter: "blur(20px)",
+                          backgroundColor: "rgba(255, 255, 255, 0.72)",
+                          border: "1px solid rgba(255, 255, 255, 0.75)",
+                          boxShadow: "0 18px 40px -10px rgba(16, 44, 28, 0.08), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.9)",
+                        }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-emerald-50/40 to-white/60 pointer-events-none" />
+                        <div className="relative z-10 p-5 flex flex-col justify-between h-full opacity-60">
+                          <span className="font-mono text-[11px] text-neutral-400">UNIFOLIO // {card.num}</span>
+                          <span className="font-sans font-bold text-xs tracking-wider text-neutral-500 uppercase">{card.title}</span>
+                        </div>
+                      </div>
+
+                      {/* Trail Card Ink Sketch Layer */}
+                      <div
+                        ref={(el) => {
+                          companionInkRefs.current[cIdx] = el;
+                        }}
+                        className="absolute inset-0 rounded-[20px] pointer-events-none will-change-[opacity]"
+                        style={{
+                          opacity: 0,
+                          border: "1.2px solid rgba(42, 50, 46, 0.85)",
+                        }}
+                      >
+                        <div className="absolute inset-[6px] rounded-[15px] border border-dashed border-neutral-700/40" />
+                        <div className="relative z-10 p-5 flex flex-col justify-between h-full opacity-70">
+                          <span className="font-mono text-[10px] text-neutral-800 font-semibold tracking-wider">INK // {card.num}</span>
+                          <div className="w-8 h-8 mx-auto rounded-full border border-neutral-700/60 flex items-center justify-center">
+                            <div className="w-2 h-2 rounded-full bg-[#22c55e]/40" />
+                          </div>
+                          <span className="font-mono text-[9px] text-neutral-600 uppercase tracking-wider">{card.title}</span>
+                        </div>
                       </div>
                     </div>
                   );
@@ -8030,7 +8440,7 @@ export function BlueprintHero() {
                 >
                   {/* Subtle Ambient Soft Shadow Underneath (Reinforces Floating Effect) */}
                   <div
-                    className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-[340px] sm:w-[420px] lg:w-[480px] h-[55px] sm:h-[70px] rounded-[100%] pointer-events-none"
+                    className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[270px] sm:w-[330px] lg:w-[390px] h-[45px] sm:h-[55px] rounded-[100%] pointer-events-none"
                     style={{
                       background:
                         "radial-gradient(ellipse 65% 35% at 50% 50%, rgba(18, 26, 22, 0.16) 0%, rgba(34, 197, 94, 0.05) 35%, transparent 70%)",
@@ -8041,7 +8451,7 @@ export function BlueprintHero() {
                   {/* 3D Round Chrome/Gold Vault Safe (Exact replica of Reference Image & "Safe Movement") */}
                   <SafeVault3D
                     ref={safeVault3DRef}
-                    className="w-[330px] sm:w-[400px] lg:w-[480px] xl:w-[520px] h-[330px] sm:h-[400px] lg:h-[480px] xl:h-[520px]"
+                    className="w-[270px] sm:w-[330px] lg:w-[390px] xl:w-[430px] h-[270px] sm:h-[330px] lg:h-[390px] xl:h-[430px]"
                   />
                 </div>
 
