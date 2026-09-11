@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger, Flip, Observer, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
+import { DESKTOP_REFERENCE_WIDTH } from "@/lib/viewport";
 import { LinkButton } from "@/components/ui/Button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { CardSculpture, type CardSculptureHandle } from "@/components/product/CardSculpture";
@@ -1360,10 +1361,13 @@ export function ProductExperience() {
         const targetRingY = Math.round(viewportCenterY - clusterCenterY + 18);
         const targetRingX = Math.round(viewportCenterX - clusterCenterX);
 
-        // Left docked X position for Phase 4: travels toward the left side of the viewport exactly like security reference video
+        // Left docked X position for Phase 4: travels toward the left side of the viewport exactly like security reference video.
+        // The dock distance itself is clamped to the reference desktop width so it stays proportioned
+        // to the ring/text composition instead of shrinking (as a fraction of viewport) on large monitors.
         const screenW = typeof window !== "undefined" ? window.innerWidth : 1440;
+        const composedScreenW = Math.min(screenW, DESKTOP_REFERENCE_WIDTH);
         const dockedLeftX = Math.round(
-          targetRingX - (isDesktop ? Math.min(screenW * 0.25, 380) : isTablet ? screenW * 0.20 : 0)
+          targetRingX - (isDesktop ? composedScreenW * 0.25 : isTablet ? screenW * 0.20 : 0)
         );
 
         // Reposition ring upward to visually center in viewport and apply pronounced 3D diagonal tilt

@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Image from "next/image";
 import { useGSAP } from "@gsap/react";
 import { gsap, prefersReducedMotion } from "@/lib/gsap";
+import { getComposedViewport } from "@/lib/viewport";
 
 export function BlueprintStackingCards() {
   const containerRef = useRef<HTMLElement | null>(null);
@@ -17,14 +18,21 @@ export function BlueprintStackingCards() {
       const track = trackRef.current;
       const container = containerRef.current;
 
+      // Clamp the effective viewport width used for scroll travel so this
+      // doesn't shrink toward zero (or invert direction) on very wide
+      // desktop monitors, where trackWidth stays roughly fixed past the
+      // track's own responsive breakpoints while window.innerWidth keeps growing.
       const getScrollAmount = () => {
         const trackWidth = track.scrollWidth;
-        const viewportWidth = window.innerWidth;
-        return -(trackWidth - viewportWidth + 60);
+        const { vw } = getComposedViewport();
+        return -Math.max(trackWidth - vw + 60, 0);
       };
 
-      const getEndDistance = () =>
-        Math.max(2400, (track.scrollWidth - window.innerWidth) * 1.35);
+      const getEndDistance = () => {
+        const trackWidth = track.scrollWidth;
+        const { vw } = getComposedViewport();
+        return Math.max(2400, (trackWidth - vw) * 1.35);
+      };
 
       // Keep section height in sync with exact pin distance
       const syncContainerHeight = () => {
