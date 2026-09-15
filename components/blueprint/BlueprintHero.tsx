@@ -1002,6 +1002,36 @@ export function BlueprintHero() {
                 el.style.height = "";
               }
             });
+            PRODUCT_CARDS.forEach((_, i) => {
+              const defEl = cardDefaultRefs.current[i];
+              const illus = cardIllustrationRefs.current[i];
+              const grad = cardGradientBgRefs.current[i];
+              const glass = cardGlassOverlayRefs.current[i];
+              const hoverEl = cardHoverRefs.current[i];
+              const bentoContent = bentoTileContentRefs.current[i];
+              const front = cardFrontRefs.current[i];
+              if (front) {
+                front.style.background = "";
+              }
+              if (defEl) {
+                gsap.set(defEl, { display: "flex", autoAlpha: 1, opacity: 1, visibility: "visible", y: 0, scale: 1 });
+              }
+              if (illus) {
+                gsap.set(illus, { display: "flex", autoAlpha: 1, opacity: 0.88, visibility: "visible", scale: 1, filter: "blur(0px)" });
+              }
+              if (grad) {
+                gsap.set(grad, { display: "block", autoAlpha: 1, opacity: 1, visibility: "visible" });
+              }
+              if (glass) {
+                gsap.set(glass, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
+              }
+              if (hoverEl) {
+                gsap.set(hoverEl, { display: "flex", autoAlpha: 0, opacity: 0, visibility: "hidden", y: 8 });
+              }
+              if (bentoContent) {
+                gsap.set(bentoContent, { autoAlpha: 0, opacity: 0, y: 14, visibility: "hidden" });
+              }
+            });
           },
           onComplete: () => {
             stateRef.current = "product-resting";
@@ -1011,6 +1041,14 @@ export function BlueprintHero() {
             setIsAperturePaused(true);
             if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "";
             if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "";
+            PRODUCT_CARDS.forEach((_, i) => {
+              const defEl = cardDefaultRefs.current[i];
+              const illus = cardIllustrationRefs.current[i];
+              const grad = cardGradientBgRefs.current[i];
+              if (defEl) gsap.set(defEl, { display: "flex", autoAlpha: 1, opacity: 1, visibility: "visible" });
+              if (illus) gsap.set(illus, { display: "flex", autoAlpha: 1, opacity: 0.88, visibility: "visible" });
+              if (grad) gsap.set(grad, { display: "block", autoAlpha: 1, opacity: 1, visibility: "visible" });
+            });
             gsap.set(
               [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
               { autoAlpha: 1, opacity: 1, visibility: "visible" }
@@ -1635,12 +1673,12 @@ export function BlueprintHero() {
         const targetRingY = Math.round(viewportCenterY - clusterCenterY + 18);
         const isSmallScreen = vWidth < 640;
         const rightShiftX = isDesktop
-          ? Math.round(composedCenterX * 0.42)
+          ? Math.round(composedCenterX * 0.35)
           : isTablet
-          ? Math.round(composedCenterX * 0.30)
+          ? Math.round(composedCenterX * 0.24)
           : isSmallScreen
           ? 0
-          : Math.round(composedCenterX * 0.16);
+          : Math.round(composedCenterX * 0.14);
         const heroShiftX = rightShiftX;
 
         targetLeftXRef.current = targetLeftX;
@@ -4090,10 +4128,10 @@ export function BlueprintHero() {
         // width instead of pushing the stack further from center on very wide monitors.
         const vCenterX = Math.min(vwVal, DESKTOP_REFERENCE_WIDTH) / 2;
         const shiftX = isDesktop
-          ? Math.round(vCenterX * 0.42)
+          ? Math.round(vCenterX * 0.35)
           : isTablet
-          ? Math.round(vCenterX * 0.30)
-          : Math.round(vCenterX * 0.16);
+          ? Math.round(vCenterX * 0.24)
+          : Math.round(vCenterX * 0.14);
 
         // Ensure security stage and closing line (State 7) are active and measurable behind cards (zIndex: 20 < 30)
         if (securityStageRef.current) {
@@ -5280,10 +5318,10 @@ export function BlueprintHero() {
         const allCompanionCards = companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
         const allCards = [...allProductCards, ...allCompanionCards];
         const shiftX = isDesktop
-          ? Math.round(composedCenterX * 0.42)
+          ? Math.round(composedCenterX * 0.35)
           : isTablet
-          ? Math.round(composedCenterX * 0.30)
-          : Math.round(composedCenterX * 0.16);
+          ? Math.round(composedCenterX * 0.24)
+          : Math.round(composedCenterX * 0.14);
 
         const revTl = gsap.timeline({
           onComplete: () => {
@@ -5840,10 +5878,10 @@ export function BlueprintHero() {
         const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
         const vCenterX = Math.min(typeof window !== "undefined" ? window.innerWidth : 1440, DESKTOP_REFERENCE_WIDTH) / 2;
         const shiftX = isDesk
-          ? Math.round(vCenterX * 0.42)
+          ? Math.round(vCenterX * 0.35)
           : isTab
-          ? Math.round(vCenterX * 0.30)
-          : Math.round(vCenterX * 0.16);
+          ? Math.round(vCenterX * 0.24)
+          : Math.round(vCenterX * 0.14);
 
         // 2. New text smoothly enters with a slight directional movement & subtle stagger
         if (nextEl) {
@@ -6060,7 +6098,7 @@ export function BlueprintHero() {
           const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
           const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
           const vCenterX = Math.min(typeof window !== "undefined" ? window.innerWidth : 1440, DESKTOP_REFERENCE_WIDTH) / 2;
-          const shiftX = isDesk ? Math.round(vCenterX * 0.42) : isTab ? Math.round(vCenterX * 0.30) : Math.round(vCenterX * 0.16);
+          const shiftX = isDesk ? Math.round(vCenterX * 0.35) : isTab ? Math.round(vCenterX * 0.24) : Math.round(vCenterX * 0.14);
           if (state0El) gsap.set(state0El, { opacity: 1, visibility: "visible", x: shiftX, y: 0, scale: 1, clipPath: "none" });
           currentSecurityStateRef.current = 0;
           safeVault3DRef.current?.resetRim?.();
@@ -6821,7 +6859,25 @@ export function BlueprintHero() {
           const flipper = cardFlipperRefs.current[i];
           const front = cardFrontRefs.current[i];
           const bentoContent = bentoTileContentRefs.current[i];
-          if (bentoContent) gsap.set(bentoContent, { autoAlpha: 0, y: 14 });
+          const defEl = cardDefaultRefs.current[i];
+          const hoverEl = cardHoverRefs.current[i];
+          const illus = cardIllustrationRefs.current[i];
+          const grad = cardGradientBgRefs.current[i];
+          const glass = cardGlassOverlayRefs.current[i];
+          const back = cardBackRefs.current[i];
+
+          if (wrapper) gsap.killTweensOf(wrapper);
+          if (flipper) gsap.killTweensOf(flipper);
+          if (front) gsap.killTweensOf(front);
+          if (bentoContent) gsap.killTweensOf(bentoContent);
+          if (defEl) gsap.killTweensOf(defEl);
+          if (hoverEl) gsap.killTweensOf(hoverEl);
+          if (illus) gsap.killTweensOf(illus);
+          if (grad) gsap.killTweensOf(grad);
+          if (glass) gsap.killTweensOf(glass);
+          if (back) gsap.killTweensOf(back);
+
+          if (bentoContent) gsap.set(bentoContent, { autoAlpha: 0, opacity: 0, y: 14, visibility: "hidden" });
           if (wrapper) {
             const initialXOffset = (i - 2) * -16;
             wrapper.style.position = "";
@@ -6843,30 +6899,30 @@ export function BlueprintHero() {
           }
           if (flipper) gsap.set(flipper, { rotateY: 180 });
           if (front) {
+            front.style.background = "";
             gsap.set(front, {
               borderRadius: "0px",
               background: "",
               backgroundColor: "#070908",
               borderColor: "rgba(255, 255, 255, 0.12)",
               boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4)",
+              clearProps: "background",
             });
           }
-          const back = cardBackRefs.current[i];
-          if (back) gsap.set(back, { opacity: 1, visibility: "visible" });
-          const grad = cardGradientBgRefs.current[i];
-          if (grad) gsap.set(grad, { opacity: 1, visibility: "visible" });
-          const glass = cardGlassOverlayRefs.current[i];
-          if (glass) gsap.set(glass, { opacity: 0 });
-          const illus = cardIllustrationRefs.current[i];
+          if (back) gsap.set(back, { opacity: 1, autoAlpha: 1, visibility: "visible" });
+          if (grad) gsap.set(grad, { opacity: 1, autoAlpha: 1, visibility: "visible", display: "block" });
+          if (glass) gsap.set(glass, { opacity: 0, autoAlpha: 0, visibility: "hidden" });
           if (illus)
             gsap.set(illus, {
+              display: "flex",
               opacity: 0.88,
+              autoAlpha: 1,
               visibility: "visible",
               scale: 1,
               filter: "blur(0px)",
             });
-          const defEl = cardDefaultRefs.current[i];
-          if (defEl) gsap.set(defEl, { display: "flex", opacity: 1, autoAlpha: 1 });
+          if (defEl) gsap.set(defEl, { display: "flex", opacity: 1, autoAlpha: 1, visibility: "visible", scale: 1, y: 0 });
+          if (hoverEl) gsap.set(hoverEl, { display: "flex", opacity: 0, autoAlpha: 0, visibility: "hidden", scale: 1, y: 8 });
         });
       };
 
@@ -6939,7 +6995,7 @@ export function BlueprintHero() {
         const vhVal = typeof window !== "undefined" ? window.innerHeight : 800;
         const rRadius = Math.min(Math.max(vhVal * 0.22, 160), 220);
         const lShift = isDesk ? Math.round(vCenterX * 0.44) : isTab ? Math.round(vCenterX * 0.32) : Math.round(vCenterX * 0.20);
-        const rightShift = rightShiftXRef.current || (isDesk ? Math.round(vCenterX * 0.42) : isTab ? Math.round(vCenterX * 0.30) : Math.round(vCenterX * 0.16));
+        const rightShift = rightShiftXRef.current || (isDesk ? Math.round(vCenterX * 0.35) : isTab ? Math.round(vCenterX * 0.24) : Math.round(vCenterX * 0.14));
         const shiftX = rightShift;
 
         const vwVal = typeof window !== "undefined" ? window.innerWidth : 1440;
@@ -7164,6 +7220,9 @@ export function BlueprintHero() {
         // Smooth scroll back to top 0, then enter destination in intended initial state
         // ---------------------------------------------------------------------
         if (stateRef.current === "faq" || (typeof window !== "undefined" && window.scrollY > 120)) {
+          if (targetSection === "hero") {
+            instantResetHero();
+          }
           smoothScrollTo(0, {
             duration: 0.7,
             ease: "power2.inOut",
@@ -7478,7 +7537,24 @@ export function BlueprintHero() {
       window.addEventListener("unifolio-show-security", handleShowSecurity);
       window.addEventListener("unifolio-show-faq", handleShowFaq);
 
+      if (typeof window !== "undefined") {
+        (window as any).__biDebug = {
+          stateRef,
+          targetLeftXRef,
+          targetRingYRef,
+          rightShiftXRef,
+          heroShiftXRef,
+          safeContainerRef,
+          securityStateRefs,
+          securityHeroRibbonRef,
+          instantShowSecurity,
+        };
+      }
+
       return () => {
+        if (typeof window !== "undefined") {
+          delete (window as any).__biDebug;
+        }
         window.removeEventListener("scroll", handleScrollLock, { capture: true });
         window.removeEventListener("wheel", handleWheel, { capture: true });
         window.removeEventListener("touchstart", handleTouchStart);
@@ -8977,17 +9053,17 @@ export function BlueprintHero() {
               className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none z-15 select-none"
               style={{ opacity: 0, visibility: "hidden" }}
             >
-              <div className="relative w-full h-full flex items-center justify-center">
+              <div className="relative w-full max-w-[1440px] h-full flex items-center justify-center mx-auto">
                 {SECURITY_STATES.map((item, idx) => (
                   <div
                     key={idx}
                     ref={(el) => {
                       securityStateRefs.current[idx] = el;
                     }}
-                    className={`absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl px-5 sm:px-6 ${
+                    className={`absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl px-5 sm:px-6 ${
                       idx === 0
-                        ? "md:pl-16 lg:pl-26 xl:pl-32 md:pr-4"
-                        : "md:pl-16 lg:pl-28 xl:pl-36"
+                        ? "md:pl-12 lg:pl-20 xl:pl-24 md:pr-4"
+                        : "md:pl-12 lg:pl-20 xl:pl-24"
                     } text-left will-change-transform pointer-events-none`}
                     style={{
                       opacity: 0,
@@ -8999,7 +9075,7 @@ export function BlueprintHero() {
                         ref={securityHeroRibbonRef}
                         className="relative -top-5 sm:-top-7 md:-top-9 lg:-top-10 will-change-transform select-none flex flex-col items-start text-left w-fit max-w-full"
                       >
-                        <h2 className="font-sans font-black font-[900] text-[20px] min-[380px]:text-[22px] min-[440px]:text-[24px] sm:text-[28px] md:text-[34px] lg:text-[42px] xl:text-[48px] 2xl:text-[54px] text-neutral-950 tracking-[-0.035em] select-none flex flex-col items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12] text-left">
+                        <h2 className="font-sans font-black font-[900] text-[20px] min-[380px]:text-[22px] min-[440px]:text-[24px] sm:text-[28px] md:text-[34px] lg:text-[42px] xl:text-[48px] text-neutral-950 tracking-[-0.035em] select-none flex flex-col items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12] text-left">
                           {/* Line 1: We take your data as seriously */}
                           <div className="whitespace-nowrap flex items-baseline gap-[0.24em]">
                             <span ref={(el) => { securityHeroWordRefs.current[0] = el; }} className="inline-block will-change-transform">We</span>
