@@ -297,8 +297,8 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
 
       let targetLeft = 32;
       let targetTop = 20;
-      let targetWidth = 120;
-      let targetHeight = 27;
+      let targetWidth = 141;
+      let targetHeight = 32;
 
       if (targetRect && targetRect.width > 0) {
         targetLeft = targetRect.left;
@@ -310,7 +310,7 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
         const isTablet = window.innerWidth < 1024;
         targetLeft = isMobile ? 24 : isTablet ? 40 : 64;
         targetTop = 20;
-        targetHeight = isMobile ? 24 : 28;
+        targetHeight = isMobile ? 27 : 32;
         targetWidth = targetHeight * (2041 / 463);
       }
 

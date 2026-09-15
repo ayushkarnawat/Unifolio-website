@@ -1633,10 +1633,13 @@ export function BlueprintHero() {
           : Math.round(composedCenterX * 0.20);
         const targetLeftX = targetRingX - leftShift;
         const targetRingY = Math.round(viewportCenterY - clusterCenterY + 18);
+        const isSmallScreen = vWidth < 640;
         const rightShiftX = isDesktop
           ? Math.round(composedCenterX * 0.42)
           : isTablet
           ? Math.round(composedCenterX * 0.30)
+          : isSmallScreen
+          ? 0
           : Math.round(composedCenterX * 0.16);
         const heroShiftX = rightShiftX;
 
@@ -1764,6 +1767,14 @@ export function BlueprintHero() {
                 gsap.set(el, { opacity: 0, visibility: "hidden", x: rightShiftX, y: 0, scale: 1, clipPath: "none" });
               }
             });
+            if (securityHeroRibbonRef.current) {
+              gsap.set(securityHeroRibbonRef.current, {
+                x: 0,
+                opacity: 1,
+                clipPath: "inset(-15% 100% -15% 0%)",
+                WebkitClipPath: "inset(-15% 100% -15% 0%)",
+              });
+            }
 
             if (stageRef.current) {
               stageRef.current.style.position = "";
@@ -2160,23 +2171,31 @@ export function BlueprintHero() {
         );
 
         // -------------------------------------------------------------------------
-        // PHASE 2: "PAPER -> INK" CARD TRANSFORMATION & ABSORPTION
-        // Progression:
-        // 1. NORMAL CARD STACK: Stack travels along intended trajectory toward the vault.
-        // 2. BRIEFLY HOLDS NEAR VAULT: Recognizable physical card stack arrives and pauses.
-        // 3. PROGRESSIVE PAPER -> INK MORPH:
-        //    - Fine hand-drawn ink lines etch onto cards while paper is still solid (both coexist!).
-        //    - Solid paper structure progressively dissolves into those ink lines.
-        //    - Pure hand-drawn ink linework holds recognizably.
-        // 4. INK ABSORPTION: Ink outlines are pulled inward into vault chamber and dissolve.
-        // 5. VAULT CLOSES: Only once ink is inside, the vault door closes smoothly.
+        // PHASE 2: CONTINUOUS "PAPER -> SMALLER -> SKETCH -> VAULT" TRANSFORMATION
+        // Progression (Continuous simultaneous scale & Paper <-> Ink transformation):
+        // 1. Normal paper stack: Stack starts moving toward vault at normal 100% size.
+        // 2. Gradually scale down: 100% -> ~80% -> ~60% -> ~40% -> ~30% along the trajectory.
+        // 3. Simultaneously transform Paper -> Ink:
+        //    - Begins while stack is clearly visible away from the vault.
+        //    - Solid card details progressively dissolve into fine architectural drafting lines.
+        //    - Paper and sketch visibly coexist in mid-flight (~60% scale).
+        // 4. Small sketched cards enter the vault:
+        //    - At ~30% size, recognizable small sketch cards arrive at the vault opening.
+        //    - They visibly travel through the vault opening into the chamber.
+        // 5. VAULT CLOSES: Vault door closes smoothly once cards are inside (Phase 4).
         // -------------------------------------------------------------------------
         const cardEnterStart = 1.05;
-        const cardApproachDuration = 0.80;
         const cardsToSafeDeltaX = targetLeftX - stackTargetX;
         const cardsToSafeDeltaY = targetRingY - stackTargetY;
 
-        // 1. Lead product cards: Approach as Paper -> Hold -> Morph to Ink (both coexist) -> Pull into Center
+        // Ensure companion duplicate cards remain hidden (only the actual stack transforms)
+        companionCardRefs.current.forEach((compEl) => {
+          if (compEl) {
+            tl.set(compEl, { opacity: 0, autoAlpha: 0, visibility: "hidden" }, 0);
+          }
+        });
+
+        // 1. Lead product cards: Continuous Paper -> Smaller -> Sketch -> Vault
         PRODUCT_CARDS.forEach((_, i) => {
           const wrapper = cardWrapperRefs.current[i];
           const paper = cardFrontRefs.current[i];
@@ -2186,78 +2205,113 @@ export function BlueprintHero() {
           const rank = STACK_RANK_MAP[i] ?? i;
           const cardStart = cardEnterStart + rank * 0.02;
 
-          // 1. Trajectory toward the vault opening: Arrives as solid, recognizable physical cards in front of vault!
+          // Target coordinates at vault mouth and inside chamber
+          const mouthX = cardsToSafeDeltaX + (4 - rank) * -0.4;
+          const mouthY = cardsToSafeDeltaY + (4 - rank) * 0.4;
+          const mouthZ = 35 - rank * 2.0;
+
+          const chamberX = cardsToSafeDeltaX;
+          const chamberY = cardsToSafeDeltaY;
+          const chamberZ = -200;
+
+          // Ensure paper face is visible and ink layer initialized at start
+          if (paper) tl.set(paper, { opacity: 1, visibility: "visible" }, 0);
+          if (ink) tl.set(ink, { opacity: 0, visibility: "visible" }, 0);
+
+          // -------------------------------------------------------------------
+          // STEP 1: TRAVEL TOWARD VAULT WHILE SIMULTANEOUSLY SCALING & MORPHING
+          // 100% paper -> ~80% smaller paper -> ~60% paper+sketch -> ~40% mostly sketch -> ~30% small sketch
+          // -------------------------------------------------------------------
+          const travelDuration = 1.70;
+
+          // Continuous trajectory toward the vault mouth
           tl.to(
             wrapper,
             {
-              x: cardsToSafeDeltaX + (4 - rank) * -0.4,
-              y: cardsToSafeDeltaY + (4 - rank) * 0.4,
-              z: 40 - rank * 2.0,
+              x: mouthX,
+              y: mouthY,
+              z: mouthZ,
               rotateX: 14,
               rotateY: -12,
               rotateZ: -10 + rank * 2.5,
-              duration: cardApproachDuration,
-              ease: "power2.out",
+              duration: travelDuration,
+              ease: "power1.inOut",
             },
             cardStart
           );
 
-          // 2. Hold briefly in front of the open vault, then progressive Paper -> Ink morph
-          const morphStart = cardStart + cardApproachDuration + 0.16;
-          if (paper && ink) {
-            tl.set(ink, { opacity: 0, visibility: "visible" }, 0);
+          // Continuous scale down: 100% (stackCardScale) -> ~30% along the trajectory
+          tl.fromTo(
+            wrapper,
+            { scale: stackCardScale },
+            {
+              scale: stackCardScale * 0.30,
+              duration: travelDuration,
+              ease: "power1.inOut",
+            },
+            cardStart
+          );
 
-            // Substep A: Hand-drawn ink lines etch sharply onto the physical card surface
-            tl.to(
+          // Simultaneous Paper -> Ink progressive transformation along the trajectory:
+          if (paper && ink) {
+            // Begins while still clearly visible away from vault (t ~ cardStart + 0.35s, scale ~80%)
+            const morphStart = cardStart + 0.35;
+
+            // Fine hand-drawn ink lines etch onto the card
+            tl.fromTo(
               ink,
+              { opacity: 0 },
               {
                 opacity: 1,
-                duration: 0.48,
+                duration: 0.70,
                 ease: "power1.inOut",
               },
               morphStart
             );
 
-            // Substep B: Progressive dissolution of the physical paper structure into the ink lines
-            // (Begins 0.22s after ink starts etching — both visibly coexist during this window!)
-            tl.to(
+            // Solid paper dissolves while ink lines are visible (hybrid co-existence around scale ~60%)
+            tl.fromTo(
               paper,
+              { opacity: 1 },
               {
                 opacity: 0,
-                duration: 0.60,
+                duration: 0.65,
                 ease: "power1.inOut",
               },
-              morphStart + 0.22
+              morphStart + 0.40
             );
           }
 
-          // 3. Absorption: Resulting pure ink outlines are drawn inward into the vault chamber
-          const pullStart = morphStart + 0.82;
-          const pullDuration = 0.38;
+          // -------------------------------------------------------------------
+          // STEP 2: SMALL SKETCHED CARDS VISIBLY TRAVEL THROUGH VAULT OPENING
+          // Small sketch cards (~30% size) visibly move through the open door into the chamber
+          // -------------------------------------------------------------------
+          const enterVaultStart = cardStart + travelDuration;
+          const enterVaultDuration = 0.40;
 
           tl.to(
             wrapper,
             {
-              x: cardsToSafeDeltaX,
-              y: cardsToSafeDeltaY,
-              z: -220,
-              scale: 0.03,
-              duration: pullDuration,
+              x: chamberX,
+              y: chamberY,
+              z: chamberZ,
+              scale: stackCardScale * 0.12,
+              duration: enterVaultDuration,
               ease: "power2.in",
             },
-            pullStart
+            enterVaultStart
           );
 
-          // Fine ink lines dissolve as they vanish into the vault center
+          // Fade out ink as cards settle deep inside the dark chamber
           if (ink) {
             tl.to(
               ink,
               {
                 opacity: 0,
-                duration: 0.26,
+                duration: 0.22,
                 ease: "power2.in",
               },
-              pullStart + 0.06
+              enterVaultStart + 0.18
             );
           }
 
@@ -2268,123 +2322,7 @@ export function BlueprintHero() {
               autoAlpha: 0,
               visibility: "hidden",
             },
-            pullStart + pullDuration + 0.02
-          );
-        });
-
-        // 2. Trailing duplicate cards follow the same Paper -> Ink stream sequentially
-        const enterCompanionCards = companionCardRefs.current.slice(0, 15).filter(Boolean) as HTMLElement[];
-        enterCompanionCards.forEach((compEl, cIdx) => {
-          const leadIdx = cIdx % 5;
-          const leadRank = STACK_RANK_MAP[leadIdx] ?? leadIdx;
-          const trailTier = Math.floor(cIdx / 5); // 0, 1, 2
-          const trailDelay = cardEnterStart + leadRank * 0.02 + (trailTier + 1) * 0.010;
-          const trailDur = cardApproachDuration * 0.95;
-          const paperEl = companionPaperRefs.current[cIdx];
-          const inkEl = companionInkRefs.current[cIdx];
-
-          tl.set(
-            compEl,
-            {
-              left: targetCardLeft,
-              top: targetCardTop,
-              width: restingWidth,
-              height: hRest,
-              x: 0,
-              y: 0,
-              z: -(cIdx + 5) * 4,
-              scale: stackCardScale * (0.92 - trailTier * 0.12),
-              opacity: 0,
-              visibility: "visible",
-            },
-            cardEnterStart
-          );
-
-          // Fade in trail card as solid paper
-          tl.to(
-            compEl,
-            {
-              opacity: 0.75 - trailTier * 0.18,
-              duration: 0.12,
-              ease: "power1.out",
-            },
-            trailDelay
-          );
-
-          // Move toward vault as paper
-          tl.to(
-            compEl,
-            {
-              x: cardsToSafeDeltaX,
-              y: cardsToSafeDeltaY,
-              z: 20 - trailTier * 10,
-              rotateX: 14,
-              rotateY: -12,
-              rotateZ: -12,
-              duration: trailDur,
-              ease: "power2.out",
-            },
-            trailDelay + 0.02
-          );
-
-          // Progressive Paper -> Ink conversion for trail card
-          const trailMorphStart = trailDelay + trailDur + 0.14;
-          if (paperEl && inkEl) {
-            tl.set(inkEl, { opacity: 0, visibility: "visible" }, 0);
-            tl.to(
-              inkEl,
-              {
-                opacity: 0.90 - trailTier * 0.15,
-                duration: 0.46,
-                ease: "power1.inOut",
-              },
-              trailMorphStart
-            );
-            tl.to(
-              paperEl,
-              {
-                opacity: 0,
-                duration: 0.55,
-                ease: "power1.inOut",
-              },
-              trailMorphStart + 0.20
-            );
-          }
-
-          // Ink collapses into vault center
-          const trailPullStart = trailMorphStart + 0.76;
-          tl.to(
-            compEl,
-            {
-              x: cardsToSafeDeltaX,
-              y: cardsToSafeDeltaY,
-              z: -240,
-              scale: 0.02,
-              duration: 0.36,
-              ease: "power2.in",
-            },
-            trailPullStart
-          );
-
-          if (inkEl) {
-            tl.to(
-              inkEl,
-              {
-                opacity: 0,
-                duration: 0.26,
-                ease: "power2.in",
-              },
-              trailPullStart + 0.06
-            );
-          }
-
-          tl.set(
-            compEl,
-            {
-              opacity: 0,
-              visibility: "hidden",
-            },
-            trailPullStart + 0.38
+            enterVaultStart + enterVaultDuration + 0.02
           );
         });
 
@@ -2392,6 +2330,7 @@ export function BlueprintHero() {
 
         // -------------------------------------------------------------------------
         // PHASE 3: REVEAL SECURITY HERO TEXT WHILE CARDS ENTER (1.25s -> 2.00s)
+        // Progressive left -> right reveal mask; text remains stationary at x: 0
         // -------------------------------------------------------------------------
         const textRevealStart = 1.25;
         const textRevealDuration = 0.75;
@@ -2399,11 +2338,17 @@ export function BlueprintHero() {
         const ribbonEl = securityHeroRibbonRef.current;
 
         if (state0El && ribbonEl) {
-          const stackLocalCenterX = stackTargetX - rightShiftX;
-          const enterOffset = Math.max(Math.min(stackLocalCenterX, 140), 60);
-
           tl.set(state0El, { autoAlpha: 0, opacity: 0, visibility: "hidden", x: rightShiftX, y: 0, clipPath: "none" }, 0);
-          tl.set(ribbonEl, { x: enterOffset, opacity: 0 }, 0);
+          tl.set(
+            ribbonEl,
+            {
+              x: 0,
+              opacity: 1,
+              clipPath: "inset(-15% 100% -15% 0%)",
+              WebkitClipPath: "inset(-15% 100% -15% 0%)",
+            },
+            0
+          );
 
           tl.set(
             state0El,
@@ -2416,19 +2361,27 @@ export function BlueprintHero() {
             textRevealStart
           );
 
+          // Reveal progressive left -> right: right inset expands from 100% to 0%
           tl.fromTo(
             ribbonEl,
-            { x: enterOffset, opacity: 0 },
             {
-              x: 0,
-              opacity: 1,
+              clipPath: "inset(-15% 100% -15% 0%)",
+              WebkitClipPath: "inset(-15% 100% -15% 0%)",
+            },
+            {
+              clipPath: "inset(-15% 0% -15% 0%)",
+              WebkitClipPath: "inset(-15% 0% -15% 0%)",
               duration: textRevealDuration,
               ease: "power2.out",
             },
             textRevealStart
           );
 
-          tl.set(state0El, { clipPath: "none" }, textRevealStart + textRevealDuration);
+          tl.set(
+            ribbonEl,
+            { clipPath: "none", WebkitClipPath: "none" },
+            textRevealStart + textRevealDuration
+          );
         }
 
         // -------------------------------------------------------------------------
@@ -4486,13 +4439,13 @@ export function BlueprintHero() {
           tl.set(
             wrapper,
             {
-              x: (destX - origX) + cardsToSafeDeltaX,
-              y: (destY - origY) + cardsToSafeDeltaY,
-              z: -160,
-              scale: 0.12,
-              rotateX: 12,
-              rotateY: -10,
-              rotateZ: -8,
+              x: cardsToSafeDeltaX + (4 - rank) * -0.4,
+              y: cardsToSafeDeltaY + (4 - rank) * 0.4,
+              z: -180,
+              scale: stackCardScale * 0.12,
+              rotateX: 14,
+              rotateY: -12,
+              rotateZ: -10 + rank * 2.5,
               opacity: 1,
               autoAlpha: 1,
               visibility: "visible",
@@ -4542,11 +4495,18 @@ export function BlueprintHero() {
           0
         );
 
-        // STEP 2A: "INK" SINGLE CARD STACK EMERGES STRAIGHT FORWARD THROUGH OPENING (0.32s -> 0.86s)
-        // Moves along +Z from inside chamber (-160) straight forward into the foreground (+55),
-        // unmistakably crossing the vault's front plane and rendering IN FRONT OF the vault!
+        // -------------------------------------------------------------------------
+        // STEP 2: CONTINUOUS "SKETCH -> LARGER -> PAPER" TRANSFORMATION & EXIT
+        // Progression (Exact reverse of entry):
+        // 1. Start as small sketches: Emerge through vault opening (~30% size, 0.32s -> 0.78s).
+        // 2. Gradually increase in size: ~30% -> ~40% -> ~60% -> ~80% -> 100% as they travel away.
+        // 3. Simultaneously transform Ink -> Paper:
+        //    - Sketch lines progressively gain filled paper surfaces in mid-flight (~60% scale).
+        //    - Ink lines dissolve into solid paper as cards reach ~80% - 100% size.
+        // 4. Return to normal card size: Fully solid 100% paper cards upon reaching launch trajectory.
+        // -------------------------------------------------------------------------
         const cardExitStart = 0.32;
-        const cardEmergeDuration = 0.54;
+        const cardEmergeDuration = 0.46;
 
         allProductCards.forEach((wrapper, i) => {
           const rank = STACK_RANK_MAP[i] ?? i;
@@ -4559,17 +4519,22 @@ export function BlueprintHero() {
           const ink = cardInkRefs.current[i];
           const exitStart = cardExitStart + rank * 0.02;
 
-          // 1. Emerge straight through opening into positive Z foreground (+55) in front of vault
+          const mouthX = cardsToSafeDeltaX + (4 - rank) * -0.4;
+          const mouthY = cardsToSafeDeltaY + (4 - rank) * 0.4;
+          const mouthZ = 35 - rank * 2.0;
+
+          // 1. VISIBLY EMERGE THROUGH VAULT OPENING AS SMALL SKETCH CARDS (~30% size)
+          // Moves straight forward along +Z from inside chamber (-180) to vault mouth (35)
           tl.to(
             wrapper,
             {
-              x: (destX - origX) + cardsToSafeDeltaX,
-              y: (destY - origY) + cardsToSafeDeltaY,
-              z: 55 - rank * 2.5,
-              scale: stackCardScale,
-              rotateX: 0,
-              rotateY: 0,
-              rotateZ: 0,
+              x: mouthX,
+              y: mouthY,
+              z: mouthZ,
+              scale: stackCardScale * 0.30,
+              rotateX: 14,
+              rotateY: -12,
+              rotateZ: -10 + rank * 2.5,
               opacity: 1,
               autoAlpha: 1,
               duration: cardEmergeDuration,
@@ -4579,52 +4544,66 @@ export function BlueprintHero() {
             exitStart
           );
 
-          // 2. Ink -> Paper progressive morph: in the foreground in front of the vault
-          const morphStart = 0.88 + rank * 0.015;
-          if (paper && ink) {
-            tl.to(
-              paper,
-              {
-                opacity: 0.55,
-                duration: 0.40,
-                ease: "power1.inOut",
-              },
-              morphStart
-            );
-            // Substep B: Paper solidifies into opaque card, ink dissolves into card surface
-            tl.to(
-              paper,
-              {
-                opacity: 1.0,
-                duration: 0.42,
-                ease: "power1.out",
-              },
-              morphStart + 0.36
-            );
-            tl.to(
-              ink,
-              {
-                opacity: 0.0,
-                duration: 0.42,
-                ease: "power1.inOut",
-              },
-              morphStart + 0.36
-            );
-          }
+          // 2. CONTINUOUS TRAVEL AWAY FROM VAULT WHILE SCALING UP & MORPHING INK -> PAPER
+          // Trajectory from vault mouth to consolidated launch position (0.78s -> 1.75s, duration: 0.97s)
+          const flightStart = exitStart + cardEmergeDuration;
+          const flightDuration = 1.75 - flightStart;
 
-          // 3. Move outward along trajectory from vault to launch position
+          // Continuous flight away from vault to destination
           tl.to(
             wrapper,
             {
               x: destX - origX,
               y: destY - origY,
               z: destZ,
-              duration: 0.68,
+              duration: flightDuration,
               ease: "power2.inOut",
               force3D: true,
             },
-            1.72 + rank * 0.015
+            flightStart
           );
+
+          // Continuous scale up from ~30% (small sketch) to 100% (stackCardScale) along the trajectory
+          tl.to(
+            wrapper,
+            {
+              scale: stackCardScale,
+              rotateX: 0,
+              rotateY: 0,
+              rotateZ: 0,
+              duration: flightDuration,
+              ease: "power1.inOut",
+              force3D: true,
+            },
+            flightStart
+          );
+
+          // Simultaneous Ink -> Paper progressive transformation along outward trajectory:
+          if (paper && ink) {
+            // Paper begins emerging under ink lines as scale increases (~40% scale, t ~ 0.90s)
+            tl.fromTo(
+              paper,
+              { opacity: 0 },
+              {
+                opacity: 1.0,
+                duration: 0.65,
+                ease: "power1.inOut",
+              },
+              flightStart + 0.12
+            );
+
+            // Ink lines dissolve into the solid paper surface as scale reaches ~75% - 100% (t ~ 1.35s)
+            tl.fromTo(
+              ink,
+              { opacity: 1 },
+              {
+                opacity: 0,
+                duration: 0.35,
+                ease: "power1.inOut",
+              },
+              flightStart + 0.55
+            );
+          }
         });
 
         // STEP 2B: VAULT DOOR CLOSES IMMEDIATELY AFTER CARDS CLEAR THE OPENING (0.88s -> 1.32s)
@@ -5861,7 +5840,7 @@ export function BlueprintHero() {
         // 2. New text smoothly enters with a slight directional movement & subtle stagger
         if (nextEl) {
           if (nextIdx === 0 && securityHeroRibbonRef.current) {
-            gsap.set(securityHeroRibbonRef.current, { x: 0 });
+            gsap.set(securityHeroRibbonRef.current, { x: 0, clipPath: "none", WebkitClipPath: "none" });
             gsap.set(nextEl, { clipPath: "none" });
           }
           if (nextIdx === 7) {
@@ -7017,7 +6996,7 @@ export function BlueprintHero() {
         });
 
         if (securityHeroRibbonRef.current) {
-          gsap.set(securityHeroRibbonRef.current, { x: 0, opacity: 1 });
+          gsap.set(securityHeroRibbonRef.current, { x: 0, opacity: 1, clipPath: "none", WebkitClipPath: "none" });
         }
 
         playMoneyAnimation();
@@ -8582,7 +8561,10 @@ export function BlueprintHero() {
                             >
                               {/* Dominant Editorial Opening Statement - Unified Single Paragraph */}
                               <h2 className="font-serif font-bold text-[28px] sm:text-[36px] md:text-[44px] lg:text-[50px] xl:text-[54px] text-neutral-950 leading-[1.16] tracking-tight text-left">
-                                In most families, someone ends up in charge of the <span className="text-[#22C55E]">money</span>. Not because they trained for it. Because someone has to.
+                                In most families, someone ends up in charge of the money.
+                                <br />
+                                Not because they trained for it.{" "}
+                                <span className="text-[#22C55E]">Because someone has to.</span>
                               </h2>
 
                               {/* Supporting sentence (Small text) */}
@@ -8931,7 +8913,11 @@ export function BlueprintHero() {
                     ref={(el) => {
                       securityStateRefs.current[idx] = el;
                     }}
-                    className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl px-6 md:pl-16 lg:pl-28 xl:pl-36 text-left will-change-transform pointer-events-none"
+                    className={`absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl px-5 sm:px-6 ${
+                      idx === 0
+                        ? "md:pl-16 lg:pl-26 xl:pl-32 md:pr-4"
+                        : "md:pl-16 lg:pl-28 xl:pl-36"
+                    } text-left will-change-transform pointer-events-none`}
                     style={{
                       opacity: 0,
                       visibility: "hidden",
@@ -8940,9 +8926,9 @@ export function BlueprintHero() {
                     {item.type === "hero" ? (
                       <div
                         ref={securityHeroRibbonRef}
-                        className="relative will-change-transform select-none flex flex-col items-start text-left"
+                        className="relative -top-5 sm:-top-7 md:-top-9 lg:-top-10 will-change-transform select-none flex flex-col items-start text-left w-fit max-w-full"
                       >
-                        <h2 className="font-sans font-black text-xl sm:text-2xl md:text-3xl lg:text-[36px] xl:text-[42px] 2xl:text-[46px] text-neutral-950 tracking-[-0.03em] select-none flex flex-col items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12] text-left">
+                        <h2 className="font-sans font-black font-[900] text-[20px] min-[380px]:text-[22px] min-[440px]:text-[24px] sm:text-[28px] md:text-[34px] lg:text-[42px] xl:text-[48px] 2xl:text-[54px] text-neutral-950 tracking-[-0.035em] select-none flex flex-col items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12] text-left">
                           {/* Line 1: We take your data as seriously */}
                           <div className="whitespace-nowrap flex items-baseline gap-[0.24em]">
                             <span ref={(el) => { securityHeroWordRefs.current[0] = el; }} className="inline-block will-change-transform">We</span>
@@ -8950,7 +8936,7 @@ export function BlueprintHero() {
                             <span ref={(el) => { securityHeroWordRefs.current[2] = el; }} className="inline-block will-change-transform">your</span>
                             <span ref={(el) => { securityHeroWordRefs.current[3] = el; }} className="inline-block will-change-transform">data</span>
                             <span ref={(el) => { securityHeroWordRefs.current[4] = el; }} className="inline-block will-change-transform">as</span>
-                            <span ref={(el) => { securityHeroWordRefs.current[5] = el; }} className="inline-block text-[#22C55E] font-black will-change-transform">seriously</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[5] = el; }} className="inline-block text-[#22C55E] font-black font-[900] will-change-transform">seriously</span>
                           </div>
 
                           {/* Line 2: as you take your money. */}
@@ -8962,7 +8948,7 @@ export function BlueprintHero() {
                             <span ref={(el) => { securityHeroWordRefs.current[10] = el; }} className="inline-block will-change-transform">
                               <span className="relative inline-flex items-center justify-center align-baseline">
                                 {/* The 5 letters of "money" in black */}
-                                <span className="inline-flex items-baseline text-neutral-950 font-black">
+                                <span className="inline-flex items-baseline text-neutral-950 font-black font-[900]">
                                   {MONEY_LETTERS.map((char, charIdx) => (
                                     <span
                                       key={charIdx}
@@ -9304,7 +9290,7 @@ export function BlueprintHero() {
                                 style={{ opacity: 0, transform: "scale(0.35)" }}
                                 aria-hidden="true"
                               >
-                                <span className="inline-flex items-center justify-center -translate-y-2 sm:-translate-y-3">
+                                <span className="inline-flex items-center justify-center -translate-y-12 sm:-translate-y-14 md:-translate-y-16">
                                   {/* eslint-disable-next-line @next/next/no-img-element */}
                                   <img
                                     src="/connection.svg"

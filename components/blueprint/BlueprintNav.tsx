@@ -26,6 +26,7 @@ export function BlueprintNav() {
   const [activeId, setActiveId] = useState<string>("product");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isLogoDocked, setIsLogoDocked] = useState(false);
+  const [isHeroSection, setIsHeroSection] = useState(true);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -52,14 +53,35 @@ export function BlueprintNav() {
     const handleActiveSection = (e: Event) => {
       const ce = e as CustomEvent<{ section: string }>;
       if (ce.detail?.section) {
-        const mapped = ce.detail.section === "hero" ? "product" : ce.detail.section;
+        const isHero = ce.detail.section === "hero";
+        setIsHeroSection(isHero);
+        const mapped = isHero ? "product" : ce.detail.section;
         forcedSectionRef.current = mapped;
         setActiveId(mapped);
       }
     };
 
+    const handleResetHero = () => {
+      setIsHeroSection(true);
+    };
+
+    const handleNavClick = (e: Event) => {
+      const ce = e as CustomEvent<{ section: string }>;
+      if (ce.detail?.section === "hero") {
+        setIsHeroSection(true);
+      } else if (ce.detail?.section) {
+        setIsHeroSection(false);
+      }
+    };
+
     window.addEventListener("unifolio-active-section", handleActiveSection);
-    return () => window.removeEventListener("unifolio-active-section", handleActiveSection);
+    window.addEventListener("unifolio-reset-hero", handleResetHero);
+    window.addEventListener("unifolio-nav-click", handleNavClick);
+    return () => {
+      window.removeEventListener("unifolio-active-section", handleActiveSection);
+      window.removeEventListener("unifolio-reset-hero", handleResetHero);
+      window.removeEventListener("unifolio-nav-click", handleNavClick);
+    };
   }, []);
 
   // Scroll listener for backdrop styling & active section sync (only for unpinned sections FAQ/Contact)
@@ -68,7 +90,11 @@ export function BlueprintNav() {
 
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      setScrolled(scrollY > 60);
+      const isScrolledNow = scrollY > 60;
+      setScrolled(isScrolledNow);
+      if (isScrolledNow) {
+        setIsHeroSection(false);
+      }
 
       // Pinned BlueprintHero manages sections while scrollY <= 120.
       // Do not infer or clobber activeId when scrollY is in the pinned region.
@@ -100,6 +126,8 @@ export function BlueprintNav() {
     handleScroll(); // sync on mount
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const isHero = isHeroSection && !scrolled;
 
   const handleAnchorClick = (
     event: React.MouseEvent<HTMLAnchorElement>,
@@ -153,10 +181,12 @@ export function BlueprintNav() {
         <Image
           src="/Logo/unifolio-wordmark-dark.png"
           alt="Unifolio"
-          width={132}
-          height={30}
+          width={152}
+          height={35}
           priority
-          className="h-6 sm:h-7 w-auto object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
+          className={`w-auto object-contain select-none transition-all duration-300 group-hover:scale-[1.02] ${
+            isHero ? "h-[27px] sm:h-8" : "h-6 sm:h-7"
+          }`}
         />
       </Link>
 
@@ -246,40 +276,49 @@ export function BlueprintNav() {
           isLogoDocked ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
         }`}
       >
-        {/* Login: Refined Translucent Glass Button */}
+        {/* Login: Clean, Minimal Outlined/Ghost Glass Treatment */}
         <Link
-          href="#contact"
-          onClick={(e) => handleAnchorClick(e, "#contact", "contact")}
-          className="group relative inline-flex items-center h-[34px] sm:h-[36px] pl-2 pr-3.5 sm:pl-2.5 sm:pr-4 rounded-[14px] sm:rounded-[15px] bg-white/[0.12] hover:bg-white/[0.25] active:bg-white/[0.18] backdrop-blur-[12px] border border-white/60 hover:border-white/80 shadow-[0_4px_16px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_1px_0_rgba(255,255,255,0.85)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.05),0_0_12px_rgba(34,197,94,0.08),inset_0_1px_1.5px_0_rgba(255,255,255,0.95)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 ease-out select-none"
+          href="https://staging.unifolio.in/login"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative inline-flex items-center gap-1.5 sm:gap-2 h-[34px] sm:h-[36px] px-3.5 sm:px-4 rounded-full bg-white/80 hover:bg-white active:bg-white/90 backdrop-blur-md border border-black/[0.07] hover:border-black/[0.12] shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 ease-out select-none"
         >
-          {/* Top Specular Rim */}
-          <div className="pointer-events-none absolute inset-x-3 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/90 to-transparent rounded-full opacity-80 group-hover:opacity-100 transition-opacity" />
-
-          {/* Left Circular Accent: Subtle Frosted Gray/Transparent with Concentric Iris Dot */}
-          <div className="relative flex items-center justify-center w-[18px] h-[18px] sm:w-[19px] sm:h-[19px] rounded-full border border-emerald-950/20 group-hover:border-emerald-600/40 bg-gradient-to-b from-white/90 via-white/55 to-neutral-200/50 shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.95),0_1px_2px_rgba(0,0,0,0.04)] group-hover:shadow-[inset_0_1px_1.5px_rgba(255,255,255,1),0_0_8px_rgba(34,197,94,0.22)] transition-all duration-200 shrink-0 mr-2">
-            <span className="w-[5px] h-[5px] rounded-full bg-[#111613]/55 group-hover:bg-[#111613]/75 transition-colors" />
-          </div>
-
-          <span className="font-sans font-semibold text-[13px] sm:text-[13.5px] text-[#111613] tracking-[-0.01em]">
+          <svg
+            className="w-3.5 h-3.5 sm:w-[15px] sm:h-[15px] text-[#2D3748] transition-colors group-hover:text-black shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <span className="font-sans font-medium text-[13px] sm:text-[13.5px] text-[#1A202C] group-hover:text-black tracking-[-0.01em]">
             Login
           </span>
         </Link>
 
-        {/* Sign Up: Refined Translucent Glass Button with Luminous Emerald Glow */}
+        {/* Sign Up: Subtle Primary Action with Soft Green Glow & Accent */}
         <Link
-          href="#contact"
-          onClick={(e) => handleAnchorClick(e, "#contact", "contact")}
-          className="group relative inline-flex items-center h-[34px] sm:h-[36px] pl-2 pr-3.5 sm:pl-2.5 sm:pr-4 rounded-[14px] sm:rounded-[15px] bg-white/[0.14] hover:bg-emerald-50/[0.30] active:bg-emerald-50/[0.20] backdrop-blur-[12px] border border-emerald-400/45 hover:border-emerald-400/70 shadow-[0_4px_16px_rgba(34,197,94,0.08),0_1px_2px_rgba(0,0,0,0.02),0_0_12px_rgba(34,197,94,0.12),inset_0_1px_1px_0_rgba(255,255,255,0.90)] hover:shadow-[0_6px_22px_rgba(34,197,94,0.20),0_0_18px_rgba(34,197,94,0.28),inset_0_1px_1.5px_0_rgba(255,255,255,1)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 ease-out select-none"
+          href="https://staging.unifolio.in/signup"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative inline-flex items-center gap-1.5 sm:gap-2 h-[34px] sm:h-[36px] px-3.5 sm:px-4 rounded-full bg-[#22C55E]/[0.08] hover:bg-[#22C55E]/[0.14] active:bg-[#22C55E]/[0.10] backdrop-blur-md border border-[#22C55E]/35 hover:border-[#22C55E]/55 shadow-[0_1px_4px_rgba(34,197,94,0.08),0_2px_8px_rgba(34,197,94,0.08)] hover:shadow-[0_3px_14px_rgba(34,197,94,0.20),0_0_10px_rgba(34,197,94,0.14)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 ease-out select-none"
         >
-          {/* Top Specular Rim */}
-          <div className="pointer-events-none absolute inset-x-3 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/95 to-transparent rounded-full opacity-90 group-hover:opacity-100 transition-opacity" />
-
-          {/* Left Circular Accent: Vivid #22C55E Emerald Sphere with Glowing White Dot */}
-          <div className="relative flex items-center justify-center w-[18px] h-[18px] sm:w-[19px] sm:h-[19px] rounded-full bg-gradient-to-b from-[#34D399] via-[#22C55E] to-[#16A34A] shadow-[0_0_10px_rgba(34,197,94,0.45),inset_0_1px_1.5px_rgba(255,255,255,0.75),inset_0_-1px_1px_rgba(0,0,0,0.18)] group-hover:shadow-[0_0_16px_rgba(34,197,94,0.80),inset_0_1px_1.5px_rgba(255,255,255,0.95)] group-hover:scale-105 transition-all duration-200 shrink-0 mr-2">
-            <span className="w-[5px] h-[5px] rounded-full bg-white shadow-[0_0_4px_rgba(255,255,255,0.95)]" />
-          </div>
-
-          <span className="font-sans font-semibold text-[13px] sm:text-[13.5px] text-[#111613] tracking-[-0.01em]">
+          <svg
+            className="w-3.5 h-3.5 sm:w-[15px] sm:h-[15px] text-[#16A34A] transition-transform duration-200 group-hover:scale-110 shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 2C12 7.5 7.5 12 2 12C7.5 12 12 16.5 12 22C12 16.5 16.5 12 22 12C16.5 12 12 7.5 12 2Z" />
+          </svg>
+          <span className="font-sans font-medium text-[13px] sm:text-[13.5px] text-[#0F4A2C] group-hover:text-[#064E3B] tracking-[-0.01em]">
             Sign Up
           </span>
         </Link>
