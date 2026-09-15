@@ -38,6 +38,12 @@ if (typeof window !== "undefined") {
   if (!prefersReducedMotion()) {
     ScrollTrigger.normalizeScroll(true);
   }
+
+  // Late-loading images/fonts/canvas assets can shift layout after
+  // ScrollTriggers have already cached their trigger positions. A single
+  // refresh once everything has settled keeps those positions accurate
+  // without polling or refreshing on every scroll/resize.
+  window.addEventListener("load", () => ScrollTrigger.refresh());
 }
 
 /**

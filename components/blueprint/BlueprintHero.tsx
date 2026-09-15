@@ -1789,6 +1789,10 @@ export function BlueprintHero() {
             if (lockScrollYRef.current > 0) {
               window.scrollTo(0, lockScrollYRef.current);
             }
+            // Unpinning here changes total document height; downstream
+            // ScrollTriggers (FAQ/Contact reveals) cache pixel offsets that go
+            // stale the instant this layout shifts, so resync them now.
+            ScrollTrigger.refresh();
 
             // Restore all 5 cards in clean Bento state
             const currentBento = computeBentoLayout(vWidth, vHeight);
@@ -3825,6 +3829,10 @@ export function BlueprintHero() {
               stageRef.current.style.height = "";
               stageRef.current.style.zIndex = "";
             }
+            // Unpinning here changes total document height; downstream
+            // ScrollTriggers (FAQ/Contact reveals) cache pixel offsets that go
+            // stale the instant this layout shifts, so resync them now.
+            ScrollTrigger.refresh();
             isSecurityTransitioningRef.current = false;
 
             requestAnimationFrame(() => {
@@ -6607,6 +6615,10 @@ export function BlueprintHero() {
         }
         document.documentElement.style.overflow = "";
         document.body.style.overflow = "";
+        // Unpinning here changes total document height; downstream
+        // ScrollTriggers (FAQ/Contact reveals) cache pixel offsets that go
+        // stale the instant this layout shifts, so resync them now.
+        ScrollTrigger.refresh();
         applyPortalClip(maxRadiusPx, 50.0, 50.0);
         if (irisPortalRef.current) gsap.set(irisPortalRef.current, { autoAlpha: 1 });
         if (portalRimRef.current) gsap.set(portalRimRef.current, { autoAlpha: 0 });
@@ -6627,7 +6639,12 @@ export function BlueprintHero() {
         if (headlineRef.current) gsap.set(headlineRef.current, { opacity: 0 });
         if (subheadRef.current) gsap.set(subheadRef.current, { opacity: 0 });
         if (ctaRef.current) gsap.set(ctaRef.current, { opacity: 0, scale: 0.9 });
-        if (cardsClusterRef.current) gsap.set(cardsClusterRef.current, { scaleX: 1, scaleY: 1, x: 0, y: 0, rotateX: 0, rotateY: 0, rotateZ: 0 });
+        if (cardsClusterRef.current) gsap.set(cardsClusterRef.current, { opacity: 1, scaleX: 1, scaleY: 1, x: 0, y: 0, rotateX: 0, rotateY: 0, rotateZ: 0 });
+        // Product has no About content — clear the envelope/document UI left
+        // visible from a prior visit to About, so it can't bleed through on
+        // top of the bento grid.
+        if (aboutContentRef.current) gsap.set(aboutContentRef.current, { opacity: 0, visibility: "hidden" });
+        if (unifiedEnvelopeRef.current) gsap.set(unifiedEnvelopeRef.current, { opacity: 0, visibility: "hidden" });
 
         const vw = typeof window !== "undefined" ? window.innerWidth : 1440;
         const vh = typeof window !== "undefined" ? window.innerHeight : 800;
@@ -6648,6 +6665,8 @@ export function BlueprintHero() {
               top: targetT,
               width: targetW,
               height: targetH,
+              opacity: 1,
+              visibility: "visible",
               x: 0,
               y: 0,
               z: 0,
@@ -6670,7 +6689,7 @@ export function BlueprintHero() {
             });
           }
           if (bentoTileContentRefs.current[i]) {
-            gsap.set(bentoTileContentRefs.current[i], { autoAlpha: 1, y: 0 });
+            gsap.set(bentoTileContentRefs.current[i], { display: "flex", autoAlpha: 1, y: 0 });
           }
           const back = cardBackRefs.current[i];
           if (back) gsap.set(back, { opacity: 0, autoAlpha: 0, visibility: "hidden" });
@@ -6735,6 +6754,14 @@ export function BlueprintHero() {
         if (securityStageRef.current) {
           gsap.set(securityStageRef.current, { opacity: 0, visibility: "hidden" });
         }
+        // Hero also has no About content — clear the envelope/document UI
+        // left visible from a prior visit to About, so it can't bleed through.
+        if (aboutContentRef.current) {
+          gsap.set(aboutContentRef.current, { opacity: 0, visibility: "hidden" });
+        }
+        if (unifiedEnvelopeRef.current) {
+          gsap.set(unifiedEnvelopeRef.current, { opacity: 0, visibility: "hidden" });
+        }
         securityStateRefs.current.forEach((el) => {
           if (el) gsap.set(el, { opacity: 0, visibility: "hidden" });
         });
@@ -6748,6 +6775,10 @@ export function BlueprintHero() {
         }
         document.documentElement.style.overflow = "";
         document.body.style.overflow = "";
+        // Unpinning here changes total document height; downstream
+        // ScrollTriggers (FAQ/Contact reveals) cache pixel offsets that go
+        // stale the instant this layout shifts, so resync them now.
+        ScrollTrigger.refresh();
         portalState.radius = initialRadiusPx;
         portalState.x = 57.0;
         portalState.y = 48.5;
@@ -6773,7 +6804,16 @@ export function BlueprintHero() {
         if (ctaRef.current) gsap.set(ctaRef.current, { opacity: 0, scale: 0.9, y: -10 });
         if (floorLineRef.current) gsap.set(floorLineRef.current, { autoAlpha: 0, opacity: 0 });
         if (cardsClusterRef.current) {
-          gsap.set(cardsClusterRef.current, { scaleX: 1.25, scaleY: 1.4, x: 0, y: 0, rotateX: 0, rotateY: 0, rotateZ: 0 });
+          gsap.set(cardsClusterRef.current, {
+            opacity: 1,
+            scaleX: 1.25,
+            scaleY: 1.4,
+            x: 0,
+            y: 0,
+            rotateX: 0,
+            rotateY: 0,
+            rotateZ: 0,
+          });
         }
 
         PRODUCT_CARDS.forEach((card, i) => {
@@ -6790,6 +6830,8 @@ export function BlueprintHero() {
             wrapper.style.width = "";
             wrapper.style.height = "";
             gsap.set(wrapper, {
+              opacity: 1,
+              visibility: "visible",
               x: initialXOffset,
               y: card.restY,
               z: card.restZ,
@@ -6810,13 +6852,19 @@ export function BlueprintHero() {
             });
           }
           const back = cardBackRefs.current[i];
-          if (back) gsap.set(back, { opacity: 1 });
+          if (back) gsap.set(back, { opacity: 1, visibility: "visible" });
           const grad = cardGradientBgRefs.current[i];
-          if (grad) gsap.set(grad, { opacity: 1 });
+          if (grad) gsap.set(grad, { opacity: 1, visibility: "visible" });
           const glass = cardGlassOverlayRefs.current[i];
           if (glass) gsap.set(glass, { opacity: 0 });
           const illus = cardIllustrationRefs.current[i];
-          if (illus) gsap.set(illus, { opacity: 0.88, scale: 1, filter: "blur(0px)" });
+          if (illus)
+            gsap.set(illus, {
+              opacity: 0.88,
+              visibility: "visible",
+              scale: 1,
+              filter: "blur(0px)",
+            });
           const defEl = cardDefaultRefs.current[i];
           if (defEl) gsap.set(defEl, { display: "flex", opacity: 1, autoAlpha: 1 });
         });
@@ -6830,6 +6878,12 @@ export function BlueprintHero() {
         }
         if (aboutContentRef.current) {
           gsap.set(aboutContentRef.current, { opacity: 0, visibility: "hidden" });
+        }
+        // Security has no About content — clear the envelope/document UI left
+        // visible from a prior visit to About, so it can't bleed through on
+        // top of the vault.
+        if (unifiedEnvelopeRef.current) {
+          gsap.set(unifiedEnvelopeRef.current, { opacity: 0, visibility: "hidden" });
         }
 
         if (consolidationTlRef.current) {
@@ -6945,6 +6999,7 @@ export function BlueprintHero() {
         const clusterEl = cardsClusterRef.current;
         if (clusterEl) {
           gsap.set(clusterEl, {
+            opacity: 1,
             x: 0,
             y: 0,
             rotateX: 0,
@@ -7051,6 +7106,12 @@ export function BlueprintHero() {
                 stageRef.current.style.height = "";
                 stageRef.current.style.zIndex = "";
               }
+              // Unpinning here changes total document height; the FAQ/Contact
+              // ScrollTrigger reveals cache pixel offsets that go stale the
+              // instant this layout shifts, so resync before scrolling to
+              // them — otherwise a nav-driven jump can land past their
+              // (stale) trigger line and their entrance animation never fires.
+              ScrollTrigger.refresh();
               const targetEl = document.getElementById(targetSection);
               if (targetEl) {
                 smoothScrollTo(targetEl, { offset: 75, duration: 0.9, ease: "power2.inOut" });
@@ -7085,6 +7146,12 @@ export function BlueprintHero() {
             stageRef.current.style.height = "";
             stageRef.current.style.zIndex = "";
           }
+          // Unpinning here changes total document height; the FAQ/Contact
+          // ScrollTrigger reveals cache pixel offsets that go stale the
+          // instant this layout shifts, so resync before scrolling to them —
+          // otherwise a nav-driven jump can land past their (stale) trigger
+          // line and their entrance animation never fires.
+          ScrollTrigger.refresh();
           const targetEl = document.getElementById(targetSection);
           if (targetEl) {
             smoothScrollTo(targetEl, { offset: 75, duration: 0.9, ease: "power2.inOut" });
@@ -7481,6 +7548,10 @@ export function BlueprintHero() {
         }
         document.documentElement.style.overflow = "";
         document.body.style.overflow = "";
+        // Unpinning here changes total document height; downstream
+        // ScrollTriggers (FAQ/Contact reveals) cache pixel offsets that go
+        // stale the instant this layout shifts, so resync them now.
+        ScrollTrigger.refresh();
       };
     },
     { scope: containerRef }
@@ -7490,7 +7561,7 @@ export function BlueprintHero() {
     <section
       id="hero"
       ref={containerRef}
-      className="relative w-full bg-[#FAF8F5] select-none overflow-hidden"
+      className="relative w-full min-h-screen bg-[#FAF8F5] select-none overflow-hidden"
     >
       {/* Anchor for Navbar #product navigation */}
       <div id="product" className="absolute top-[80vh] pointer-events-none" />
