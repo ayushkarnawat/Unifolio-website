@@ -9060,10 +9060,10 @@ export function BlueprintHero() {
                     ref={(el) => {
                       securityStateRefs.current[idx] = el;
                     }}
-                    className={`absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl px-5 sm:px-6 ${
-                      idx === 0
-                        ? "md:pl-12 lg:pl-20 xl:pl-24 md:pr-4"
-                        : "md:pl-12 lg:pl-20 xl:pl-24"
+                    className={`absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full ${
+                      idx === 0 || idx === 1
+                        ? "max-w-xl sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl px-5 sm:px-6 md:pl-28 lg:pl-40 xl:pl-48 md:pr-4"
+                        : "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl px-5 sm:px-6 md:pl-12 lg:pl-20 xl:pl-24"
                     } text-left will-change-transform pointer-events-none`}
                     style={{
                       opacity: 0,
@@ -9182,7 +9182,7 @@ export function BlueprintHero() {
                       <div className="flex flex-col items-start text-left">
                         {idx === 1 ? (
                           // State 2: "Read-only, always" - focal point, bigger and bolder typography with embedded eyes Easter egg
-                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[52px] xl:text-[60px] text-neutral-950 tracking-[-0.035em] leading-[1.05] mb-4 sm:mb-5 select-none relative inline-flex flex-wrap items-baseline">
+                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[52px] xl:text-[60px] text-neutral-950 tracking-[-0.035em] leading-[1.05] mb-4 sm:mb-5 select-none relative inline-flex flex-wrap sm:flex-nowrap items-baseline">
                             {/* Left Word Segment: "Read-only," */}
                             <span
                               ref={typoLeftWordRef}
