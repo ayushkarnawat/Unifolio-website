@@ -424,6 +424,9 @@ export function BlueprintHero() {
   const wheelGestureEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchGestureActiveRef = useRef<boolean>(false);
 
+  // Debounce timer for the window resize layout-reflow handler (see handleResizeLines)
+  const resizeReflowTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // State management & transition guards
   const stateRef = useRef<"hero" | "product-resting" | "product" | "sculpting" | "ring" | "about" | "faq">("hero");
   const productCompleteRef = useRef<boolean>(false);
@@ -1620,19 +1623,24 @@ export function BlueprintHero() {
       // and from that stack point, seamlessly hand off to the existing ring/spiral formation,
       // Security text reveal, and docking animation.
       // =======================================================================
-      const createProductToRingTimeline = () => {
+      // Computes the resting "docked" layout (safe/vault position, security heading
+      // shift, bento stack target) from the CURRENT live viewport + cluster position,
+      // and caches the results into refs (targetLeftXRef, targetRingYRef, etc.) so
+      // other call sites (instantShowSecurity, reverse transitions) can read them.
+      // Pure and idempotent — safe to call again any time the viewport changes (see
+      // handleResizeLines) to refresh a previously-cached layout, not just once
+      // when the forward scroll transition first fires.
+      const computeDockLayout = () => {
         const clusterEl = cardsClusterRef.current;
-        if (!clusterEl) return gsap.timeline();
-
         const { vw: vWidth, vh: vHeight } = getComposedViewport(1440, 800);
         const isDesktop = vWidth >= 1024;
         const isTablet = vWidth >= 768;
 
-        const clusterRect = clusterEl.getBoundingClientRect();
-        const clusterCenterX = clusterRect.left + clusterRect.width / 2;
-        const clusterCenterY = clusterRect.top + clusterRect.height / 2;
-        const clusterW = clusterEl.offsetWidth || Math.min(vWidth, 1340);
-        const clusterH = clusterEl.offsetHeight || 370;
+        const clusterRect = clusterEl ? clusterEl.getBoundingClientRect() : null;
+        const clusterCenterX = clusterRect ? clusterRect.left + clusterRect.width / 2 : vWidth / 2;
+        const clusterCenterY = clusterRect ? clusterRect.top + clusterRect.height / 2 : vHeight / 2;
+        const clusterW = clusterEl?.offsetWidth || Math.min(vWidth, 1340);
+        const clusterH = clusterEl?.offsetHeight || 370;
 
         const restingWidth = isDesktop ? 225 : isTablet ? 195 : 175;
         const hRest = getCardRestHeight(vWidth);
@@ -1686,6 +1694,46 @@ export function BlueprintHero() {
         stackTargetYRef.current = stackTargetY;
         cardsToSafeDeltaXRef.current = targetLeftX - stackTargetX;
         cardsToSafeDeltaYRef.current = targetRingY - stackTargetY;
+
+        return {
+          clusterEl,
+          vWidth,
+          vHeight,
+          bento,
+          stackTargetX,
+          stackTargetY,
+          stackCardScale,
+          targetLeftX,
+          targetRingY,
+          rightShiftX,
+          heroShiftX,
+          targetCardLeft,
+          targetCardTop,
+          restingWidth,
+          hRest,
+        };
+      };
+
+      const createProductToRingTimeline = () => {
+        const clusterEl = cardsClusterRef.current;
+        if (!clusterEl) return gsap.timeline();
+
+        const {
+          vWidth,
+          vHeight,
+          bento,
+          stackTargetX,
+          stackTargetY,
+          stackCardScale,
+          targetLeftX,
+          targetRingY,
+          rightShiftX,
+          heroShiftX,
+          targetCardLeft,
+          targetCardTop,
+          restingWidth,
+          hRest,
+        } = computeDockLayout();
 
         const tl = gsap.timeline({
           paused: true,
@@ -6586,8 +6634,70 @@ export function BlueprintHero() {
       window.addEventListener("touchend", handleTouchEnd, { passive: true });
       window.addEventListener("keydown", handleKeyDown, { capture: true });
 
+      // Applies the bento grid's computed geometry to the 5 product card wrappers.
+      // Pure/idempotent — safe to call on mount, on the forward transition into the
+      // grid, and again on window resize to re-layout for the new viewport.
+      const applyBentoLayoutToCards = (vw: number, vh: number) => {
+        const bento = computeBentoLayout(vw, vh);
+        PRODUCT_CARDS.forEach((_card, i) => {
+          const wrapper = cardWrapperRefs.current[i];
+          if (wrapper) {
+            gsap.set(wrapper, {
+              position: "absolute",
+              left: Math.round(bento.tileLefts[i]),
+              top: Math.round(bento.tileTops[i]),
+              width: bento.tileWidths[i],
+              height: bento.tileHeights[i],
+            });
+          }
+        });
+        return bento;
+      };
+
+      // Re-derives and re-applies whatever layout is relevant to the CURRENTLY
+      // active visual state. Every position/size elsewhere in this file is
+      // computed once inside a scroll-triggered callback and cached into a ref —
+      // nothing re-ran when the viewport changed size afterward (a plain window
+      // resize, or opening/closing devtools' responsive toolbar), so a live
+      // viewport change left the page visually "stuck" at whatever size it was
+      // originally computed for. This re-invokes the SAME already-clamped
+      // formulas (see lib/viewport.ts) fresh, via gsap.set (an instant snap, not
+      // an animated .to — resizing the window should never play a transition).
+      const reflowCurrentLayout = () => {
+        if (stateRef.current === "hero") {
+          applyPortalClip(getInitialRadiusPx(), 57.0, 48.5);
+        }
+
+        if (stateRef.current === "product" || stateRef.current === "product-resting") {
+          const { vw, vh } = getComposedViewport(1440, 800);
+          applyBentoLayoutToCards(vw, vh);
+        }
+
+        // Safe/vault + security heading dock position: cheap to recompute and a
+        // visual no-op when these elements are currently hidden, so this always
+        // runs regardless of the exact macro state above (covers the "ring"
+        // state, which is shared by the card-ring formation AND the security
+        // reveal — see computeDockLayout).
+        const layout = computeDockLayout();
+        if (safeContainerRef.current) {
+          gsap.set(safeContainerRef.current, { x: layout.targetLeftX, y: layout.targetRingY });
+        }
+        const activeSecurityEl = securityStateRefs.current[currentSecurityStateRef.current];
+        if (activeSecurityEl) {
+          gsap.set(activeSecurityEl, { x: layout.rightShiftX });
+        }
+
+        ScrollTrigger.refresh();
+      };
+
       const handleResizeLines = () => {
-        // No-op
+        if (resizeReflowTimeoutRef.current) {
+          clearTimeout(resizeReflowTimeoutRef.current);
+        }
+        resizeReflowTimeoutRef.current = setTimeout(() => {
+          resizeReflowTimeoutRef.current = null;
+          reflowCurrentLayout();
+        }, 180);
       };
       window.addEventListener("resize", handleResizeLines);
 
@@ -6680,23 +6790,15 @@ export function BlueprintHero() {
         if (unifiedEnvelopeRef.current) gsap.set(unifiedEnvelopeRef.current, { opacity: 0, visibility: "hidden" });
 
         const { vw, vh } = getComposedViewport(1440, 800);
-        const bento = computeBentoLayout(vw, vh);
+        applyBentoLayoutToCards(vw, vh);
 
         PRODUCT_CARDS.forEach((card, i) => {
           const wrapper = cardWrapperRefs.current[i];
           const flipper = cardFlipperRefs.current[i];
           const front = cardFrontRefs.current[i];
           if (wrapper) {
-            const targetL = Math.round(bento.tileLefts[i]);
-            const targetT = Math.round(bento.tileTops[i]);
-            const targetW = bento.tileWidths[i];
-            const targetH = bento.tileHeights[i];
             gsap.set(wrapper, {
               position: "absolute",
-              left: targetL,
-              top: targetT,
-              width: targetW,
-              height: targetH,
               opacity: 1,
               visibility: "visible",
               x: 0,
@@ -7569,6 +7671,10 @@ export function BlueprintHero() {
         if (wheelGestureEndTimerRef.current) {
           clearTimeout(wheelGestureEndTimerRef.current);
           wheelGestureEndTimerRef.current = null;
+        }
+        if (resizeReflowTimeoutRef.current) {
+          clearTimeout(resizeReflowTimeoutRef.current);
+          resizeReflowTimeoutRef.current = null;
         }
         if (ringRotateTweenRef.current) {
           ringRotateTweenRef.current.kill();

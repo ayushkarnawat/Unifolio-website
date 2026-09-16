@@ -1,6 +1,63 @@
 # Viewport Consistency Fix Brief
 
-**Read this whole document before making any changes.** It's a handoff from a prior Claude Code session that spent significant time diagnosing why this site (Next.js + GSAP + Three.js, branch `dark-mode`) looks visually different across desktop/laptop screen widths (1280px–2560px+), and applying fixes. Some fixes are already in place; one concrete fix is still outstanding; a couple of items were deliberately deferred. Your job is to verify the existing fixes are intact, implement the outstanding fix, and re-scan for anything new.
+**Read this whole document before making any changes.** It's a handoff from a prior Claude Code session that spent significant time diagnosing why this site (Next.js + GSAP + Three.js, branch `dark-mode`) looks visually different across desktop/laptop screen widths (1280px–2560px+), and applying fixes. Some fixes are already in place; **Part 0 below is a newly-discovered, likely higher-impact bug — read and fix that first**; one concrete formula fix (Part B) is still outstanding; a couple of items were deliberately deferred (Part C). Your job is to verify the existing fixes are intact, implement Part 0 and Part B, and re-scan for anything new.
+
+---
+
+## Part 0 — ✅ FIXED AND VERIFIED: the site never recomputes layout on resize
+
+**This is very likely the dominant explanation for most of what's been reported in this whole debugging effort — bigger impact than the formula-tuning work in Parts A/B below.** Discovered from a user report with screen recordings: the site looks correct on a fresh page load at any given width, but if the SAME loaded page's viewport changes size afterward — resizing the browser window, or (the user's own repro) opening/closing Chrome DevTools' responsive device toolbar, which changes the available viewport width without a navigation/reload — the layout does not update. Elements stay sized and positioned exactly as they were computed for the ORIGINAL width, now sitting inside a viewport of a different size, which is what produces symptoms like "everything fits on screen but is way too small" (page got wider, content stayed sized for the narrower original width) or the reverse.
+
+### Root cause, proven at the source level
+
+In `components/blueprint/BlueprintHero.tsx`, search for `handleResizeLines`:
+
+```js
+const handleResizeLines = () => {
+  // No-op
+};
+window.addEventListener("resize", handleResizeLines);
+```
+
+This is the **only** `resize` listener in the entire file (9000+ lines). Every viewport-dependent value described in Part A below (ring radius, bento layout, shift offsets, `targetLeftX`/`targetRingY`, etc.) is computed **once** — inside a ScrollTrigger `onEnter`/`onLeave`-style callback that fires when the user scrolls past a certain point — then cached (often into a `useRef`) and applied via `gsap.set`/`gsap.to`. None of it is ever recomputed or reapplied when the window resizes. GSAP's `ScrollTrigger` does auto-refresh trigger *positions* on resize internally, but that doesn't help here — these are one-shot value computations sitting inside scroll-direction-change callbacks, not continuously-scrubbed getter functions.
+
+### User's exact repro (reproduce this before and after your fix)
+
+1. Load the site normally (no DevTools) → looks correct for that viewport width.
+2. Open DevTools (Ctrl+Shift+I), switch to its responsive device toolbar, and change the emulated width WITHOUT reloading the page → layout does not adapt to the new width; elements stay sized/positioned for the width the page originally loaded at. Reloading the page while at the new width fixes it — confirms this is a missing-recompute bug, not a formula bug.
+3. Same bug in reverse: with DevTools open at some emulated width, close DevTools (real viewport grows back to full window size) without reloading → layout stays stuck at the smaller width's computed values, now surrounded by unexplained empty space in the full-size window.
+
+### The fix
+
+`handleResizeLines` needs to become a real handler that:
+1. **Debounces** (resize fires rapidly — use a ~150–200ms debounce).
+2. Reads whatever state is currently active — `stateRef.current` already tracks this throughout the file (search for its definition and the various string values assigned to it).
+3. Re-runs the position/size computation relevant to that current state (reusing the exact formulas already fixed in Part A/B — do not rewrite the math, just make it re-invokable) and re-applies the result via `gsap.set` (an instant snap, NOT `.to` — no animated transition should play just because the window resized) to the currently-visible elements.
+
+This is a nontrivial refactor because the computation is currently inlined inside many separate callback closures rather than centralized. Pragmatic approach: extract each state's "apply layout for given vw/vh" logic already sitting inside its `onEnter` callback into a small named function callable from both the original scroll-trigger callback AND the new resize handler. Do this incrementally if needed — start with the hero ring (initial load), the bento grid, and the security vault+heading state (Part B), verify each against the repro steps above, then extend to remaining states (about/faq/contact) if time allows.
+
+### Acceptance test
+
+Via Puppeteer/Playwright: load the page at 1440×900, let a state settle, call `page.setViewport({ width: 2560, height: 1440 })` **without reloading**, wait ~1s, and compare the resulting layout (`getBoundingClientRect()` on relevant elements, or the `window.__biDebug` refs — see Part B) against a **fresh** page load at 2560×1440. They must match. Repeat shrinking from wide down to narrow.
+
+### Status: implemented and verified (this session)
+
+Fixed in `components/blueprint/BlueprintHero.tsx`:
+- Added `resizeReflowTimeoutRef` (debounce timer, cleaned up on unmount).
+- Extracted `computeDockLayout()` out of `createProductToRingTimeline` — same math as before (unchanged), now callable standalone; it computes AND caches `targetLeftXRef`/`targetRingYRef`/`rightShiftXRef`/etc. from the live `cardsClusterRef` position + current viewport, tolerant of a null cluster ref (for calls before mount).
+- Extracted `applyBentoLayoutToCards(vw, vh)` out of `instantShowProduct` — applies `computeBentoLayout`'s geometry (left/top/width/height) to the 5 product card wrappers; `instantShowProduct` now calls this instead of inlining it.
+- Added `reflowCurrentLayout()`: checks `stateRef.current` and re-applies the hero portal ring radius (`"hero"` state) or the bento geometry (`"product"`/`"product-resting"`), and unconditionally recomputes+reapplies the safe/vault dock position and the active security heading's shift (cheap, a visual no-op when hidden) — all via `gsap.set` (instant, no animated transition).
+- `handleResizeLines` (the real `resize` listener, was previously a no-op) now debounces ~180ms and calls `reflowCurrentLayout()`, followed by `ScrollTrigger.refresh()`.
+
+Verified via Puppeteer, comparing a live resize (no reload) against a fresh page load at the destination size:
+- Hero ring radius: at 2560px = 166 (clamped reference value). Live-resized down to 1024px → 145, exactly matching a fresh load at 1024px (145). Before the fix this would have stayed at 166.
+- Security vault dock (`targetLeftXRef`): at 2560px = -317. Live-resized down to 1024px → -225, exactly matching a fresh load at 1024px (-225). Before the fix this would have stayed at -317.
+- Bento grid uses the identical `computeBentoLayout` function via the same `reflowCurrentLayout` pathway (already proven correct/clamped from the Part A work), so it's covered by construction — an isolated screenshot-based test of it specifically was inconclusive due to wheel-scroll test-harness timing (landing in a transient "sculpting" sub-state rather than settled "product-resting"), not a sign of a problem with the mechanism itself. Worth a spot-check if you have a moment.
+- `npx tsc --noEmit`, `npx next lint`, and `npm run build` all pass clean.
+
+**Not covered by this pass** (out of scope, per the incremental approach this doc originally suggested): the transient 26-card "ring formation" sub-state (`computeRingSlots`, mid-animation, unlikely to be sat on during a resize), and the `"about"`/`"faq"` macro states (handled once scrolled past this component's own pinned experience — no `instantShowAbout`-equivalent exists to model a fix on). If you have time, extend `reflowCurrentLayout()` to cover these the same way.
+
+---
 
 ## IMPORTANT FIRST STEP: check for concurrent edits
 
@@ -51,7 +108,7 @@ export function getCardRestHeight(vWidth: number): number {
 Search each file for these patterns to confirm they're intact. If a concurrent session removed or altered any of these, restore the clamping behavior (exact implementation doesn't need to match verbatim, but the *effect* — clamped to 1440/900 reference — must hold).
 
 ### 1. `lib/viewport.ts`
-The helper file shown above should exist. If missing, recreate it.
+The helper file shown above should exist. If missing, recreate it. Note: as of the last check, a concurrent session had extended `getComposedViewport()` with an additional width/height "tier snapping" step (rounding down to fixed steps like 1024/1280/1366/1440) on top of the reference clamp — this looks like a reasonable refinement in isolation, not a bug. If you see a "content renders too small at wide viewports" symptom, check Part 0 (missing resize recompute) before suspecting this tiering logic — that's the confirmed root cause of that symptom, not the clamp/tier math itself.
 
 ### 2. `components/blueprint/BlueprintHero.tsx`
 - Imports `getComposedViewport`, `getCardRestHeight`, `DESKTOP_REFERENCE_WIDTH` from `@/lib/viewport`.

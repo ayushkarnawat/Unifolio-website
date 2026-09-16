@@ -9,8 +9,10 @@ export const siteConfig = {
   playStoreUrl: "https://play.google.com/store/apps/details?id=in.unifolio.app.[PLACEHOLDER]",
   contactEmail: "support@unifolio.in",
   social: {
-    twitter: "https://twitter.com/unifolio",
-    linkedin: "https://www.linkedin.com/company/unifolio",
+    instagram: "https://www.instagram.com/unifolio.in/",
+    facebook: "https://www.facebook.com/profile.php?id=61594380512651",
+    twitter: "https://x.com/unifolioin",
+    linkedin: "https://www.linkedin.com/company/unifolioin/about/",
   },
 };
 

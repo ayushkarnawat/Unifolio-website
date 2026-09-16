@@ -515,9 +515,9 @@ export function BlueprintContact() {
                 <div className="flex items-center gap-5 sm:gap-6">
                   {/* Instagram */}
                   <a
-                    href="https://instagram.com/unifolio"
+                    href="https://www.instagram.com/unifolio.in/"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     aria-label="Instagram"
                     className="group relative inline-flex items-center justify-center text-[#111613] hover:text-[#22C55E] transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-110 drop-shadow-none hover:drop-shadow-[0_4px_12px_rgba(34,197,94,0.35)]"
                   >
@@ -530,9 +530,9 @@ export function BlueprintContact() {
 
                   {/* Facebook */}
                   <a
-                    href="https://facebook.com/unifolio"
+                    href="https://www.facebook.com/profile.php?id=61594380512651"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     aria-label="Facebook"
                     className="group relative inline-flex items-center justify-center text-[#111613] hover:text-[#22C55E] transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-110 drop-shadow-none hover:drop-shadow-[0_4px_12px_rgba(34,197,94,0.35)]"
                   >
@@ -543,10 +543,10 @@ export function BlueprintContact() {
 
                   {/* Twitter / X */}
                   <a
-                    href="https://twitter.com/unifolio"
+                    href="https://x.com/unifolioin"
                     target="_blank"
-                    rel="noreferrer"
-                    aria-label="Twitter / X"
+                    rel="noopener noreferrer"
+                    aria-label="X (formerly Twitter)"
                     className="group relative inline-flex items-center justify-center text-[#111613] hover:text-[#22C55E] transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-110 drop-shadow-none hover:drop-shadow-[0_4px_12px_rgba(34,197,94,0.35)]"
                   >
                     <svg className="w-5 h-5 sm:w-[22px] sm:h-[22px]" viewBox="0 0 24 24" fill="currentColor">
@@ -556,9 +556,9 @@ export function BlueprintContact() {
 
                   {/* LinkedIn */}
                   <a
-                    href="https://linkedin.com/company/unifolio"
+                    href="https://www.linkedin.com/company/unifolioin/about/"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     aria-label="LinkedIn"
                     className="group relative inline-flex items-center justify-center text-[#111613] hover:text-[#22C55E] transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-110 drop-shadow-none hover:drop-shadow-[0_4px_12px_rgba(34,197,94,0.35)]"
                   >
