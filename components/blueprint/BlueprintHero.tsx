@@ -947,8 +947,7 @@ export function BlueprintHero() {
         };
       };
 
-      const initVw = typeof window !== "undefined" ? window.innerWidth : 1440;
-      const initVh = typeof window !== "undefined" ? window.innerHeight : 800;
+      const { vw: initVw, vh: initVh } = getComposedViewport(1440, 800);
       const initDesk = initVw >= 1024;
       const initTab = initVw >= 768;
       const initRestW = initDesk ? 225 : initTab ? 195 : 175;
@@ -1367,8 +1366,7 @@ export function BlueprintHero() {
       // when the user scrolls down from the resting amphitheater state.
       // =======================================================================
       const createRestingToBentoTimeline = () => {
-        const vWidth = typeof window !== "undefined" ? window.innerWidth : 1440;
-        const vHeight = typeof window !== "undefined" ? window.innerHeight : 800;
+        const { vw: vWidth, vh: vHeight } = getComposedViewport(1440, 800);
 
         const tl = gsap.timeline({
           paused: true,
@@ -1626,8 +1624,7 @@ export function BlueprintHero() {
         const clusterEl = cardsClusterRef.current;
         if (!clusterEl) return gsap.timeline();
 
-        const vWidth = typeof window !== "undefined" ? window.innerWidth : 1440;
-        const vHeight = typeof window !== "undefined" ? window.innerHeight : 800;
+        const { vw: vWidth, vh: vHeight } = getComposedViewport(1440, 800);
         const isDesktop = vWidth >= 1024;
         const isTablet = vWidth >= 768;
 
@@ -1662,7 +1659,7 @@ export function BlueprintHero() {
         // Clamped separately from viewportCenterX: the shift amounts below should stay
         // proportioned to the reference desktop width, while viewportCenterX itself must
         // keep tracking the real viewport center for the cluster-centering math.
-        const composedCenterX = Math.min(typeof window !== "undefined" ? window.innerWidth : 1440, DESKTOP_REFERENCE_WIDTH) / 2;
+        const composedCenterX = vWidth / 2;
         const targetRingX = Math.round(viewportCenterX - clusterCenterX);
         const leftShift = isDesktop
           ? Math.round(composedCenterX * 0.44)
@@ -3681,7 +3678,7 @@ export function BlueprintHero() {
         const TOTAL_RING_CARDS = 26;
         const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
         const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
-        const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+        const { vh } = getComposedViewport(1440, 800);
 
         const ringRadius = Math.min(Math.max(vh * 0.22, 160), 220);
         const finalCardScale = isDesktop ? 0.52 : isTablet ? 0.48 : 0.44;
@@ -3847,7 +3844,7 @@ export function BlueprintHero() {
         }
 
         gsap.to([cardsClusterRef.current, aboutContentRef.current], {
-          y: -window.innerHeight * 0.45,
+          y: -getComposedViewport().vh * 0.45,
           opacity: 0,
           duration: 0.38,
           ease: "power2.in",
@@ -3951,7 +3948,7 @@ export function BlueprintHero() {
 
         const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
         const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
-        const vhVal = typeof window !== "undefined" ? window.innerHeight : 900;
+        const { vh: vhVal } = getComposedViewport(1440, 900);
         const stackCardScale = isDesk ? 0.60 : isTab ? 0.56 : 0.52;
         const targetEnvelopeY = isDesk
           ? Math.round(Math.max(255, Math.min(290, vhVal * 0.29)))
@@ -4033,7 +4030,7 @@ export function BlueprintHero() {
             cardsClusterRef.current,
             {
               x: 0,
-              y: -window.innerHeight * 0.45,
+              y: -getComposedViewport().vh * 0.45,
               rotateZ: 0,
               rotateX: 0,
               rotateY: 0,
@@ -4107,7 +4104,7 @@ export function BlueprintHero() {
 
         const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
         const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
-        const vhVal = typeof window !== "undefined" ? window.innerHeight : 900;
+        const { vw: vwVal, vh: vhVal } = getComposedViewport(1440, 900);
         const stackCardScale = isDesktop ? 0.60 : isTablet ? 0.56 : 0.52;
         const targetEnvelopeY = isDesktop
           ? Math.round(Math.max(255, Math.min(290, vhVal * 0.29)))
@@ -4123,10 +4120,9 @@ export function BlueprintHero() {
         // Target: cards consolidate into tight horizontal stack matching reference attachment
         const frontX = 35;
 
-        const vwVal = typeof window !== "undefined" ? window.innerWidth : 1440;
         // Clamped so the consolidation shift stays proportioned to the reference desktop
         // width instead of pushing the stack further from center on very wide monitors.
-        const vCenterX = Math.min(vwVal, DESKTOP_REFERENCE_WIDTH) / 2;
+        const vCenterX = vwVal / 2;
         const shiftX = isDesktop
           ? Math.round(vCenterX * 0.35)
           : isTablet
@@ -4169,8 +4165,7 @@ export function BlueprintHero() {
         const curX = (gsap.getProperty(clusterEl, "x") as number) || 0;
         const curY = (gsap.getProperty(clusterEl, "y") as number) || 0;
 
-        const vw = typeof window !== "undefined" ? window.innerWidth : 1440;
-        const vh = typeof window !== "undefined" ? window.innerHeight : 900;
+        const { vw, vh } = getComposedViewport(1440, 900);
         const bLeft = blackRect?.left ?? vw * 0.28;
         const bRight = blackRect?.right ?? vw * 0.82;
         const bTop = blackRect?.top ?? vh * 0.38;
@@ -5289,7 +5284,7 @@ export function BlueprintHero() {
         // Clamped separately from viewportCenterX: the shift amounts below should stay
         // proportioned to the reference desktop width, while viewportCenterX itself must
         // keep tracking the real viewport center for the cluster-centering math above.
-        const composedCenterX = Math.min(vw, DESKTOP_REFERENCE_WIDTH) / 2;
+        const composedCenterX = getComposedViewport().vw / 2;
         const clusterRect = cardsClusterRef.current?.getBoundingClientRect();
         const clusterCenterX = clusterRect ? (clusterRect.left + clusterRect.width / 2) : viewportCenterX;
         const clusterCenterY = clusterRect ? (clusterRect.top + clusterRect.height / 2) : viewportCenterY;
@@ -5305,7 +5300,7 @@ export function BlueprintHero() {
         const targetLeftX = targetLeftXRef.current ?? fallbackTargetLeftX;
         const targetRingY = targetRingYRef.current ?? fallbackTargetRingY;
 
-        const vhVal = typeof window !== "undefined" ? window.innerHeight : 900;
+        const vhVal = getComposedViewport(1440, 900).vh;
         const stackCardScale = isDesktop ? 0.60 : isTablet ? 0.56 : 0.52;
         const targetEnvelopeY = isDesktop
           ? Math.round(Math.max(255, Math.min(290, vhVal * 0.29)))
@@ -5876,7 +5871,7 @@ export function BlueprintHero() {
 
         const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
         const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
-        const vCenterX = Math.min(typeof window !== "undefined" ? window.innerWidth : 1440, DESKTOP_REFERENCE_WIDTH) / 2;
+        const vCenterX = getComposedViewport().vw / 2;
         const shiftX = isDesk
           ? Math.round(vCenterX * 0.35)
           : isTab
@@ -6097,7 +6092,7 @@ export function BlueprintHero() {
           const state0El = securityStateRefs.current[0];
           const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
           const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
-          const vCenterX = Math.min(typeof window !== "undefined" ? window.innerWidth : 1440, DESKTOP_REFERENCE_WIDTH) / 2;
+          const vCenterX = getComposedViewport().vw / 2;
           const shiftX = isDesk ? Math.round(vCenterX * 0.35) : isTab ? Math.round(vCenterX * 0.24) : Math.round(vCenterX * 0.14);
           if (state0El) gsap.set(state0El, { opacity: 1, visibility: "visible", x: shiftX, y: 0, scale: 1, clipPath: "none" });
           currentSecurityStateRef.current = 0;
@@ -6684,8 +6679,7 @@ export function BlueprintHero() {
         if (aboutContentRef.current) gsap.set(aboutContentRef.current, { opacity: 0, visibility: "hidden" });
         if (unifiedEnvelopeRef.current) gsap.set(unifiedEnvelopeRef.current, { opacity: 0, visibility: "hidden" });
 
-        const vw = typeof window !== "undefined" ? window.innerWidth : 1440;
-        const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+        const { vw, vh } = getComposedViewport(1440, 800);
         const bento = computeBentoLayout(vw, vh);
 
         PRODUCT_CARDS.forEach((card, i) => {
@@ -6991,14 +6985,13 @@ export function BlueprintHero() {
         // Layout measurements
         const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
         const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
-        const vCenterX = Math.min(typeof window !== "undefined" ? window.innerWidth : 1440, DESKTOP_REFERENCE_WIDTH) / 2;
-        const vhVal = typeof window !== "undefined" ? window.innerHeight : 800;
+        const { vw: vwVal, vh: vhVal } = getComposedViewport(1440, 800);
+        const vCenterX = vwVal / 2;
         const rRadius = Math.min(Math.max(vhVal * 0.22, 160), 220);
         const lShift = isDesk ? Math.round(vCenterX * 0.44) : isTab ? Math.round(vCenterX * 0.32) : Math.round(vCenterX * 0.20);
         const rightShift = rightShiftXRef.current || (isDesk ? Math.round(vCenterX * 0.35) : isTab ? Math.round(vCenterX * 0.24) : Math.round(vCenterX * 0.14));
         const shiftX = rightShift;
 
-        const vwVal = typeof window !== "undefined" ? window.innerWidth : 1440;
         const restingWidth = isDesk ? 225 : isTab ? 195 : 175;
         const hRest = getCardRestHeight(vwVal);
         const clusterW = cardsClusterRef.current?.offsetWidth || Math.min(vwVal, 1340);

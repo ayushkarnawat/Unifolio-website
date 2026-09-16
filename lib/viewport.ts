@@ -15,17 +15,41 @@ export const DESKTOP_REFERENCE_WIDTH = 1440;
 export const DESKTOP_REFERENCE_HEIGHT = 900;
 
 /**
- * Raw viewport width/height, clamped so desktop composition math never scales
- * past the reference frame. Only use this for layout math (sizes, radii,
- * offsets) — NOT for breakpoint checks (isDesktop/isTablet) or for centering
- * something at the viewport's true center.
+ * Fixed desktop composition tiers. Two viewports in the same tier render an
+ * identical composition; layout only changes at these deliberate steps
+ * instead of scaling continuously with every exact pixel width (which made
+ * the hero/product/security experiences look different across laptops with
+ * different native resolutions or OS display scaling).
+ */
+const WIDTH_TIERS = [1024, 1280, 1366, DESKTOP_REFERENCE_WIDTH];
+const HEIGHT_TIERS = [768, 800, 864, DESKTOP_REFERENCE_HEIGHT];
+
+function snapDown(value: number, tiers: number[]): number {
+  // Below the smallest tier, pass the value through unchanged — that range
+  // is tablet/mobile territory (out of scope here), and forcing it up to
+  // the smallest desktop tier would corrupt any isDesktop/isTablet-style
+  // check or size lookup that shares this value below 1024/768.
+  if (value < tiers[0]) return value;
+  let result = tiers[0];
+  for (const tier of tiers) {
+    if (value >= tier) result = tier;
+  }
+  return result;
+}
+
+/**
+ * Viewport width/height snapped to the tiers above, so desktop composition
+ * math never scales past the reference frame and never varies within a
+ * tier. Only use this for layout math (sizes, radii, offsets) — NOT for
+ * breakpoint checks (isDesktop/isTablet) or for centering something at the
+ * viewport's true center.
  */
 export function getComposedViewport(fallbackWidth = DESKTOP_REFERENCE_WIDTH, fallbackHeight = DESKTOP_REFERENCE_HEIGHT) {
   const rawW = typeof window !== "undefined" ? window.innerWidth : fallbackWidth;
   const rawH = typeof window !== "undefined" ? window.innerHeight : fallbackHeight;
   return {
-    vw: Math.min(rawW, DESKTOP_REFERENCE_WIDTH),
-    vh: Math.min(rawH, DESKTOP_REFERENCE_HEIGHT),
+    vw: snapDown(Math.min(rawW, DESKTOP_REFERENCE_WIDTH), WIDTH_TIERS),
+    vh: snapDown(Math.min(rawH, DESKTOP_REFERENCE_HEIGHT), HEIGHT_TIERS),
   };
 }
 

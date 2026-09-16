@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger, Flip, Observer, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
-import { DESKTOP_REFERENCE_WIDTH } from "@/lib/viewport";
+import { getComposedViewport } from "@/lib/viewport";
 import { LinkButton } from "@/components/ui/Button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { CardSculpture, type CardSculptureHandle } from "@/components/product/CardSculpture";
@@ -1161,7 +1161,7 @@ export function ProductExperience() {
         const TOTAL_RING_CARDS = 26;
         const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
         const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
-        const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+        const vh = getComposedViewport(1440, 800).vh;
         // Comfortable radius so ring has generous negative space and never gets cut off
         const ringRadius = Math.min(Math.max(vh * 0.22, 160), 215);
         const finalCardScale = isDesktop ? 0.52 : isTablet ? 0.48 : 0.44;
@@ -1364,10 +1364,9 @@ export function ProductExperience() {
         // Left docked X position for Phase 4: travels toward the left side of the viewport exactly like security reference video.
         // The dock distance itself is clamped to the reference desktop width so it stays proportioned
         // to the ring/text composition instead of shrinking (as a fraction of viewport) on large monitors.
-        const screenW = typeof window !== "undefined" ? window.innerWidth : 1440;
-        const composedScreenW = Math.min(screenW, DESKTOP_REFERENCE_WIDTH);
+        const composedScreenW = getComposedViewport().vw;
         const dockedLeftX = Math.round(
-          targetRingX - (isDesktop ? composedScreenW * 0.25 : isTablet ? screenW * 0.20 : 0)
+          targetRingX - (isDesktop ? composedScreenW * 0.25 : isTablet ? composedScreenW * 0.20 : 0)
         );
 
         // Reposition ring upward to visually center in viewport and apply pronounced 3D diagonal tilt
