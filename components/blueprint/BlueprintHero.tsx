@@ -664,10 +664,10 @@ export function BlueprintHero() {
         scale: 1,
         xPercent: 0,
         yPercent: 0,
-        transformOrigin: "57.0% 48.5%",
+        transformOrigin: "62.87% 49.12%",
       });
 
-      // Calibrated aperture hole center at 57.0% X, 48.5% Y
+      // Calibrated aperture hole center at 62.87% X, 49.12% Y
       // Dynamic pixel calculation perfectly matches the video ring void across all screens
       const getInitialRadiusPx = () => {
         if (typeof window === "undefined") return 175;
@@ -686,8 +686,8 @@ export function BlueprintHero() {
       // Pure numeric state object for GSAP - avoids fragile browser CSS string unit parsing (zero GPU)
       const portalState = {
         radius: initialRadiusPx,
-        x: 57.0,
-        y: 48.5,
+        x: 62.87,
+        y: 49.12,
       };
 
       const applyPortalClip = (r: number, x: number, y: number) => {
@@ -717,7 +717,7 @@ export function BlueprintHero() {
       gsap.set(irisPortalRef.current, { autoAlpha: 0 });
       gsap.set(portalRimRef.current, { autoAlpha: 0 });
       gsap.set(portalRippleRef.current, { autoAlpha: 0 });
-      applyPortalClip(initialRadiusPx, 57.0, 48.5);
+      applyPortalClip(initialRadiusPx, 62.87, 49.12);
 
       // Hero Intro initial state
       gsap.set(heroIntroRef.current, { opacity: 0, autoAlpha: 1, x: 0, y: 16, scale: 1 });
@@ -726,7 +726,7 @@ export function BlueprintHero() {
         scale: 1,
         xPercent: 0,
         yPercent: 0,
-        transformOrigin: "57.0% 48.5%",
+        transformOrigin: "62.87% 49.12%",
       });
 
       // OPTION 2: Atmospheric Stretch - Product world starts compressed in singularity void
@@ -735,8 +735,8 @@ export function BlueprintHero() {
         scale: 0.24,
         scaleX: 0.30,
         scaleY: 0.20,
-        xPercent: 7.0,  // Aligns stage center with 57.0% X hole
-        yPercent: -1.5, // Aligns stage center with 48.5% Y hole
+        xPercent: 12.87,  // Aligns stage center with 62.87% X hole
+        yPercent: -0.88, // Aligns stage center with 49.12% Y hole
         opacity: 0.25,
       });
 
@@ -1122,10 +1122,10 @@ export function BlueprintHero() {
           heroVisualRef.current,
           {
             scale: 5.5,
-            xPercent: -7.0,
-            yPercent: 1.5,
+            xPercent: -12.87,
+            yPercent: 0.88,
             duration: 0.65,
-            ease: "power3.inOut",
+            ease: "power2.inOut",
           },
           0.0
         );
@@ -1135,10 +1135,10 @@ export function BlueprintHero() {
           [irisPortalRef.current, portalRimRef.current],
           {
             autoAlpha: 1,
-            duration: 0.12,
+            duration: 0.10,
             ease: "power1.out",
           },
-          0.04
+          0.0
         );
 
         // - Concentric ripple pulse
@@ -1149,7 +1149,7 @@ export function BlueprintHero() {
             duration: 0.10,
             ease: "power1.out",
           },
-          0.05
+          0.02
         );
         tl.to(
           portalRippleRef.current,
@@ -1158,23 +1158,24 @@ export function BlueprintHero() {
             duration: 0.20,
             ease: "power2.out",
           },
-          0.18
+          0.14
         );
 
         // - Numeric clip path radius expands across the entire viewport
+        // Synchronized with heroVisualRef: exact same start (0.0), duration (0.65), and power2.inOut easing
         tl.to(
           portalState,
           {
             radius: maxRadiusPx,
             x: 50.0,
             y: 50.0,
-            duration: 0.62,
+            duration: 0.65,
             ease: "power2.inOut",
             onUpdate: () => {
               applyPortalClip(portalState.radius, portalState.x, portalState.y);
             },
           },
-          0.04
+          0.0
         );
 
         tl.to(
@@ -1570,7 +1571,7 @@ export function BlueprintHero() {
           heroToProductTlRef.current.kill();
         }
         heroToProductTlRef.current = createHeroToProductTimeline();
-        heroToProductTlRef.current.play(0);
+        heroToProductTlRef.current.timeScale(1.63).play(0);
       };
 
       const triggerRestingToBento = () => {
@@ -1582,7 +1583,7 @@ export function BlueprintHero() {
           restingToBentoTlRef.current.kill();
         }
         restingToBentoTlRef.current = createRestingToBentoTimeline();
-        restingToBentoTlRef.current.play(0);
+        restingToBentoTlRef.current.timeScale(1.55).play(0);
       };
 
       const triggerBentoToResting = () => {
@@ -1594,7 +1595,7 @@ export function BlueprintHero() {
           restingToBentoTlRef.current = createRestingToBentoTimeline();
           restingToBentoTlRef.current.progress(1);
         }
-        restingToBentoTlRef.current.timeScale(1.3).reverse();
+        restingToBentoTlRef.current.timeScale(1.80).reverse();
       };
 
       const triggerProductToHero = () => {
@@ -1612,7 +1613,7 @@ export function BlueprintHero() {
           heroToProductTlRef.current = createHeroToProductTimeline();
           heroToProductTlRef.current.progress(1);
         }
-        heroToProductTlRef.current.timeScale(1.3).reverse();
+        heroToProductTlRef.current.timeScale(1.80).reverse();
       };
 
 
@@ -1670,20 +1671,20 @@ export function BlueprintHero() {
         const composedCenterX = vWidth / 2;
         const targetRingX = Math.round(viewportCenterX - clusterCenterX);
         const leftShift = isDesktop
-          ? Math.round(composedCenterX * 0.44)
+          ? Math.round(composedCenterX * 0.56)
           : isTablet
-          ? Math.round(composedCenterX * 0.32)
-          : Math.round(composedCenterX * 0.20);
+          ? Math.round(composedCenterX * 0.44)
+          : Math.round(composedCenterX * 0.28);
         const targetLeftX = targetRingX - leftShift;
         const targetRingY = Math.round(viewportCenterY - clusterCenterY + 18);
         const isSmallScreen = vWidth < 640;
         const rightShiftX = isDesktop
-          ? Math.round(composedCenterX * 0.35)
+          ? Math.round(composedCenterX * 0.38)
           : isTablet
-          ? Math.round(composedCenterX * 0.24)
+          ? Math.round(composedCenterX * 0.28)
           : isSmallScreen
-          ? 0
-          : Math.round(composedCenterX * 0.14);
+          ? Math.round(composedCenterX * 0.12)
+          : Math.round(composedCenterX * 0.20);
         const heroShiftX = rightShiftX;
 
         targetLeftXRef.current = targetLeftX;
@@ -2549,6 +2550,7 @@ export function BlueprintHero() {
         });
 
         moneyAnimTlRef.current = tl;
+        tl.timeScale(1.6);
 
         // 1. Brief settle so user can read the settled headline
         const tSettle = 0.30;
@@ -2736,6 +2738,7 @@ export function BlueprintHero() {
         });
 
         typoEyesTlRef.current = tl;
+        tl.timeScale(1.5);
 
         // --- STAGE 1: STRAINED AWAKENING & INITIAL RESISTANCE ---
         // The eyes start pushing up into the seam between the words; words push apart slightly and resist
@@ -2946,6 +2949,7 @@ export function BlueprintHero() {
         });
 
         pwdMaskTlRef.current = tl;
+        tl.timeScale(1.5);
 
         // 1. Brief hold so user reads the full word "passwords" normally
         const initialHold = 0.45;
@@ -3089,6 +3093,7 @@ export function BlueprintHero() {
         });
 
         lockAnimTlRef.current = tl;
+        tl.timeScale(1.6);
 
         // 1. Brief settle so user reads "Locked down, everywhere" normally
         const tSettle = 0.38;
@@ -3315,6 +3320,7 @@ export function BlueprintHero() {
         });
 
         connectionAnimTlRef.current = tl;
+        tl.timeScale(1.5);
 
         // 1. Brief settle so user reads "You control the connection" normally
         const tSettle = 0.35;
@@ -3451,6 +3457,7 @@ export function BlueprintHero() {
         });
 
         indiaAnimTlRef.current = tl;
+        tl.timeScale(1.5);
 
         // 1. Brief settle so user reads "Stored in India" normally
         const tSettle = 0.35;
@@ -3586,6 +3593,7 @@ export function BlueprintHero() {
         });
 
         sellAnimTlRef.current = tl;
+        tl.timeScale(1.6);
 
         // 1. Brief settle so user reads "We don't sell your data" normally
         const tSettle = 0.35;
@@ -3822,6 +3830,7 @@ export function BlueprintHero() {
             isFlippingDocRef.current = false;
           },
         });
+        flipTl.timeScale(1.54);
 
         // 1. Smooth 3D page turn around vertical axis
         flipTl.fromTo(
@@ -3894,7 +3903,7 @@ export function BlueprintHero() {
         gsap.to([cardsClusterRef.current, aboutContentRef.current], {
           y: -getComposedViewport().vh * 0.45,
           opacity: 0,
-          duration: 0.38,
+          duration: 0.25,
           ease: "power2.in",
           onComplete: () => {
             stateRef.current = "faq";
@@ -3921,7 +3930,7 @@ export function BlueprintHero() {
             requestAnimationFrame(() => {
               const faqEl = document.getElementById("faq");
               if (faqEl) {
-                smoothScrollTo(faqEl, { duration: 0.58, ease: "power2.out" });
+                smoothScrollTo(faqEl, { duration: 0.40, ease: "power2.out" });
               }
               dispatchActiveSection("faq");
             });
@@ -4459,6 +4468,7 @@ export function BlueprintHero() {
           },
         });
         consolidationTlRef.current = tl;
+        tl.timeScale(1.50);
 
         // Initialize About cinematic atmosphere to hidden at time 0
         if (aboutContentRef.current) {
@@ -5456,6 +5466,7 @@ export function BlueprintHero() {
             }
           },
         });
+        revTl.timeScale(1.30);
 
         // -------------------------------------------------------------------------
         // REVERSE STEP 1: DOCUMENT DIRECTLY RETRACTS BACK INTO ENVELOPE (0.00s -> 0.32s)
@@ -5908,23 +5919,26 @@ export function BlueprintHero() {
             prevEl,
             {
               opacity: 0,
-              y: direction === 1 ? -16 : 16,
-              duration: 0.20,
+              y: direction === 1 ? -12 : 12,
+              duration: 0.14,
               ease: "power2.in",
             },
             0
           );
-          tl.set(prevEl, { visibility: "hidden" }, 0.20);
+          tl.set(prevEl, { visibility: "hidden" }, 0.14);
         }
 
         const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
         const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
+        const isSmall = typeof window !== "undefined" && window.innerWidth < 640;
         const vCenterX = getComposedViewport().vw / 2;
-        const shiftX = isDesk
-          ? Math.round(vCenterX * 0.35)
+        const shiftX = rightShiftXRef.current ?? (isDesk
+          ? Math.round(vCenterX * 0.38)
           : isTab
-          ? Math.round(vCenterX * 0.24)
-          : Math.round(vCenterX * 0.14);
+          ? Math.round(vCenterX * 0.28)
+          : isSmall
+          ? Math.round(vCenterX * 0.12)
+          : Math.round(vCenterX * 0.20));
 
         // 2. New text smoothly enters with a slight directional movement & subtle stagger
         if (nextEl) {
@@ -5959,27 +5973,27 @@ export function BlueprintHero() {
           if (heading && body) {
             tl.fromTo(
               heading,
-              { opacity: 0, y: direction === 1 ? 14 : -14 },
-              { opacity: 1, y: 0, duration: 0.28, ease: "power2.out" },
-              0.12
+              { opacity: 0, y: direction === 1 ? 10 : -10 },
+              { opacity: 1, y: 0, duration: 0.18, ease: "power2.out" },
+              0.06
             );
             tl.fromTo(
               body,
-              { opacity: 0, y: direction === 1 ? 14 : -14 },
-              { opacity: 1, y: 0, duration: 0.32, ease: "power2.out" },
-              0.16
+              { opacity: 0, y: direction === 1 ? 10 : -10 },
+              { opacity: 1, y: 0, duration: 0.20, ease: "power2.out" },
+              0.08
             );
-            tl.to(nextEl, { opacity: 1, y: 0, duration: 0.32, ease: "power2.out" }, 0.12);
+            tl.to(nextEl, { opacity: 1, y: 0, duration: 0.20, ease: "power2.out" }, 0.06);
           } else {
             tl.to(
               nextEl,
               {
                 opacity: 1,
                 y: 0,
-                duration: 0.32,
+                duration: 0.20,
                 ease: "power2.out",
               },
-              0.12
+              0.06
             );
           }
         }
@@ -6038,7 +6052,7 @@ export function BlueprintHero() {
           productToRingTlRef.current.kill();
         }
         productToRingTlRef.current = createProductToRingTimeline();
-        productToRingTlRef.current.play(0);
+        productToRingTlRef.current.timeScale(1.73).play(0);
       };
 
       const triggerRingToProduct = () => {
@@ -6140,8 +6154,9 @@ export function BlueprintHero() {
           const state0El = securityStateRefs.current[0];
           const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
           const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
+          const isSmall = typeof window !== "undefined" && window.innerWidth < 640;
           const vCenterX = getComposedViewport().vw / 2;
-          const shiftX = isDesk ? Math.round(vCenterX * 0.35) : isTab ? Math.round(vCenterX * 0.24) : Math.round(vCenterX * 0.14);
+          const shiftX = rightShiftXRef.current ?? (isDesk ? Math.round(vCenterX * 0.38) : isTab ? Math.round(vCenterX * 0.28) : isSmall ? Math.round(vCenterX * 0.12) : Math.round(vCenterX * 0.20));
           if (state0El) gsap.set(state0El, { opacity: 1, visibility: "visible", x: shiftX, y: 0, scale: 1, clipPath: "none" });
           currentSecurityStateRef.current = 0;
           safeVault3DRef.current?.resetRim?.();
@@ -6173,7 +6188,7 @@ export function BlueprintHero() {
             productToRingTlRef.current = createProductToRingTimeline();
           }
           productToRingTlRef.current.seek(productToRingTlRef.current.duration(), false);
-          productToRingTlRef.current.reverse();
+          productToRingTlRef.current.timeScale(2.00).reverse();
         };
 
         startReverseTimeline();
@@ -6194,7 +6209,7 @@ export function BlueprintHero() {
           if (isSecurityTransitioningRef.current || isFlippingDocRef.current) return;
 
           if (e.deltaY > 8) {
-            if (Date.now() - lastSecurityScrollTimeRef.current < 280) return;
+            if (Date.now() - lastSecurityScrollTimeRef.current < 140) return;
             if (aboutDocPageRef.current === 1) {
               flipDocToPage(2);
             } else {
@@ -6202,7 +6217,7 @@ export function BlueprintHero() {
             }
             return;
           } else if (e.deltaY < -8) {
-            if (Date.now() - lastSecurityScrollTimeRef.current < 280) return;
+            if (Date.now() - lastSecurityScrollTimeRef.current < 140) return;
             if (aboutDocPageRef.current === 2) {
               flipDocToPage(1);
             } else {
@@ -6223,7 +6238,7 @@ export function BlueprintHero() {
           const faqEl = document.getElementById("faq");
           const faqTop = faqEl ? faqEl.offsetTop : window.innerHeight;
           if (e.deltaY < -10 && window.scrollY <= faqTop + 30) {
-            if (Date.now() - lastSecurityScrollTimeRef.current < 300) return;
+            if (Date.now() - lastSecurityScrollTimeRef.current < 150) return;
             e.preventDefault();
             e.stopImmediatePropagation();
             jumpToAboutState(2);
@@ -6244,15 +6259,15 @@ export function BlueprintHero() {
           }
           wheelGestureEndTimerRef.current = setTimeout(() => {
             wheelGestureActiveRef.current = false;
-          }, 180);
+          }, 100);
 
           // A state transition (or ring consolidation) is already animating:
           // ignore every extra wheel tick from this gesture so one scroll
           // — regardless of intensity — only ever advances a single state.
           if (isSecurityTransitioningRef.current) return;
 
-          // Allow responsive scrolling up and down between animations (220ms cadence)
-          if (Date.now() - lastSecurityScrollTimeRef.current < 220) return;
+          // Responsive scrolling cadence between states
+          if (Date.now() - lastSecurityScrollTimeRef.current < 120) return;
 
           if (e.deltaY > 8) {
             lastSecurityScrollTimeRef.current = Date.now();
@@ -6365,7 +6380,7 @@ export function BlueprintHero() {
 
           if (touchDeltaY > 12) {
             touchStartY = touchY;
-            if (Date.now() - lastSecurityScrollTimeRef.current < 300) return;
+            if (Date.now() - lastSecurityScrollTimeRef.current < 150) return;
             if (aboutDocPageRef.current === 1) {
               flipDocToPage(2);
             } else {
@@ -6374,7 +6389,7 @@ export function BlueprintHero() {
             return;
           } else if (touchDeltaY < -12) {
             touchStartY = touchY;
-            if (Date.now() - lastSecurityScrollTimeRef.current < 300) return;
+            if (Date.now() - lastSecurityScrollTimeRef.current < 150) return;
             if (aboutDocPageRef.current === 2) {
               flipDocToPage(1);
             } else {
@@ -6395,7 +6410,7 @@ export function BlueprintHero() {
           const faqTop = faqEl ? faqEl.offsetTop : window.innerHeight;
           if (touchDeltaY < -12 && window.scrollY <= faqTop + 30) {
             touchStartY = touchY;
-            if (Date.now() - lastSecurityScrollTimeRef.current < 300) return;
+            if (Date.now() - lastSecurityScrollTimeRef.current < 150) return;
             e.preventDefault();
             e.stopImmediatePropagation();
             jumpToAboutState(2);
@@ -6408,7 +6423,7 @@ export function BlueprintHero() {
           e.preventDefault();
           e.stopImmediatePropagation();
 
-          if (Date.now() - lastSecurityScrollTimeRef.current < 220) return;
+          if (Date.now() - lastSecurityScrollTimeRef.current < 120) return;
 
           const touchDeltaY = touchStartY - e.touches[0].clientY;
           if (touchDeltaY > 16) {
@@ -6665,7 +6680,7 @@ export function BlueprintHero() {
       // an animated .to — resizing the window should never play a transition).
       const reflowCurrentLayout = () => {
         if (stateRef.current === "hero") {
-          applyPortalClip(getInitialRadiusPx(), 57.0, 48.5);
+          applyPortalClip(getInitialRadiusPx(), 62.87, 49.12);
         }
 
         if (stateRef.current === "product" || stateRef.current === "product-resting") {
@@ -6777,7 +6792,7 @@ export function BlueprintHero() {
           });
         }
         if (heroIntroRef.current) gsap.set(heroIntroRef.current, { autoAlpha: 0 });
-        if (heroVisualRef.current) gsap.set(heroVisualRef.current, { opacity: 0, scale: 5.5, xPercent: -7.0, yPercent: 1.5 });
+        if (heroVisualRef.current) gsap.set(heroVisualRef.current, { opacity: 0, scale: 5.5, xPercent: -12.87, yPercent: 0.88 });
         if (headerRef.current) gsap.set(headerRef.current, { autoAlpha: 0 });
         if (headlineRef.current) gsap.set(headlineRef.current, { opacity: 0 });
         if (subheadRef.current) gsap.set(subheadRef.current, { opacity: 0 });
@@ -6914,9 +6929,9 @@ export function BlueprintHero() {
         // stale the instant this layout shifts, so resync them now.
         ScrollTrigger.refresh();
         portalState.radius = initialRadiusPx;
-        portalState.x = 57.0;
-        portalState.y = 48.5;
-        applyPortalClip(initialRadiusPx, 57.0, 48.5);
+        portalState.x = 62.87;
+        portalState.y = 49.12;
+        applyPortalClip(initialRadiusPx, 62.87, 49.12);
         if (irisPortalRef.current) gsap.set(irisPortalRef.current, { autoAlpha: 0 });
         if (portalRimRef.current) gsap.set(portalRimRef.current, { autoAlpha: 0 });
         if (portalRippleRef.current) gsap.set(portalRippleRef.current, { autoAlpha: 0 });
@@ -6925,8 +6940,8 @@ export function BlueprintHero() {
             scale: 0.24,
             scaleX: 0.30,
             scaleY: 0.20,
-            xPercent: 7.0,
-            yPercent: -1.5,
+            xPercent: 12.87,
+            yPercent: -0.88,
             opacity: 0.25,
           });
         }
@@ -7750,13 +7765,13 @@ export function BlueprintHero() {
       >
         {/* =================================================================== */}
         {/* LAYER 1 (z-10): MASTER HERO VISUAL (Aperture Video Ring)            */}
-        {/* Centered optically at 57.0% X, 48.0% Y                              */}
+        {/* Centered optically at 62.87% X, 49.12% Y                            */}
         {/* =================================================================== */}
         <div
           ref={heroVisualRef}
           className="absolute inset-0 w-full h-full z-10 flex items-center justify-center pointer-events-none will-change-transform"
           style={{
-            transformOrigin: "57.0% 48.5%",
+            transformOrigin: "62.87% 49.12%",
           }}
         >
           <HeroApertureVisual isPaused={isAperturePaused} />
@@ -9161,8 +9176,8 @@ export function BlueprintHero() {
                     }}
                     className={`absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full ${
                       idx === 0 || idx === 1
-                        ? "max-w-xl sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl px-5 sm:px-6 md:pl-28 lg:pl-40 xl:pl-48 md:pr-4"
-                        : "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl px-5 sm:px-6 md:pl-12 lg:pl-20 xl:pl-24"
+                        ? "max-w-xl sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl px-5 sm:px-6 md:pl-26 lg:pl-34 xl:pl-40 md:pr-4"
+                        : "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl px-5 sm:px-6 md:pl-16 lg:pl-24 xl:pl-28"
                     } text-left will-change-transform pointer-events-none`}
                     style={{
                       opacity: 0,
@@ -9771,8 +9786,8 @@ export function BlueprintHero() {
           style={{
             width: 0,
             height: 0,
-            left: "57.0%",
-            top: "48.5%",
+            left: "62.87%",
+            top: "49.12%",
           }}
         />
 
@@ -9783,8 +9798,8 @@ export function BlueprintHero() {
           style={{
             width: 0,
             height: 0,
-            left: "57.0%",
-            top: "48.5%",
+            left: "62.87%",
+            top: "49.12%",
           }}
         />
 
@@ -9796,16 +9811,16 @@ export function BlueprintHero() {
           ref={heroIntroRef}
           className="absolute inset-0 z-10 flex flex-col justify-center px-6 sm:px-10 lg:px-16 xl:px-20 pt-20 pb-8 max-w-7xl mx-auto w-full pointer-events-none will-change-transform"
         >
-          <div className="flex-1 flex flex-col justify-center max-w-lg sm:max-w-xl lg:max-w-[580px] xl:max-w-[640px] -translate-x-8 sm:-translate-x-16 md:-translate-x-24 lg:-translate-x-32 xl:-translate-x-40 -translate-y-4 sm:-translate-y-6 lg:-translate-y-8">
-            <h1 className="font-sans font-black text-3xl sm:text-4xl md:text-[42px] lg:text-[46px] xl:text-[52px] text-neutral-950 tracking-[-0.035em] leading-[1.15] select-none flex flex-col gap-3 sm:gap-3.5 lg:gap-4.5">
-              <span>
+          <div className="flex-1 flex flex-col justify-center max-w-lg sm:max-w-xl lg:max-w-[490px] xl:max-w-[530px] -translate-x-6 sm:-translate-x-10 md:-translate-x-14 lg:-translate-x-20 xl:-translate-x-24 -translate-y-4 sm:-translate-y-6 lg:-translate-y-8">
+            <h1 className="font-sans font-black text-[26px] sm:text-[33px] md:text-[38px] lg:text-[42px] xl:text-[47px] text-neutral-950 tracking-[-0.035em] leading-[1.15] select-none flex flex-col gap-2.5 sm:gap-3 lg:gap-3.5">
+              <span className="whitespace-nowrap">
                 See everything you <span className="text-[#22C55E]" style={{ color: "#22C55E" }}>own.</span>
               </span>
-              <span>
+              <span className="whitespace-nowrap">
                 Understand what it <span className="text-[#22C55E]" style={{ color: "#22C55E" }}>means.</span>
               </span>
             </h1>
-            <p className="mt-5 sm:mt-6 text-base sm:text-lg md:text-xl lg:text-[21px] text-[#5A685D] font-medium tracking-tight leading-relaxed select-none">
+            <p className="mt-4 sm:mt-5 text-sm sm:text-base md:text-lg lg:text-[19px] text-[#5A685D] font-medium tracking-tight leading-relaxed select-none">
               Track. Understand. Act with confidence.
             </p>
           </div>

@@ -123,13 +123,13 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
     });
     gsap.set(lioInner, { x: -50 });
 
-    // 1. Initial State: COMPLETE SOLID BLACK RING — seamless part of ring itself, no green and no gaps (0.0s -> 0.45s)
-    masterTl.to({}, { duration: 0.45 });
+    // 1. Initial State: COMPLETE SOLID BLACK RING — seamless part of ring itself, no green and no gaps (0.0s -> 0.20s)
+    masterTl.to({}, { duration: 0.20 });
 
-    // 2. Top-right section physically pulls apart from the ring and expands into final position (0.45s -> 1.30s)
+    // 2. Top-right section physically pulls apart from the ring and expands into final position (0.20s -> 0.70s)
     // Reveal stationary base black arc
     if (mainBase) {
-      masterTl.to(mainBase, { opacity: 1, duration: 0.15 }, 0.45);
+      masterTl.to(mainBase, { opacity: 1, duration: 0.12 }, 0.20);
     }
 
     // Fade out complete solid ring overlay to cleanly open the two gaps as the segment pulls away
@@ -138,25 +138,25 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
         solidRing,
         {
           opacity: 0,
-          duration: 0.22,
+          duration: 0.18,
           ease: "power2.inOut",
         },
-        0.45
+        0.20
       );
     }
 
     // Top-right section physically pulls apart from the ring contour
     if (segment) {
-      masterTl.set(segment, { opacity: 1 }, 0.45);
+      masterTl.set(segment, { opacity: 1 }, 0.20);
       masterTl.to(
         segment,
         {
           scale: 1,
           rotation: 0,
-          duration: 0.85,
+          duration: 0.50,
           ease: "power2.out",
         },
-        0.45
+        0.20
       );
     }
 
@@ -166,23 +166,23 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
         segmentGreen,
         {
           opacity: 1,
-          duration: 0.65,
+          duration: 0.40,
           ease: "power2.out",
         },
-        0.55
+        0.26
       );
       masterTl.to(
         segmentBlack,
         {
           opacity: 0,
-          duration: 0.65,
+          duration: 0.40,
           ease: "power2.out",
         },
-        0.55
+        0.26
       );
     }
 
-    // 3. Settles into the exact final Unifolio ring logo with the two gaps (1.30s)
+    // 3. Settles into the exact final Unifolio ring logo with the two gaps (0.72s)
     masterTl.call(
       () => {
         if (finalRing) gsap.set(finalRing, { opacity: 1 });
@@ -191,16 +191,15 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
         if (solidRing) gsap.set(solidRing, { opacity: 0 });
       },
       [],
-      1.30
+      0.72
     );
 
-    // Brief settling beat on the completed, final logo before expansion begins (1.30s -> 1.55s)
-    masterTl.to({}, { duration: 0.25 });
+    // Brief settling beat on the completed, final logo before expansion begins (0.72s -> 0.84s)
+    masterTl.to({}, { duration: 0.12 });
 
-    // 4. CRITICAL: Existing logo expansion animation continues EXACTLY as it does now!
-    // No change to timing, trajectory, scale, motion, easing, or subsequent hero animations.
-    const expandTime = 1.55;
-    const expandDuration = 1.05;
+    // 4. Logo expansion animation (0.84s -> 1.44s)
+    const expandTime = 0.84;
+    const expandDuration = 0.60;
 
     // Smoothly shift the whole logo to true viewport center (x: 0) as letters expand outward
     masterTl.to(
@@ -218,7 +217,7 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
       unifWrapper,
       {
         opacity: 1,
-        duration: 0.18,
+        duration: 0.14,
         ease: "power2.out",
       },
       expandTime
@@ -247,7 +246,7 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
       lioWrapper,
       {
         opacity: 1,
-        duration: 0.18,
+        duration: 0.14,
         ease: "power2.out",
       },
       expandTime
@@ -272,11 +271,11 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
     );
 
 
-    // 3. Hold this large, monumental logo moment for deep visual impact (1.80s -> 2.90s)
-    masterTl.to({}, { duration: 1.1 });
+    // 3. Hold this completed logo moment (1.44s -> 1.89s)
+    masterTl.to({}, { duration: 0.45 });
 
-    // 4. Deliberate, cinematic flight: gradually travels and scales down simultaneously into the navbar position
-    const flightDuration = 1.95;
+    // 4. Snappy, cinematic flight: travels and scales down simultaneously into the navbar position
+    const flightDuration = 1.05;
 
     masterTl.call(() => {
       // Find navbar brand logo
@@ -346,7 +345,7 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
           // Now fade out the intro backdrop overlay cleanly
           gsap.to(overlay, {
             opacity: 0,
-            duration: 0.45,
+            duration: 0.28,
             ease: "power2.out",
             onComplete: () => {
               setIsVisible(false);
@@ -359,7 +358,7 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
     });
 
     // Allow flight duration and overlay fade to finish
-    masterTl.to({}, { duration: flightDuration + 0.6 });
+    masterTl.to({}, { duration: flightDuration + 0.4 });
 
     return () => {
       masterTl.kill();

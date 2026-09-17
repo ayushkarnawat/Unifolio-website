@@ -50,8 +50,8 @@ export function HeroApertureVisual({
 
   return (
     <div className="relative w-full h-full select-none pointer-events-none overflow-hidden flex items-center justify-center bg-[#FAF8F5]">
-      {/* Video Visual Container: Seamless full bleed positioned so ring center aligns precisely with 57.0% X without exposing any video borders */}
-      <div className="absolute inset-y-0 w-[116%] -left-[1.57%] flex items-center justify-center pointer-events-none">
+      {/* Video Visual Container: Seamless full bleed positioned with smooth scale & rightward shift */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
         <video
           ref={videoLightRef}
           autoPlay
@@ -59,20 +59,24 @@ export function HeroApertureVisual({
           muted
           playsInline
           preload="auto"
-          className="w-full h-full object-cover object-[57%_48%] select-none pointer-events-none"
+          className="w-full h-full object-cover select-none pointer-events-none"
+          style={{
+            transform: "scale(1.28) translateX(11vw)",
+            transformOrigin: "center center",
+          }}
         >
           <source src="/Final%20Hero%20Apeture%20Light.mp4?v=3" type="video/mp4" />
         </video>
       </div>
 
-      {/* Ring Aperture Center Anchor for GSAP Zoom (Scale 1 -> 8.5) */}
+      {/* Ring Aperture Center Anchor for GSAP Zoom */}
       <div
         ref={ringAnchorRef}
         id="hero-ring-portal"
         className="absolute pointer-events-none w-2 h-2"
         style={{
-          left: "57.0%",
-          top: "48.0%",
+          left: "62.87%",
+          top: "49.12%",
           transform: "translate(-50%, -50%)",
         }}
       />
