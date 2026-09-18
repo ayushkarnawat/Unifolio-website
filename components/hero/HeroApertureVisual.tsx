@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 
 interface HeroApertureVisualProps {
   onRingMounted?: (element: HTMLElement) => void;
@@ -11,9 +11,14 @@ export function HeroApertureVisual({
   onRingMounted,
   isPaused = false,
 }: HeroApertureVisualProps) {
-  const videoLightRef = useRef<HTMLVideoElement | null>(null);
+  const videoARef = useRef<HTMLVideoElement | null>(null);
+  const videoBRef = useRef<HTMLVideoElement | null>(null);
   const ringAnchorRef = useRef<HTMLDivElement | null>(null);
   const isPausedRef = useRef(isPaused);
+  const activeVideoRef = useRef<"A" | "B">("A");
+  const isCrossfadingRef = useRef(false);
+  const [opacityA, setOpacityA] = useState(1);
+  const [opacityB, setOpacityB] = useState(0);
 
   // Inform parent of ring anchor position for pixel-perfect zoom tracking
   useEffect(() => {
@@ -23,46 +28,118 @@ export function HeroApertureVisual({
   }, [onRingMounted]);
 
   useEffect(() => {
-    const vLight = videoLightRef.current;
-    if (!vLight) return;
+    const vA = videoARef.current;
+    const vB = videoBRef.current;
+    if (!vA || !vB) return;
 
-    vLight.muted = true;
-    vLight.defaultMuted = true;
-    vLight.volume = 0;
+    [vA, vB].forEach((v) => {
+      v.muted = true;
+      v.defaultMuted = true;
+      v.volume = 0;
+    });
 
     if (!isPausedRef.current) {
-      vLight.play().catch(() => {});
+      vA.play().catch(() => {});
     }
+
+    let rafId: number;
+    const CROSSFADE_TRIGGER_BEFORE_END = 0.8;
+
+    const checkTime = () => {
+      if (!isPausedRef.current) {
+        const active = activeVideoRef.current === "A" ? vA : vB;
+        const inactive = activeVideoRef.current === "A" ? vB : vA;
+
+        if (
+          active.duration &&
+          !isNaN(active.duration) &&
+          active.currentTime >= active.duration - CROSSFADE_TRIGGER_BEFORE_END &&
+          !isCrossfadingRef.current
+        ) {
+          isCrossfadingRef.current = true;
+          inactive.currentTime = 0;
+
+          const startCrossfade = () => {
+            if (activeVideoRef.current === "A") {
+              setOpacityA(0);
+              setOpacityB(1);
+            } else {
+              setOpacityA(1);
+              setOpacityB(0);
+            }
+
+            setTimeout(() => {
+              active.pause();
+              active.currentTime = 0;
+              activeVideoRef.current = activeVideoRef.current === "A" ? "B" : "A";
+              isCrossfadingRef.current = false;
+            }, 500); // match the CSS duration-500 exactly
+          };
+
+          const playPromise = inactive.play();
+          if (playPromise && typeof playPromise.then === "function") {
+            playPromise.then(startCrossfade).catch(startCrossfade);
+          } else {
+            startCrossfade();
+          }
+        }
+      }
+      rafId = requestAnimationFrame(checkTime);
+    };
+
+    rafId = requestAnimationFrame(checkTime);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // Pause playback when hero transition completes to save GPU / CPU
   useEffect(() => {
     isPausedRef.current = isPaused;
-    const vLight = videoLightRef.current;
-    if (!vLight) return;
+    const vA = videoARef.current;
+    const vB = videoBRef.current;
+    if (!vA || !vB) return;
 
     if (isPaused) {
-      vLight.pause();
+      vA.pause();
+      vB.pause();
     } else {
-      vLight.play().catch(() => {});
+      const active = activeVideoRef.current === "A" ? vA : vB;
+      active.play().catch(() => {});
     }
   }, [isPaused]);
 
   return (
     <div className="relative w-full h-full select-none pointer-events-none overflow-hidden flex items-center justify-center bg-[#FAF8F5]">
-      {/* Video Visual Container: Seamless full bleed positioned with smooth scale & rightward shift */}
+      {/* Video Visual Container: Seamless dual-buffered crossfade loop */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
         <video
-          ref={videoLightRef}
+          ref={videoARef}
           autoPlay
-          loop
           muted
           playsInline
           preload="auto"
-          className="w-full h-full object-cover select-none pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-opacity duration-500 ease-in-out"
           style={{
             transform: "scale(1.28) translateX(11vw)",
             transformOrigin: "center center",
+            opacity: opacityA,
+          }}
+        >
+          <source src="/Final%20Hero%20Apeture%20Light.mp4?v=3" type="video/mp4" />
+        </video>
+
+        <video
+          ref={videoBRef}
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-opacity duration-500 ease-in-out"
+          style={{
+            transform: "scale(1.28) translateX(11vw)",
+            transformOrigin: "center center",
+            opacity: opacityB,
           }}
         >
           <source src="/Final%20Hero%20Apeture%20Light.mp4?v=3" type="video/mp4" />

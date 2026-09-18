@@ -36,6 +36,8 @@ interface ProductCardData {
   restZ: number;
 }
 
+const CINEMATIC_TIMESCALE = 0.85;
+
 const PRODUCT_CARDS: ProductCardData[] = [
   {
     id: "card-ask",
@@ -422,6 +424,7 @@ export function BlueprintHero() {
   // Wheel & gesture isolation refs to prevent skipping states
   const wheelGestureActiveRef = useRef<boolean>(false);
   const wheelGestureEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasTriggeredThisGestureRef = useRef<boolean>(false);
   const touchGestureActiveRef = useRef<boolean>(false);
 
   // Debounce timer for the window resize layout-reflow handler (see handleResizeLines)
@@ -742,11 +745,10 @@ export function BlueprintHero() {
 
       // Product Header & Floor Line initially hidden
       gsap.set(
-        [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+        [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
         { autoAlpha: 0, opacity: 0, visibility: "hidden" }
       );
       if (headlineRef.current) gsap.set(headlineRef.current, { y: 20 });
-      if (subheadRef.current) gsap.set(subheadRef.current, { y: 16 });
       if (ctaRef.current) gsap.set(ctaRef.current, { y: 14, scale: 0.94 });
 
       // Cards cluster initially clustered together facing away (back face forward)
@@ -903,10 +905,23 @@ export function BlueprintHero() {
         const tileWidths = [w0, w1, w2, w3, w4];
         const tileHeights = [h0, h1, h2, h3, h4];
 
-        // Known vertical offset of cardsClusterRef top edge within the viewport when settled:
-        // productWorldRef pt (80px on desktop lg, 72px on md, 64px on sm, 56px on mobile) + stage pt (8px) + cluster py (6px)
-        const ptRem = vWidth >= 1024 ? 5 : vWidth >= 768 ? 4.5 : vWidth >= 640 ? 4 : 3.5;
-        const clusterViewportTop = ptRem * 16 + 8 + 6;
+        // Live vertical offset of cardsClusterRef top edge within the viewport when settled.
+        // Uses offsetTop (layout box position) instead of getBoundingClientRect() because
+        // cardsClusterRef frequently has an active GSAP transform (x/y/rotateZ, e.g. mid-ring
+        // formation) applied to it when this runs — getBoundingClientRect() includes that
+        // transform and gives a wildly wrong "rest" position, while offsetTop is purely a
+        // CSS-flow layout value and is unaffected by `transform`.
+        let liveTop: number | undefined;
+        const clusterElForMeasure = cardsClusterRef.current;
+        if (clusterElForMeasure) {
+          const offsetParentEl = clusterElForMeasure.offsetParent as HTMLElement | null;
+          liveTop = offsetParentEl
+            ? offsetParentEl.getBoundingClientRect().top + clusterElForMeasure.offsetTop
+            : clusterElForMeasure.getBoundingClientRect().top;
+        }
+        const clusterViewportTop = liveTop !== undefined
+          ? liveTop
+          : (vWidth >= 1024 ? 5 : vWidth >= 768 ? 4.5 : vWidth >= 640 ? 4 : 3.5) * 16 + 8 + 6;
 
         const clusterViewportLeft = vWidth > 1340 ? (vWidth - 1340) / 2 : 0;
 
@@ -1052,7 +1067,7 @@ export function BlueprintHero() {
               if (grad) gsap.set(grad, { display: "block", autoAlpha: 1, opacity: 1, visibility: "visible" });
             });
             gsap.set(
-              [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+              [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
               { autoAlpha: 1, opacity: 1, visibility: "visible" }
             );
             dispatchActiveSection("product");
@@ -1071,7 +1086,7 @@ export function BlueprintHero() {
             if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "none";
             if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "none";
             gsap.set(
-              [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+              [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
               { autoAlpha: 0, opacity: 0, visibility: "hidden" }
             );
             cardWrapperRefs.current.forEach((el) => {
@@ -1092,14 +1107,13 @@ export function BlueprintHero() {
           },
         });
 
-        // Ensure Product Header (headline, subhead, CTA) and floor line start hidden at t = 0
+        // Ensure Product Header (headline, CTA) and floor line start hidden at t = 0
         tl.set(
-          [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+          [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
           { autoAlpha: 0, opacity: 0, visibility: "hidden" },
           0.0
         );
         tl.set(headlineRef.current, { y: 20 }, 0.0);
-        tl.set(subheadRef.current, { y: 16 }, 0.0);
         tl.set(ctaRef.current, { y: 14, scale: 0.94 }, 0.0);
 
         // 1. Ring Expands:
@@ -1300,10 +1314,10 @@ export function BlueprintHero() {
           );
         });
 
-        // 4. Hero headline, supporting text and CTA enter during the card flip:
+        // 4. Hero headline and CTA enter during the card flip:
         // Shortly after the flip begins (0.70s), hero text starts entering so animations overlap naturally
         tl.set(
-          [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+          [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
           { autoAlpha: 1, visibility: "visible" },
           0.70
         );
@@ -1318,18 +1332,6 @@ export function BlueprintHero() {
             ease: "power2.out",
           },
           0.72
-        );
-
-        tl.to(
-          subheadRef.current,
-          {
-            autoAlpha: 1,
-            opacity: 1,
-            y: 0,
-            duration: 0.30,
-            ease: "power2.out",
-          },
-          0.76
         );
 
         tl.to(
@@ -1361,6 +1363,7 @@ export function BlueprintHero() {
         const settleBuffer = 0.08;
         tl.to({}, { duration: settleBuffer }, flipBaseStart + 4 * flipStagger + flipDuration);
 
+        tl.timeScale(CINEMATIC_TIMESCALE);
         return tl;
       };
 
@@ -1393,7 +1396,7 @@ export function BlueprintHero() {
             if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "";
             if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "";
             gsap.set(
-              [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+              [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
               { autoAlpha: 1, opacity: 1, y: 0, scale: 1, visibility: "visible" }
             );
             cardWrapperRefs.current.forEach((el, i) => {
@@ -1419,10 +1422,10 @@ export function BlueprintHero() {
           },
         });
 
-        // 1. Smoothly fade out the headline, subhead, CTA, and floor reflection line before cards disperse
+        // 1. Smoothly fade out the headline, CTA, and floor reflection line before cards disperse
         const heroFadeDuration = 0.28;
         tl.to(
-          [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+          [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
           {
             autoAlpha: 0,
             y: 12,
@@ -1433,7 +1436,7 @@ export function BlueprintHero() {
         );
 
         tl.set(
-          [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+          [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
           {
             autoAlpha: 0,
             opacity: 0,
@@ -1443,10 +1446,31 @@ export function BlueprintHero() {
         );
 
         // 2. Physical Card-to-Bento Direct Movement
-        const bento = computeBentoLayout(vWidth, vHeight);
         const clusterEl = cardsClusterRef.current;
+        // Capture the resting cluster's own flex-flow footprint (cards still in-flow,
+        // "position: relative") BEFORE pulling them out of flow below — this is used
+        // as the fly-in animation's start point and must reflect the resting layout.
         const clusterW = clusterEl?.offsetWidth || Math.min(vWidth, 1340);
         const clusterH = clusterEl?.offsetHeight || 370;
+        // computeBentoLayout measures cardsClusterRef's flex-centered offsetTop, which
+        // depends on whether its children are currently in-flow (tall, ~345px+) or
+        // already `position: absolute` (collapsed, near-zero). Every other call site in
+        // the app runs after cards are already absolute, so it always sees the collapsed
+        // height. This is the ONLY site that can fire while cards are still in their
+        // pristine in-flow resting state (e.g. first-ever entry into bento on a fresh
+        // load), which previously measured a ~180px-too-small clusterViewportTop and
+        // produced a white-space gap. Force the same collapsed state here first so the
+        // measurement always matches every other call site, regardless of history.
+        const wrappersForMeasure = cardWrapperRefs.current;
+        const prevPositions: (string | null)[] = [];
+        wrappersForMeasure.forEach((wrapper, i) => {
+          prevPositions[i] = wrapper ? wrapper.style.position : null;
+          if (wrapper) wrapper.style.position = "absolute";
+        });
+        const bento = computeBentoLayout(vWidth, vHeight);
+        wrappersForMeasure.forEach((wrapper, i) => {
+          if (wrapper) wrapper.style.position = prevPositions[i] ?? "";
+        });
 
         const wRest = vWidth >= 1536 ? 235 : vWidth >= 1280 ? 225 : vWidth >= 1024 ? 215 : vWidth >= 768 ? 205 : vWidth >= 640 ? 190 : 175;
         const hRest = getCardRestHeight(vWidth);
@@ -1557,6 +1581,7 @@ export function BlueprintHero() {
 
         tl.to({}, { duration: 0.1 }, bentoCardStartTime + 1.30);
 
+        tl.timeScale(CINEMATIC_TIMESCALE);
         return tl;
       };
 
@@ -1571,7 +1596,7 @@ export function BlueprintHero() {
           heroToProductTlRef.current.kill();
         }
         heroToProductTlRef.current = createHeroToProductTimeline();
-        heroToProductTlRef.current.timeScale(1.63).play(0);
+        heroToProductTlRef.current.play(0);
       };
 
       const triggerRestingToBento = () => {
@@ -1583,7 +1608,7 @@ export function BlueprintHero() {
           restingToBentoTlRef.current.kill();
         }
         restingToBentoTlRef.current = createRestingToBentoTimeline();
-        restingToBentoTlRef.current.timeScale(1.55).play(0);
+        restingToBentoTlRef.current.play(0);
       };
 
       const triggerBentoToResting = () => {
@@ -1595,7 +1620,7 @@ export function BlueprintHero() {
           restingToBentoTlRef.current = createRestingToBentoTimeline();
           restingToBentoTlRef.current.progress(1);
         }
-        restingToBentoTlRef.current.timeScale(1.80).reverse();
+        restingToBentoTlRef.current.reverse();
       };
 
       const triggerProductToHero = () => {
@@ -1613,7 +1638,7 @@ export function BlueprintHero() {
           heroToProductTlRef.current = createHeroToProductTimeline();
           heroToProductTlRef.current.progress(1);
         }
-        heroToProductTlRef.current.timeScale(1.80).reverse();
+        heroToProductTlRef.current.reverse();
       };
 
 
@@ -2010,7 +2035,7 @@ export function BlueprintHero() {
         });
 
         tl.set(
-          [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+          [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
           { autoAlpha: 0, opacity: 0, visibility: "hidden" },
           0
         );
@@ -2241,7 +2266,7 @@ export function BlueprintHero() {
         // 2. Unlocked door pops outward (+Z) to clear rebate
         // 3. Heavy door swings to the LEFT with deliberate, weighted inertia
         const safeOpenStart = 0.26;
-        const safeOpenDuration = 0.76;
+        const safeOpenDuration = 0.72;
         const safeMotionProxy = { p: 0 };
 
         tl.fromTo(
@@ -2310,7 +2335,7 @@ export function BlueprintHero() {
           // STEP 1: TRAVEL TOWARD VAULT WHILE SIMULTANEOUSLY SCALING & MORPHING
           // 100% paper -> ~80% smaller paper -> ~60% paper+sketch -> ~40% mostly sketch -> ~30% small sketch
           // -------------------------------------------------------------------
-          const travelDuration = 1.70;
+          const travelDuration = 1.15;
 
           // Continuous trajectory toward the vault mouth
           tl.to(
@@ -2477,7 +2502,7 @@ export function BlueprintHero() {
         // Door closes immediately as cards finish disappearing into the vault chamber.
         // Zero dead pause, zero idle gap!
         // -------------------------------------------------------------------------
-        const safeCloseStart = 3.28;
+        const safeCloseStart = 2.48;
         const safeCloseDuration = 0.44;
 
         tl.to(
@@ -2495,6 +2520,7 @@ export function BlueprintHero() {
 
         tl.set(securityStageRef.current, { zIndex: 35 }, safeCloseStart + safeCloseDuration);
 
+        tl.timeScale(CINEMATIC_TIMESCALE);
         return tl;
       };
 
@@ -3830,7 +3856,7 @@ export function BlueprintHero() {
             isFlippingDocRef.current = false;
           },
         });
-        flipTl.timeScale(1.54);
+        flipTl.timeScale(CINEMATIC_TIMESCALE);
 
         // 1. Smooth 3D page turn around vertical axis
         flipTl.fromTo(
@@ -3927,13 +3953,11 @@ export function BlueprintHero() {
             ScrollTrigger.refresh();
             isSecurityTransitioningRef.current = false;
 
-            requestAnimationFrame(() => {
-              const faqEl = document.getElementById("faq");
-              if (faqEl) {
-                smoothScrollTo(faqEl, { duration: 0.40, ease: "power2.out" });
-              }
-              dispatchActiveSection("faq");
-            });
+            const faqEl = document.getElementById("faq");
+            if (faqEl) {
+              smoothScrollTo(faqEl, { duration: 0.40, ease: "power2.out" });
+            }
+            dispatchActiveSection("faq");
           },
         });
       };
@@ -4007,11 +4031,7 @@ export function BlueprintHero() {
         const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
         const { vh: vhVal } = getComposedViewport(1440, 900);
         const stackCardScale = isDesk ? 0.60 : isTab ? 0.56 : 0.52;
-        const targetEnvelopeY = isDesk
-          ? Math.round(Math.max(255, Math.min(290, vhVal * 0.29)))
-          : isTab
-          ? Math.round(Math.max(210, Math.min(245, vhVal * 0.25)))
-          : Math.round(Math.max(175, Math.min(205, vhVal * 0.21)));
+        const targetEnvelopeY = isDesk ? 90 : isTab ? 70 : 50;
 
         // Hide all 26 individual cards — morph into single physical envelope is complete
         allCards.forEach((cardEl) => {
@@ -4163,11 +4183,7 @@ export function BlueprintHero() {
         const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
         const { vw: vwVal, vh: vhVal } = getComposedViewport(1440, 900);
         const stackCardScale = isDesktop ? 0.60 : isTablet ? 0.56 : 0.52;
-        const targetEnvelopeY = isDesktop
-          ? Math.round(Math.max(255, Math.min(290, vhVal * 0.29)))
-          : isTablet
-          ? Math.round(Math.max(210, Math.min(245, vhVal * 0.25)))
-          : Math.round(Math.max(175, Math.min(205, vhVal * 0.21)));
+        const targetEnvelopeY = isDesktop ? 90 : isTablet ? 70 : 50;
 
         const allProductCards = cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
         const allCompanionCards = companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
@@ -4468,7 +4484,7 @@ export function BlueprintHero() {
           },
         });
         consolidationTlRef.current = tl;
-        tl.timeScale(1.50);
+        tl.timeScale(CINEMATIC_TIMESCALE);
 
         // Initialize About cinematic atmosphere to hidden at time 0
         if (aboutContentRef.current) {
@@ -4577,15 +4593,16 @@ export function BlueprintHero() {
 
         safeVault3DRef.current?.setCardsProgress?.(0);
 
-        // STEP 1: VAULT OPENS (0.00s -> 0.44s)
-        // Door opens to reveal the open sketch chamber
+        // STEP 1: VAULT OPENS (0.00s -> 0.72s)
+        // Door opens with majestic weighted inertia matching entry animation (0.72s)
         const safeOpenProxy = { p: 0 };
+        const safeOpenDuration = 0.72;
         tl.fromTo(
           safeOpenProxy,
           { p: 0 },
           {
             p: 1.0,
-            duration: 0.44,
+            duration: safeOpenDuration,
             ease: "power2.inOut",
             onUpdate: () => {
               safeVault3DRef.current?.setOpenProgress(safeOpenProxy.p);
@@ -4597,15 +4614,15 @@ export function BlueprintHero() {
         // -------------------------------------------------------------------------
         // STEP 2: CONTINUOUS "SKETCH -> LARGER -> PAPER" TRANSFORMATION & EXIT
         // Progression (Exact reverse of entry):
-        // 1. Start as small sketches: Emerge through vault opening (~30% size, 0.32s -> 0.78s).
+        // 1. Start as small sketches: Emerge through vault opening (~30% size, 0.46s -> 0.98s).
         // 2. Gradually increase in size: ~30% -> ~40% -> ~60% -> ~80% -> 100% as they travel away.
         // 3. Simultaneously transform Ink -> Paper:
         //    - Sketch lines progressively gain filled paper surfaces in mid-flight (~60% scale).
         //    - Ink lines dissolve into solid paper as cards reach ~80% - 100% size.
         // 4. Return to normal card size: Fully solid 100% paper cards upon reaching launch trajectory.
         // -------------------------------------------------------------------------
-        const cardExitStart = 0.32;
-        const cardEmergeDuration = 0.46;
+        const cardExitStart = 0.46;
+        const cardEmergeDuration = 0.44;
 
         allProductCards.forEach((wrapper, i) => {
           const rank = STACK_RANK_MAP[i] ?? i;
@@ -4644,9 +4661,9 @@ export function BlueprintHero() {
           );
 
           // 2. CONTINUOUS TRAVEL AWAY FROM VAULT WHILE SCALING UP & MORPHING INK -> PAPER
-          // Trajectory from vault mouth to consolidated launch position (0.78s -> 1.75s, duration: 0.97s)
+          // Trajectory from vault mouth to consolidated launch position (0.90s -> 1.95s)
           const flightStart = exitStart + cardEmergeDuration;
-          const flightDuration = 1.75 - flightStart;
+          const flightDuration = 1.95 - flightStart;
 
           // Continuous flight away from vault to destination
           tl.to(
@@ -4679,7 +4696,7 @@ export function BlueprintHero() {
 
           // Simultaneous Ink -> Paper progressive transformation along outward trajectory:
           if (paper && ink) {
-            // Paper begins emerging under ink lines as scale increases (~40% scale, t ~ 0.90s)
+            // Paper begins emerging under ink lines as scale increases (~40% scale, t ~ 1.05s)
             tl.fromTo(
               paper,
               { opacity: 0 },
@@ -4691,7 +4708,7 @@ export function BlueprintHero() {
               flightStart + 0.12
             );
 
-            // Ink lines dissolve into the solid paper surface as scale reaches ~75% - 100% (t ~ 1.35s)
+            // Ink lines dissolve into the solid paper surface as scale reaches ~75% - 100% (t ~ 1.50s)
             tl.fromTo(
               ink,
               { opacity: 1 },
@@ -4705,10 +4722,10 @@ export function BlueprintHero() {
           }
         });
 
-        // STEP 2B: VAULT DOOR CLOSES IMMEDIATELY AFTER CARDS CLEAR THE OPENING (0.88s -> 1.32s)
-        // Cards reach z: +55 in front of the vault by ~0.86s, clearing the opening completely.
-        // The door begins closing immediately at 0.88s with zero idle pause!
-        const safeExitCloseStart = 0.88;
+        // STEP 2B: VAULT DOOR CLOSES AFTER CARDS HAVE FULLY CLEARED THE OPENING (1.38s -> 1.82s)
+        // Cards have completely cleared the opening and are in mid-flight to the right by 1.38s.
+        // The door closes with the exact same 0.44s duration as entry vault!
+        const safeExitCloseStart = 1.38;
         const safeExitCloseDuration = 0.44;
 
         tl.to(
@@ -4724,7 +4741,7 @@ export function BlueprintHero() {
           safeExitCloseStart
         );
 
-        // STEP 3: VAULT DISAPPEARS - Fades out ONLY AFTER vault is closed & paper cards are fully formed (1.80s -> 2.10s)
+        // STEP 3: VAULT DISAPPEARS - Fades out ONLY AFTER vault is closed & paper cards are fully formed (1.85s -> 2.15s)
         if (safeContainerRef.current) {
           tl.to(
             safeContainerRef.current,
@@ -4734,7 +4751,7 @@ export function BlueprintHero() {
               duration: 0.30,
               ease: "power2.inOut",
             },
-            1.80
+            1.85
           );
           tl.set(
             safeContainerRef.current,
@@ -4746,7 +4763,7 @@ export function BlueprintHero() {
                 safeVault3DRef.current?.setCardsProgress?.(0);
               },
             },
-            2.10
+            2.15
           );
         }
 
@@ -5360,11 +5377,7 @@ export function BlueprintHero() {
 
         const vhVal = getComposedViewport(1440, 900).vh;
         const stackCardScale = isDesktop ? 0.60 : isTablet ? 0.56 : 0.52;
-        const targetEnvelopeY = isDesktop
-          ? Math.round(Math.max(255, Math.min(290, vhVal * 0.29)))
-          : isTablet
-          ? Math.round(Math.max(210, Math.min(245, vhVal * 0.25)))
-          : Math.round(Math.max(175, Math.min(205, vhVal * 0.21)));
+        const targetEnvelopeY = isDesktop ? 90 : isTablet ? 70 : 50;
         const frontX = 35;
 
         const allProductCards = cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
@@ -5466,7 +5479,7 @@ export function BlueprintHero() {
             }
           },
         });
-        revTl.timeScale(1.30);
+        revTl.timeScale(CINEMATIC_TIMESCALE);
 
         // -------------------------------------------------------------------------
         // REVERSE STEP 1: DOCUMENT DIRECTLY RETRACTS BACK INTO ENVELOPE (0.00s -> 0.32s)
@@ -5997,6 +6010,7 @@ export function BlueprintHero() {
             );
           }
         }
+        tl.timeScale(CINEMATIC_TIMESCALE);
       };
 
       const exitSecurityToAbout = () => {
@@ -6052,7 +6066,7 @@ export function BlueprintHero() {
           productToRingTlRef.current.kill();
         }
         productToRingTlRef.current = createProductToRingTimeline();
-        productToRingTlRef.current.timeScale(1.73).play(0);
+        productToRingTlRef.current.play(0);
       };
 
       const triggerRingToProduct = () => {
@@ -6188,13 +6202,22 @@ export function BlueprintHero() {
             productToRingTlRef.current = createProductToRingTimeline();
           }
           productToRingTlRef.current.seek(productToRingTlRef.current.duration(), false);
-          productToRingTlRef.current.timeScale(2.00).reverse();
+          productToRingTlRef.current.reverse();
         };
 
         startReverseTimeline();
       };
 
       const handleWheel = (e: WheelEvent) => {
+        // Refresh gesture timer on every wheel tick to isolate discrete physical swipes (400ms decay window)
+        if (wheelGestureEndTimerRef.current) {
+          clearTimeout(wheelGestureEndTimerRef.current);
+        }
+        wheelGestureEndTimerRef.current = setTimeout(() => {
+          wheelGestureActiveRef.current = false;
+          hasTriggeredThisGestureRef.current = false;
+        }, 400);
+
         // 1. Block all wheel inputs while transition is animating or navbar navigation is in progress
         if (transitionAnimatingRef.current || isNavigatingRef.current) {
           e.preventDefault();
@@ -6206,10 +6229,13 @@ export function BlueprintHero() {
         if (stateRef.current === "about") {
           e.preventDefault();
           e.stopImmediatePropagation();
+          if (hasTriggeredThisGestureRef.current) return;
           if (isSecurityTransitioningRef.current || isFlippingDocRef.current) return;
 
           if (e.deltaY > 8) {
             if (Date.now() - lastSecurityScrollTimeRef.current < 140) return;
+            hasTriggeredThisGestureRef.current = true;
+            lastSecurityScrollTimeRef.current = Date.now();
             if (aboutDocPageRef.current === 1) {
               flipDocToPage(2);
             } else {
@@ -6218,6 +6244,8 @@ export function BlueprintHero() {
             return;
           } else if (e.deltaY < -8) {
             if (Date.now() - lastSecurityScrollTimeRef.current < 140) return;
+            hasTriggeredThisGestureRef.current = true;
+            lastSecurityScrollTimeRef.current = Date.now();
             if (aboutDocPageRef.current === 2) {
               flipDocToPage(1);
             } else {
@@ -6238,9 +6266,12 @@ export function BlueprintHero() {
           const faqEl = document.getElementById("faq");
           const faqTop = faqEl ? faqEl.offsetTop : window.innerHeight;
           if (e.deltaY < -10 && window.scrollY <= faqTop + 30) {
+            if (hasTriggeredThisGestureRef.current) return;
             if (Date.now() - lastSecurityScrollTimeRef.current < 150) return;
             e.preventDefault();
             e.stopImmediatePropagation();
+            hasTriggeredThisGestureRef.current = true;
+            lastSecurityScrollTimeRef.current = Date.now();
             jumpToAboutState(2);
             return;
           }
@@ -6253,23 +6284,17 @@ export function BlueprintHero() {
           e.preventDefault();
           e.stopImmediatePropagation();
 
-          // Refresh gesture timer on every wheel tick in security mode
-          if (wheelGestureEndTimerRef.current) {
-            clearTimeout(wheelGestureEndTimerRef.current);
-          }
-          wheelGestureEndTimerRef.current = setTimeout(() => {
-            wheelGestureActiveRef.current = false;
-          }, 100);
-
-          // A state transition (or ring consolidation) is already animating:
-          // ignore every extra wheel tick from this gesture so one scroll
-          // — regardless of intensity — only ever advances a single state.
+          // A state transition is already animating or gesture is locked:
+          // ignore every extra wheel tick from this gesture so one trackpad swipe
+          // — regardless of velocity or momentum duration — only ever advances a single state.
+          if (hasTriggeredThisGestureRef.current) return;
           if (isSecurityTransitioningRef.current) return;
 
           // Responsive scrolling cadence between states
           if (Date.now() - lastSecurityScrollTimeRef.current < 120) return;
 
           if (e.deltaY > 8) {
+            hasTriggeredThisGestureRef.current = true;
             lastSecurityScrollTimeRef.current = Date.now();
             // One intentional downward scroll = exactly one next state
             if (currentSecurityStateRef.current < SECURITY_STATES.length - 1) {
@@ -6284,6 +6309,7 @@ export function BlueprintHero() {
             }
             return;
           } else if (e.deltaY < -8) {
+            hasTriggeredThisGestureRef.current = true;
             lastSecurityScrollTimeRef.current = Date.now();
             // If at final state and stack is consolidated, scroll up reverses consolidation and restores ring
             if (currentSecurityStateRef.current === SECURITY_STATES.length - 1 && isRingConsolidatedRef.current) {
@@ -7095,7 +7121,7 @@ export function BlueprintHero() {
 
         // Hide Hero elements
         gsap.set(
-          [headerRef.current, headlineRef.current, subheadRef.current, ctaRef.current, floorLineRef.current],
+          [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
           { autoAlpha: 0, opacity: 0, visibility: "hidden" }
         );
 
@@ -7791,7 +7817,7 @@ export function BlueprintHero() {
           {/* Transforming Product Scene Container */}
           <div
             ref={productWorldRef}
-            className="relative w-full h-full flex flex-col justify-start items-center px-4 sm:px-6 lg:px-8 pt-14 sm:pt-16 md:pt-18 lg:pt-20 pb-4 sm:pb-6 overflow-hidden select-none will-change-transform"
+            className="relative w-full h-full flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 py-4 sm:py-6 overflow-hidden select-none will-change-transform"
           >
             {/* =================================================================== */}
             {/* LAYER: ABOUT SECTION CINEMATIC BACKGROUND & VOLUMETRIC ATMOSPHERE   */}
@@ -8202,7 +8228,7 @@ export function BlueprintHero() {
                             <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/80 to-transparent pointer-events-none -z-10" />
                             {idx === 0 ? (
                               // TILE 01: Understand what you own
-                              <div className="flex flex-col h-full justify-between">
+                              <div className="flex flex-col h-full justify-start">
                                 <div>
                                   <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-[32px] tracking-[-0.035em] text-neutral-950 leading-[1.12]">
                                     <span className="text-[#22C55E]">Understand</span> what you own
@@ -8210,54 +8236,54 @@ export function BlueprintHero() {
                                 </div>
 
                                 {/* Vertical Floating Information Layout */}
-                                <div className="flex flex-col justify-between flex-1 mt-5 sm:mt-6 gap-3.5 sm:gap-4.5">
+                                <div className="flex flex-col justify-start flex-1 mt-6 sm:mt-7 gap-5 sm:gap-6 lg:gap-7">
                                   {/* Item 1: Overlap Check */}
-                                  <div className="flex items-start gap-2.5 sm:gap-3">
+                                  <div className="flex items-start gap-3 sm:gap-3.5">
                                     <img
                                       src="/bento-icons/stacked-sheets.png"
                                       alt="Overlap Check"
-                                      className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[24px] h-[24px] sm:w-[26px] sm:h-[26px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[13px] sm:text-[14px] lg:text-[15px] text-neutral-700 font-medium leading-[1.44] sm:leading-[1.48]">
+                                    <p className="text-[15px] sm:text-[16px] lg:text-[17px] text-neutral-700 font-medium leading-[1.52] sm:leading-[1.56]">
                                       <strong className="font-bold text-neutral-950">Overlap Check.</strong>{" "}
                                       Spot when &quot;diversified&quot; funds are secretly the same bet.
                                     </p>
                                   </div>
 
                                   {/* Item 2: Performance, in Context */}
-                                  <div className="flex items-start gap-2.5 sm:gap-3">
+                                  <div className="flex items-start gap-3 sm:gap-3.5">
                                     <img
                                       src="/bento-icons/rising-graph.png"
                                       alt="Performance, in Context"
-                                      className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[24px] h-[24px] sm:w-[26px] sm:h-[26px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[13px] sm:text-[14px] lg:text-[15px] text-neutral-700 font-medium leading-[1.44] sm:leading-[1.48]">
+                                    <p className="text-[15px] sm:text-[16px] lg:text-[17px] text-neutral-700 font-medium leading-[1.52] sm:leading-[1.56]">
                                       <strong className="font-bold text-neutral-950">Performance, in Context.</strong>{" "}
                                       Real returns, measured against what matters.
                                     </p>
                                   </div>
 
                                   {/* Item 3: Hidden Fee Finder */}
-                                  <div className="flex items-start gap-2.5 sm:gap-3">
+                                  <div className="flex items-start gap-3 sm:gap-3.5">
                                     <img
                                       src="/bento-icons/rupee-coin.png"
                                       alt="Hidden Fee Finder"
-                                      className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[24px] h-[24px] sm:w-[26px] sm:h-[26px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[13px] sm:text-[14px] lg:text-[15px] text-neutral-700 font-medium leading-[1.44] sm:leading-[1.48]">
+                                    <p className="text-[15px] sm:text-[16px] lg:text-[17px] text-neutral-700 font-medium leading-[1.52] sm:leading-[1.56]">
                                       <strong className="font-bold text-neutral-950">Hidden Fee Finder.</strong>{" "}
                                       What expense ratios are quietly costing you.
                                     </p>
                                   </div>
 
                                   {/* Item 4: Peer Benchmarking */}
-                                  <div className="flex items-start gap-2.5 sm:gap-3">
+                                  <div className="flex items-start gap-3 sm:gap-3.5">
                                     <img
                                       src="/bento-icons/people-group.png"
                                       alt="Peer Benchmarking"
-                                      className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[24px] h-[24px] sm:w-[26px] sm:h-[26px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[13px] sm:text-[14px] lg:text-[15px] text-neutral-700 font-medium leading-[1.44] sm:leading-[1.48]">
+                                    <p className="text-[15px] sm:text-[16px] lg:text-[17px] text-neutral-700 font-medium leading-[1.52] sm:leading-[1.56]">
                                       <strong className="font-bold text-neutral-950">Peer Benchmarking.</strong>{" "}
                                       Compared against people like you, not a generic index.
                                     </p>
@@ -8276,12 +8302,12 @@ export function BlueprintHero() {
                                   </p>
                                 </div>
 
-                                {/* Hand-drawn Speech Bubbles Sketch - Bigger & prominent */}
+                                {/* Hand-drawn Speech Bubbles Sketch - Proportional & balanced */}
                                 <div className="relative flex-1 h-full min-h-0 flex items-center justify-center sm:justify-end pointer-events-none -my-1 sm:-my-2 translate-x-0.5 sm:translate-x-1.5 lg:translate-x-2">
                                   <img
                                     src="/product-cards/card-2d-1.png"
                                     alt="Conversational Question Intelligence"
-                                    className="w-auto h-full max-h-[250px] sm:max-h-[275px] lg:max-h-[295px] object-contain drop-shadow-sm scale-[1.28] sm:scale-[1.34] lg:scale-[1.38] origin-center sm:origin-right"
+                                    className="w-auto h-full max-h-[190px] sm:max-h-[210px] lg:max-h-[230px] object-contain drop-shadow-sm scale-[1.08] sm:scale-[1.12] lg:scale-[1.15] origin-center sm:origin-right"
                                   />
                                 </div>
                               </div>
@@ -9108,10 +9134,10 @@ export function BlueprintHero() {
               </div>
             </div>
 
-            {/* Product Hero Content (Headline, Supporting Text, CTA) - Positioned underneath cards */}
+            {/* Product Hero Content (Headline, CTA) - Positioned underneath cards */}
             <div
               ref={headerRef}
-              className="w-full max-w-5xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mt-10 sm:mt-12 md:mt-14 lg:mt-16 xl:mt-20 mb-2 px-2 will-change-transform"
+              className="w-full max-w-5xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mt-6 sm:mt-7 md:mt-8 lg:mt-9 xl:mt-10 mb-2 px-2 will-change-transform"
             >
               <h2
                 ref={headlineRef}
@@ -9126,14 +9152,7 @@ export function BlueprintHero() {
                 </span>
               </h2>
 
-              <p
-                ref={subheadRef}
-                className="mt-2 sm:mt-2.5 max-w-xl text-xs sm:text-sm md:text-base text-neutral-600 font-medium leading-snug sm:leading-relaxed will-change-transform"
-              >
-                Every account, every fund, every rupee, in one place, finally clear.
-              </p>
-
-              <div className="mt-3 sm:mt-4">
+              <div className="mt-4 sm:mt-5">
                 <LinkButton
                   ref={ctaRef}
                   href="#contact"

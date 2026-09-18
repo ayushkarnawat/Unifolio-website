@@ -35,9 +35,7 @@ export function BlueprintContact() {
   const introViewRef = useRef<HTMLDivElement | null>(null);
   const interactiveViewRef = useRef<HTMLDivElement | null>(null);
   const stepContainerRef = useRef<HTMLDivElement | null>(null);
-  const orbLayerRef = useRef<HTMLDivElement | null>(null);
   const parallaxBgRef = useRef<HTMLDivElement | null>(null);
-  const cursorGlowRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const inputMagneticRef = useRef<HTMLDivElement | null>(null);
   const nextBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -150,19 +148,7 @@ export function BlueprintContact() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // 1. Smooth ambient cursor radial glow tracking
-    if (cursorGlowRef.current) {
-      gsap.to(cursorGlowRef.current, {
-        x: x - 170,
-        y: y - 170,
-        opacity: 0.85,
-        duration: 0.7,
-        ease: "power2.out",
-        overwrite: "auto",
-      });
-    }
-
-    // 2. Subtle background parallax response
+    // 1. Subtle background parallax response
     if (parallaxBgRef.current) {
       const normX = (x / rect.width - 0.5) * 2;
       const normY = (y / rect.height - 0.5) * 2;
@@ -178,13 +164,6 @@ export function BlueprintContact() {
   }, []);
 
   const handleMouseLeave = useCallback(() => {
-    if (cursorGlowRef.current) {
-      gsap.to(cursorGlowRef.current, {
-        opacity: 0,
-        duration: 0.8,
-        ease: "power2.out",
-      });
-    }
     if (parallaxBgRef.current) {
       gsap.to(parallaxBgRef.current, {
         x: 0,
@@ -263,19 +242,6 @@ export function BlueprintContact() {
       },
     });
 
-    if (orbLayerRef.current) {
-      tl.to(
-        orbLayerRef.current,
-        {
-          scale: 1.4,
-          opacity: 0.9,
-          duration: 0.8,
-          ease: "power3.inOut",
-        },
-        0
-      );
-    }
-
     if (introViewRef.current) {
       tl.to(
         introViewRef.current,
@@ -312,19 +278,6 @@ export function BlueprintContact() {
         duration: 0.45,
         ease: "power2.inOut",
       });
-    }
-
-    if (orbLayerRef.current) {
-      tl.to(
-        orbLayerRef.current,
-        {
-          scale: 1,
-          opacity: 0.75,
-          duration: 0.8,
-          ease: "power3.out",
-        },
-        0.1
-      );
     }
   }, []);
 
@@ -413,31 +366,10 @@ export function BlueprintContact() {
       {/* Seamless Top Blend from FAQ */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#FAF8F5] to-transparent z-20" />
 
-      {/* =========================================================================
-          SUBTLE AMBIENT RADIAL CURSOR GLOW (Soft Green Accent at Low Opacity)
-         ========================================================================= */}
-      <div
-        ref={cursorGlowRef}
-        className="pointer-events-none absolute w-[340px] h-[340px] rounded-full bg-gradient-to-br from-[#22C55E]/10 via-[#06B6D4]/6 to-transparent blur-[75px] opacity-0 z-0 will-change-transform"
-      />
-
-      {/* =========================================================================
-          ATMOSPHERIC CELESTIAL ORB & PARALLAX BACKGROUND LAYER
-         ========================================================================= */}
-      <div
-        ref={orbLayerRef}
-        className="pointer-events-none absolute inset-0 w-full h-full flex items-center justify-center z-0 transition-all duration-1000 overflow-hidden"
-      >
+      {/* Fine Subtle Micro Particle Dot Grid on Clean Light Ground */}
+      <div className="pointer-events-none absolute inset-0 w-full h-full flex items-center justify-center z-0 overflow-hidden">
         <div ref={parallaxBgRef} className="absolute inset-0 w-full h-full will-change-transform">
-          {/* Large Glowing Planetary Sphere on Left */}
-          <div className="absolute -left-[18%] sm:-left-[12%] lg:-left-[8%] top-[15%] sm:top-[12%] lg:top-[10%] w-[520px] sm:w-[720px] md:w-[880px] lg:w-[1020px] h-[520px] sm:h-[720px] md:h-[880px] lg:h-[1020px] rounded-full bg-gradient-to-br from-[#06B6D4]/30 via-[#22C55E]/20 to-transparent blur-[110px] sm:blur-[140px] opacity-75 animate-pulse will-change-transform" />
-
-          {/* Secondary Deep Atmospheric Orbs on Right & Center */}
-          <div className="absolute right-[-10%] top-[20%] w-[580px] h-[580px] rounded-full bg-[#22C55E]/10 blur-[130px] opacity-50" />
-          <div className="absolute right-[15%] bottom-[10%] w-[480px] h-[480px] rounded-full bg-[#06B6D4]/10 blur-[120px] opacity-40" />
-
-          {/* Fine Star Dust & Micro Particle Flecks */}
-          <div className="absolute inset-0 bg-[radial-gradient(rgba(0,0,0,0.06)_1px,transparent_1px)] [background-size:48px_48px] opacity-30" />
+          <div className="absolute inset-0 bg-[radial-gradient(rgba(0,0,0,0.04)_1px,transparent_1px)] [background-size:48px_48px] opacity-25" />
         </div>
       </div>
 

@@ -86,6 +86,7 @@ export function HeroIntroLogo({ onComplete }: HeroIntroLogoProps) {
     // 4. Hold on the completed centered logo (~1.1s)
     // 5. Deliberate flight to top-left navbar (~1.95s)
     const masterTl = gsap.timeline();
+    masterTl.timeScale(0.85);
 
     // Initial setup in GSAP (guaranteeing exact alignment with DOM styles)
     gsap.set(overlay, { opacity: 1 });

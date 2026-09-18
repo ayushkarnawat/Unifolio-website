@@ -184,7 +184,7 @@ export function BlueprintFaq() {
           ATMOSPHERIC BACKGROUND VISUALS
          ========================================================================= */}
 
-      {/* Top Right: Glowing Celestial Crescent / Aperture Arc */}
+      {/* Top Right: Clean Solid Brand Green Celestial Crescent / Aperture Arc */}
       <div className="pointer-events-none absolute -top-20 -right-24 sm:-top-32 sm:-right-20 w-[500px] sm:w-[700px] lg:w-[850px] h-[500px] sm:h-[700px] lg:h-[850px] overflow-hidden z-0">
         <svg
           viewBox="0 0 800 800"
@@ -192,62 +192,11 @@ export function BlueprintFaq() {
           xmlns="http://www.w3.org/2000/svg"
           className="w-full h-full"
         >
-          <defs>
-            <radialGradient
-              id="topRightArcGlow"
-              cx="50%"
-              cy="50%"
-              r="50%"
-              fx="50%"
-              fy="50%"
-            >
-              <stop offset="0%" stopColor="#22C55E" stopOpacity="0.25" />
-              <stop offset="40%" stopColor="#22C55E" stopOpacity="0.08" />
-              <stop offset="100%" stopColor="#000000" stopOpacity="0" />
-            </radialGradient>
-            <filter id="crescentSoftGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="16" result="blurWide" />
-              <feGaussianBlur stdDeviation="6" result="blurMid" />
-              <feMerge>
-                <feMergeNode in="blurWide" />
-                <feMergeNode in="blurMid" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
-          <ellipse
-            cx="520"
-            cy="280"
-            rx="320"
-            ry="240"
-            fill="url(#topRightArcGlow)"
-            className="opacity-70"
-          />
-
           <path
             d="M 220 100 C 450 140, 680 340, 780 620"
             stroke="#22C55E"
             strokeWidth="6"
-            strokeOpacity="0.20"
-            strokeLinecap="round"
-            filter="url(#crescentSoftGlow)"
-          />
-
-          <path
-            d="M 230 100 C 460 140, 680 340, 780 610"
-            stroke="#22C55E"
-            strokeWidth="2.5"
-            strokeOpacity="0.4"
-            strokeLinecap="round"
-            filter="url(#crescentSoftGlow)"
-          />
-
-          <path
-            d="M 220 100 C 450 140, 680 340, 780 620"
-            stroke="#22C55E"
-            strokeWidth="1.2"
-            strokeOpacity="0.5"
+            strokeOpacity="1"
             strokeLinecap="round"
           />
         </svg>
@@ -289,9 +238,8 @@ export function BlueprintFaq() {
             HEADER SECTION: Headline + Clean Divider (Old buttons removed)
            ========================================================================= */}
         <div className="faq-header-elem pb-3 sm:pb-4 border-b border-black/[0.08]">
-          <h2 className="font-sans font-light md:font-normal text-3xl sm:text-4xl lg:text-[46px] text-[#111613] tracking-tight leading-[1.06]">
-            Frequently <br />
-            Asked Questions
+          <h2 className="font-sans font-bold text-3xl sm:text-4xl lg:text-5xl xl:text-[54px] text-[#22C55E] tracking-tight leading-[1.08] whitespace-nowrap">
+            Frequently Asked Questions
           </h2>
         </div>
 

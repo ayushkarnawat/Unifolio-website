@@ -10,16 +10,119 @@ interface NavItem {
   label: string;
   href: string;
   id: string;
-  icon: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Product", href: "#product", id: "product", icon: "/navbar/product.png" },
-  { label: "Security", href: "#security", id: "security", icon: "/navbar/security.png" },
-  { label: "About", href: "#about", id: "about", icon: "/navbar/about.png" },
-  { label: "FAQ", href: "#faq", id: "faq", icon: "/navbar/faq.png" },
-  { label: "Contact", href: "#contact", id: "contact", icon: "/navbar/contact.png" },
+  { label: "Product", href: "#product", id: "product" },
+  { label: "Security", href: "#security", id: "security" },
+  { label: "About", href: "#about", id: "about" },
+  { label: "FAQ", href: "#faq", id: "faq" },
+  { label: "Contact", href: "#contact", id: "contact" },
 ];
+
+function NavSketchIcon({
+  id,
+  isActive,
+  isHovered,
+}: {
+  id: string;
+  isActive: boolean;
+  isHovered: boolean;
+}) {
+  const strokeColor = isHovered || isActive ? "#22C55E" : "#111613";
+
+  if (id === "product") {
+    return (
+      <svg
+        viewBox="0 0 28 28"
+        fill="none"
+        className="w-[26px] h-[26px] sm:w-[28px] sm:h-[28px] transition-colors duration-300"
+        stroke={strokeColor}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="6.5" y="6.5" width="15" height="14" rx="1.5" strokeWidth="1.6" strokeOpacity="0.75" />
+        <rect x="3.5" y="9.5" width="14" height="13.5" rx="1.5" strokeWidth="2" />
+        <line x1="6.5" y1="13.5" x2="13" y2="13.5" strokeWidth="1.6" />
+        <line x1="6.5" y1="17" x2="11" y2="17" strokeWidth="1.6" />
+        <circle cx="14.5" cy="20" r="1.1" fill={strokeColor} stroke="none" />
+      </svg>
+    );
+  }
+
+  if (id === "security") {
+    return (
+      <svg
+        viewBox="0 0 28 28"
+        fill="none"
+        className="w-[26px] h-[26px] sm:w-[28px] sm:h-[28px] transition-colors duration-300"
+        stroke={strokeColor}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="14" cy="14" r="9.5" strokeWidth="2" />
+        <circle cx="14" cy="14" r="3.8" strokeWidth="2" />
+        <line x1="14" y1="10.2" x2="14" y2="6.5" strokeWidth="1.6" />
+        <line x1="10.8" y1="15.9" x2="7.5" y2="17.8" strokeWidth="1.6" />
+        <line x1="17.2" y1="15.9" x2="20.5" y2="17.8" strokeWidth="1.6" />
+        <circle cx="14" cy="14" r="1.4" fill={strokeColor} stroke="none" />
+      </svg>
+    );
+  }
+
+  if (id === "about") {
+    return (
+      <svg
+        viewBox="0 0 28 28"
+        fill="none"
+        className="w-[26px] h-[26px] sm:w-[28px] sm:h-[28px] transition-colors duration-300"
+        stroke={strokeColor}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="14" cy="14" r="4.2" strokeWidth="2" />
+        <ellipse cx="14" cy="14" rx="10.5" ry="4.2" transform="rotate(-28 14 14)" strokeWidth="1.6" />
+        <circle cx="21.5" cy="9.8" r="1.8" fill={strokeColor} stroke="none" />
+      </svg>
+    );
+  }
+
+  if (id === "faq") {
+    return (
+      <svg
+        viewBox="0 0 28 28"
+        fill="none"
+        className="w-[26px] h-[26px] sm:w-[28px] sm:h-[28px] transition-colors duration-300"
+        stroke={strokeColor}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M6 6.5h14a3 3 0 0 1 3 3v7.5a3 3 0 0 1-3 3h-6l-4 3.5v-3.5H6a3 3 0 0 1-3-3V9.5a3 3 0 0 1 3-3z" strokeWidth="2" />
+        <path d="M11.5 11.5a2.2 2.2 0 0 1 4.2.8c0 1.4-1.7 1.8-1.7 2.7" strokeWidth="1.8" />
+        <circle cx="14" cy="17.5" r="1.15" fill={strokeColor} stroke="none" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      viewBox="0 0 28 28"
+      fill="none"
+      className="w-[26px] h-[26px] sm:w-[28px] sm:h-[28px] transition-colors duration-300"
+      stroke={strokeColor}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="4" y="7" width="20" height="14" rx="2" strokeWidth="2" />
+      <path d="M4.5 8l9.5 7.5L23.5 8" strokeWidth="1.6" />
+    </svg>
+  );
+}
 
 export function BlueprintNav() {
   const [scrolled, setScrolled] = useState(false);
@@ -149,8 +252,8 @@ export function BlueprintNav() {
 
   return (
     <nav
-      className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-16 select-none transition-all duration-500 ease-out ${
-        isLogoDocked ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+      className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-16 select-none transition-opacity duration-500 ease-out ${
+        isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
       } ${
         scrolled
           ? "bg-[#FAF8F5]/85 border-b border-black/[0.06] backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] py-3.5"
@@ -193,8 +296,8 @@ export function BlueprintNav() {
       {/* Center Navigation: Translucent Crystal Glass Pill enclosing the 5 3D Glass Illustrations */}
       <div
         ref={navContainerRef}
-        className={`hidden md:flex relative items-center gap-6 sm:gap-7 lg:gap-8 h-[52px] sm:h-[56px] px-6 sm:px-8 rounded-full transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${
-          isLogoDocked ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+        className={`hidden md:flex relative items-center gap-6 sm:gap-7 lg:gap-8 h-[52px] sm:h-[56px] px-6 sm:px-8 rounded-full transition-opacity duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${
+          isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
         } bg-white/[0.05] backdrop-blur-[10px] border border-white/50 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.05),0_1px_3px_0_rgba(0,0,0,0.02),0_0_14px_-2px_rgba(34,197,94,0.10),inset_0_1px_1px_0_rgba(255,255,255,0.70),inset_0_-1px_1.5px_0_rgba(34,197,94,0.25)]`}
       >
         {/* Top Rim Specular Glass Highlight */}
@@ -236,12 +339,7 @@ export function BlueprintNav() {
                     : "scale-100 opacity-80 group-hover:opacity-100 group-hover:scale-[1.04]"
                 }`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.icon}
-                  alt={item.label}
-                  className="h-[28px] sm:h-[30px] w-auto max-w-[44px] object-contain select-none pointer-events-none"
-                />
+                <NavSketchIcon id={item.id} isActive={isActive} isHovered={isHovered} />
 
                 {/* Subtle active pip centered underneath the active illustration */}
                 {isActive && !isHovered && (
@@ -272,8 +370,8 @@ export function BlueprintNav() {
 
       {/* Right Navigation Actions: Login + Sign Up */}
       <div
-        className={`flex items-center gap-2 sm:gap-2.5 transition-all duration-700 delay-200 ${
-          isLogoDocked ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+        className={`flex items-center gap-2 sm:gap-2.5 transition-opacity duration-700 delay-200 ${
+          isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
         {/* Login: Clean, Minimal Outlined/Ghost Glass Treatment */}
