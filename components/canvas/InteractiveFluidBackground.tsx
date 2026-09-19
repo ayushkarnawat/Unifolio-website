@@ -221,7 +221,7 @@ export function InteractiveFluidBackground() {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-[1] h-full w-full select-none overflow-hidden will-change-transform"
+      className="pointer-events-none fixed inset-0 z-[1] h-full w-full select-none overflow-hidden"
       style={{
         transform: "translate3d(0, 0, 0)",
       }}

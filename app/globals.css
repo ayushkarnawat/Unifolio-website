@@ -261,10 +261,15 @@
 
   .animate-iridescent-spin {
     animation: iridescent-spin 4.5s linear infinite;
+    animation-play-state: paused;
   }
 
   .group:hover .animate-iridescent-spin,
+  .group:focus-within .animate-iridescent-spin,
+  .group\/btn:hover .animate-iridescent-spin,
+  .group\/btn:focus-within .animate-iridescent-spin,
   .hover\:animate-iridescent-fast:hover {
+    animation-play-state: running;
     animation-duration: 2.5s;
   }
 

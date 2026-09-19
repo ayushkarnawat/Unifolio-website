@@ -19,6 +19,8 @@ export function HeroApertureVisual({
   const isCrossfadingRef = useRef(false);
   const [opacityA, setOpacityA] = useState(1);
   const [opacityB, setOpacityB] = useState(0);
+  const rafIdRef = useRef<number | null>(null);
+  const checkTimeRef = useRef<() => void>(() => {});
 
   // Inform parent of ring anchor position for pixel-perfect zoom tracking
   useEffect(() => {
@@ -42,59 +44,73 @@ export function HeroApertureVisual({
       vA.play().catch(() => {});
     }
 
-    let rafId: number;
     const CROSSFADE_TRIGGER_BEFORE_END = 0.8;
 
     const checkTime = () => {
-      if (!isPausedRef.current) {
-        const active = activeVideoRef.current === "A" ? vA : vB;
-        const inactive = activeVideoRef.current === "A" ? vB : vA;
+      if (isPausedRef.current) {
+        rafIdRef.current = null;
+        return;
+      }
 
-        if (
-          active.duration &&
-          !isNaN(active.duration) &&
-          active.currentTime >= active.duration - CROSSFADE_TRIGGER_BEFORE_END &&
-          !isCrossfadingRef.current
-        ) {
-          isCrossfadingRef.current = true;
-          inactive.currentTime = 0;
+      const active = activeVideoRef.current === "A" ? vA : vB;
+      const inactive = activeVideoRef.current === "A" ? vB : vA;
 
-          const startCrossfade = () => {
-            if (activeVideoRef.current === "A") {
-              setOpacityA(0);
-              setOpacityB(1);
-            } else {
-              setOpacityA(1);
-              setOpacityB(0);
-            }
+      if (
+        active.duration &&
+        !isNaN(active.duration) &&
+        active.currentTime >= active.duration - CROSSFADE_TRIGGER_BEFORE_END &&
+        !isCrossfadingRef.current
+      ) {
+        isCrossfadingRef.current = true;
+        inactive.currentTime = 0;
 
-            setTimeout(() => {
-              active.pause();
-              active.currentTime = 0;
-              activeVideoRef.current = activeVideoRef.current === "A" ? "B" : "A";
-              isCrossfadingRef.current = false;
-            }, 500); // match the CSS duration-500 exactly
-          };
-
-          const playPromise = inactive.play();
-          if (playPromise && typeof playPromise.then === "function") {
-            playPromise.then(startCrossfade).catch(startCrossfade);
+        const startCrossfade = () => {
+          if (activeVideoRef.current === "A") {
+            setOpacityA(0);
+            setOpacityB(1);
           } else {
-            startCrossfade();
+            setOpacityA(1);
+            setOpacityB(0);
           }
+
+          setTimeout(() => {
+            active.pause();
+            active.currentTime = 0;
+            activeVideoRef.current = activeVideoRef.current === "A" ? "B" : "A";
+            isCrossfadingRef.current = false;
+          }, 500); // match the CSS duration-500 exactly
+        };
+
+        const playPromise = inactive.play();
+        if (playPromise && typeof playPromise.then === "function") {
+          playPromise.then(startCrossfade).catch(startCrossfade);
+        } else {
+          startCrossfade();
         }
       }
-      rafId = requestAnimationFrame(checkTime);
+
+      if (!isPausedRef.current) {
+        rafIdRef.current = requestAnimationFrame(checkTime);
+      } else {
+        rafIdRef.current = null;
+      }
     };
 
-    rafId = requestAnimationFrame(checkTime);
+    checkTimeRef.current = checkTime;
+
+    if (!isPausedRef.current) {
+      rafIdRef.current = requestAnimationFrame(checkTime);
+    }
 
     return () => {
-      cancelAnimationFrame(rafId);
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
     };
   }, []);
 
-  // Pause playback when hero transition completes to save GPU / CPU
+  // Pause playback and stop RAF loop when hero transition completes to save GPU / CPU
   useEffect(() => {
     isPausedRef.current = isPaused;
     const vA = videoARef.current;
@@ -104,9 +120,16 @@ export function HeroApertureVisual({
     if (isPaused) {
       vA.pause();
       vB.pause();
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
     } else {
       const active = activeVideoRef.current === "A" ? vA : vB;
       active.play().catch(() => {});
+      if (rafIdRef.current === null && checkTimeRef.current) {
+        rafIdRef.current = requestAnimationFrame(checkTimeRef.current);
+      }
     }
   }, [isPaused]);
 

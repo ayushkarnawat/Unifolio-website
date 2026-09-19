@@ -8,6 +8,8 @@ export interface SafeVault3DRef {
   setCardsProgress?: (progress: number) => void;
   triggerRimStep?: (direction?: 1 | -1, stateIndex?: number) => void;
   resetRim?: () => void;
+  pauseAmbient?: () => void;
+  resumeAmbient?: () => void;
 }
 
 interface SafeVault3DProps {
@@ -161,6 +163,14 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
             });
           }
         },
+        pauseAmbient: () => {
+          floatTweenRef.current?.pause();
+          rockTweenRef.current?.pause();
+        },
+        resumeAmbient: () => {
+          floatTweenRef.current?.play();
+          rockTweenRef.current?.play();
+        },
       }),
       []
     );
@@ -176,6 +186,7 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
         ease: "sine.inOut",
         yoyo: true,
         repeat: -1,
+        paused: true,
       });
 
       rockTweenRef.current = gsap.to(floatEl, {
@@ -184,6 +195,7 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
         ease: "sine.inOut",
         yoyo: true,
         repeat: -1,
+        paused: true,
       });
 
       // Initial state: closed and locked

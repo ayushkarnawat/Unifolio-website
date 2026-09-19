@@ -1560,7 +1560,7 @@ export function BlueprintHero() {
                 boxShadow:
                   "0 28px 56px -14px rgba(12, 38, 24, 0.14), 0 10px 24px -8px rgba(34, 197, 94, 0.12), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1.5px 3px 0 rgba(34, 197, 94, 0.08)",
                 borderRadius: "24px",
-                backdropFilter: "blur(28px)",
+                backdropFilter: "blur(16px)",
                 duration: 0.85,
                 ease: "power2.inOut",
               },
@@ -1867,6 +1867,7 @@ export function BlueprintHero() {
             }
             safeVault3DRef.current?.setOpenProgress(0);
             safeVault3DRef.current?.setCardsProgress?.(0);
+            safeVault3DRef.current?.pauseAmbient?.();
 
             if (securityStageRef.current) {
               gsap.set(securityStageRef.current, { opacity: 0, visibility: "hidden", zIndex: 15 });
@@ -1934,7 +1935,7 @@ export function BlueprintHero() {
                   boxShadow:
                     "0 28px 56px -14px rgba(12, 38, 24, 0.14), 0 10px 24px -8px rgba(34, 197, 94, 0.12), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1.5px 3px 0 rgba(34, 197, 94, 0.08)",
                   borderRadius: "24px",
-                  backdropFilter: "blur(28px)",
+                  backdropFilter: "blur(16px)",
                 });
               }
               if (bentoContent) {
@@ -2079,6 +2080,7 @@ export function BlueprintHero() {
             onUpdate: () => {
               safeVault3DRef.current?.setOpenProgress(0);
               safeVault3DRef.current?.setCardsProgress?.(0);
+              safeVault3DRef.current?.pauseAmbient?.();
             },
           },
           0
@@ -2259,6 +2261,7 @@ export function BlueprintHero() {
             { opacity: 1, scale: 1.0, duration: 0.38, ease: "power2.out" },
             0.12
           );
+          tl.call(() => safeVault3DRef.current?.resumeAmbient?.(), [], 0.12);
         }
 
         // Safe opens toward the LEFT (0.26s -> 1.02s)
@@ -3994,6 +3997,10 @@ export function BlueprintHero() {
         if (irisPortalRef.current) gsap.set(irisPortalRef.current, { opacity: 1, clipPath: "circle(150% at 50% 50%)" });
         if (headerRef.current) gsap.set(headerRef.current, { opacity: 0 });
         if (securityStageRef.current) gsap.set(securityStageRef.current, { opacity: 0, visibility: "hidden" });
+        if (safeContainerRef.current) {
+          gsap.set(safeContainerRef.current, { opacity: 0, visibility: "hidden" });
+          safeVault3DRef.current?.pauseAmbient?.();
+        }
         securityStateRefs.current.forEach((el) => {
           if (el) gsap.set(el, { opacity: 0, visibility: "hidden" });
         });
@@ -4324,31 +4331,29 @@ export function BlueprintHero() {
             const wipeLeftX = minCardLeft + 24;
 
             // 2. Spatial erasure of Black Line (swept Left -> Right)
-            if (closingBlackTextRef.current) {
-              const bCurRect = closingBlackTextRef.current.getBoundingClientRect();
-              const bWidth = bCurRect.width || 1;
-              if (time >= 1.50 + exitDelta || (bCurRect.width > 0 && wipeRightX >= bCurRect.right)) {
+            if (closingBlackTextRef.current && blackRect) {
+              const bWidth = blackRect.width || 1;
+              if (time >= 1.50 + exitDelta || (blackRect.width > 0 && wipeRightX >= blackRect.right)) {
                 closingBlackTextRef.current.style.clipPath = "inset(0 0 0 100%)";
                 (closingBlackTextRef.current.style as any).webkitClipPath = "inset(0 0 0 100%)";
               } else {
-                const bProgress = Math.max(0, Math.min(bWidth, wipeRightX - bCurRect.left));
+                const bProgress = Math.max(0, Math.min(bWidth, wipeRightX - blackRect.left));
                 closingBlackTextRef.current.style.clipPath = `inset(0 0 0 ${bProgress}px)`;
                 (closingBlackTextRef.current.style as any).webkitClipPath = `inset(0 0 0 ${bProgress}px)`;
               }
             }
 
             // 3. Spatial erasure of Green Line (swept Right -> Left return)
-            if (closingGreenTextRef.current) {
-              const gCurRect = closingGreenTextRef.current.getBoundingClientRect();
-              const gWidth = gCurRect.width || 1;
+            if (closingGreenTextRef.current && greenRect) {
+              const gWidth = greenRect.width || 1;
               if (time < 1.76 + exitDelta) {
                 closingGreenTextRef.current.style.clipPath = "none";
                 (closingGreenTextRef.current.style as any).webkitClipPath = "none";
-              } else if (time >= 2.32 + exitDelta || (gCurRect.width > 0 && wipeLeftX <= gCurRect.left)) {
+              } else if (time >= 2.32 + exitDelta || (greenRect.width > 0 && wipeLeftX <= greenRect.left)) {
                 closingGreenTextRef.current.style.clipPath = "inset(0 100% 0 0)";
                 (closingGreenTextRef.current.style as any).webkitClipPath = "inset(0 100% 0 0)";
               } else {
-                const gRightClip = Math.max(0, Math.min(gWidth, gCurRect.right - wipeLeftX));
+                const gRightClip = Math.max(0, Math.min(gWidth, greenRect.right - wipeLeftX));
                 closingGreenTextRef.current.style.clipPath = `inset(0 ${gRightClip}px 0 0)`;
                 (closingGreenTextRef.current.style as any).webkitClipPath = `inset(0 ${gRightClip}px 0 0)`;
               }
@@ -4433,6 +4438,7 @@ export function BlueprintHero() {
             }
             safeVault3DRef.current?.setOpenProgress(0);
             safeVault3DRef.current?.setCardsProgress?.(0);
+            safeVault3DRef.current?.resumeAmbient?.();
 
             if (aboutContentRef.current) {
               gsap.set(aboutContentRef.current, { opacity: 0, visibility: "hidden" });
@@ -4589,6 +4595,7 @@ export function BlueprintHero() {
             },
             0
           );
+          tl.call(() => safeVault3DRef.current?.resumeAmbient?.(), [], 0);
         }
 
         safeVault3DRef.current?.setCardsProgress?.(0);
@@ -4761,6 +4768,7 @@ export function BlueprintHero() {
               onComplete: () => {
                 safeVault3DRef.current?.setOpenProgress(0);
                 safeVault3DRef.current?.setCardsProgress?.(0);
+                safeVault3DRef.current?.pauseAmbient?.();
               },
             },
             2.15
@@ -5448,6 +5456,7 @@ export function BlueprintHero() {
             }
             safeVault3DRef.current?.setOpenProgress(0);
             safeVault3DRef.current?.setCardsProgress?.(0);
+            safeVault3DRef.current?.resumeAmbient?.();
             allProductCards.forEach((wrapper) => {
               gsap.set(wrapper, { opacity: 0, autoAlpha: 0, visibility: "hidden" });
             });
@@ -5653,6 +5662,7 @@ export function BlueprintHero() {
             },
             0.76
           );
+          revTl.call(() => safeVault3DRef.current?.resumeAmbient?.(), [], 0.76);
         }
 
         // Cards smoothly retract/fade into the closed vault
@@ -6668,7 +6678,7 @@ export function BlueprintHero() {
         }
       };
 
-      window.addEventListener("scroll", handleScrollLock, { passive: false, capture: true });
+      window.addEventListener("scroll", handleScrollLock, { passive: true, capture: true });
       window.addEventListener("wheel", handleWheel, { passive: false, capture: true });
       window.addEventListener("touchstart", handleTouchStart, { passive: true });
       window.addEventListener("touchmove", handleTouchMove, { passive: false, capture: true });
@@ -6860,7 +6870,7 @@ export function BlueprintHero() {
               borderColor: "rgba(255, 255, 255, 0.60)",
               boxShadow:
                 "0 28px 56px -14px rgba(12, 38, 24, 0.14), 0 10px 24px -8px rgba(34, 197, 94, 0.12), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1.5px 3px 0 rgba(34, 197, 94, 0.08)",
-              backdropFilter: "blur(28px)",
+              backdropFilter: "blur(16px)",
             });
           }
           if (bentoTileContentRefs.current[i]) {
@@ -7187,6 +7197,7 @@ export function BlueprintHero() {
         }
         safeVault3DRef.current?.setOpenProgress(0);
         safeVault3DRef.current?.setCardsProgress?.(0);
+        safeVault3DRef.current?.resumeAmbient?.();
 
         const clusterEl = cardsClusterRef.current;
         if (clusterEl) {
@@ -7852,7 +7863,7 @@ export function BlueprintHero() {
                 style={{
                   background:
                     "linear-gradient(180deg, rgba(34, 197, 94, 0.12) 0%, rgba(74, 222, 128, 0.05) 25%, rgba(16, 185, 129, 0.01) 55%, transparent 75%)",
-                  filter: "blur(35px)",
+                  filter: "blur(22px)",
                 }}
               />
 
@@ -7862,7 +7873,7 @@ export function BlueprintHero() {
                 style={{
                   background:
                     "linear-gradient(180deg, rgba(52, 211, 153, 0.10) 0%, rgba(34, 197, 94, 0.04) 25%, rgba(16, 185, 129, 0.01) 50%, transparent 70%)",
-                  filter: "blur(40px)",
+                  filter: "blur(22px)",
                 }}
               />
 
@@ -7872,7 +7883,7 @@ export function BlueprintHero() {
                 style={{
                   background:
                     "radial-gradient(ellipse 65% 50% at 50% 0%, rgba(34, 197, 94, 0.13) 0%, rgba(74, 222, 128, 0.05) 35%, transparent 75%)",
-                  filter: "blur(30px)",
+                  filter: "blur(20px)",
                 }}
               />
 
@@ -7882,7 +7893,7 @@ export function BlueprintHero() {
                 style={{
                   background:
                     "radial-gradient(ellipse 70% 55% at 50% 50%, rgba(34, 197, 94, 0.10) 0%, rgba(74, 222, 128, 0.03) 40%, transparent 75%)",
-                  filter: "blur(45px)",
+                  filter: "blur(24px)",
                 }}
               />
 
@@ -8147,7 +8158,7 @@ export function BlueprintHero() {
                               cardDefaultRefs.current[idx] = el;
                             }}
                             data-card-text="true"
-                            className="product-card-text absolute inset-0 z-15 flex flex-col items-start justify-start pt-7 sm:pt-8 px-6 text-left pointer-events-none select-none will-change-transform"
+                            className="product-card-text absolute inset-0 z-15 flex flex-col items-start justify-start pt-7 sm:pt-8 px-6 text-left pointer-events-none select-none"
                           >
                             <span className="font-mono text-[10px] sm:text-xs font-black text-[#22c55e] tracking-widest uppercase mb-1.5">
                               {card.num}
@@ -8163,7 +8174,7 @@ export function BlueprintHero() {
                               cardHoverRefs.current[idx] = el;
                             }}
                             data-card-text="true"
-                            className="product-card-text absolute inset-0 z-20 flex flex-col items-center justify-center px-3.5 sm:px-4.5 py-4 sm:py-5 text-center pointer-events-none will-change-transform"
+                            className="product-card-text absolute inset-0 z-20 flex flex-col items-center justify-center px-3.5 sm:px-4.5 py-4 sm:py-5 text-center pointer-events-none"
                             style={{
                               opacity: 0,
                               transform: "translateY(8px)",
@@ -9141,7 +9152,7 @@ export function BlueprintHero() {
             >
               <h2
                 ref={headlineRef}
-                className="font-sans font-black text-2xl sm:text-3xl md:text-[36px] lg:text-[42px] xl:text-[46px] tracking-[-0.03em] leading-tight sm:whitespace-nowrap text-neutral-950 will-change-transform"
+                className="font-sans font-black text-2xl sm:text-3xl md:text-[36px] lg:text-[42px] xl:text-[46px] tracking-[-0.03em] leading-tight sm:whitespace-nowrap text-neutral-950"
               >
                 Understand your wealth.{" "}
                 <span
@@ -9211,21 +9222,21 @@ export function BlueprintHero() {
                         <h2 className="font-sans font-black font-[900] text-[20px] min-[380px]:text-[22px] min-[440px]:text-[24px] sm:text-[28px] md:text-[34px] lg:text-[42px] xl:text-[48px] text-neutral-950 tracking-[-0.035em] select-none flex flex-col items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12] text-left">
                           {/* Line 1: We take your data as seriously */}
                           <div className="whitespace-nowrap flex items-baseline gap-[0.24em]">
-                            <span ref={(el) => { securityHeroWordRefs.current[0] = el; }} className="inline-block will-change-transform">We</span>
-                            <span ref={(el) => { securityHeroWordRefs.current[1] = el; }} className="inline-block will-change-transform">take</span>
-                            <span ref={(el) => { securityHeroWordRefs.current[2] = el; }} className="inline-block will-change-transform">your</span>
-                            <span ref={(el) => { securityHeroWordRefs.current[3] = el; }} className="inline-block will-change-transform">data</span>
-                            <span ref={(el) => { securityHeroWordRefs.current[4] = el; }} className="inline-block will-change-transform">as</span>
-                            <span ref={(el) => { securityHeroWordRefs.current[5] = el; }} className="inline-block text-[#22C55E] font-black font-[900] will-change-transform">seriously</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[0] = el; }} className="inline-block">We</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[1] = el; }} className="inline-block">take</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[2] = el; }} className="inline-block">your</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[3] = el; }} className="inline-block">data</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[4] = el; }} className="inline-block">as</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[5] = el; }} className="inline-block text-[#22C55E] font-black font-[900]">seriously</span>
                           </div>
 
                           {/* Line 2: as you take your money. */}
                           <div className="whitespace-nowrap flex items-baseline gap-[0.24em]">
-                            <span ref={(el) => { securityHeroWordRefs.current[6] = el; }} className="inline-block will-change-transform">as</span>
-                            <span ref={(el) => { securityHeroWordRefs.current[7] = el; }} className="inline-block will-change-transform">you</span>
-                            <span ref={(el) => { securityHeroWordRefs.current[8] = el; }} className="inline-block will-change-transform">take</span>
-                            <span ref={(el) => { securityHeroWordRefs.current[9] = el; }} className="inline-block will-change-transform">your</span>
-                            <span ref={(el) => { securityHeroWordRefs.current[10] = el; }} className="inline-block will-change-transform">
+                            <span ref={(el) => { securityHeroWordRefs.current[6] = el; }} className="inline-block">as</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[7] = el; }} className="inline-block">you</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[8] = el; }} className="inline-block">take</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[9] = el; }} className="inline-block">your</span>
+                            <span ref={(el) => { securityHeroWordRefs.current[10] = el; }} className="inline-block">
                               <span className="relative inline-flex items-center justify-center align-baseline">
                                 {/* The 5 letters of "money" in black */}
                                 <span className="inline-flex items-baseline text-neutral-950 font-black font-[900]">
@@ -9235,7 +9246,7 @@ export function BlueprintHero() {
                                       ref={(el) => {
                                         moneyCharRefs.current[charIdx] = el;
                                       }}
-                                      className="inline-block will-change-transform"
+                                      className="inline-block"
                                     >
                                       {char}
                                     </span>
@@ -9319,7 +9330,7 @@ export function BlueprintHero() {
                             {/* Left Word Segment: "Read-only," */}
                             <span
                               ref={typoLeftWordRef}
-                              className="inline-block will-change-transform"
+                              className="inline-block"
                             >
                               Read-only,
                             </span>
@@ -9425,7 +9436,7 @@ export function BlueprintHero() {
                             {/* Right Word Segment: "always" in Green */}
                             <span
                               ref={typoRightWordRef}
-                              className="inline-block text-[#22C55E] will-change-transform"
+                              className="inline-block text-[#22C55E]"
                             >
                               always
                             </span>
@@ -9445,7 +9456,7 @@ export function BlueprintHero() {
                                     ref={(el) => {
                                       pwdLetterRefs.current[charIdx] = el;
                                     }}
-                                    className="inline-block will-change-transform"
+                                    className="inline-block"
                                   >
                                     {char}
                                   </span>
@@ -9477,7 +9488,7 @@ export function BlueprintHero() {
                                     ref={(el) => {
                                       lockCharRefs.current[charIdx] = el;
                                     }}
-                                    className="inline-block will-change-transform"
+                                    className="inline-block"
                                   >
                                     {char}
                                   </span>
@@ -9512,7 +9523,7 @@ export function BlueprintHero() {
                                     stroke="currentColor"
                                     strokeWidth="4.8"
                                     strokeLinecap="round"
-                                    className="text-neutral-900 will-change-transform"
+                                    className="text-neutral-900"
                                   />
 
                                   {/* Lock Body (Unifolio green rounded squircle) */}
@@ -9525,7 +9536,6 @@ export function BlueprintHero() {
                                     rx="7.5"
                                     ry="7.5"
                                     fill="url(#unifolioLockGreen)"
-                                    className="will-change-transform"
                                   />
 
                                   {/* Keyhole */}
@@ -9556,7 +9566,7 @@ export function BlueprintHero() {
                                     ref={(el) => {
                                       connectionCharRefs.current[charIdx] = el;
                                     }}
-                                    className="inline-block will-change-transform"
+                                    className="inline-block"
                                   >
                                     {char}
                                   </span>
@@ -9596,7 +9606,7 @@ export function BlueprintHero() {
                                     ref={(el) => {
                                       indiaCharRefs.current[charIdx] = el;
                                     }}
-                                    className="inline-block will-change-transform"
+                                    className="inline-block"
                                   >
                                     {char}
                                   </span>
@@ -9626,7 +9636,6 @@ export function BlueprintHero() {
                                       strokeWidth="2.2"
                                       strokeLinecap="round"
                                       strokeLinejoin="round"
-                                      className="will-change-transform"
                                     />
                                   </svg>
                                 </span>
@@ -9648,7 +9657,7 @@ export function BlueprintHero() {
                                     ref={(el) => {
                                       sellCharRefs.current[charIdx] = el;
                                     }}
-                                    className="inline-block will-change-transform"
+                                    className="inline-block"
                                   >
                                     {char}
                                   </span>
@@ -9665,7 +9674,7 @@ export function BlueprintHero() {
                                 <svg
                                   ref={sellShieldIconRef}
                                   viewBox="0 0 100 100"
-                                  className="w-[2.4em] h-[2.4em] sm:w-[2.7em] sm:h-[2.7em] md:w-[3.0em] md:h-[3.0em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.40)] will-change-transform"
+                                  className="w-[2.4em] h-[2.4em] sm:w-[2.7em] sm:h-[2.7em] md:w-[3.0em] md:h-[3.0em] overflow-visible drop-shadow-[0_4px_16px_rgba(34,197,94,0.40)]"
                                   fill="none"
                                   xmlns="http://www.w3.org/2000/svg"
                                   style={{ transformStyle: "preserve-3d" }}
@@ -9739,7 +9748,7 @@ export function BlueprintHero() {
                                 ref={(el) => {
                                   closingBlackWordRefs.current[wIdx] = el;
                                 }}
-                                className="inline-block will-change-transform"
+                                className="inline-block"
                               >
                                 {word}
                               </span>
@@ -9761,7 +9770,7 @@ export function BlueprintHero() {
                                   ref={(el) => {
                                     closingGreenWordRefs.current[wIdx] = el;
                                   }}
-                                  className="inline-block will-change-transform"
+                                  className="inline-block"
                                 >
                                   {word}
                                 </span>
@@ -9777,7 +9786,7 @@ export function BlueprintHero() {
                                     ref={(el) => {
                                       closingGreenWordRefs.current[wIdx] = el;
                                     }}
-                                    className="inline-block will-change-transform"
+                                    className="inline-block"
                                   >
                                     {word}
                                   </span>

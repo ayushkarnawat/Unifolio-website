@@ -30,14 +30,6 @@ if (typeof window !== "undefined") {
     ignoreMobileResize: true,
   });
 
-  // Normalize touch/trackpad/wheel scroll deltas so every pinned ScrollTrigger
-  // section (Hero, Stacking Cards, About Metrics) feels the same regardless of
-  // input device, and so a fast flick can't blow through pinned content
-  // uncontrollably. Skipped for reduced-motion users, who never receive pinned
-  // ScrollTriggers in the first place (each section bails out early).
-  if (!prefersReducedMotion()) {
-    ScrollTrigger.normalizeScroll(true);
-  }
 
   // Late-loading images/fonts/canvas assets can shift layout after
   // ScrollTriggers have already cached their trigger positions. A single

@@ -1910,7 +1910,7 @@ export function ProductExperience() {
           {/* Main Headline */}
           <h2
             ref={headlineRef}
-            className="font-sans font-black text-2xl sm:text-3xl md:text-[40px] lg:text-[48px] xl:text-[54px] 2xl:text-[60px] tracking-[-0.035em] leading-[1.08] text-neutral-950 will-change-transform md:whitespace-nowrap"
+            className="font-sans font-black text-2xl sm:text-3xl md:text-[40px] lg:text-[48px] xl:text-[54px] 2xl:text-[60px] tracking-[-0.035em] leading-[1.08] text-neutral-950 md:whitespace-nowrap"
           >
             Understand your wealth.{" "}
             <span
@@ -1924,7 +1924,7 @@ export function ProductExperience() {
           {/* Supporting Text */}
           <p
             ref={subheadRef}
-            className="mt-4 sm:mt-5 md:mt-6 max-w-2xl lg:max-w-3xl text-sm sm:text-base md:text-lg lg:text-[19px] text-neutral-700 font-medium md:font-semibold leading-relaxed will-change-transform"
+            className="mt-4 sm:mt-5 md:mt-6 max-w-2xl lg:max-w-3xl text-sm sm:text-base md:text-lg lg:text-[19px] text-neutral-700 font-medium md:font-semibold leading-relaxed"
           >
             Every account, every fund, every rupee, in one place, finally clear.
           </p>
@@ -2081,7 +2081,7 @@ export function ProductExperience() {
                           cardDefaultRefs.current[idx] = el;
                         }}
                         data-card-text="true"
-                        className="product-card-text absolute inset-0 z-20 flex flex-col justify-start p-5 sm:p-5.5 md:p-6 text-left pointer-events-none select-none will-change-transform"
+                        className="product-card-text absolute inset-0 z-20 flex flex-col justify-start p-5 sm:p-5.5 md:p-6 text-left pointer-events-none select-none"
                       >
                         <span className="text-[#22c55e] font-mono font-black text-sm sm:text-base tracking-widest mb-1.5 sm:mb-2">
                           {card.num}
@@ -2099,7 +2099,7 @@ export function ProductExperience() {
                           cardHoverRefs.current[idx] = el;
                         }}
                         data-card-text="true"
-                        className="product-card-text absolute inset-0 z-30 flex flex-col justify-between p-5 sm:p-5.5 md:p-6 text-center pointer-events-none will-change-transform overflow-hidden"
+                        className="product-card-text absolute inset-0 z-30 flex flex-col justify-between p-5 sm:p-5.5 md:p-6 text-center pointer-events-none overflow-hidden"
                         style={{
                           opacity: 0,
                           transform: "translateY(8px)",
