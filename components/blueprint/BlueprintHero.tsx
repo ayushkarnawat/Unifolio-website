@@ -1381,12 +1381,14 @@ export function BlueprintHero() {
             transitionAnimatingRef.current = true;
             if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "none";
             if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "none";
+            if (headerRef.current) headerRef.current.style.pointerEvents = "none";
           },
           onComplete: () => {
             stateRef.current = "product";
             transitionAnimatingRef.current = false;
             if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "";
             if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "";
+            if (headerRef.current) headerRef.current.style.pointerEvents = "";
             dispatchActiveSection("product");
           },
           onReverseComplete: () => {
@@ -1394,6 +1396,7 @@ export function BlueprintHero() {
             transitionAnimatingRef.current = false;
             if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "";
             if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "";
+            if (headerRef.current) headerRef.current.style.pointerEvents = "";
             gsap.set(
               [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
               { autoAlpha: 1, opacity: 1, y: 0, scale: 1, visibility: "visible" }
@@ -1421,13 +1424,15 @@ export function BlueprintHero() {
           },
         });
 
-        // 1. Smoothly fade out the headline, CTA, and floor reflection line before cards disperse
-        const heroFadeDuration = 0.28;
+        // 1. Smoothly fade out the headline, CTA, and floor reflection line in-place
+        // Finishes quickly before cards expand into bento. On reverse, headline only
+        // fades back in at the very end when cards have settled into resting slots.
+        const heroFadeDuration = 0.18;
         tl.to(
           [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
           {
             autoAlpha: 0,
-            y: 12,
+            y: 8,
             duration: heroFadeDuration,
             ease: "power2.inOut",
           },
@@ -1446,11 +1451,13 @@ export function BlueprintHero() {
 
         // 2. Physical Card-to-Bento Direct Movement
         const clusterEl = cardsClusterRef.current;
-        // Capture the resting cluster's own flex-flow footprint (cards still in-flow,
-        // "position: relative") BEFORE pulling them out of flow below — this is used
-        // as the fly-in animation's start point and must reflect the resting layout.
+        const wRest = vWidth >= 1536 ? 235 : vWidth >= 1280 ? 225 : vWidth >= 1024 ? 215 : vWidth >= 768 ? 205 : vWidth >= 640 ? 190 : 175;
+        const hRest = getCardRestHeight(vWidth, vHeight);
+        const gapRest = vWidth >= 1280 ? 16 : vWidth >= 768 ? 14 : vWidth >= 640 ? 12 : 10;
+
         const clusterW = clusterEl?.offsetWidth || Math.min(vWidth, 1340);
-        const clusterH = clusterEl?.offsetHeight || 370;
+        const clusterH = Math.max(clusterEl?.offsetHeight || 0, hRest + 20);
+
         // computeBentoLayout measures cardsClusterRef's flex-centered offsetTop, which
         // depends on whether its children are currently in-flow (tall, ~345px+) or
         // already `position: absolute` (collapsed, near-zero). Every other call site in
@@ -1471,14 +1478,8 @@ export function BlueprintHero() {
           if (wrapper) wrapper.style.position = prevPositions[i] ?? "";
         });
 
-        const wRest = vWidth >= 1536 ? 235 : vWidth >= 1280 ? 225 : vWidth >= 1024 ? 215 : vWidth >= 768 ? 205 : vWidth >= 640 ? 190 : 175;
-        const hRest = getCardRestHeight(vWidth, vHeight);
-        const gapRest = vWidth >= 1280 ? 16 : vWidth >= 768 ? 14 : vWidth >= 640 ? 12 : 10;
-
-        const bentoCardStartTime = 0.06;
-
-        // Vertically center the resting row at the exact same centerline as the Bento grid
-        const bentoCenterY = Math.round(bento.tileTops[0] + (bento.bentoH - hRest) / 2);
+        const bentoCardStartTime = 0.04;
+        const restTop = Math.round((clusterH - hRest) / 2);
 
         PRODUCT_CARDS.forEach((card, i) => {
           const wrapper = cardWrapperRefs.current[i];
@@ -1490,7 +1491,7 @@ export function BlueprintHero() {
           const targetH = bento.tileHeights[i];
 
           const startL = Math.round((clusterW / 2) + (i - 2) * (wRest + gapRest) - wRest / 2);
-          const startT = bentoCenterY;
+          const startT = Math.round(restTop + card.restY);
 
           tl.set(
             wrapper,
@@ -1502,8 +1503,11 @@ export function BlueprintHero() {
               height: hRest,
               transformOrigin: "center center",
               rotateX: 0,
-              rotateY: 0,
-              rotateZ: 0,
+              rotateY: card.restRotateY,
+              rotateZ: card.restRotateZ,
+              z: card.restZ,
+              x: 0,
+              y: 0,
               scaleX: 1,
               scaleY: 1,
               zIndex: 20 + i,
@@ -1619,6 +1623,8 @@ export function BlueprintHero() {
 
         if (!restingToBentoTlRef.current) {
           restingToBentoTlRef.current = createRestingToBentoTimeline();
+          restingToBentoTlRef.current.progress(1);
+        } else {
           restingToBentoTlRef.current.progress(1);
         }
         restingToBentoTlRef.current.reverse();
@@ -6651,9 +6657,29 @@ export function BlueprintHero() {
           applyPortalClip(getInitialRadiusPx(), 62.87, 49.12);
         }
 
-        if (stateRef.current === "product" || stateRef.current === "product-resting") {
+        if (stateRef.current === "product") {
           const { vw, vh } = getComposedViewport(1440, 800);
           applyBentoLayoutToCards(vw, vh);
+        } else if (stateRef.current === "product-resting") {
+          cardWrapperRefs.current.forEach((el, i) => {
+            if (el) {
+              el.style.position = "";
+              el.style.left = "";
+              el.style.top = "";
+              el.style.width = "";
+              el.style.height = "";
+              gsap.set(el, {
+                x: 0,
+                y: PRODUCT_CARDS[i].restY,
+                z: PRODUCT_CARDS[i].restZ,
+                rotateX: 0,
+                rotateY: PRODUCT_CARDS[i].restRotateY,
+                rotateZ: PRODUCT_CARDS[i].restRotateZ,
+                scale: 1,
+                opacity: 1,
+              });
+            }
+          });
         }
 
         // Safe/vault + security heading dock position: cheap to recompute and a
@@ -7920,12 +7946,12 @@ export function BlueprintHero() {
             {/* 3D Perspective Cards Amphitheater Stage - Prominently in upper/middle viewport */}
             <div
               ref={cardsStageRef}
-              className="w-full flex items-center justify-center relative shrink-0 pt-1 sm:pt-2 pb-1"
+              className="w-full flex items-center justify-center relative shrink-0 pt-1 sm:pt-2 pb-1 min-h-[295px] sm:min-h-[320px] md:min-h-[340px] lg:min-h-[355px] xl:min-h-[370px] 2xl:min-h-[385px]"
               style={{ perspective: "1400px", zIndex: 30 }}
             >
               <div
                 ref={cardsClusterRef}
-                className="relative flex items-center justify-center gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-3.5 xl:gap-4 w-full max-w-[1340px] mx-auto overflow-visible py-1.5 px-2 no-scrollbar will-change-transform"
+                className="relative flex items-center justify-center gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-3.5 xl:gap-4 w-full max-w-[1340px] mx-auto overflow-visible py-1.5 px-2 no-scrollbar will-change-transform min-h-[295px] sm:min-h-[320px] md:min-h-[340px] lg:min-h-[355px] xl:min-h-[370px] 2xl:min-h-[385px]"
                 style={{ transformStyle: "preserve-3d" }}
               >
                 {PRODUCT_CARDS.map((card, idx) => {
