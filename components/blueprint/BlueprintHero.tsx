@@ -1690,21 +1690,23 @@ export function BlueprintHero() {
       // when the forward scroll transition first fires.
       const computeDockLayout = () => {
         const clusterEl = cardsClusterRef.current;
-        const { vw: vWidth, vh: vHeight } = getComposedViewport(1440, 800);
-        const isDesktop = vWidth >= 1024;
-        const isTablet = vWidth >= 768;
+        const { vw: vWidth, vh: vHeight, rawW, rawH } = getComposedViewport(1440, 800);
+        const liveW = rawW || vWidth;
+        const liveH = rawH || vHeight;
+        const isDesktop = liveW >= 1024;
+        const isTablet = liveW >= 768;
 
         const clusterRect = clusterEl ? clusterEl.getBoundingClientRect() : null;
-        const clusterCenterX = clusterRect ? clusterRect.left + clusterRect.width / 2 : vWidth / 2;
-        const clusterCenterY = clusterRect ? clusterRect.top + clusterRect.height / 2 : vHeight / 2;
-        const clusterW = clusterEl?.offsetWidth || Math.min(vWidth, 1340);
+        const clusterCenterX = clusterRect ? clusterRect.left + clusterRect.width / 2 : liveW / 2;
+        const clusterCenterY = clusterRect ? clusterRect.top + clusterRect.height / 2 : liveH / 2;
+        const clusterW = clusterEl?.offsetWidth || Math.min(liveW, 1340);
         const clusterH = clusterEl?.offsetHeight || 370;
 
         const restingWidth = isDesktop ? 225 : isTablet ? 195 : 175;
-        const hRest = getCardRestHeight(vWidth);
+        const hRest = getCardRestHeight(liveW);
 
         // Current Bento layout coordinates
-        const bento = computeBentoLayout(vWidth, vHeight);
+        const bento = computeBentoLayout(liveW, liveH);
 
         // Destination stack point for Phase 1: Card 03 ("See Everything", idx === 2)
         const targetCardLeft = Math.round(bento.tileLefts[2] + (bento.tileWidths[2] - restingWidth) / 2);
@@ -1723,28 +1725,39 @@ export function BlueprintHero() {
         const viewportCenterY = (typeof window !== "undefined" ? window.innerHeight : 900) / 2;
         const viewportCenterX = (typeof window !== "undefined" ? window.innerWidth : 1440) / 2;
 
-        const isMobileScreen = vWidth < 768;
-        const isTabletScreen = vWidth >= 768 && vWidth < 1024;
-        const isDesktopScreen = vWidth >= 1024;
+        const isMobileScreen = liveW < 768;
+        const isTabletScreen = liveW >= 768 && liveW < 1024;
+        const isDesktopScreen = liveW >= 1024;
 
         // Visual proportions of vault & heading matching reference composition
+        // Increased vault size with responsive clamp:
+        // - On large screens (1920+), vault reaches 480-490px for high visual presence
+        // - On MacBooks and standard laptops (1366-1440), vault scales smoothly with 46% of viewport height (350-415px)
+        // - On tablets (768-1023), vault is 260-340px
+        // - On mobile (<768), vault is 220-280px
         const effectiveVaultW = isDesktopScreen
-          ? Math.min(350, Math.max(270, Math.round(vHeight * 0.38)))
+          ? Math.round(Math.min(490, Math.max(340, Math.min(liveH * 0.46, liveW * 0.31))))
           : isTabletScreen
-          ? Math.min(290, Math.max(240, Math.round(vHeight * 0.32)))
-          : Math.min(240, Math.max(180, Math.round(vHeight * 0.26)));
+          ? Math.round(Math.min(340, Math.max(260, Math.min(liveH * 0.36, liveW * 0.40))))
+          : Math.round(Math.min(280, Math.max(220, Math.min(liveH * 0.30, liveW * 0.65))));
 
         const headingW = isDesktopScreen
-          ? (vWidth >= 1600 ? 595 : vWidth >= 1280 ? 565 : 520)
+          ? (liveW >= 1600 ? 560 : liveW >= 1280 ? 500 : 450)
           : isTabletScreen
-          ? 400
-          : Math.min(vWidth - 40, 330);
+          ? Math.min(360, Math.round(liveW * 0.44))
+          : Math.min(liveW - 40, 340);
 
         const gap = isDesktopScreen
-          ? (vWidth >= 1600 ? 92 : vWidth >= 1280 ? 64 : 48)
+          ? Math.round(Math.min(96, Math.max(52, (liveW - effectiveVaultW - headingW) * 0.28)))
           : isTabletScreen
-          ? 32
-          : 0;
+          ? Math.round(Math.max(32, liveW * 0.04))
+          : 24;
+
+        // Ensure safeContainerRef has its width & height explicitly synced with effectiveVaultW
+        if (safeContainerRef.current) {
+          safeContainerRef.current.style.width = `${effectiveVaultW}px`;
+          safeContainerRef.current.style.height = `${effectiveVaultW}px`;
+        }
 
         // Symmetric horizontal offsets:
         // On desktop/tablet, composition is centered:
@@ -1761,8 +1774,8 @@ export function BlueprintHero() {
         // Vertical positioning:
         // On desktop/tablet, both vault and heading vertical centers match at viewportCenterY.
         // On mobile, vault sits above center and heading sits below.
-        const mobileVaultYOffset = Math.round(Math.min(vHeight * 0.13, 100));
-        const mobileHeadingYOffset = Math.round(Math.min(vHeight * 0.17, 135));
+        const mobileVaultYOffset = Math.round(Math.min(liveH * 0.13, 100));
+        const mobileHeadingYOffset = Math.round(Math.min(liveH * 0.17, 135));
 
         const targetRingY = Math.round(viewportCenterY - clusterCenterY) + (isMobileScreen ? -mobileVaultYOffset : 0);
         const securityHeadingY = isMobileScreen ? mobileHeadingYOffset : 0;
@@ -1779,8 +1792,8 @@ export function BlueprintHero() {
 
         return {
           clusterEl,
-          vWidth,
-          vHeight,
+          vWidth: liveW,
+          vHeight: liveH,
           bento,
           stackTargetX,
           stackTargetY,
@@ -1796,6 +1809,9 @@ export function BlueprintHero() {
           hRest,
         };
       };
+
+      // Ensure initial dock layout measurements and container styles are set
+      computeDockLayout();
 
       const createProductToRingTimeline = () => {
         const clusterEl = cardsClusterRef.current;
@@ -4239,21 +4255,22 @@ export function BlueprintHero() {
         // Target: cards consolidate into tight horizontal stack matching reference attachment
         const frontX = 35;
 
-        // Clamped so the consolidation shift stays proportioned to the reference desktop
-        // width instead of pushing the stack further from center on very wide monitors.
+        // Maintain the exact docked horizontal and vertical position from computeDockLayout
+        // so the closing text remains locked to the exact same position throughout the transition
         const vCenterX = vwVal / 2;
-        const shiftX = isDesktop
+        const shiftX = rightShiftXRef.current ?? (isDesktop
           ? Math.round(vCenterX * 0.35)
           : isTablet
           ? Math.round(vCenterX * 0.24)
-          : Math.round(vCenterX * 0.14);
+          : Math.round(vCenterX * 0.14));
+        const headingY = securityHeadingYRef.current || 0;
 
         // Ensure security stage and closing line (State 7) are active and measurable behind cards (zIndex: 20 < 30)
         if (securityStageRef.current) {
           gsap.set(securityStageRef.current, { autoAlpha: 1, opacity: 1, visibility: "visible", zIndex: 20 });
         }
         if (securityStateRefs.current[7]) {
-          gsap.set(securityStateRefs.current[7], { autoAlpha: 1, opacity: 1, visibility: "visible", x: shiftX, y: securityHeadingYRef.current || 0, xPercent: -50, yPercent: -50 });
+          gsap.set(securityStateRefs.current[7], { autoAlpha: 1, opacity: 1, visibility: "visible", x: shiftX, y: headingY, xPercent: -50, yPercent: -50 });
         }
         if (closingBlackTextRef.current) {
           closingBlackTextRef.current.style.clipPath = "none";
@@ -4501,7 +4518,7 @@ export function BlueprintHero() {
                 opacity: 1,
                 visibility: "visible",
                 x: shiftX,
-                y: 0,
+                y: headingY,
                 rotate: 0,
                 rotateX: 0,
                 rotateY: 0,
@@ -4556,7 +4573,7 @@ export function BlueprintHero() {
               opacity: 1,
               visibility: "visible",
               x: shiftX,
-              y: securityHeadingYRef.current || 0,
+              y: headingY,
               xPercent: -50,
               yPercent: -50,
             },
@@ -5002,12 +5019,11 @@ export function BlueprintHero() {
           );
         });
 
-        // Downward arrival: Security closing text fades out smoothly
+        // Downward arrival: Security closing text fades out smoothly in place without drifting
         tl.to(
           securityStateRefs.current[7],
           {
             opacity: 0,
-            y: -36,
             duration: 0.45,
             ease: "power1.out",
           },
@@ -5440,11 +5456,12 @@ export function BlueprintHero() {
         const allProductCards = cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
         const allCompanionCards = companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
         const allCards = [...allProductCards, ...allCompanionCards];
-        const shiftX = isDesktop
+        const shiftX = rightShiftXRef.current ?? (isDesktop
           ? Math.round(composedCenterX * 0.35)
           : isTablet
           ? Math.round(composedCenterX * 0.24)
-          : Math.round(composedCenterX * 0.14);
+          : Math.round(composedCenterX * 0.14));
+        const headingY = securityHeadingYRef.current || 0;
 
         const revTl = gsap.timeline({
           onComplete: () => {
@@ -5519,7 +5536,7 @@ export function BlueprintHero() {
                 opacity: 1,
                 visibility: "visible",
                 x: shiftX,
-                y: securityHeadingYRef.current || 0,
+                y: headingY,
                 xPercent: -50,
                 yPercent: -50,
                 rotate: 0,
@@ -5750,7 +5767,7 @@ export function BlueprintHero() {
               autoAlpha: 0,
               opacity: 0,
               x: shiftX,
-              y: (securityHeadingYRef.current || 0) + 16,
+              y: headingY + 16,
               xPercent: -50,
               yPercent: -50,
               rotate: 0,
@@ -5766,7 +5783,7 @@ export function BlueprintHero() {
             {
               autoAlpha: 1,
               opacity: 1,
-              y: 0,
+              y: headingY,
               x: shiftX,
               rotate: 0,
               rotateX: 0,
@@ -8714,7 +8731,7 @@ export function BlueprintHero() {
                 {/* LUXURY ROUND 3D SAFE (Matching "Safe Movement") */}
                 <div
                   ref={safeContainerRef}
-                  className="absolute pointer-events-none select-none will-change-transform flex items-center justify-center -translate-x-1/2 -translate-y-1/2"
+                  className="absolute pointer-events-none select-none will-change-transform flex items-center justify-center -translate-x-1/2 -translate-y-1/2 w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] xl:w-[420px] 2xl:w-[480px] h-[260px] sm:h-[300px] md:h-[340px] lg:h-[380px] xl:h-[420px] 2xl:h-[480px] max-h-[48vh] max-w-[48vh] lg:max-w-[32vw]"
                   style={{
                     left: "50%",
                     top: "50%",
@@ -8737,7 +8754,7 @@ export function BlueprintHero() {
                   {/* 3D Round Chrome/Gold Vault Safe (Exact replica of Reference Image & "Safe Movement") */}
                   <SafeVault3D
                     ref={safeVault3DRef}
-                    className="w-[220px] sm:w-[260px] md:w-[290px] lg:w-[330px] xl:w-[350px] h-[220px] sm:h-[260px] md:h-[290px] lg:h-[330px] xl:h-[350px] max-h-[38vh] max-w-[38vh]"
+                    className="w-full h-full max-w-full max-h-full"
                   />
                 </div>
 
