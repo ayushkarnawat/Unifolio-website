@@ -14,14 +14,7 @@ set -euo pipefail
 # Docs/2026-09-21-aws-marketing-site-deployment-plan.md. Not secrets, just the
 # fixed names of already-created AWS resources.
 S3_BUCKET="unifolio-marketing-frontend-811364789032"
-CLOUDFRONT_DISTRIBUTION_ID="REPLACE_AFTER_TERRAFORM_APPLY"
-
-if [[ "${CLOUDFRONT_DISTRIBUTION_ID}" == "REPLACE_AFTER_TERRAFORM_APPLY" ]]; then
-  echo "Error: CLOUDFRONT_DISTRIBUTION_ID is still a placeholder." >&2
-  echo "Run 'terraform output cloudfront_distribution_id' in D:\\Unifolio code\\infra\\envs\\marketing" >&2
-  echo "and paste the value into this script before deploying." >&2
-  exit 1
-fi
+CLOUDFRONT_DISTRIBUTION_ID="E3UL8HCJRE12OO"
 
 branch="$(git rev-parse --abbrev-ref HEAD)"
 if [[ "${branch}" != "main" ]]; then
