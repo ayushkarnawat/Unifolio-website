@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRef, useEffect, useState } from "react";
@@ -1912,12 +1913,12 @@ export function ProductExperience() {
             ref={headlineRef}
             className="font-sans font-black text-2xl sm:text-3xl md:text-[40px] lg:text-[48px] xl:text-[54px] 2xl:text-[60px] tracking-[-0.035em] leading-[1.08] text-neutral-950 md:whitespace-nowrap"
           >
-            Understand your wealth.{" "}
+            Don&apos;t just see your wealth.{" "}
             <span
               className="font-black text-[#22C55E]"
               style={{ color: "#22C55E" }}
             >
-              Don&apos;t just see it.
+              Understand it.
             </span>
           </h2>
 

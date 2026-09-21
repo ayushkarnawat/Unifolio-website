@@ -604,12 +604,12 @@ export function HeroProductExperience() {
             ref={headlineRef}
             className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[52px] tracking-[-0.03em] leading-[1.08] text-neutral-950 will-change-transform"
           >
-            Understand your wealth.{" "}
+            Don&apos;t just see your wealth.{" "}
             <span
-              className="font-medium text-[#22C55E]"
+              className="font-black text-[#22C55E]"
               style={{ color: "#22C55E" }}
             >
-              Don&apos;t just see it.
+              Understand it.
             </span>
           </h2>
 
