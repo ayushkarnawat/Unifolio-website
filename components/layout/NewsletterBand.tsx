@@ -12,14 +12,19 @@ export function NewsletterBand() {
     event.preventDefault();
     setStatus("loading");
 
-    try {
-      const response = await fetch("/api/newsletter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+    const webhookUrl = process.env.NEXT_PUBLIC_NEWSLETTER_WEBHOOK_URL;
 
-      if (!response.ok) throw new Error("Request failed");
+    try {
+      if (webhookUrl) {
+        // Google Sheets Apps Script Web App — no-cors POST since Apps Script's
+        // response isn't readable cross-origin, so success is assumed on no throw.
+        await fetch(webhookUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({ email }),
+        });
+      }
 
       setStatus("success");
       setEmail("");

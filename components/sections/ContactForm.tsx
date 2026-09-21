@@ -12,15 +12,19 @@ export function ContactForm() {
 
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form).entries());
+    const webhookUrl = process.env.NEXT_PUBLIC_CONTACT_WEBHOOK_URL;
 
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) throw new Error("Request failed");
+      if (webhookUrl) {
+        // Google Sheets Apps Script Web App — no-cors POST since Apps Script's
+        // response isn't readable cross-origin, so success is assumed on no throw.
+        await fetch(webhookUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify(data),
+        });
+      }
 
       setStatus("success");
       form.reset();
