@@ -8,7 +8,7 @@ export interface SafeVault3DRef {
   setCardsProgress?: (progress: number) => void;
   triggerRimStep?: (direction?: 1 | -1, stateIndex?: number) => void;
   resetRim?: () => void;
-  pauseAmbient?: () => void;
+  pauseAmbient?: (reset?: boolean) => void;
   resumeAmbient?: () => void;
 }
 
@@ -57,7 +57,11 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
         });
 
         gsap.set(closedDoor, {
+          xPercent: -50.263,
+          yPercent: -49.594,
+          transformOrigin: "8.23% 49.59%",
           x: 0,
+          y: 0,
           z: 0,
           rotateY: 0,
           opacity: 1,
@@ -65,11 +69,15 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
         });
 
         gsap.set(openChamber, {
+          xPercent: -59.931,
+          yPercent: -50.413,
+          x: 0,
+          y: 0,
           opacity: 0,
           visibility: "hidden",
         });
       } else {
-        // Stage 2: Door swings open to the LEFT around the hinge
+        // Stage 2: Door swings open to the LEFT around the hinge locked in place
         const t = (clampP - P_UNLOCK) / (1 - P_UNLOCK);
         const easeT = Math.sin(t * Math.PI * 0.5);
 
@@ -86,16 +94,17 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
           settle = 3.2 * Math.sin(s * Math.PI) * (1 - s * 0.3);
         }
 
-        const swingAngle = -78 * easeT - settle; // Swings to the LEFT
-        const unseatX = -28 * easeT;
-        const unseatZ = 35 * Math.sin(t * Math.PI);
+        const swingAngle = -78 * easeT - settle; // Swings to the LEFT in place
 
         const doorOpacity = t > 0.88 ? Math.max(0, 1 - (t - 0.88) / 0.10) : 1;
         gsap.set(closedDoor, {
-          transformOrigin: "8% 50%", // Left hinge
+          xPercent: -50.263,
+          yPercent: -49.594,
+          transformOrigin: "8.23% 49.59%", // Left hinge locked in place
           rotateY: swingAngle,
-          x: unseatX,
-          z: unseatZ,
+          x: 0, // LOCKED: No unwanted horizontal translation/shifting
+          y: 0,
+          z: 0, // LOCKED: In-place rotation around hinge axis
           opacity: doorOpacity,
           visibility: t >= 0.98 ? "hidden" : "visible",
         });
@@ -103,6 +112,10 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
         // Open chamber becomes visible as door begins swinging
         const openOpacity = Math.min(1, t / 0.45);
         gsap.set(openChamber, {
+          xPercent: -59.931,
+          yPercent: -50.413,
+          x: 0,
+          y: 0,
           opacity: openOpacity,
           visibility: openOpacity > 0 ? "visible" : "hidden",
         });
@@ -163,9 +176,12 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
             });
           }
         },
-        pauseAmbient: () => {
+        pauseAmbient: (reset = false) => {
           floatTweenRef.current?.pause();
           rockTweenRef.current?.pause();
+          if (reset && floatGroupRef.current) {
+            gsap.set(floatGroupRef.current, { y: 0, rotate: 0 });
+          }
         },
         resumeAmbient: () => {
           floatTweenRef.current?.play();
@@ -227,13 +243,12 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
             ref={openChamberRef}
             className="absolute top-0 h-full overflow-visible pointer-events-none will-change-[opacity,transform]"
             style={{
-              // Open asset is 1024x770. Chamber circle center is at 614/1024 = 59.96% from left.
-              // Aligning center (614px, 385px) to (50%, 50%):
+              // Open asset is 1024x770. Chamber circle center is at 613.69/1024 = 59.931% from left, 388.18/770 = 50.413% from top.
               left: "50%",
               top: "50%",
               width: "calc(100% * (1024 / 770))",
               height: "100%",
-              transform: "translate(-59.96%, -50%)",
+              transform: "translate(-59.931%, -50.413%)",
               opacity: 0,
               visibility: "hidden",
             }}
@@ -252,12 +267,12 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
             ref={closedDoorGroupRef}
             className="absolute top-0 h-full overflow-visible pointer-events-none will-change-[opacity,transform]"
             style={{
-              // Closed asset is 820x770. Circle center is at 410/820 = 50%.
+              // Closed asset is 820x770. Circle center is at 412.16/820 = 50.263% from left, 381.88/770 = 49.594% from top.
               left: "50%",
               top: "50%",
               width: "calc(100% * (820 / 770))",
               height: "100%",
-              transform: "translate(-50%, -50%)",
+              transform: "translate(-50.263%, -49.594%)",
               transformStyle: "preserve-3d",
             }}
           >
@@ -284,10 +299,13 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
 
               {/* Clean White Core Hub with Crisp Unifolio Ring Logo */}
               <div
-                className="absolute rounded-full flex items-center justify-center pointer-events-none overflow-hidden"
+                className="absolute rounded-full pointer-events-none overflow-hidden"
                 style={{
-                  width: "22.4%",
-                  height: "22.4%",
+                  left: "50%",
+                  top: "50%",
+                  height: "24.6%",
+                  aspectRatio: "1 / 1",
+                  transform: "translate(-50%, -50%)",
                   background: "radial-gradient(circle at 50% 48%, #FFFFFF 0%, #FDFDFD 65%, #F2F4F3 100%)",
                   boxShadow: "inset 0 1.5px 3px rgba(0,0,0,0.18), inset 0 -1px 2px rgba(255,255,255,0.8), 0 0 1px rgba(0,0,0,0.25)",
                   border: "1px solid rgba(0,0,0,0.12)",
@@ -296,7 +314,15 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
                 <img
                   src="/Logo/unifolio-ring-transparent.png"
                   alt="Unifolio Ring Logo"
-                  className="w-[72%] h-[72%] object-contain select-none pointer-events-none drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.08)]"
+                  className="absolute select-none pointer-events-none drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.08)]"
+                  style={{
+                    left: "50%",
+                    top: "50%",
+                    width: "82%",
+                    height: "82%",
+                    objectFit: "contain",
+                    transform: "translate(-49.13%, -48.49%)",
+                  }}
                   draggable={false}
                 />
               </div>
