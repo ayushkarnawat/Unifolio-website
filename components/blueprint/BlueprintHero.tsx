@@ -368,6 +368,7 @@ export function BlueprintHero() {
   const targetRingYRef = useRef<number>(0);
   const heroShiftXRef = useRef<number>(0);
   const rightShiftXRef = useRef<number>(0);
+  const securityHeadingYRef = useRef<number>(0);
   const stackTargetXRef = useRef<number>(0);
   const stackTargetYRef = useRef<number>(0);
   const cardsToSafeDeltaXRef = useRef<number>(0);
@@ -637,6 +638,24 @@ export function BlueprintHero() {
   useGSAP(
     () => {
       if (!containerRef.current || !stageRef.current) return;
+
+      // Lock document scroll and position stage fixed during hero/product/security slide states
+      // to completely prevent trackpad/laptop micro-scrolls and momentum from fighting the layout.
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overscrollBehavior = "none";
+      document.body.style.overscrollBehavior = "none";
+      lockScrollYRef.current = 0;
+      window.scrollTo(0, 0);
+
+      if (stageRef.current) {
+        stageRef.current.style.position = "fixed";
+        stageRef.current.style.top = "0px";
+        stageRef.current.style.left = "0px";
+        stageRef.current.style.width = "100%";
+        stageRef.current.style.height = "100vh";
+        stageRef.current.style.zIndex = "40";
+      }
 
       const reduced = prefersReducedMotion();
 
@@ -1394,7 +1413,10 @@ export function BlueprintHero() {
           onReverseComplete: () => {
             stateRef.current = "product-resting";
             transitionAnimatingRef.current = false;
-            if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "";
+            if (cardsClusterRef.current) {
+              cardsClusterRef.current.style.pointerEvents = "";
+              cardsClusterRef.current.style.minHeight = "";
+            }
             if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "";
             if (headerRef.current) headerRef.current.style.pointerEvents = "";
             gsap.set(
@@ -1427,7 +1449,7 @@ export function BlueprintHero() {
         // 1. Smoothly fade out the headline, CTA, and floor reflection line in-place
         // Finishes quickly before cards expand into bento. On reverse, headline only
         // fades back in at the very end when cards have settled into resting slots.
-        const heroFadeDuration = 0.18;
+        const heroFadeDuration = 0.16;
         tl.to(
           [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
           {
@@ -1458,63 +1480,66 @@ export function BlueprintHero() {
         const clusterW = clusterEl?.offsetWidth || Math.min(vWidth, 1340);
         const clusterH = Math.max(clusterEl?.offsetHeight || 0, hRest + 20);
 
-        // computeBentoLayout measures cardsClusterRef's flex-centered offsetTop, which
-        // depends on whether its children are currently in-flow (tall, ~345px+) or
-        // already `position: absolute` (collapsed, near-zero). Every other call site in
-        // the app runs after cards are already absolute, so it always sees the collapsed
-        // height. This is the ONLY site that can fire while cards are still in their
-        // pristine in-flow resting state (e.g. first-ever entry into bento on a fresh
-        // load), which previously measured a ~180px-too-small clusterViewportTop and
-        // produced a white-space gap. Force the same collapsed state here first so the
-        // measurement always matches every other call site, regardless of history.
-        const wrappersForMeasure = cardWrapperRefs.current;
-        const prevPositions: (string | null)[] = [];
-        wrappersForMeasure.forEach((wrapper, i) => {
-          prevPositions[i] = wrapper ? wrapper.style.position : null;
-          if (wrapper) wrapper.style.position = "absolute";
-        });
-        const bento = computeBentoLayout(vWidth, vHeight);
-        wrappersForMeasure.forEach((wrapper, i) => {
-          if (wrapper) wrapper.style.position = prevPositions[i] ?? "";
+        // Lock clusterEl minimum height to its current rendered height so converting in-flow
+        // children to absolute positioning never collapses the container or causes layout shift.
+        if (clusterEl && clusterEl.offsetHeight > 0) {
+          clusterEl.style.minHeight = `${clusterEl.offsetHeight}px`;
+        }
+
+        // Measure true current resting coordinates directly from the DOM before setting absolute positioning.
+        // This eliminates any subpixel/rounding jump between the flex layout and absolute coordinates.
+        const restTop = Math.round((clusterH - hRest) / 2);
+        const initialCardLayouts = PRODUCT_CARDS.map((card, i) => {
+          const wrapper = cardWrapperRefs.current[i];
+          const hasMeasuredOffset = wrapper && wrapper.offsetLeft > 0 && wrapper.offsetHeight > 0;
+          const fallbackL = Math.round((clusterW / 2) + (i - 2) * (wRest + gapRest) - wRest / 2);
+          const fallbackT = Math.round(restTop);
+          return {
+            left: hasMeasuredOffset ? wrapper.offsetLeft : fallbackL,
+            top: hasMeasuredOffset ? wrapper.offsetTop : fallbackT,
+            width: hasMeasuredOffset ? wrapper.offsetWidth : wRest,
+            height: hasMeasuredOffset ? wrapper.offsetHeight : hRest,
+          };
         });
 
-        const bentoCardStartTime = 0.04;
-        const restTop = Math.round((clusterH - hRest) / 2);
+        const bento = computeBentoLayout(vWidth, vHeight);
+        const bentoCardStartTime = 0.02;
 
         PRODUCT_CARDS.forEach((card, i) => {
           const wrapper = cardWrapperRefs.current[i];
           if (!wrapper) return;
 
+          const initial = initialCardLayouts[i];
           const targetL = Math.round(bento.tileLefts[i]);
           const targetT = Math.round(bento.tileTops[i]);
           const targetW = bento.tileWidths[i];
           const targetH = bento.tileHeights[i];
 
-          const startL = Math.round((clusterW / 2) + (i - 2) * (wRest + gapRest) - wRest / 2);
-          const startT = Math.round(restTop + card.restY);
-
+          // Lock in-place instantly at t = 0 with exact current resting position & resting transforms.
+          // Zero visual delta between in-flow and absolute mode.
           tl.set(
             wrapper,
             {
               position: "absolute",
-              left: startL,
-              top: startT,
-              width: wRest,
-              height: hRest,
+              left: initial.left,
+              top: initial.top,
+              width: initial.width,
+              height: initial.height,
               transformOrigin: "center center",
               rotateX: 0,
               rotateY: card.restRotateY,
               rotateZ: card.restRotateZ,
               z: card.restZ,
               x: 0,
-              y: 0,
+              y: card.restY,
               scaleX: 1,
               scaleY: 1,
               zIndex: 20 + i,
             },
-            bentoCardStartTime
+            0.0
           );
 
+          // Card expands seamlessly from exact resting amphitheater position into Bento grid
           tl.to(
             wrapper,
             {
@@ -1528,10 +1553,10 @@ export function BlueprintHero() {
               rotateX: 0,
               rotateY: 0,
               rotateZ: 0,
-              duration: 0.75,
+              duration: 0.70,
               ease: "power2.inOut",
             },
-            bentoCardStartTime + i * 0.025
+            bentoCardStartTime + i * 0.02
           );
 
           // 1. Smoothly fade out initial dark-card text, dark gradient, and centered amphitheater illustration
@@ -1543,16 +1568,16 @@ export function BlueprintHero() {
           const bentoContent = bentoTileContentRefs.current[i];
 
           if (defContent) {
-            tl.to(defContent, { autoAlpha: 0, duration: 0.4, ease: "power2.inOut" }, bentoCardStartTime + 0.15);
+            tl.to(defContent, { autoAlpha: 0, duration: 0.36, ease: "power2.inOut" }, bentoCardStartTime + 0.12);
           }
           if (gradBg) {
-            tl.to(gradBg, { autoAlpha: 0, duration: 0.45, ease: "power2.inOut" }, bentoCardStartTime + 0.15);
+            tl.to(gradBg, { autoAlpha: 0, duration: 0.40, ease: "power2.inOut" }, bentoCardStartTime + 0.12);
           }
           if (glassOverlay) {
-            tl.to(glassOverlay, { autoAlpha: 0, duration: 0.45, ease: "power2.inOut" }, bentoCardStartTime + 0.15);
+            tl.to(glassOverlay, { autoAlpha: 0, duration: 0.40, ease: "power2.inOut" }, bentoCardStartTime + 0.12);
           }
           if (centerIllu) {
-            tl.to(centerIllu, { autoAlpha: 0, duration: 0.4, ease: "power2.inOut" }, bentoCardStartTime + 0.15);
+            tl.to(centerIllu, { autoAlpha: 0, duration: 0.36, ease: "power2.inOut" }, bentoCardStartTime + 0.12);
           }
 
           // 2. Transition card surface into slightly darker frosted glass bento
@@ -1566,10 +1591,10 @@ export function BlueprintHero() {
                   "0 28px 56px -14px rgba(12, 38, 24, 0.14), 0 10px 24px -8px rgba(34, 197, 94, 0.12), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1.5px 3px 0 rgba(34, 197, 94, 0.08)",
                 borderRadius: "24px",
                 backdropFilter: "blur(16px)",
-                duration: 0.85,
+                duration: 0.78,
                 ease: "power2.inOut",
               },
-              bentoCardStartTime + 0.25
+              bentoCardStartTime + 0.22
             );
           }
 
@@ -1578,13 +1603,13 @@ export function BlueprintHero() {
             tl.fromTo(
               bentoContent,
               { autoAlpha: 0, y: 14 },
-              { autoAlpha: 1, y: 0, duration: 0.7, ease: "power2.out" },
-              bentoCardStartTime + 0.55 + i * 0.05
+              { autoAlpha: 1, y: 0, duration: 0.64, ease: "power2.out" },
+              bentoCardStartTime + 0.50 + i * 0.04
             );
           }
         });
 
-        tl.to({}, { duration: 0.1 }, bentoCardStartTime + 1.30);
+        tl.to({}, { duration: 0.08 }, bentoCardStartTime + 1.15);
 
         tl.timeScale(CINEMATIC_TIMESCALE);
         return tl;
@@ -1697,32 +1722,56 @@ export function BlueprintHero() {
         // Viewport centering offset: positions the safe docked on the left side of the viewport
         const viewportCenterY = (typeof window !== "undefined" ? window.innerHeight : 900) / 2;
         const viewportCenterX = (typeof window !== "undefined" ? window.innerWidth : 1440) / 2;
-        // Clamped separately from viewportCenterX: the shift amounts below should stay
-        // proportioned to the reference desktop width, while viewportCenterX itself must
-        // keep tracking the real viewport center for the cluster-centering math.
-        const composedCenterX = vWidth / 2;
-        const targetRingX = Math.round(viewportCenterX - clusterCenterX);
-        const leftShift = isDesktop
-          ? Math.round(composedCenterX * 0.58)
-          : isTablet
-          ? Math.round(composedCenterX * 0.46)
-          : Math.round(composedCenterX * 0.28);
-        const targetLeftX = targetRingX - leftShift;
-        const targetRingY = Math.round(viewportCenterY - clusterCenterY + 18);
-        const isSmallScreen = vWidth < 640;
-        const rightShiftX = isDesktop
-          ? Math.round(composedCenterX * 0.40)
-          : isTablet
-          ? Math.round(composedCenterX * 0.30)
-          : isSmallScreen
-          ? Math.round(composedCenterX * 0.12)
-          : Math.round(composedCenterX * 0.20);
+
+        const isMobileScreen = vWidth < 768;
+        const isTabletScreen = vWidth >= 768 && vWidth < 1024;
+        const isDesktopScreen = vWidth >= 1024;
+
+        // Visual proportions of vault & heading matching reference composition
+        const effectiveVaultW = isDesktopScreen
+          ? Math.min(350, Math.max(270, Math.round(vHeight * 0.38)))
+          : isTabletScreen
+          ? Math.min(290, Math.max(240, Math.round(vHeight * 0.32)))
+          : Math.min(240, Math.max(180, Math.round(vHeight * 0.26)));
+
+        const headingW = isDesktopScreen
+          ? (vWidth >= 1600 ? 595 : vWidth >= 1280 ? 565 : 520)
+          : isTabletScreen
+          ? 400
+          : Math.min(vWidth - 40, 330);
+
+        const gap = isDesktopScreen
+          ? (vWidth >= 1600 ? 92 : vWidth >= 1280 ? 64 : 48)
+          : isTabletScreen
+          ? 32
+          : 0;
+
+        // Symmetric horizontal offsets:
+        // On desktop/tablet, composition is centered:
+        // Vault center is -(headingW + gap) / 2 from center.
+        // Heading center is +(effectiveVaultW + gap) / 2 from center.
+        // Left margin strictly equals right margin!
+        const leftShift = isMobileScreen ? 0 : Math.round((headingW + gap) / 2);
+        const rightShiftX = isMobileScreen ? 0 : Math.round((effectiveVaultW + gap) / 2);
         const heroShiftX = rightShiftX;
+
+        const targetRingX = Math.round(viewportCenterX - clusterCenterX);
+        const targetLeftX = targetRingX - leftShift;
+
+        // Vertical positioning:
+        // On desktop/tablet, both vault and heading vertical centers match at viewportCenterY.
+        // On mobile, vault sits above center and heading sits below.
+        const mobileVaultYOffset = Math.round(Math.min(vHeight * 0.13, 100));
+        const mobileHeadingYOffset = Math.round(Math.min(vHeight * 0.17, 135));
+
+        const targetRingY = Math.round(viewportCenterY - clusterCenterY) + (isMobileScreen ? -mobileVaultYOffset : 0);
+        const securityHeadingY = isMobileScreen ? mobileHeadingYOffset : 0;
 
         targetLeftXRef.current = targetLeftX;
         targetRingYRef.current = targetRingY;
         heroShiftXRef.current = heroShiftX;
         rightShiftXRef.current = rightShiftX;
+        securityHeadingYRef.current = securityHeadingY;
         stackTargetXRef.current = stackTargetX;
         stackTargetYRef.current = stackTargetY;
         cardsToSafeDeltaXRef.current = targetLeftX - stackTargetX;
@@ -1740,6 +1789,7 @@ export function BlueprintHero() {
           targetRingY,
           rightShiftX,
           heroShiftX,
+          securityHeadingY,
           targetCardLeft,
           targetCardTop,
           restingWidth,
@@ -1881,7 +1931,7 @@ export function BlueprintHero() {
             }
             securityStateRefs.current.forEach((el) => {
               if (el) {
-                gsap.set(el, { opacity: 0, visibility: "hidden", x: rightShiftX, y: 0, scale: 1, clipPath: "none" });
+                gsap.set(el, { opacity: 0, visibility: "hidden", x: rightShiftX, y: securityHeadingYRef.current || 0, xPercent: -50, yPercent: -50, scale: 1, clipPath: "none" });
               }
             });
             if (securityHeroRibbonRef.current) {
@@ -1894,21 +1944,19 @@ export function BlueprintHero() {
             }
 
             if (stageRef.current) {
-              stageRef.current.style.position = "";
-              stageRef.current.style.top = "";
-              stageRef.current.style.left = "";
-              stageRef.current.style.width = "";
-              stageRef.current.style.height = "";
-              stageRef.current.style.zIndex = "";
+              stageRef.current.style.position = "fixed";
+              stageRef.current.style.top = "0px";
+              stageRef.current.style.left = "0px";
+              stageRef.current.style.width = "100%";
+              stageRef.current.style.height = "100vh";
+              stageRef.current.style.zIndex = "40";
             }
-            document.documentElement.style.overflow = "";
-            document.body.style.overflow = "";
-            if (lockScrollYRef.current > 0) {
-              window.scrollTo(0, lockScrollYRef.current);
-            }
-            // Unpinning here changes total document height; downstream
-            // ScrollTriggers (FAQ/Contact reveals) cache pixel offsets that go
-            // stale the instant this layout shifts, so resync them now.
+            document.documentElement.style.overflow = "hidden";
+            document.body.style.overflow = "hidden";
+            document.documentElement.style.overscrollBehavior = "none";
+            document.body.style.overscrollBehavior = "none";
+            lockScrollYRef.current = 0;
+            window.scrollTo(0, 0);
             ScrollTrigger.refresh();
 
             // Restore all 5 cards in clean Bento state
@@ -2097,7 +2145,7 @@ export function BlueprintHero() {
         tl.set(securityStageRef.current, { autoAlpha: 1, opacity: 1, visibility: "visible", zIndex: 15 }, 0);
         securityStateRefs.current.forEach((el) => {
           if (el) {
-            tl.set(el, { autoAlpha: 0, opacity: 0, visibility: "hidden", x: rightShiftX, y: 0, clipPath: "none" }, 0);
+            tl.set(el, { autoAlpha: 0, opacity: 0, visibility: "hidden", x: rightShiftX, y: securityHeadingYRef.current || 0, xPercent: -50, yPercent: -50, clipPath: "none" }, 0);
           }
         });
         if (securityHeroRibbonRef.current) {
@@ -2264,16 +2312,16 @@ export function BlueprintHero() {
           );
           tl.fromTo(
             safeContainerRef.current,
-            { opacity: 0, scale: 0.88 },
-            { opacity: 1, scale: 1.0, duration: 0.38, ease: "power2.out" },
+            { opacity: 0, scale: 0.88, xPercent: -50, yPercent: -50, x: targetLeftX, y: targetRingY },
+            { opacity: 1, scale: 1.0, xPercent: -50, yPercent: -50, x: targetLeftX, y: targetRingY, duration: 0.38, ease: "power2.out" },
             0.12
           );
-          tl.call(() => safeVault3DRef.current?.resumeAmbient?.(), [], 0.12);
+          tl.call(() => safeVault3DRef.current?.pauseAmbient?.(true), [], 0.12);
         }
 
-        // Safe opens toward the LEFT (0.16s -> 0.62s)
+        // Safe opens toward the LEFT (0.16s -> 0.72s)
         const safeOpenStart = 0.16;
-        const safeOpenDuration = 0.46;
+        const safeOpenDuration = 0.56;
         const safeMotionProxy = { p: 0 };
 
         tl.fromTo(
@@ -2431,7 +2479,7 @@ export function BlueprintHero() {
         const ribbonEl = securityHeroRibbonRef.current;
 
         if (state0El && ribbonEl) {
-          tl.set(state0El, { autoAlpha: 0, opacity: 0, visibility: "hidden", x: rightShiftX, y: 0, clipPath: "none" }, 0);
+          tl.set(state0El, { autoAlpha: 0, opacity: 0, visibility: "hidden", x: rightShiftX, y: securityHeadingYRef.current || 0, xPercent: -50, yPercent: -50, clipPath: "none" }, 0);
           tl.set(
             ribbonEl,
             {
@@ -2478,10 +2526,10 @@ export function BlueprintHero() {
         }
 
         // -------------------------------------------------------------------------
-        // PHASE 4: VAULT DOOR CLOSES IMMEDIATELY AFTER CARDS ENTER (0.98s -> 1.42s)
+        // PHASE 4: VAULT DOOR CLOSES IMMEDIATELY AFTER CARDS ENTER (0.98s -> 1.52s)
         // -------------------------------------------------------------------------
         const safeCloseStart = 0.98;
-        const safeCloseDuration = 0.44;
+        const safeCloseDuration = 0.54;
 
         tl.to(
           safeMotionProxy,
@@ -2497,6 +2545,11 @@ export function BlueprintHero() {
         );
 
         tl.set(securityStageRef.current, { zIndex: 35 }, safeCloseStart + safeCloseDuration);
+        tl.call(
+          () => safeVault3DRef.current?.resumeAmbient?.(),
+          [],
+          safeCloseStart + safeCloseDuration
+        );
 
         tl.timeScale(CINEMATIC_TIMESCALE);
         return tl;
@@ -3916,6 +3969,8 @@ export function BlueprintHero() {
             document.body.style.overflow = "";
             document.documentElement.style.removeProperty("overflow");
             document.body.style.removeProperty("overflow");
+            document.documentElement.style.removeProperty("overscroll-behavior");
+            document.body.style.removeProperty("overscroll-behavior");
 
             if (stageRef.current) {
               stageRef.current.style.position = "";
@@ -3958,6 +4013,8 @@ export function BlueprintHero() {
 
         document.documentElement.style.overflow = "hidden";
         document.body.style.overflow = "hidden";
+        document.documentElement.style.overscrollBehavior = "none";
+        document.body.style.overscrollBehavior = "none";
 
         if (stageRef.current) {
           stageRef.current.style.position = "fixed";
@@ -4196,7 +4253,7 @@ export function BlueprintHero() {
           gsap.set(securityStageRef.current, { autoAlpha: 1, opacity: 1, visibility: "visible", zIndex: 20 });
         }
         if (securityStateRefs.current[7]) {
-          gsap.set(securityStateRefs.current[7], { autoAlpha: 1, opacity: 1, visibility: "visible", x: shiftX, y: 0 });
+          gsap.set(securityStateRefs.current[7], { autoAlpha: 1, opacity: 1, visibility: "visible", x: shiftX, y: securityHeadingYRef.current || 0, xPercent: -50, yPercent: -50 });
         }
         if (closingBlackTextRef.current) {
           closingBlackTextRef.current.style.clipPath = "none";
@@ -4416,11 +4473,15 @@ export function BlueprintHero() {
                 autoAlpha: 1,
                 visibility: "visible",
                 scale: 1,
+                xPercent: -50,
+                yPercent: -50,
+                x: targetLeftXRef.current,
+                y: targetRingYRef.current,
               });
             }
             safeVault3DRef.current?.setOpenProgress(0);
             safeVault3DRef.current?.setCardsProgress?.(0);
-            safeVault3DRef.current?.resumeAmbient?.();
+            safeVault3DRef.current?.pauseAmbient?.(true);
 
             if (aboutContentRef.current) {
               gsap.set(aboutContentRef.current, { opacity: 0, visibility: "hidden" });
@@ -4495,7 +4556,9 @@ export function BlueprintHero() {
               opacity: 1,
               visibility: "visible",
               x: shiftX,
-              y: 0,
+              y: securityHeadingYRef.current || 0,
+              xPercent: -50,
+              yPercent: -50,
             },
             0
           );
@@ -4574,10 +4637,14 @@ export function BlueprintHero() {
               autoAlpha: 1,
               visibility: "visible",
               scale: 1.0,
+              xPercent: -50,
+              yPercent: -50,
+              x: targetLeftXRef.current,
+              y: targetRingYRef.current,
             },
             0
           );
-          tl.call(() => safeVault3DRef.current?.resumeAmbient?.(), [], 0);
+          tl.call(() => safeVault3DRef.current?.pauseAmbient?.(true), [], 0);
         }
 
         safeVault3DRef.current?.setCardsProgress?.(0);
@@ -4713,9 +4780,9 @@ export function BlueprintHero() {
 
         // STEP 2B: VAULT DOOR CLOSES AFTER CARDS HAVE FULLY CLEARED THE OPENING (1.38s -> 1.82s)
         // Cards have completely cleared the opening and are in mid-flight to the right by 1.38s.
-        // The door closes with the exact same 0.44s duration as entry vault!
+        // The door closes with the exact same 0.54s duration as entry vault!
         const safeExitCloseStart = 1.38;
-        const safeExitCloseDuration = 0.44;
+        const safeExitCloseDuration = 0.54;
 
         tl.to(
           safeOpenProxy,
@@ -5452,7 +5519,9 @@ export function BlueprintHero() {
                 opacity: 1,
                 visibility: "visible",
                 x: shiftX,
-                y: 0,
+                y: securityHeadingYRef.current || 0,
+                xPercent: -50,
+                yPercent: -50,
                 rotate: 0,
                 rotateX: 0,
                 rotateY: 0,
@@ -5681,7 +5750,9 @@ export function BlueprintHero() {
               autoAlpha: 0,
               opacity: 0,
               x: shiftX,
-              y: 16,
+              y: (securityHeadingYRef.current || 0) + 16,
+              xPercent: -50,
+              yPercent: -50,
               rotate: 0,
               rotateX: 0,
               rotateY: 0,
@@ -5893,13 +5964,8 @@ export function BlueprintHero() {
         const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
         const isSmall = typeof window !== "undefined" && window.innerWidth < 640;
         const vCenterX = getComposedViewport().vw / 2;
-        const shiftX = rightShiftXRef.current ?? (isDesk
-          ? Math.round(vCenterX * 0.38)
-          : isTab
-          ? Math.round(vCenterX * 0.28)
-          : isSmall
-          ? Math.round(vCenterX * 0.12)
-          : Math.round(vCenterX * 0.20));
+        const shiftX = rightShiftXRef.current ?? 0;
+        const headingY = securityHeadingYRef.current ?? 0;
 
         // 2. New text smoothly enters with a slight directional movement & subtle stagger
         if (nextEl) {
@@ -5923,7 +5989,9 @@ export function BlueprintHero() {
               visibility: "visible",
               opacity: 0,
               x: shiftX,
-              y: direction === 1 ? 16 : -16,
+              y: (direction === 1 ? 16 : -16) + headingY,
+              xPercent: -50,
+              yPercent: -50,
             },
             0.10
           );
@@ -5944,13 +6012,15 @@ export function BlueprintHero() {
               { opacity: 1, y: 0, duration: 0.20, ease: "power2.out" },
               0.08
             );
-            tl.to(nextEl, { opacity: 1, y: 0, duration: 0.20, ease: "power2.out" }, 0.06);
+            tl.to(nextEl, { opacity: 1, y: headingY, xPercent: -50, yPercent: -50, duration: 0.20, ease: "power2.out" }, 0.06);
           } else {
             tl.to(
               nextEl,
               {
                 opacity: 1,
-                y: 0,
+                y: headingY,
+                xPercent: -50,
+                yPercent: -50,
                 duration: 0.20,
                 ease: "power2.out",
               },
@@ -5990,9 +6060,11 @@ export function BlueprintHero() {
         lockScrollYRef.current = pinEnd;
         window.scrollTo(0, pinEnd);
 
-        // 2. Lock document overflow
+        // 2. Lock document overflow and disable overscroll bouncing
         document.documentElement.style.overflow = "hidden";
         document.body.style.overflow = "hidden";
+        document.documentElement.style.overscrollBehavior = "none";
+        document.body.style.overscrollBehavior = "none";
 
         // 3. Physically lock the stage element fixed to the viewport:
         // Guarantees zero vertical displacement, completely preventing next section peek
@@ -6118,8 +6190,9 @@ export function BlueprintHero() {
           const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
           const isSmall = typeof window !== "undefined" && window.innerWidth < 640;
           const vCenterX = getComposedViewport().vw / 2;
-          const shiftX = rightShiftXRef.current ?? (isDesk ? Math.round(vCenterX * 0.38) : isTab ? Math.round(vCenterX * 0.28) : isSmall ? Math.round(vCenterX * 0.12) : Math.round(vCenterX * 0.20));
-          if (state0El) gsap.set(state0El, { opacity: 1, visibility: "visible", x: shiftX, y: 0, scale: 1, clipPath: "none" });
+          const shiftX = rightShiftXRef.current ?? 0;
+          const headingY = securityHeadingYRef.current ?? 0;
+          if (state0El) gsap.set(state0El, { opacity: 1, visibility: "visible", x: shiftX, y: headingY, xPercent: -50, yPercent: -50, scale: 1, clipPath: "none" });
           currentSecurityStateRef.current = 0;
           safeVault3DRef.current?.resetRim?.();
         }
@@ -6131,6 +6204,8 @@ export function BlueprintHero() {
 
         document.documentElement.style.overflow = "hidden";
         document.body.style.overflow = "hidden";
+        document.documentElement.style.overscrollBehavior = "none";
+        document.body.style.overscrollBehavior = "none";
 
         if (stageRef.current) {
           stageRef.current.style.position = "fixed";
@@ -6171,6 +6246,14 @@ export function BlueprintHero() {
           e.preventDefault();
           e.stopImmediatePropagation();
           return;
+        }
+
+        // Unconditionally prevent native window scrolling during all fixed slide states
+        // (hero, product-resting, product, ring, about). This completely stops trackpad
+        // micro-ticks (<8px) and inertia deltas from initiating compositor scroll fighting.
+        if (stateRef.current !== "faq") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
         }
 
         // 1b. If in About section: scroll-driven 3D physical page flip
@@ -6427,6 +6510,10 @@ export function BlueprintHero() {
           }
           return;
         }
+
+        // Unconditionally prevent touch dragging from scrolling window in non-faq states
+        e.preventDefault();
+        e.stopImmediatePropagation();
 
         const touchDeltaY = touchStartY - e.touches[0].clientY;
 
@@ -6693,7 +6780,7 @@ export function BlueprintHero() {
         }
         const activeSecurityEl = securityStateRefs.current[currentSecurityStateRef.current];
         if (activeSecurityEl) {
-          gsap.set(activeSecurityEl, { x: layout.rightShiftX });
+          gsap.set(activeSecurityEl, { x: layout.rightShiftX, y: layout.securityHeadingY, xPercent: -50, yPercent: -50 });
         }
 
         ScrollTrigger.refresh();
@@ -6766,18 +6853,17 @@ export function BlueprintHero() {
           if (el) gsap.set(el, { opacity: 0, visibility: "hidden" });
         });
         if (stageRef.current) {
-          stageRef.current.style.position = "";
-          stageRef.current.style.top = "";
-          stageRef.current.style.left = "";
-          stageRef.current.style.width = "";
-          stageRef.current.style.height = "";
-          stageRef.current.style.zIndex = "";
+          stageRef.current.style.position = "fixed";
+          stageRef.current.style.top = "0px";
+          stageRef.current.style.left = "0px";
+          stageRef.current.style.width = "100%";
+          stageRef.current.style.height = "100vh";
+          stageRef.current.style.zIndex = "40";
         }
-        document.documentElement.style.overflow = "";
-        document.body.style.overflow = "";
-        // Unpinning here changes total document height; downstream
-        // ScrollTriggers (FAQ/Contact reveals) cache pixel offsets that go
-        // stale the instant this layout shifts, so resync them now.
+        document.documentElement.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
+        document.documentElement.style.overscrollBehavior = "none";
+        document.body.style.overscrollBehavior = "none";
         ScrollTrigger.refresh();
         applyPortalClip(maxRadiusPx, 50.0, 50.0);
         if (irisPortalRef.current) gsap.set(irisPortalRef.current, { autoAlpha: 1 });
@@ -6933,18 +7019,17 @@ export function BlueprintHero() {
           if (el) gsap.set(el, { opacity: 0, visibility: "hidden" });
         });
         if (stageRef.current) {
-          stageRef.current.style.position = "";
-          stageRef.current.style.top = "";
-          stageRef.current.style.left = "";
-          stageRef.current.style.width = "";
-          stageRef.current.style.height = "";
-          stageRef.current.style.zIndex = "";
+          stageRef.current.style.position = "fixed";
+          stageRef.current.style.top = "0px";
+          stageRef.current.style.left = "0px";
+          stageRef.current.style.width = "100%";
+          stageRef.current.style.height = "100vh";
+          stageRef.current.style.zIndex = "40";
         }
-        document.documentElement.style.overflow = "";
-        document.body.style.overflow = "";
-        // Unpinning here changes total document height; downstream
-        // ScrollTriggers (FAQ/Contact reveals) cache pixel offsets that go
-        // stale the instant this layout shifts, so resync them now.
+        document.documentElement.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
+        document.documentElement.style.overscrollBehavior = "none";
+        document.body.style.overscrollBehavior = "none";
         ScrollTrigger.refresh();
         portalState.radius = initialRadiusPx;
         portalState.x = 62.87;
@@ -7105,6 +7190,8 @@ export function BlueprintHero() {
 
         document.documentElement.style.overflow = "hidden";
         document.body.style.overflow = "hidden";
+        document.documentElement.style.overscrollBehavior = "none";
+        document.body.style.overscrollBehavior = "none";
 
         if (stageRef.current) {
           stageRef.current.style.position = "fixed";
@@ -7226,7 +7313,9 @@ export function BlueprintHero() {
                 opacity: 1,
                 visibility: "visible",
                 x: shiftX,
-                y: 0,
+                y: dockLayout.securityHeadingY,
+                xPercent: -50,
+                yPercent: -50,
                 scale: 1,
                 clipPath: "none",
               });
@@ -7236,7 +7325,9 @@ export function BlueprintHero() {
                 opacity: 0,
                 visibility: "hidden",
                 x: shiftX,
-                y: 0,
+                y: dockLayout.securityHeadingY,
+                xPercent: -50,
+                yPercent: -50,
               });
             }
           }
@@ -7312,6 +7403,8 @@ export function BlueprintHero() {
 
         document.documentElement.style.overflow = "hidden";
         document.body.style.overflow = "hidden";
+        document.documentElement.style.overscrollBehavior = "none";
+        document.body.style.overscrollBehavior = "none";
 
         if (stageRef.current) {
           stageRef.current.style.position = "fixed";
@@ -7501,6 +7594,8 @@ export function BlueprintHero() {
         document.body.style.overflow = "";
         document.documentElement.style.removeProperty("overflow");
         document.body.style.removeProperty("overflow");
+        document.documentElement.style.removeProperty("overscroll-behavior");
+        document.body.style.removeProperty("overscroll-behavior");
 
         if (stageRef.current) {
           stageRef.current.style.position = "";
@@ -7551,6 +7646,8 @@ export function BlueprintHero() {
         document.body.style.overflow = "";
         document.documentElement.style.removeProperty("overflow");
         document.body.style.removeProperty("overflow");
+        document.documentElement.style.removeProperty("overscroll-behavior");
+        document.body.style.removeProperty("overscroll-behavior");
 
         if (stageRef.current) {
           stageRef.current.style.position = "";
@@ -7732,9 +7829,10 @@ export function BlueprintHero() {
         }
         document.documentElement.style.overflow = "";
         document.body.style.overflow = "";
-        // Unpinning here changes total document height; downstream
-        // ScrollTriggers (FAQ/Contact reveals) cache pixel offsets that go
-        // stale the instant this layout shifts, so resync them now.
+        document.documentElement.style.removeProperty("overflow");
+        document.body.style.removeProperty("overflow");
+        document.documentElement.style.removeProperty("overscroll-behavior");
+        document.body.style.removeProperty("overscroll-behavior");
         ScrollTrigger.refresh();
       };
     },
@@ -8628,7 +8726,7 @@ export function BlueprintHero() {
                 >
                   {/* Subtle Ambient Soft Shadow Underneath (Reinforces Floating Effect) */}
                   <div
-                    className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[270px] sm:w-[330px] lg:w-[390px] h-[45px] sm:h-[55px] rounded-[100%] pointer-events-none"
+                    className="absolute -bottom-8 sm:-bottom-10 left-1/2 -translate-x-1/2 w-[85%] h-[32px] sm:h-[42px] rounded-[100%] pointer-events-none"
                     style={{
                       background:
                         "radial-gradient(ellipse 65% 35% at 50% 50%, rgba(18, 26, 22, 0.16) 0%, rgba(34, 197, 94, 0.05) 35%, transparent 70%)",
@@ -8639,7 +8737,7 @@ export function BlueprintHero() {
                   {/* 3D Round Chrome/Gold Vault Safe (Exact replica of Reference Image & "Safe Movement") */}
                   <SafeVault3D
                     ref={safeVault3DRef}
-                    className="w-[250px] sm:w-[320px] lg:w-[380px] xl:w-[420px] h-[250px] sm:h-[320px] lg:h-[380px] xl:h-[420px] max-h-[48vh] max-w-[48vh]"
+                    className="w-[220px] sm:w-[260px] md:w-[290px] lg:w-[330px] xl:w-[350px] h-[220px] sm:h-[260px] md:h-[290px] lg:h-[330px] xl:h-[350px] max-h-[38vh] max-w-[38vh]"
                   />
                 </div>
 
@@ -9111,16 +9209,16 @@ export function BlueprintHero() {
                 ref={headlineRef}
                 className="font-sans font-black text-2xl sm:text-3xl md:text-[36px] lg:text-[42px] xl:text-[46px] tracking-[-0.03em] leading-tight sm:whitespace-nowrap text-neutral-950"
               >
-                Understand your wealth.{" "}
+                Don&apos;t just see your wealth.{" "}
                 <span
                   className="font-black text-[#22C55E]"
                   style={{ color: "#22C55E" }}
                 >
-                  Not just see it.
+                  Understand it.
                 </span>
               </h2>
 
-              <div className="mt-4 sm:mt-5">
+              <div className="mt-6 sm:mt-7 md:mt-8">
                 <LinkButton
                   ref={ctaRef}
                   href="#contact"
@@ -9154,18 +9252,14 @@ export function BlueprintHero() {
               className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none z-15 select-none"
               style={{ opacity: 0, visibility: "hidden" }}
             >
-              <div className="relative w-full max-w-[1440px] h-full flex items-center justify-center mx-auto">
+              <div className="relative w-full h-full flex items-center justify-center mx-auto">
                 {SECURITY_STATES.map((item, idx) => (
                   <div
                     key={idx}
                     ref={(el) => {
                       securityStateRefs.current[idx] = el;
                     }}
-                    className={`absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full ${
-                      idx === 0 || idx === 1
-                        ? "max-w-xl sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl px-5 sm:px-6 md:pl-26 lg:pl-34 xl:pl-40 md:pr-4"
-                        : "max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl px-5 sm:px-6 md:pl-16 lg:pl-24 xl:pl-28"
-                    } text-left will-change-transform pointer-events-none`}
+                    className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-fit max-w-[92vw] sm:max-w-[500px] md:max-w-[520px] lg:max-w-[560px] xl:max-w-[600px] text-left will-change-transform pointer-events-none"
                     style={{
                       opacity: 0,
                       visibility: "hidden",
@@ -9174,9 +9268,9 @@ export function BlueprintHero() {
                     {item.type === "hero" ? (
                       <div
                         ref={securityHeroRibbonRef}
-                        className="relative -top-5 sm:-top-7 md:-top-9 lg:-top-10 will-change-transform select-none flex flex-col items-start text-left w-fit max-w-full"
+                        className="relative will-change-transform select-none flex flex-col items-center md:items-start text-center md:text-left w-fit max-w-full"
                       >
-                        <h2 className="font-sans font-black font-[900] text-[20px] min-[380px]:text-[22px] min-[440px]:text-[24px] sm:text-[28px] md:text-[34px] lg:text-[42px] xl:text-[48px] text-neutral-950 tracking-[-0.035em] select-none flex flex-col items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12] text-left">
+                        <h2 className="font-sans font-black font-[900] text-[20px] min-[380px]:text-[22px] min-[440px]:text-[24px] sm:text-[26px] md:text-[30px] lg:text-[36px] xl:text-[40px] 2xl:text-[42px] text-neutral-950 tracking-[-0.035em] select-none flex flex-col items-center md:items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12] text-center md:text-left">
                           {/* Line 1: We take your data as seriously */}
                           <div className="whitespace-nowrap flex items-baseline gap-[0.24em]">
                             <span ref={(el) => { securityHeroWordRefs.current[0] = el; }} className="inline-block">We</span>
@@ -9283,7 +9377,7 @@ export function BlueprintHero() {
                       <div className="flex flex-col items-start text-left">
                         {idx === 1 ? (
                           // State 2: "Read-only, always" - focal point, bigger and bolder typography with embedded eyes Easter egg
-                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[52px] xl:text-[60px] text-neutral-950 tracking-[-0.035em] leading-[1.05] mb-4 sm:mb-5 select-none relative inline-flex flex-wrap sm:flex-nowrap items-baseline">
+                          <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[42px] xl:text-[46px] text-neutral-950 tracking-[-0.035em] leading-[1.08] mb-3 sm:mb-4 select-none relative inline-flex flex-wrap sm:flex-nowrap items-baseline">
                             {/* Left Word Segment: "Read-only," */}
                             <span
                               ref={typoLeftWordRef}
@@ -9510,7 +9604,7 @@ export function BlueprintHero() {
                           </h3>
                         ) : idx === 4 ? (
                           // State 5: "You control the connection" - Typography Transformation on "connection"
-                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 tracking-[-0.035em] leading-[1.06] mb-4 sm:mb-5 select-none whitespace-normal lg:whitespace-nowrap">
+                          <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[42px] xl:text-[46px] text-neutral-950 tracking-[-0.035em] leading-[1.08] mb-3 sm:mb-4 select-none whitespace-normal lg:whitespace-nowrap">
                             <span>You control the </span>
 
                             {/* The word "connection" in Unifolio green transforms into the animated connection SVG */}
@@ -9550,7 +9644,7 @@ export function BlueprintHero() {
                           </h3>
                         ) : idx === 5 ? (
                           // State 6: "Stored in India" - Typography Transformation into Minimal India Map Outline
-                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 tracking-[-0.035em] leading-[1.06] mb-5 sm:mb-6 md:mb-7 select-none whitespace-normal lg:whitespace-nowrap">
+                          <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[42px] xl:text-[46px] text-neutral-950 tracking-[-0.035em] leading-[1.08] mb-4 sm:mb-5 select-none whitespace-normal lg:whitespace-nowrap">
                             <span>Stored in </span>
 
                             {/* The word "India" transforms into the minimal outline map */}
@@ -9601,7 +9695,7 @@ export function BlueprintHero() {
                           </h3>
                         ) : idx === 6 ? (
                           // State 7: "We don't sell your data" - Typography Transformation into Security Shield Badge
-                          <h3 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[56px] text-neutral-950 tracking-[-0.035em] leading-[1.06] mb-4 sm:mb-5 select-none whitespace-normal lg:whitespace-nowrap">
+                          <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[42px] xl:text-[46px] text-neutral-950 tracking-[-0.035em] leading-[1.08] mb-3 sm:mb-4 select-none whitespace-normal lg:whitespace-nowrap">
                             <span>We don&apos;t </span>
 
                             {/* The word "sell" in Unifolio green transforms into the animated Security Shield Badge */}
@@ -9683,11 +9777,11 @@ export function BlueprintHero() {
                             <span> your data</span>
                           </h3>
                         ) : (
-                          <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[40px] xl:text-[46px] text-neutral-950 tracking-[-0.03em] leading-[1.08] mb-3 sm:mb-4">
+                          <h3 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[38px] xl:text-[42px] text-neutral-950 tracking-[-0.03em] leading-[1.08] mb-3 sm:mb-4">
                             {item.headline}
                           </h3>
                         )}
-                        <p className="font-sans text-base sm:text-lg md:text-xl lg:text-[21px] text-neutral-600 font-normal leading-relaxed max-w-xl lg:max-w-3xl">
+                        <p className="font-sans text-sm sm:text-base md:text-lg lg:text-[19px] text-neutral-600 font-normal leading-relaxed max-w-xl lg:max-w-2xl">
                           {item.body}
                         </p>
                       </div>
@@ -9698,7 +9792,7 @@ export function BlueprintHero() {
                           ref={closingBlackTextRef}
                           className="will-change-[clip-path,opacity]"
                         >
-                          <h2 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[44px] xl:text-[50px] text-neutral-950 tracking-[-0.035em] leading-[1.15] flex items-baseline gap-x-[0.26em] whitespace-nowrap">
+                          <h2 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[40px] xl:text-[44px] text-neutral-950 tracking-[-0.035em] leading-[1.15] flex items-baseline gap-x-[0.26em] whitespace-nowrap">
                             {CLOSING_BLACK_WORDS.map((word, wIdx) => (
                               <span
                                 key={wIdx}
@@ -9718,7 +9812,7 @@ export function BlueprintHero() {
                           ref={closingGreenTextRef}
                           className="will-change-[clip-path,opacity]"
                         >
-                          <h2 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[44px] xl:text-[50px] text-[#22C55E] tracking-[-0.035em] leading-[1.15] flex flex-col items-start gap-y-2.5 sm:gap-y-3.5 md:gap-y-4">
+                          <h2 className="font-sans font-black text-2xl sm:text-3xl md:text-4xl lg:text-[40px] xl:text-[44px] text-[#22C55E] tracking-[-0.035em] leading-[1.15] flex flex-col items-start gap-y-2.5 sm:gap-y-3.5 md:gap-y-4">
                             {/* Line 1: It's the baseline everything */}
                             <div className="flex items-baseline gap-x-[0.26em] whitespace-nowrap">
                               {CLOSING_GREEN_WORDS.slice(0, 4).map((word, wIdx) => (
