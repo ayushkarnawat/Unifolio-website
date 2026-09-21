@@ -526,6 +526,7 @@ export function BlueprintNav() {
           return (
             <Link
               key={item.id}
+              id={`nav-link-${item.id}`}
               ref={(el) => {
                 linkRefs.current[item.id] = el;
               }}

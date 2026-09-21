@@ -21,7 +21,7 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
     const rootRef = useRef<HTMLDivElement | null>(null);
     const floatGroupRef = useRef<HTMLDivElement | null>(null);
     const closedDoorGroupRef = useRef<HTMLDivElement | null>(null);
-    const discRef = useRef<HTMLImageElement | null>(null);
+    const discRef = useRef<HTMLDivElement | null>(null);
     const openChamberRef = useRef<HTMLDivElement | null>(null);
 
     const animProgressRef = useRef<number>(0);
@@ -269,15 +269,38 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
               draggable={false}
             />
 
-            {/* Inner rotating locking wheel & dial disc */}
-            <img
+            {/* Inner rotating locking wheel & dial disc assembly */}
+            <div
               ref={discRef}
-              src="/sketch-vault-disc.png"
-              alt="Security Vault Locking Disc"
-              className="absolute inset-0 w-full h-full object-contain will-change-transform"
+              className="absolute inset-0 w-full h-full will-change-transform flex items-center justify-center pointer-events-none"
               style={{ transformOrigin: "50% 50%" }}
-              draggable={false}
-            />
+            >
+              <img
+                src="/sketch-vault-disc.png"
+                alt="Security Vault Locking Disc"
+                className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                draggable={false}
+              />
+
+              {/* Clean White Core Hub with Crisp Unifolio Ring Logo */}
+              <div
+                className="absolute rounded-full flex items-center justify-center pointer-events-none overflow-hidden"
+                style={{
+                  width: "22.4%",
+                  height: "22.4%",
+                  background: "radial-gradient(circle at 50% 48%, #FFFFFF 0%, #FDFDFD 65%, #F2F4F3 100%)",
+                  boxShadow: "inset 0 1.5px 3px rgba(0,0,0,0.18), inset 0 -1px 2px rgba(255,255,255,0.8), 0 0 1px rgba(0,0,0,0.25)",
+                  border: "1px solid rgba(0,0,0,0.12)",
+                }}
+              >
+                <img
+                  src="/Logo/unifolio-ring-transparent.png"
+                  alt="Unifolio Ring Logo"
+                  className="w-[72%] h-[72%] object-contain select-none pointer-events-none drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.08)]"
+                  draggable={false}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
-import { getComposedViewport, getCardRestHeight, DESKTOP_REFERENCE_WIDTH } from "@/lib/viewport";
+import { getComposedViewport, getCardRestHeight, getViewportHeightScale, DESKTOP_REFERENCE_WIDTH } from "@/lib/viewport";
 import { HeroApertureVisual } from "@/components/hero/HeroApertureVisual";
 import { LinkButton } from "@/components/ui/Button";
 import { SafeVault3D, SafeVault3DRef } from "@/components/blueprint/SafeVault3D";
@@ -837,25 +837,24 @@ export function BlueprintHero() {
       // =======================================================================
       const computeBentoLayout = (vWidth: number, vHeight: number) => {
         // Fixed navbar height + safe clearances to ensure tiles never touch navbar or bottom edge
-        const NAVBAR_HEIGHT = 80;
-        const TOP_CLEARANCE = 14;
-        const BOTTOM_CLEARANCE = 18;
+        const isShortScreen = vHeight < 750;
+        const isVeryShort = vHeight < 650;
+        const NAVBAR_HEIGHT = isVeryShort ? 56 : isShortScreen ? 68 : 80;
+        const TOP_CLEARANCE = isShortScreen ? 8 : 14;
+        const BOTTOM_CLEARANCE = isShortScreen ? 10 : 18;
 
         const usableTop = NAVBAR_HEIGHT + TOP_CLEARANCE;
         const usableBottom = vHeight - BOTTOM_CLEARANCE;
-        const usableHeight = Math.max(380, usableBottom - usableTop);
+        const usableHeight = Math.max(340, usableBottom - usableTop);
         const usableCenterY = usableTop + usableHeight / 2;
 
-        // Balanced widescreen bento aspect ratio (~1.82:1) giving comfortable vertical height to all rows
-        const targetAspect = 1.82;
+        // Balanced widescreen bento aspect ratio giving comfortable vertical height to all rows
+        const targetAspect = isVeryShort ? 2.15 : isShortScreen ? 1.95 : 1.82;
 
         // Generously expanded bounding box size so bento fills the page comfortably without overflowing.
-        // The box's own size is clamped to the reference desktop width so it stays a stable size on
-        // large monitors (recentering via bentoViewportLeft below, which still uses the real vWidth)
-        // instead of continuing to grow the whole grid past what it looks like on a laptop.
         const composedW = Math.min(vWidth, DESKTOP_REFERENCE_WIDTH);
-        const maxBentoW = Math.min(composedW * 0.92, 1540);
-        const maxBentoH = Math.min(usableHeight * 0.95, 750);
+        const maxBentoW = Math.min(composedW * (isShortScreen ? 0.94 : 0.92), 1540);
+        const maxBentoH = Math.min(usableHeight * (isShortScreen ? 0.96 : 0.95), 750);
 
         let bentoW = maxBentoW;
         let bentoH = bentoW / targetAspect;
@@ -869,9 +868,9 @@ export function BlueprintHero() {
           bentoH = bentoW / targetAspect;
         }
 
-        // Substantially increased spacing between boxes
-        const gapX = Math.max(18, Math.min(32, Math.round(bentoW * 0.022)));
-        const gapY = Math.max(16, Math.min(26, Math.round(bentoH * 0.036)));
+        // Substantially increased spacing between boxes, scaled down on short screens
+        const gapX = isShortScreen ? Math.max(12, Math.min(22, Math.round(bentoW * 0.016))) : Math.max(18, Math.min(32, Math.round(bentoW * 0.022)));
+        const gapY = isShortScreen ? Math.max(10, Math.min(18, Math.round(bentoH * 0.026))) : Math.max(16, Math.min(26, Math.round(bentoH * 0.036)));
 
         // Column 1 (Left Tall Card - Card 0):
         // Spans full height of the bento composition (~29.5% width)
@@ -1473,10 +1472,13 @@ export function BlueprintHero() {
         });
 
         const wRest = vWidth >= 1536 ? 235 : vWidth >= 1280 ? 225 : vWidth >= 1024 ? 215 : vWidth >= 768 ? 205 : vWidth >= 640 ? 190 : 175;
-        const hRest = getCardRestHeight(vWidth);
+        const hRest = getCardRestHeight(vWidth, vHeight);
         const gapRest = vWidth >= 1280 ? 16 : vWidth >= 768 ? 14 : vWidth >= 640 ? 12 : 10;
 
-        const bentoCardStartTime = 0.08;
+        const bentoCardStartTime = 0.06;
+
+        // Vertically center the resting row at the exact same centerline as the Bento grid
+        const bentoCenterY = Math.round(bento.tileTops[0] + (bento.bentoH - hRest) / 2);
 
         PRODUCT_CARDS.forEach((card, i) => {
           const wrapper = cardWrapperRefs.current[i];
@@ -1488,7 +1490,7 @@ export function BlueprintHero() {
           const targetH = bento.tileHeights[i];
 
           const startL = Math.round((clusterW / 2) + (i - 2) * (wRest + gapRest) - wRest / 2);
-          const startT = Math.round((clusterH / 2) - hRest / 2);
+          const startT = bentoCenterY;
 
           tl.set(
             wrapper,
@@ -1504,7 +1506,6 @@ export function BlueprintHero() {
               rotateZ: 0,
               scaleX: 1,
               scaleY: 1,
-              scaleZ: 1,
               zIndex: 20 + i,
             },
             bentoCardStartTime
@@ -1523,10 +1524,10 @@ export function BlueprintHero() {
               rotateX: 0,
               rotateY: 0,
               rotateZ: 0,
-              duration: 1.15,
-              ease: "power3.inOut",
+              duration: 0.75,
+              ease: "power2.inOut",
             },
-            bentoCardStartTime + i * 0.035
+            bentoCardStartTime + i * 0.025
           );
 
           // 1. Smoothly fade out initial dark-card text, dark gradient, and centered amphitheater illustration
@@ -1696,17 +1697,17 @@ export function BlueprintHero() {
         const composedCenterX = vWidth / 2;
         const targetRingX = Math.round(viewportCenterX - clusterCenterX);
         const leftShift = isDesktop
-          ? Math.round(composedCenterX * 0.56)
+          ? Math.round(composedCenterX * 0.58)
           : isTablet
-          ? Math.round(composedCenterX * 0.44)
+          ? Math.round(composedCenterX * 0.46)
           : Math.round(composedCenterX * 0.28);
         const targetLeftX = targetRingX - leftShift;
         const targetRingY = Math.round(viewportCenterY - clusterCenterY + 18);
         const isSmallScreen = vWidth < 640;
         const rightShiftX = isDesktop
-          ? Math.round(composedCenterX * 0.38)
+          ? Math.round(composedCenterX * 0.40)
           : isTablet
-          ? Math.round(composedCenterX * 0.28)
+          ? Math.round(composedCenterX * 0.30)
           : isSmallScreen
           ? Math.round(composedCenterX * 0.12)
           : Math.round(composedCenterX * 0.20);
@@ -2264,12 +2265,9 @@ export function BlueprintHero() {
           tl.call(() => safeVault3DRef.current?.resumeAmbient?.(), [], 0.12);
         }
 
-        // Safe opens toward the LEFT (0.26s -> 1.02s)
-        // 1. Outer rim/bolts rotate counter-clockwise to unlock
-        // 2. Unlocked door pops outward (+Z) to clear rebate
-        // 3. Heavy door swings to the LEFT with deliberate, weighted inertia
-        const safeOpenStart = 0.26;
-        const safeOpenDuration = 0.72;
+        // Safe opens toward the LEFT (0.16s -> 0.62s)
+        const safeOpenStart = 0.16;
+        const safeOpenDuration = 0.46;
         const safeMotionProxy = { p: 0 };
 
         tl.fromTo(
@@ -2287,31 +2285,20 @@ export function BlueprintHero() {
         );
 
         // -------------------------------------------------------------------------
-        // PHASE 2: CONTINUOUS "PAPER -> SMALLER -> SKETCH -> VAULT" TRANSFORMATION
-        // Progression (Continuous simultaneous scale & Paper <-> Ink transformation):
-        // 1. Normal paper stack: Stack starts moving toward vault at normal 100% size.
-        // 2. Gradually scale down: 100% -> ~80% -> ~60% -> ~40% -> ~30% along the trajectory.
-        // 3. Simultaneously transform Paper -> Ink:
-        //    - Begins while stack is clearly visible away from the vault.
-        //    - Solid card details progressively dissolve into fine architectural drafting lines.
-        //    - Paper and sketch visibly coexist in mid-flight (~60% scale).
-        // 4. Small sketched cards enter the vault:
-        //    - At ~30% size, recognizable small sketch cards arrive at the vault opening.
-        //    - They visibly travel through the vault opening into the chamber.
-        // 5. VAULT CLOSES: Vault door closes smoothly once cards are inside (Phase 4).
+        // PHASE 2: FAST, CRISP TRAVEL OF CARDS INTO VAULT (0.44s -> 0.88s)
         // -------------------------------------------------------------------------
-        const cardEnterStart = 1.05;
+        const cardEnterStart = 0.44;
         const cardsToSafeDeltaX = targetLeftX - stackTargetX;
         const cardsToSafeDeltaY = targetRingY - stackTargetY;
 
-        // Ensure companion duplicate cards remain hidden (only the actual stack transforms)
+        // Ensure companion duplicate cards remain hidden
         companionCardRefs.current.forEach((compEl) => {
           if (compEl) {
             tl.set(compEl, { opacity: 0, autoAlpha: 0, visibility: "hidden" }, 0);
           }
         });
 
-        // 1. Lead product cards: Continuous Paper -> Smaller -> Sketch -> Vault
+        // 1. Lead product cards: Fast glide into vault
         PRODUCT_CARDS.forEach((_, i) => {
           const wrapper = cardWrapperRefs.current[i];
           const paper = cardFrontRefs.current[i];
@@ -2319,7 +2306,7 @@ export function BlueprintHero() {
           if (!wrapper) return;
 
           const rank = STACK_RANK_MAP[i] ?? i;
-          const cardStart = cardEnterStart + rank * 0.02;
+          const cardStart = cardEnterStart + rank * 0.015;
 
           // Target coordinates at vault mouth and inside chamber
           const mouthX = cardsToSafeDeltaX + (4 - rank) * -0.4;
@@ -2334,13 +2321,9 @@ export function BlueprintHero() {
           if (paper) tl.set(paper, { opacity: 1, visibility: "visible" }, 0);
           if (ink) tl.set(ink, { opacity: 0, visibility: "visible" }, 0);
 
-          // -------------------------------------------------------------------
-          // STEP 1: TRAVEL TOWARD VAULT WHILE SIMULTANEOUSLY SCALING & MORPHING
-          // 100% paper -> ~80% smaller paper -> ~60% paper+sketch -> ~40% mostly sketch -> ~30% small sketch
-          // -------------------------------------------------------------------
-          const travelDuration = 1.15;
+          // Fast travel toward vault
+          const travelDuration = 0.42;
 
-          // Continuous trajectory toward the vault mouth
           tl.to(
             wrapper,
             {
@@ -2351,59 +2334,49 @@ export function BlueprintHero() {
               rotateY: -12,
               rotateZ: -10 + rank * 2.5,
               duration: travelDuration,
-              ease: "power1.inOut",
+              ease: "power2.inOut",
             },
             cardStart
           );
 
-          // Continuous scale down: 100% (stackCardScale) -> ~30% along the trajectory
           tl.fromTo(
             wrapper,
             { scale: stackCardScale },
             {
               scale: stackCardScale * 0.30,
               duration: travelDuration,
-              ease: "power1.inOut",
+              ease: "power2.inOut",
             },
             cardStart
           );
 
-          // Simultaneous Paper -> Ink progressive transformation along the trajectory:
           if (paper && ink) {
-            // Begins while still clearly visible away from vault (t ~ cardStart + 0.35s, scale ~80%)
-            const morphStart = cardStart + 0.35;
-
-            // Fine hand-drawn ink lines etch onto the card
+            const morphStart = cardStart + 0.12;
             tl.fromTo(
               ink,
               { opacity: 0 },
               {
                 opacity: 1,
-                duration: 0.70,
+                duration: 0.28,
                 ease: "power1.inOut",
               },
               morphStart
             );
 
-            // Solid paper dissolves while ink lines are visible (hybrid co-existence around scale ~60%)
             tl.fromTo(
               paper,
               { opacity: 1 },
               {
                 opacity: 0,
-                duration: 0.65,
+                duration: 0.25,
                 ease: "power1.inOut",
               },
-              morphStart + 0.40
+              morphStart + 0.10
             );
           }
 
-          // -------------------------------------------------------------------
-          // STEP 2: SMALL SKETCHED CARDS VISIBLY TRAVEL THROUGH VAULT OPENING
-          // Small sketch cards (~30% size) visibly move through the open door into the chamber
-          // -------------------------------------------------------------------
           const enterVaultStart = cardStart + travelDuration;
-          const enterVaultDuration = 0.40;
+          const enterVaultDuration = 0.18;
 
           tl.to(
             wrapper,
@@ -2418,16 +2391,15 @@ export function BlueprintHero() {
             enterVaultStart
           );
 
-          // Fade out ink as cards settle deep inside the dark chamber
           if (ink) {
             tl.to(
               ink,
               {
                 opacity: 0,
-                duration: 0.22,
+                duration: 0.14,
                 ease: "power2.in",
               },
-              enterVaultStart + 0.18
+              enterVaultStart + 0.04
             );
           }
 
@@ -2445,11 +2417,10 @@ export function BlueprintHero() {
         safeVault3DRef.current?.setCardsProgress?.(0);
 
         // -------------------------------------------------------------------------
-        // PHASE 3: REVEAL SECURITY HERO TEXT WHILE CARDS ENTER (1.25s -> 2.00s)
-        // Progressive left -> right reveal mask; text remains stationary at x: 0
+        // PHASE 3: REVEAL SECURITY HERO TEXT WHILE CARDS ENTER (0.68s -> 1.13s)
         // -------------------------------------------------------------------------
-        const textRevealStart = 1.25;
-        const textRevealDuration = 0.75;
+        const textRevealStart = 0.68;
+        const textRevealDuration = 0.45;
         const state0El = securityStateRefs.current[0];
         const ribbonEl = securityHeroRibbonRef.current;
 
@@ -2501,11 +2472,9 @@ export function BlueprintHero() {
         }
 
         // -------------------------------------------------------------------------
-        // PHASE 4: VAULT DOOR CLOSES IMMEDIATELY AFTER CARDS ENTER (3.28s -> 3.72s)
-        // Door closes immediately as cards finish disappearing into the vault chamber.
-        // Zero dead pause, zero idle gap!
+        // PHASE 4: VAULT DOOR CLOSES IMMEDIATELY AFTER CARDS ENTER (0.98s -> 1.42s)
         // -------------------------------------------------------------------------
-        const safeCloseStart = 2.48;
+        const safeCloseStart = 0.98;
         const safeCloseDuration = 0.44;
 
         tl.to(
@@ -4071,7 +4040,14 @@ export function BlueprintHero() {
         }
 
         if (docCavityWrapperRef.current) {
-          gsap.set(docCavityWrapperRef.current, { zIndex: 35, clipPath: "none", WebkitClipPath: "none" });
+          gsap.set(docCavityWrapperRef.current, {
+            zIndex: 35,
+            visibility: "visible",
+            opacity: 1,
+            autoAlpha: 1,
+            clipPath: "none",
+            WebkitClipPath: "none",
+          });
         }
         if (philosophyDocRef.current) {
           gsap.set(philosophyDocRef.current, {
@@ -5488,11 +5464,9 @@ export function BlueprintHero() {
             }
           },
         });
-        revTl.timeScale(CINEMATIC_TIMESCALE);
 
         // -------------------------------------------------------------------------
-        // REVERSE STEP 1: DOCUMENT DIRECTLY RETRACTS BACK INTO ENVELOPE (0.00s -> 0.32s)
-        // No text fade-out! The document glides straight back down inside the cavity.
+        // REVERSE STEP 1: DOCUMENT DIRECTLY RETRACTS BACK INTO ENVELOPE (0.00s -> 0.22s)
         // -------------------------------------------------------------------------
         if (docCavityWrapperRef.current) {
           gsap.set(docCavityWrapperRef.current, {
@@ -5513,13 +5487,13 @@ export function BlueprintHero() {
               rotateX: 0,
               rotateY: 0,
               z: 0,
-              duration: 0.32,
+              duration: 0.22,
               ease: "power2.in",
               force3D: true,
             },
             0
           );
-          revTl.set(philosophyDocRef.current, { visibility: "hidden", opacity: 0 }, 0.32);
+          revTl.set(philosophyDocRef.current, { visibility: "hidden", opacity: 0 }, 0.22);
         }
 
         // Lift envelope back up from downward emergence displacement
@@ -5528,105 +5502,66 @@ export function BlueprintHero() {
             cardsClusterRef.current,
             {
               y: targetEnvelopeY,
-              duration: 0.28,
+              duration: 0.22,
               ease: "power2.out",
             },
-            0.04
+            0.02
           );
         }
 
         // -------------------------------------------------------------------------
-        // REVERSE STEP 2: ENVELOPE TOP FLAP AUTOMATICALLY CLOSES (0.32s -> 0.52s)
-        // No waiting for additional scroll input! Immediately snaps shut and seals.
+        // REVERSE STEP 2: ENVELOPE TOP FLAP AUTOMATICALLY CLOSES (0.20s -> 0.36s)
         // -------------------------------------------------------------------------
         if (envelopeTopFlapRef.current) {
-          revTl.set(envelopeTopFlapRef.current, { zIndex: 30, opacity: 1 }, 0.32);
+          revTl.set(envelopeTopFlapRef.current, { zIndex: 30, opacity: 1 }, 0.20);
           revTl.to(
             envelopeTopFlapRef.current,
             {
               rotateX: 0,
-              duration: 0.20,
+              duration: 0.16,
               ease: "power2.inOut",
               force3D: true,
             },
-            0.32
+            0.20
           );
         }
         if (envelopeSealRef.current) {
-          revTl.set(envelopeSealRef.current, { visibility: "visible" }, 0.32);
+          revTl.set(envelopeSealRef.current, { visibility: "visible" }, 0.20);
           revTl.to(
             envelopeSealRef.current,
             {
               opacity: 1,
               scale: 1,
-              duration: 0.16,
+              duration: 0.12,
               ease: "power2.out",
             },
-            0.36
+            0.24
           );
         }
 
-        // -------------------------------------------------------------------------
-        // REVERSE STEP 3: ENVELOPE DIRECTLY MORPHS INTO CARD STACK (0.52s -> 0.76s)
-        // No card scattering or reassembly! The closed envelope directly contracts into
-        // the pristine 26-card stack at the center.
-        // -------------------------------------------------------------------------
-        allCards.forEach((cardEl, idx) => {
-          const origX = idx < 5 ? (origCentersRef.current[idx]?.x ?? 0) : 0;
-          const origY = idx < 5 ? (origCentersRef.current[idx]?.y ?? 0) : 0;
-          const destX = frontX - idx * 2.8 - origX;
-          const destY = -origY;
-          const destZ = -idx * 2.2;
-
-          revTl.set(
-            cardEl,
-            {
-              x: destX,
-              y: destY,
-              z: destZ,
-              rotateZ: 0,
-              rotateX: 0,
-              rotateY: 0,
-              scale: stackCardScale,
-              borderRadius: "20px",
-              opacity: 0,
-              visibility: "visible",
-            },
-            0.52
-          );
-
-          revTl.to(
-            cardEl,
-            {
-              opacity: 1,
-              duration: 0.20,
-              ease: "power2.out",
-            },
-            0.54
-          );
+        // Ensure all cards remain hidden inside the vault (no glitchy popping)
+        allCards.forEach((cardEl) => {
+          revTl.set(cardEl, { opacity: 0, autoAlpha: 0, visibility: "hidden" }, 0);
         });
 
+        // -------------------------------------------------------------------------
+        // REVERSE STEP 3: ENVELOPE DISSOLVES AS DOCKED VAULT & SECURITY TEXT EMERGE (0.34s -> 0.58s)
+        // -------------------------------------------------------------------------
         if (unifiedEnvelopeRef.current) {
           revTl.to(
             unifiedEnvelopeRef.current,
             {
-              scaleX: 0.54,
-              scaleY: 0.74,
+              scaleX: 0.60,
+              scaleY: 0.75,
               opacity: 0,
-              duration: 0.22,
+              duration: 0.20,
               ease: "power2.in",
             },
-            0.52
+            0.34
           );
-          revTl.set(unifiedEnvelopeRef.current, { visibility: "hidden" }, 0.75);
+          revTl.set(unifiedEnvelopeRef.current, { visibility: "hidden" }, 0.54);
         }
 
-        // -------------------------------------------------------------------------
-        // REVERSE STEP 4: REVEAL VAULT & RESTORE SECURITY TEXT DIRECTLY (0.76s -> 1.25s)
-        // The safe vault is restored at its static docked position on the left,
-        // and the Security text directly returns to its natural position with zero rotation.
-        // No circular/orbital movement. All legacy ring transforms removed.
-        // -------------------------------------------------------------------------
         if (cardsClusterRef.current) {
           revTl.to(
             cardsClusterRef.current,
@@ -5639,11 +5574,11 @@ export function BlueprintHero() {
               rotateX: 0,
               rotateY: 0,
               rotateZ: 0,
-              duration: 0.44,
+              duration: 0.26,
               ease: "power2.out",
               force3D: true,
             },
-            0.76
+            0.34
           );
         }
 
@@ -5652,44 +5587,41 @@ export function BlueprintHero() {
             safeContainerRef.current,
             {
               visibility: "visible",
-              autoAlpha: 1,
-              opacity: 1,
-              scale: 1,
+              autoAlpha: 0,
+              opacity: 0,
+              scale: 0.90,
               xPercent: -50,
               yPercent: -50,
               x: targetLeftX,
               y: targetRingY,
             },
-            0.76
+            0.34
           );
-          revTl.call(() => safeVault3DRef.current?.resumeAmbient?.(), [], 0.76);
-        }
-
-        // Cards smoothly retract/fade into the closed vault
-        allCards.forEach((cardEl) => {
           revTl.to(
-            cardEl,
+            safeContainerRef.current,
             {
-              opacity: 0,
-              duration: 0.26,
-              ease: "power2.in",
+              autoAlpha: 1,
+              opacity: 1,
+              scale: 1,
+              duration: 0.24,
+              ease: "power2.out",
             },
-            0.76
+            0.34
           );
-          revTl.set(cardEl, { visibility: "hidden", autoAlpha: 0 }, 1.02);
-        });
+          revTl.call(() => safeVault3DRef.current?.resumeAmbient?.(), [], 0.36);
+        }
 
         if (aboutContentRef.current) {
           revTl.to(
             aboutContentRef.current,
             {
               opacity: 0,
-              duration: 0.40,
+              duration: 0.22,
               ease: "power2.inOut",
             },
-            0.76
+            0.32
           );
-          revTl.set(aboutContentRef.current, { visibility: "hidden" }, 1.18);
+          revTl.set(aboutContentRef.current, { visibility: "hidden" }, 0.54);
         }
 
         if (securityStageRef.current) {
@@ -6226,7 +6158,7 @@ export function BlueprintHero() {
         wheelGestureEndTimerRef.current = setTimeout(() => {
           wheelGestureActiveRef.current = false;
           hasTriggeredThisGestureRef.current = false;
-        }, 400);
+        }, 180);
 
         // 1. Block all wheel inputs while transition is animating or navbar navigation is in progress
         if (transitionAnimatingRef.current || isNavigatingRef.current) {
@@ -6275,7 +6207,7 @@ export function BlueprintHero() {
           // Upward scroll at or near the top of FAQ: gracefully re-enter About
           const faqEl = document.getElementById("faq");
           const faqTop = faqEl ? faqEl.offsetTop : window.innerHeight;
-          if (e.deltaY < -10 && window.scrollY <= faqTop + 30) {
+          if (e.deltaY < -10 && window.scrollY <= Math.max(100, faqTop - 50)) {
             if (hasTriggeredThisGestureRef.current) return;
             if (Date.now() - lastSecurityScrollTimeRef.current < 150) return;
             e.preventDefault();
@@ -6752,9 +6684,11 @@ export function BlueprintHero() {
       };
       window.addEventListener("resize", handleResizeLines);
 
-      // Instant State Initializers (used when jumping back from FAQ / Contact)
+      // Instant State Initializers (used when jumping back from FAQ / Contact or direct navbar routing)
       const instantShowProduct = () => {
-        smoothScrollTo(0, { duration: 0.85, ease: "power2.inOut" });
+        gsap.killTweensOf(window);
+        lockScrollYRef.current = 0;
+        window.scrollTo(0, 0);
         stateRef.current = "product";
         setIsAperturePaused(true);
         productCompleteRef.current = true;
@@ -6762,6 +6696,12 @@ export function BlueprintHero() {
         transitionStartedRef.current = false;
         transitionAnimatingRef.current = false;
         transitionCompleteRef.current = false;
+        isNavigatingRef.current = false;
+        isSecurityTransitioningRef.current = false;
+        pendingNavSectionRef.current = null;
+        targetNavSectionRef.current = null;
+        wheelGestureActiveRef.current = false;
+        hasTriggeredThisGestureRef.current = false;
         dispatchActiveSection("product");
         if (arrivalIdleTimeoutRef.current) {
           clearTimeout(arrivalIdleTimeoutRef.current);
@@ -6839,6 +6779,10 @@ export function BlueprintHero() {
         // top of the bento grid.
         if (aboutContentRef.current) gsap.set(aboutContentRef.current, { opacity: 0, visibility: "hidden" });
         if (unifiedEnvelopeRef.current) gsap.set(unifiedEnvelopeRef.current, { opacity: 0, visibility: "hidden" });
+        if (safeContainerRef.current) {
+          gsap.set(safeContainerRef.current, { opacity: 0, visibility: "hidden" });
+          safeVault3DRef.current?.pauseAmbient?.();
+        }
 
         const { vw, vh } = getComposedViewport(1440, 800);
         applyBentoLayoutToCards(vw, vh);
@@ -6897,7 +6841,9 @@ export function BlueprintHero() {
       };
 
       const instantResetHero = () => {
-        smoothScrollTo(0, { duration: 0.6, ease: "power2.inOut" });
+        gsap.killTweensOf(window);
+        lockScrollYRef.current = 0;
+        window.scrollTo(0, 0);
         stateRef.current = "hero";
         setIsAperturePaused(false);
         productCompleteRef.current = false;
@@ -6905,6 +6851,12 @@ export function BlueprintHero() {
         transitionStartedRef.current = false;
         transitionAnimatingRef.current = false;
         transitionCompleteRef.current = false;
+        isNavigatingRef.current = false;
+        isSecurityTransitioningRef.current = false;
+        pendingNavSectionRef.current = null;
+        targetNavSectionRef.current = null;
+        wheelGestureActiveRef.current = false;
+        hasTriggeredThisGestureRef.current = false;
         dispatchActiveSection("hero");
         if (heroToProductTlRef.current) {
           heroToProductTlRef.current.kill();
@@ -6946,6 +6898,10 @@ export function BlueprintHero() {
         }
         if (unifiedEnvelopeRef.current) {
           gsap.set(unifiedEnvelopeRef.current, { opacity: 0, visibility: "hidden" });
+        }
+        if (safeContainerRef.current) {
+          gsap.set(safeContainerRef.current, { opacity: 0, visibility: "hidden" });
+          safeVault3DRef.current?.pauseAmbient?.();
         }
         securityStateRefs.current.forEach((el) => {
           if (el) gsap.set(el, { opacity: 0, visibility: "hidden" });
@@ -7110,11 +7066,16 @@ export function BlueprintHero() {
         currentSecurityStateRef.current = 0;
         isHoldingProductRef.current = false;
         isSecurityTransitioningRef.current = false;
+        isNavigatingRef.current = false;
+        pendingNavSectionRef.current = null;
+        targetNavSectionRef.current = null;
+        wheelGestureActiveRef.current = false;
+        hasTriggeredThisGestureRef.current = false;
+        gsap.killTweensOf(window);
         lastSecurityScrollTimeRef.current = Date.now();
 
-        const pinEnd = apertureScrollTriggerRef.current?.end ?? window.scrollY;
-        lockScrollYRef.current = pinEnd;
-        window.scrollTo(0, pinEnd);
+        lockScrollYRef.current = 0;
+        window.scrollTo(0, 0);
 
         document.documentElement.style.overflow = "hidden";
         document.body.style.overflow = "hidden";
@@ -7134,26 +7095,31 @@ export function BlueprintHero() {
           [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
           { autoAlpha: 0, opacity: 0, visibility: "hidden" }
         );
+        applyPortalClip(maxRadiusPx, 50.0, 50.0);
+        if (irisPortalRef.current) gsap.set(irisPortalRef.current, { autoAlpha: 1, opacity: 1, clipPath: "circle(150% at 50% 50%)" });
+        if (portalRimRef.current) gsap.set(portalRimRef.current, { autoAlpha: 0 });
+        if (portalRippleRef.current) gsap.set(portalRippleRef.current, { autoAlpha: 0 });
+        if (productWorldRef.current) {
+          gsap.set(productWorldRef.current, {
+            scale: 1,
+            scaleX: 1,
+            scaleY: 1,
+            xPercent: 0,
+            yPercent: 0,
+            opacity: 1,
+          });
+        }
+        if (heroIntroRef.current) gsap.set(heroIntroRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
+        if (heroVisualRef.current) gsap.set(heroVisualRef.current, { opacity: 0, scale: 5.5, xPercent: -12.87, yPercent: 0.88 });
 
         // Layout measurements
-        const isDesk = typeof window !== "undefined" && window.innerWidth >= 1024;
-        const isTab = typeof window !== "undefined" && window.innerWidth >= 768;
-        const { vw: vwVal, vh: vhVal } = getComposedViewport(1440, 800);
-        const vCenterX = vwVal / 2;
-        const rRadius = Math.min(Math.max(vhVal * 0.22, 160), 220);
-        const lShift = isDesk ? Math.round(vCenterX * 0.44) : isTab ? Math.round(vCenterX * 0.32) : Math.round(vCenterX * 0.20);
-        const rightShift = rightShiftXRef.current || (isDesk ? Math.round(vCenterX * 0.35) : isTab ? Math.round(vCenterX * 0.24) : Math.round(vCenterX * 0.14));
-        const shiftX = rightShift;
-
-        const restingWidth = isDesk ? 225 : isTab ? 195 : 175;
-        const hRest = getCardRestHeight(vwVal);
-        const clusterW = cardsClusterRef.current?.offsetWidth || Math.min(vwVal, 1340);
-        const clusterH = cardsClusterRef.current?.offsetHeight || 370;
-        const bento = computeBentoLayout(vwVal, vhVal);
-        const targetCardLeft = Math.round(bento.tileLefts[2] + (bento.tileWidths[2] - restingWidth) / 2);
-        const targetCardTop = Math.round(bento.tileTops[2] + (bento.tileHeights[2] - hRest) / 2);
-        const stackTargetX = Math.round(targetCardLeft + restingWidth / 2 - clusterW / 2);
-        const stackTargetY = Math.round(targetCardTop + hRest / 2 - clusterH / 2);
+        // Layout measurements via unified dock layout coordinator
+        const dockLayout = computeDockLayout();
+        const leftX = dockLayout.targetLeftX;
+        const ringY = dockLayout.targetRingY;
+        const shiftX = dockLayout.rightShiftX;
+        const stackTargetX = dockLayout.stackTargetX;
+        const stackTargetY = dockLayout.stackTargetY;
 
         origCentersRef.current = PRODUCT_CARDS.map(() => ({
           x: stackTargetX,
@@ -7175,9 +7141,6 @@ export function BlueprintHero() {
         });
 
         // Dock safe to left side of viewport
-        const fallbackX = isDesk ? -Math.round(vCenterX * 0.44) : -Math.round(vCenterX * 0.32);
-        const leftX = targetLeftXRef.current !== 0 ? targetLeftXRef.current : fallbackX;
-        const ringY = targetRingYRef.current !== 0 ? targetRingYRef.current : 18;
         stackTargetXRef.current = stackTargetX;
         stackTargetYRef.current = stackTargetY;
         cardsToSafeDeltaXRef.current = leftX - stackTargetX;
@@ -7246,7 +7209,7 @@ export function BlueprintHero() {
                 autoAlpha: 0,
                 opacity: 0,
                 visibility: "hidden",
-                x: rightShift,
+                x: shiftX,
                 y: 0,
               });
             }
@@ -7261,406 +7224,365 @@ export function BlueprintHero() {
         dispatchActiveSection("security");
       };
 
+      // Instant State Initializer for About section
+      const instantShowAbout = () => {
+        // 1. Kill any active tweens and animations
+        if (aboutOrbitTweenRef.current) {
+          aboutOrbitTweenRef.current.kill();
+          aboutOrbitTweenRef.current = null;
+        }
+        if (consolidationTlRef.current) {
+          consolidationTlRef.current.kill();
+          consolidationTlRef.current = null;
+        }
+        if (heroToProductTlRef.current) {
+          heroToProductTlRef.current.kill();
+          heroToProductTlRef.current = null;
+        }
+        if (restingToBentoTlRef.current) {
+          restingToBentoTlRef.current.kill();
+          restingToBentoTlRef.current = null;
+        }
+        if (ringRotateTweenRef.current) {
+          ringRotateTweenRef.current.kill();
+          ringRotateTweenRef.current = null;
+        }
+        if (productToRingTlRef.current) {
+          productToRingTlRef.current.kill();
+          productToRingTlRef.current = null;
+        }
+        if (securityStateTransitionTlRef.current) {
+          securityStateTransitionTlRef.current.kill();
+          securityStateTransitionTlRef.current = null;
+        }
+        if (typoEyesTlRef.current) { typoEyesTlRef.current.kill(); typoEyesTlRef.current = null; }
+        if (pwdMaskTlRef.current) { pwdMaskTlRef.current.kill(); pwdMaskTlRef.current = null; }
+        if (lockAnimTlRef.current) { lockAnimTlRef.current.kill(); lockAnimTlRef.current = null; }
+        if (connectionAnimTlRef.current) { connectionAnimTlRef.current.kill(); connectionAnimTlRef.current = null; }
+        if (indiaAnimTlRef.current) { indiaAnimTlRef.current.kill(); indiaAnimTlRef.current = null; }
+        if (sellAnimTlRef.current) { sellAnimTlRef.current.kill(); sellAnimTlRef.current = null; }
+        if (moneyAnimTlRef.current) { moneyAnimTlRef.current.kill(); moneyAnimTlRef.current = null; }
+        gsap.killTweensOf(window);
+
+        // 2. Clear flags & state
+        isNavigatingRef.current = false;
+        transitionAnimatingRef.current = false;
+        isSecurityTransitioningRef.current = false;
+        pendingNavSectionRef.current = null;
+        targetNavSectionRef.current = null;
+        wheelGestureActiveRef.current = false;
+        hasTriggeredThisGestureRef.current = false;
+        isRingConsolidatedRef.current = true;
+        isHoldingProductRef.current = false;
+        productCompleteRef.current = true;
+        transitionStartedRef.current = true;
+        transitionCompleteRef.current = true;
+        stateRef.current = "about";
+        lastSecurityScrollTimeRef.current = Date.now();
+
+        // 3. Pin stage & lock scroll at top 0
+        lockScrollYRef.current = 0;
+        window.scrollTo(0, 0);
+
+        document.documentElement.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
+
+        if (stageRef.current) {
+          stageRef.current.style.position = "fixed";
+          stageRef.current.style.top = "0px";
+          stageRef.current.style.left = "0px";
+          stageRef.current.style.width = "100%";
+          stageRef.current.style.height = "100vh";
+          stageRef.current.style.zIndex = "40";
+          gsap.set(stageRef.current, { opacity: 1, visibility: "visible", scale: 1, scaleX: 1, scaleY: 1, x: 0, y: 0 });
+        }
+
+        // 4. Hide Hero, Product, Safe Vault, and Security elements
+        gsap.set(
+          [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
+          { autoAlpha: 0, opacity: 0, visibility: "hidden" }
+        );
+        applyPortalClip(maxRadiusPx, 50.0, 50.0);
+        if (irisPortalRef.current) gsap.set(irisPortalRef.current, { autoAlpha: 1, opacity: 1, clipPath: "circle(150% at 50% 50%)" });
+        if (portalRimRef.current) gsap.set(portalRimRef.current, { autoAlpha: 0 });
+        if (portalRippleRef.current) gsap.set(portalRippleRef.current, { autoAlpha: 0 });
+        if (productWorldRef.current) {
+          gsap.set(productWorldRef.current, {
+            scale: 1,
+            scaleX: 1,
+            scaleY: 1,
+            xPercent: 0,
+            yPercent: 0,
+            opacity: 1,
+          });
+        }
+        if (heroIntroRef.current) gsap.set(heroIntroRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
+        if (heroVisualRef.current) gsap.set(heroVisualRef.current, { opacity: 0, scale: 5.5, xPercent: -12.87, yPercent: 0.88 });
+
+        if (securityStageRef.current) {
+          gsap.set(securityStageRef.current, { opacity: 0, visibility: "hidden" });
+        }
+        securityStateRefs.current.forEach((el) => {
+          if (el) gsap.set(el, { opacity: 0, visibility: "hidden" });
+        });
+
+        if (safeContainerRef.current) {
+          gsap.set(safeContainerRef.current, { opacity: 0, visibility: "hidden" });
+          safeVault3DRef.current?.setOpenProgress(0);
+          safeVault3DRef.current?.setCardsProgress?.(0);
+          safeVault3DRef.current?.pauseAmbient?.();
+        }
+
+        // Hide all 26 product and companion cards
+        const allProductCardsAbout = cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
+        const allCompanionCardsAbout = companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
+        [...allProductCardsAbout, ...allCompanionCardsAbout].forEach((cardEl) => {
+          if (cardEl) gsap.set(cardEl, { opacity: 0, autoAlpha: 0, visibility: "hidden" });
+        });
+
+        if (cardsStageRef.current) {
+          cardsStageRef.current.style.pointerEvents = "";
+          gsap.set(cardsStageRef.current, {
+            scale: 1,
+            scaleX: 1,
+            scaleY: 1,
+            x: 0,
+            y: 0,
+            perspective: "1400px",
+          });
+        }
+
+        // 5. Setup About Page 1 elements in settled state
+        const isDeskAbout = typeof window !== "undefined" && window.innerWidth >= 1024;
+        const isTabAbout = typeof window !== "undefined" && window.innerWidth >= 768;
+        const stackCardScale = isDeskAbout ? 0.60 : isTabAbout ? 0.56 : 0.52;
+        const targetEnvelopeY = isDeskAbout ? 90 : isTabAbout ? 70 : 50;
+
+        if (unifiedEnvelopeRef.current) {
+          gsap.set(unifiedEnvelopeRef.current, {
+            opacity: 1,
+            visibility: "visible",
+            scale: 1,
+            scaleX: 1,
+            scaleY: 1,
+            x: 0,
+            y: 0,
+            z: 0,
+            rotateX: 0,
+            rotateY: 0,
+            rotateZ: 0,
+          });
+        }
+
+        if (envelopeTopFlapRef.current) {
+          gsap.set(envelopeTopFlapRef.current, { rotateX: -175, zIndex: 0, opacity: 0 });
+        }
+        if (envelopeSealRef.current) {
+          gsap.set(envelopeSealRef.current, { opacity: 0, visibility: "hidden" });
+        }
+        if (docCavityWrapperRef.current) {
+          gsap.set(docCavityWrapperRef.current, {
+            zIndex: 35,
+            visibility: "visible",
+            opacity: 1,
+            autoAlpha: 1,
+            clipPath: "none",
+            WebkitClipPath: "none",
+          });
+        }
+        if (philosophyDocRef.current) {
+          gsap.set(philosophyDocRef.current, {
+            opacity: 1,
+            visibility: "visible",
+            y: -375,
+            rotateZ: -2.8,
+            rotateX: 2.0,
+            rotateY: 2.2,
+            z: 55,
+            scale: 1,
+            scaleX: 1,
+            scaleY: 1,
+            transformOrigin: "50% 0%",
+          });
+        }
+        if (docPaperSheetRef.current) {
+          gsap.set(docPaperSheetRef.current, { height: 930, scale: 1, scaleX: 1, scaleY: 1 });
+        }
+        if (docInkCopyRef.current) {
+          gsap.set(docInkCopyRef.current, {
+            clipPath: "inset(0 0 0% 0)",
+            WebkitClipPath: "inset(0 0 0% 0)",
+            opacity: 1,
+            visibility: "visible",
+            filter: "none",
+          });
+        }
+
+        aboutDocPageRef.current = 1;
+        isFlippingDocRef.current = false;
+        if (docFlipperRef.current) {
+          gsap.set(docFlipperRef.current, { rotateY: 0, z: 0 });
+        }
+
+        if (cardsClusterRef.current) {
+          gsap.set(cardsClusterRef.current, {
+            x: 0,
+            y: targetEnvelopeY + 140,
+            rotateZ: 0,
+            rotateX: 0,
+            rotateY: 0,
+            scale: stackCardScale,
+            scaleX: stackCardScale,
+            scaleY: stackCardScale,
+            opacity: 1,
+          });
+        }
+
+        if (aboutContentRef.current) {
+          gsap.set(aboutContentRef.current, {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            scaleX: 1,
+            scaleY: 1,
+            visibility: "visible",
+          });
+        }
+
+        dispatchActiveSection("about");
+      };
+
+      // Instant State Initializer for FAQ section
+      const instantShowFaq = () => {
+        if (aboutOrbitTweenRef.current) { aboutOrbitTweenRef.current.kill(); aboutOrbitTweenRef.current = null; }
+        if (consolidationTlRef.current) { consolidationTlRef.current.kill(); consolidationTlRef.current = null; }
+        if (heroToProductTlRef.current) { heroToProductTlRef.current.kill(); heroToProductTlRef.current = null; }
+        if (restingToBentoTlRef.current) { restingToBentoTlRef.current.kill(); restingToBentoTlRef.current = null; }
+        if (productToRingTlRef.current) { productToRingTlRef.current.kill(); productToRingTlRef.current = null; }
+        gsap.killTweensOf(window);
+
+        isNavigatingRef.current = false;
+        transitionAnimatingRef.current = false;
+        isSecurityTransitioningRef.current = false;
+        pendingNavSectionRef.current = null;
+        targetNavSectionRef.current = null;
+        wheelGestureActiveRef.current = false;
+        hasTriggeredThisGestureRef.current = false;
+        stateRef.current = "faq";
+        lockScrollYRef.current = -1;
+
+        document.documentElement.style.overflow = "";
+        document.body.style.overflow = "";
+        document.documentElement.style.removeProperty("overflow");
+        document.body.style.removeProperty("overflow");
+
+        if (stageRef.current) {
+          stageRef.current.style.position = "";
+          stageRef.current.style.top = "";
+          stageRef.current.style.left = "";
+          stageRef.current.style.width = "";
+          stageRef.current.style.height = "";
+          stageRef.current.style.zIndex = "";
+        }
+
+        if (aboutContentRef.current) gsap.set(aboutContentRef.current, { opacity: 0, visibility: "hidden" });
+        if (unifiedEnvelopeRef.current) gsap.set(unifiedEnvelopeRef.current, { opacity: 0, visibility: "hidden" });
+        if (securityStageRef.current) gsap.set(securityStageRef.current, { opacity: 0, visibility: "hidden" });
+        if (safeContainerRef.current) {
+          gsap.set(safeContainerRef.current, { opacity: 0, visibility: "hidden" });
+          safeVault3DRef.current?.pauseAmbient?.();
+        }
+
+        ScrollTrigger.refresh();
+
+        const faqEl = document.getElementById("faq");
+        if (faqEl) {
+          smoothScrollTo(faqEl, { offset: 70, duration: 0.5, ease: "power2.out" });
+        }
+        dispatchActiveSection("faq");
+      };
+
+      // Instant State Initializer for Contact section
+      const instantShowContact = () => {
+        if (aboutOrbitTweenRef.current) { aboutOrbitTweenRef.current.kill(); aboutOrbitTweenRef.current = null; }
+        if (consolidationTlRef.current) { consolidationTlRef.current.kill(); consolidationTlRef.current = null; }
+        if (heroToProductTlRef.current) { heroToProductTlRef.current.kill(); heroToProductTlRef.current = null; }
+        if (restingToBentoTlRef.current) { restingToBentoTlRef.current.kill(); restingToBentoTlRef.current = null; }
+        if (productToRingTlRef.current) { productToRingTlRef.current.kill(); productToRingTlRef.current = null; }
+        gsap.killTweensOf(window);
+
+        isNavigatingRef.current = false;
+        transitionAnimatingRef.current = false;
+        isSecurityTransitioningRef.current = false;
+        pendingNavSectionRef.current = null;
+        targetNavSectionRef.current = null;
+        wheelGestureActiveRef.current = false;
+        hasTriggeredThisGestureRef.current = false;
+        stateRef.current = "faq";
+        lockScrollYRef.current = -1;
+
+        document.documentElement.style.overflow = "";
+        document.body.style.overflow = "";
+        document.documentElement.style.removeProperty("overflow");
+        document.body.style.removeProperty("overflow");
+
+        if (stageRef.current) {
+          stageRef.current.style.position = "";
+          stageRef.current.style.top = "";
+          stageRef.current.style.left = "";
+          stageRef.current.style.width = "";
+          stageRef.current.style.height = "";
+          stageRef.current.style.zIndex = "";
+        }
+
+        if (aboutContentRef.current) gsap.set(aboutContentRef.current, { opacity: 0, visibility: "hidden" });
+        if (unifiedEnvelopeRef.current) gsap.set(unifiedEnvelopeRef.current, { opacity: 0, visibility: "hidden" });
+        if (securityStageRef.current) gsap.set(securityStageRef.current, { opacity: 0, visibility: "hidden" });
+        if (safeContainerRef.current) {
+          gsap.set(safeContainerRef.current, { opacity: 0, visibility: "hidden" });
+          safeVault3DRef.current?.pauseAmbient?.();
+        }
+
+        ScrollTrigger.refresh();
+
+        const contactEl = document.getElementById("contact");
+        if (contactEl) {
+          smoothScrollTo(contactEl, { offset: 70, duration: 0.5, ease: "power2.out" });
+        }
+        dispatchActiveSection("contact");
+      };
+
       // =======================================================================
-      // UNIFIED NAVBAR NAVIGATION COORDINATOR
-      // Seamlessly routes between all sections and internal states using existing
-      // animations and ensuring intended initial state at each destination.
+      // DIRECT INSTANT NAVBAR NAVIGATION COORDINATOR
+      // Instantly routes directly to the requested destination without delays
+      // or multi-step animation chains, ensuring clean natural scrolling
+      // both upwards and downwards after arrival.
       // =======================================================================
       const navigateToSection = (targetSection: string) => {
-        // Re-entrancy guard: a transition (nav-driven or scroll-driven) is already
-        // in flight. Starting a second one here would fall through every branch
-        // below unhandled (none of them account for a "sculpting" origin) and
-        // permanently strand isNavigatingRef at true, which in turn permanently
-        // blocks all scroll/wheel/touch/keyboard input site-wide. Instead, queue
-        // this click and replay it the moment the in-flight transition lands on a
-        // stable section — dispatchActiveSection flushes the queue on every such
-        // landing, whether reached by scroll or by a previous nav click.
-        if (
-          isNavigatingRef.current ||
-          transitionAnimatingRef.current ||
-          isSecurityTransitioningRef.current ||
-          stateRef.current === "sculpting"
-        ) {
-          pendingNavSectionRef.current = targetSection;
-          return;
+        pendingNavSectionRef.current = null;
+        targetNavSectionRef.current = null;
+        isNavigatingRef.current = false;
+        transitionAnimatingRef.current = false;
+        isSecurityTransitioningRef.current = false;
+        wheelGestureActiveRef.current = false;
+        hasTriggeredThisGestureRef.current = false;
+
+        if (targetSection !== "hero") {
+          window.dispatchEvent(new CustomEvent("unifolio-logo-docked"));
         }
 
-        targetNavSectionRef.current = targetSection;
-
-        // ---------------------------------------------------------------------
-        // Destination: FAQ or Contact
-        // ---------------------------------------------------------------------
-        if (targetSection === "faq" || targetSection === "contact") {
-          // If in Hero: per requirement, play Hero -> Product ring-enlargement transition first
-          if (stateRef.current === "hero") {
-            isNavigatingRef.current = true;
-            onHeroToProductCompletedRef.current = () => {
-              isNavigatingRef.current = false;
-              targetNavSectionRef.current = null;
-              stateRef.current = "faq";
-              lockScrollYRef.current = -1;
-              document.documentElement.style.overflow = "";
-              document.body.style.overflow = "";
-              if (stageRef.current) {
-                stageRef.current.style.position = "";
-                stageRef.current.style.top = "";
-                stageRef.current.style.left = "";
-                stageRef.current.style.width = "";
-                stageRef.current.style.height = "";
-                stageRef.current.style.zIndex = "";
-              }
-              // Unpinning here changes total document height; the FAQ/Contact
-              // ScrollTrigger reveals cache pixel offsets that go stale the
-              // instant this layout shifts, so resync before scrolling to
-              // them — otherwise a nav-driven jump can land past their
-              // (stale) trigger line and their entrance animation never fires.
-              ScrollTrigger.refresh();
-              const targetEl = document.getElementById(targetSection);
-              if (targetEl) {
-                smoothScrollTo(targetEl, { offset: 75, duration: 0.9, ease: "power2.inOut" });
-              }
-            };
-            triggerHeroToProduct();
-            return;
-          }
-
-          if (stateRef.current === "about") {
-            exitAboutToFaq();
-            if (targetSection === "contact") {
-              setTimeout(() => {
-                const contactEl = document.getElementById("contact");
-                if (contactEl) {
-                  smoothScrollTo(contactEl, { offset: 75, duration: 0.9, ease: "power2.inOut" });
-                }
-              }, 450);
-            }
-            return;
-          }
-
-          stateRef.current = "faq";
-          lockScrollYRef.current = -1;
-          document.documentElement.style.overflow = "";
-          document.body.style.overflow = "";
-          if (stageRef.current) {
-            stageRef.current.style.position = "";
-            stageRef.current.style.top = "";
-            stageRef.current.style.left = "";
-            stageRef.current.style.width = "";
-            stageRef.current.style.height = "";
-            stageRef.current.style.zIndex = "";
-          }
-          // Unpinning here changes total document height; the FAQ/Contact
-          // ScrollTrigger reveals cache pixel offsets that go stale the
-          // instant this layout shifts, so resync before scrolling to them —
-          // otherwise a nav-driven jump can land past their (stale) trigger
-          // line and their entrance animation never fires.
-          ScrollTrigger.refresh();
-          const targetEl = document.getElementById(targetSection);
-          if (targetEl) {
-            smoothScrollTo(targetEl, { offset: 75, duration: 0.9, ease: "power2.inOut" });
-          }
-          return;
-        }
-
-        // ---------------------------------------------------------------------
-        // If currently in FAQ/Contact territory (scrollY > 120 or state === "faq"):
-        // Smooth scroll back to top 0, then enter destination in intended initial state
-        // ---------------------------------------------------------------------
-        if (stateRef.current === "faq" || (typeof window !== "undefined" && window.scrollY > 120)) {
-          if (targetSection === "hero") {
-            instantResetHero();
-          }
-          smoothScrollTo(0, {
-            duration: 0.7,
-            ease: "power2.inOut",
-            onComplete: () => {
-              if (targetSection === "hero") {
-                instantResetHero();
-              } else if (targetSection === "product") {
-                instantShowProduct();
-              } else if (targetSection === "security") {
-                instantShowSecurity();
-              } else if (targetSection === "about") {
-                jumpToAboutState(1);
-              }
-            },
-          });
-          return;
-        }
-
-        // ---------------------------------------------------------------------
-        // Destination: HERO
-        // ---------------------------------------------------------------------
         if (targetSection === "hero") {
-          if (stateRef.current === "hero") return;
-
-          isNavigatingRef.current = true;
-          if (stateRef.current === "about") {
-            onRestoreStackCompletedRef.current = () => {
-              onRingToProductCompletedRef.current = () => {
-                onProductToHeroCompletedRef.current = () => {
-                  isNavigatingRef.current = false;
-                  targetNavSectionRef.current = null;
-                };
-                triggerProductToHero();
-              };
-              triggerRingToProduct();
-            };
-            restoreStackToRing();
-            return;
-          }
-
-          if (stateRef.current === "ring") {
-            onRingToProductCompletedRef.current = () => {
-              onProductToHeroCompletedRef.current = () => {
-                isNavigatingRef.current = false;
-                targetNavSectionRef.current = null;
-              };
-              triggerProductToHero();
-            };
-            triggerRingToProduct();
-            return;
-          }
-
-          if (stateRef.current === "product") {
-            if (restingToBentoTlRef.current) {
-              restingToBentoTlRef.current.kill();
-              restingToBentoTlRef.current = null;
-            }
-            PRODUCT_CARDS.forEach((card, i) => {
-              const wrapper = cardWrapperRefs.current[i];
-              const flipper = cardFlipperRefs.current[i];
-              const front = cardFrontRefs.current[i];
-              const bentoContent = bentoTileContentRefs.current[i];
-              if (bentoContent) gsap.set(bentoContent, { autoAlpha: 0, y: 14 });
-              if (wrapper) {
-                wrapper.style.position = "";
-                wrapper.style.left = "";
-                wrapper.style.top = "";
-                wrapper.style.width = "";
-                wrapper.style.height = "";
-                gsap.set(wrapper, {
-                  x: (i - 2) * -16,
-                  y: card.restY,
-                  z: card.restZ,
-                  rotateX: 0,
-                  rotateY: card.restRotateY,
-                  rotateZ: card.restRotateZ,
-                  scale: 1,
-                });
-              }
-              if (flipper) gsap.set(flipper, { rotateY: 180 });
-              if (front) {
-                gsap.set(front, {
-                  borderRadius: "0px",
-                  backgroundColor: "#070908",
-                  borderColor: "rgba(255, 255, 255, 0.12)",
-                });
-              }
-            });
-            stateRef.current = "product-resting";
-          }
-
-          if (stateRef.current === "product-resting") {
-            onProductToHeroCompletedRef.current = () => {
-              isNavigatingRef.current = false;
-              targetNavSectionRef.current = null;
-            };
-            triggerProductToHero();
-            return;
-          }
-        }
-
-        // ---------------------------------------------------------------------
-        // Destination: PRODUCT
-        // ---------------------------------------------------------------------
-        if (targetSection === "product") {
-          if (stateRef.current === "product") {
-            dispatchActiveSection("product");
-            return;
-          }
-
-          // "product-resting" is only the teaser row reached mid-scroll from Hero —
-          // the actual Product section content is the full bento grid. Play the
-          // existing resting -> bento reveal so Product always opens fully, not
-          // half-rendered.
-          if (stateRef.current === "product-resting") {
-            triggerRestingToBento();
-            return;
-          }
-
-          isNavigatingRef.current = true;
-          if (stateRef.current === "hero") {
-            onHeroToProductCompletedRef.current = () => {
-              isNavigatingRef.current = false;
-              targetNavSectionRef.current = null;
-              triggerRestingToBento();
-            };
-            triggerHeroToProduct();
-            return;
-          }
-
-          if (stateRef.current === "ring") {
-            onRingToProductCompletedRef.current = () => {
-              isNavigatingRef.current = false;
-              targetNavSectionRef.current = null;
-            };
-            triggerRingToProduct();
-            return;
-          }
-
-          if (stateRef.current === "about") {
-            onRestoreStackCompletedRef.current = () => {
-              onRingToProductCompletedRef.current = () => {
-                isNavigatingRef.current = false;
-                targetNavSectionRef.current = null;
-              };
-              triggerRingToProduct();
-            };
-            restoreStackToRing();
-            return;
-          }
-        }
-
-        // ---------------------------------------------------------------------
-        // Destination: SECURITY
-        // ---------------------------------------------------------------------
-        if (targetSection === "security") {
-          if (stateRef.current === "ring") {
-            if (currentSecurityStateRef.current > 0) {
-              securityStateRefs.current.forEach((el, idx) => {
-                if (el) gsap.set(el, { opacity: idx === 0 ? 1 : 0, visibility: idx === 0 ? "visible" : "hidden" });
-              });
-              currentSecurityStateRef.current = 0;
-            }
-            dispatchActiveSection("security");
-            return;
-          }
-
-          isNavigatingRef.current = true;
-          if (stateRef.current === "hero") {
-            onHeroToProductCompletedRef.current = () => {
-              if (restingToBentoTlRef.current) restingToBentoTlRef.current.kill();
-              restingToBentoTlRef.current = createRestingToBentoTimeline();
-              restingToBentoTlRef.current.progress(1);
-              stateRef.current = "product";
-              onProductToRingCompletedRef.current = () => {
-                isNavigatingRef.current = false;
-                targetNavSectionRef.current = null;
-              };
-              triggerProductToRing();
-            };
-            triggerHeroToProduct();
-            return;
-          }
-
-          if (stateRef.current === "product-resting") {
-            if (restingToBentoTlRef.current) restingToBentoTlRef.current.kill();
-            restingToBentoTlRef.current = createRestingToBentoTimeline();
-            restingToBentoTlRef.current.progress(1);
-            stateRef.current = "product";
-            onProductToRingCompletedRef.current = () => {
-              isNavigatingRef.current = false;
-              targetNavSectionRef.current = null;
-            };
-            triggerProductToRing();
-            return;
-          }
-
-          if (stateRef.current === "product") {
-            onProductToRingCompletedRef.current = () => {
-              isNavigatingRef.current = false;
-              targetNavSectionRef.current = null;
-            };
-            triggerProductToRing();
-            return;
-          }
-
-          if (stateRef.current === "about") {
-            onRestoreStackCompletedRef.current = () => {
-              isNavigatingRef.current = false;
-              targetNavSectionRef.current = null;
-            };
-            restoreStackToRing();
-            return;
-          }
-        }
-
-        // ---------------------------------------------------------------------
-        // Destination: ABOUT
-        // ---------------------------------------------------------------------
-        if (targetSection === "about") {
-          if (stateRef.current === "about") {
-            if (aboutDocPageRef.current !== 1) {
-              if (docFlipperRef.current) gsap.to(docFlipperRef.current, { rotateY: 0, duration: 0.4, ease: "power2.inOut" });
-              aboutDocPageRef.current = 1;
-            }
-            dispatchActiveSection("about");
-            return;
-          }
-
-          isNavigatingRef.current = true;
-          if (stateRef.current === "hero") {
-            onHeroToProductCompletedRef.current = () => {
-              if (restingToBentoTlRef.current) restingToBentoTlRef.current.kill();
-              restingToBentoTlRef.current = createRestingToBentoTimeline();
-              restingToBentoTlRef.current.progress(1);
-              stateRef.current = "product";
-              onProductToRingCompletedRef.current = () => {
-                onConsolidateCompletedRef.current = () => {
-                  isNavigatingRef.current = false;
-                  targetNavSectionRef.current = null;
-                };
-                consolidateRingToStack();
-              };
-              triggerProductToRing();
-            };
-            triggerHeroToProduct();
-            return;
-          }
-
-          if (stateRef.current === "product-resting") {
-            if (restingToBentoTlRef.current) restingToBentoTlRef.current.kill();
-            restingToBentoTlRef.current = createRestingToBentoTimeline();
-            restingToBentoTlRef.current.progress(1);
-            stateRef.current = "product";
-            onProductToRingCompletedRef.current = () => {
-              onConsolidateCompletedRef.current = () => {
-                isNavigatingRef.current = false;
-                targetNavSectionRef.current = null;
-              };
-              consolidateRingToStack();
-            };
-            triggerProductToRing();
-            return;
-          }
-
-          if (stateRef.current === "product") {
-            onProductToRingCompletedRef.current = () => {
-              onConsolidateCompletedRef.current = () => {
-                isNavigatingRef.current = false;
-                targetNavSectionRef.current = null;
-              };
-              consolidateRingToStack();
-            };
-            triggerProductToRing();
-            return;
-          }
-
-          if (stateRef.current === "ring") {
-            if (currentSecurityStateRef.current > 0) {
-              securityStateRefs.current.forEach((el, idx) => {
-                if (el) gsap.set(el, { opacity: idx === 0 ? 1 : 0, visibility: idx === 0 ? "visible" : "hidden" });
-              });
-              currentSecurityStateRef.current = 0;
-            }
-            onConsolidateCompletedRef.current = () => {
-              isNavigatingRef.current = false;
-              targetNavSectionRef.current = null;
-            };
-            consolidateRingToStack();
-            return;
-          }
+          instantResetHero();
+        } else if (targetSection === "product") {
+          instantShowProduct();
+        } else if (targetSection === "security") {
+          instantShowSecurity();
+        } else if (targetSection === "about") {
+          instantShowAbout();
+        } else if (targetSection === "faq") {
+          instantShowFaq();
+        } else if (targetSection === "contact") {
+          instantShowContact();
         }
       };
 
@@ -7669,6 +7591,7 @@ export function BlueprintHero() {
       const handleShowAbout = () => navigateToSection("about");
       const handleShowSecurity = () => navigateToSection("security");
       const handleShowFaq = () => navigateToSection("faq");
+      const handleShowContact = () => navigateToSection("contact");
 
       const handleNavClick = (e: Event) => {
         const ce = e as CustomEvent<{ section: string }>;
@@ -7683,6 +7606,7 @@ export function BlueprintHero() {
       window.addEventListener("unifolio-show-about", handleShowAbout);
       window.addEventListener("unifolio-show-security", handleShowSecurity);
       window.addEventListener("unifolio-show-faq", handleShowFaq);
+      window.addEventListener("unifolio-show-contact", handleShowContact);
 
       if (typeof window !== "undefined") {
         (window as any).__biDebug = {
@@ -7694,7 +7618,13 @@ export function BlueprintHero() {
           safeContainerRef,
           securityStateRefs,
           securityHeroRibbonRef,
+          instantResetHero,
+          instantShowProduct,
           instantShowSecurity,
+          instantShowAbout,
+          instantShowFaq,
+          instantShowContact,
+          navigateToSection,
         };
       }
 
@@ -7719,6 +7649,7 @@ export function BlueprintHero() {
         window.removeEventListener("unifolio-show-about", handleShowAbout);
         window.removeEventListener("unifolio-show-security", handleShowSecurity);
         window.removeEventListener("unifolio-show-faq", handleShowFaq);
+        window.removeEventListener("unifolio-show-contact", handleShowContact);
         window.removeEventListener("resize", handleResizeLines);
         if (wheelGestureEndTimerRef.current) {
           clearTimeout(wheelGestureEndTimerRef.current);
@@ -8247,54 +8178,54 @@ export function BlueprintHero() {
                                 </div>
 
                                 {/* Vertical Floating Information Layout */}
-                                <div className="flex flex-col justify-start flex-1 mt-6 sm:mt-7 gap-5 sm:gap-6 lg:gap-7">
+                                <div className="flex flex-col justify-start flex-1 mt-3.5 sm:mt-5 lg:mt-6 gap-3 sm:gap-4.5 lg:gap-6">
                                   {/* Item 1: Overlap Check */}
-                                  <div className="flex items-start gap-3 sm:gap-3.5">
+                                  <div className="flex items-start gap-2.5 sm:gap-3.5">
                                     <img
                                       src="/bento-icons/stacked-sheets.png"
                                       alt="Overlap Check"
-                                      className="w-[24px] h-[24px] sm:w-[26px] sm:h-[26px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[15px] sm:text-[16px] lg:text-[17px] text-neutral-700 font-medium leading-[1.52] sm:leading-[1.56]">
+                                    <p className="text-[13.5px] sm:text-[15px] lg:text-[16.5px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.5]">
                                       <strong className="font-bold text-neutral-950">Overlap Check.</strong>{" "}
                                       Spot when &quot;diversified&quot; funds are secretly the same bet.
                                     </p>
                                   </div>
 
                                   {/* Item 2: Performance, in Context */}
-                                  <div className="flex items-start gap-3 sm:gap-3.5">
+                                  <div className="flex items-start gap-2.5 sm:gap-3.5">
                                     <img
                                       src="/bento-icons/rising-graph.png"
                                       alt="Performance, in Context"
-                                      className="w-[24px] h-[24px] sm:w-[26px] sm:h-[26px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[15px] sm:text-[16px] lg:text-[17px] text-neutral-700 font-medium leading-[1.52] sm:leading-[1.56]">
+                                    <p className="text-[13.5px] sm:text-[15px] lg:text-[16.5px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.5]">
                                       <strong className="font-bold text-neutral-950">Performance, in Context.</strong>{" "}
                                       Real returns, measured against what matters.
                                     </p>
                                   </div>
 
                                   {/* Item 3: Hidden Fee Finder */}
-                                  <div className="flex items-start gap-3 sm:gap-3.5">
+                                  <div className="flex items-start gap-2.5 sm:gap-3.5">
                                     <img
                                       src="/bento-icons/rupee-coin.png"
                                       alt="Hidden Fee Finder"
-                                      className="w-[24px] h-[24px] sm:w-[26px] sm:h-[26px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[15px] sm:text-[16px] lg:text-[17px] text-neutral-700 font-medium leading-[1.52] sm:leading-[1.56]">
+                                    <p className="text-[13.5px] sm:text-[15px] lg:text-[16.5px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.5]">
                                       <strong className="font-bold text-neutral-950">Hidden Fee Finder.</strong>{" "}
                                       What expense ratios are quietly costing you.
                                     </p>
                                   </div>
 
                                   {/* Item 4: Peer Benchmarking */}
-                                  <div className="flex items-start gap-3 sm:gap-3.5">
+                                  <div className="flex items-start gap-2.5 sm:gap-3.5">
                                     <img
                                       src="/bento-icons/people-group.png"
                                       alt="Peer Benchmarking"
-                                      className="w-[24px] h-[24px] sm:w-[26px] sm:h-[26px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[15px] sm:text-[16px] lg:text-[17px] text-neutral-700 font-medium leading-[1.52] sm:leading-[1.56]">
+                                    <p className="text-[13.5px] sm:text-[15px] lg:text-[16.5px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.5]">
                                       <strong className="font-bold text-neutral-950">Peer Benchmarking.</strong>{" "}
                                       Compared against people like you, not a generic index.
                                     </p>
@@ -8308,7 +8239,7 @@ export function BlueprintHero() {
                                   <h3 className="font-sans font-black text-xl sm:text-2xl lg:text-[26px] tracking-[-0.03em] text-neutral-950 leading-tight">
                                     Skip the dashboards. <span className="text-[#22C55E]">Just ask</span>
                                   </h3>
-                                  <p className="mt-2.5 text-[13px] sm:text-[14px] lg:text-[14.5px] text-neutral-700 font-medium leading-[1.48]">
+                                  <p className="mt-2 text-[12.5px] sm:text-[13.5px] lg:text-[14.5px] text-neutral-700 font-medium leading-[1.4]">
                                     Not a chart. A question. Ask what&apos;s dragging your returns, whether you&apos;re overexposed, or if a decision makes sense, and get an answer from your own portfolio.
                                   </p>
                                 </div>
@@ -8318,7 +8249,7 @@ export function BlueprintHero() {
                                   <img
                                     src="/product-cards/card-2d-1.png"
                                     alt="Conversational Question Intelligence"
-                                    className="w-auto h-full max-h-[190px] sm:max-h-[210px] lg:max-h-[230px] object-contain drop-shadow-sm scale-[1.08] sm:scale-[1.12] lg:scale-[1.15] origin-center sm:origin-right"
+                                    className="w-auto h-full max-h-[155px] sm:max-h-[190px] lg:max-h-[225px] object-contain drop-shadow-sm scale-[1.05] sm:scale-[1.10] lg:scale-[1.15] origin-center sm:origin-right"
                                   />
                                 </div>
                               </div>
@@ -8328,27 +8259,27 @@ export function BlueprintHero() {
                                 <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-[32px] tracking-[-0.035em] text-neutral-950 leading-[1.12]">
                                   See <span className="text-[#22C55E]">everything</span>
                                 </h3>
-                                <p className="mt-3 sm:mt-3.5 text-[13.5px] sm:text-[14.5px] lg:text-[15.5px] text-neutral-700 font-medium leading-relaxed">
+                                <p className="mt-2.5 sm:mt-3.5 text-[13px] sm:text-[14px] lg:text-[15.5px] text-neutral-700 font-medium leading-relaxed">
                                   Mutual funds, stocks, bank accounts, loans, credit cards, real estate. Every asset and liability, aggregated into one accurate number.
                                 </p>
                               </div>
                             ) : idx === 3 ? (
                               // TILE 04: Know your risk
                               <div className="relative flex flex-col h-full justify-start">
-                                <h3 className="font-sans font-black text-xl sm:text-2xl lg:text-[25px] tracking-[-0.03em] text-neutral-950 leading-tight mb-3 sm:mb-3.5 relative z-10">
+                                <h3 className="font-sans font-black text-xl sm:text-2xl lg:text-[25px] tracking-[-0.03em] text-neutral-950 leading-tight mb-2.5 sm:mb-3.5 relative z-10">
                                   Know your <span className="text-[#22C55E]">risk</span>
                                 </h3>
 
                                 {/* 2 × 2 Floating Information Layout (No sub-cards, no borders, no backgrounds) */}
-                                <div className="grid grid-cols-2 gap-x-5 sm:gap-x-7 gap-y-3 sm:gap-y-3.5 flex-1 relative z-10">
+                                <div className="grid grid-cols-2 gap-x-4 sm:gap-x-7 gap-y-2.5 sm:gap-y-3.5 flex-1 relative z-10">
                                   {/* Item 1: Family Runway */}
                                   <div className="flex items-start gap-2 sm:gap-2.5">
                                     <img
                                       src="/bento-icons/pulse-line.png"
                                       alt="Family Runway"
-                                      className="w-[18px] h-[18px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[12.5px] sm:text-[13.5px] lg:text-[14px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.4]">
+                                    <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
                                       <strong className="font-bold text-neutral-950">Family Runway.</strong>{" "}
                                       How long your family&apos;s savings would actually last.
                                     </p>
@@ -8359,9 +8290,9 @@ export function BlueprintHero() {
                                     <img
                                       src="/bento-icons/shield.png"
                                       alt="Real Safety Cushion"
-                                      className="w-[18px] h-[18px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[12.5px] sm:text-[13.5px] lg:text-[14px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.4]">
+                                    <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
                                       <strong className="font-bold text-neutral-950">Real Safety Cushion.</strong>{" "}
                                       Built from your real numbers, not a generic rule of thumb.
                                     </p>
@@ -8372,9 +8303,9 @@ export function BlueprintHero() {
                                     <img
                                       src="/bento-icons/stacked-coins.png"
                                       alt="Sleeping Money"
-                                      className="w-[18px] h-[18px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[12.5px] sm:text-[13.5px] lg:text-[14px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.4]">
+                                    <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
                                       <strong className="font-bold text-neutral-950">Sleeping Money.</strong>{" "}
                                       Surplus cash sitting idle.
                                     </p>
@@ -8385,9 +8316,9 @@ export function BlueprintHero() {
                                     <img
                                       src="/bento-icons/people-group-alt.png"
                                       alt="Family Risk Map"
-                                      className="w-[18px] h-[18px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[12.5px] sm:text-[13.5px] lg:text-[14px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.4]">
+                                    <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
                                       <strong className="font-bold text-neutral-950">Family Risk Map.</strong>{" "}
                                       Where your family is financially exposed.
                                     </p>
@@ -8398,35 +8329,35 @@ export function BlueprintHero() {
                             ) : (
                               // TILE 05: Plan Ahead
                               <div className="relative flex flex-col h-full justify-start">
-                                <h3 className="font-sans font-black text-xl sm:text-2xl lg:text-[25px] tracking-[-0.03em] text-neutral-950 leading-tight mb-2.5 sm:mb-3 relative z-10">
+                                <h3 className="font-sans font-black text-xl sm:text-2xl lg:text-[25px] tracking-[-0.03em] text-neutral-950 leading-tight mb-2 sm:mb-3 relative z-10">
                                   <span className="text-[#22C55E]">Plan</span> Ahead
                                 </h3>
 
                                 {/* 5 Floating Information Clusters */}
                                 <div className="flex flex-col justify-start flex-1 relative z-10">
                                   {/* Featured Anchor Item 1: Financial Snapshot */}
-                                  <div className="flex items-start gap-2 sm:gap-2.5 mb-2 sm:mb-2.5">
+                                  <div className="flex items-start gap-2 sm:gap-2.5 mb-1.5 sm:mb-2.5">
                                     <img
                                       src="/bento-icons/rising-graph.png"
                                       alt="Financial Snapshot"
-                                      className="w-[18px] h-[18px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[12.5px] sm:text-[13.5px] lg:text-[14px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.4]">
+                                    <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
                                       <strong className="font-bold text-neutral-950">Financial Snapshot.</strong>{" "}
                                       Always know where you stand.
                                     </p>
                                   </div>
 
                                   {/* 2 × 2 Balanced Floating Grid for the 4 Scenarios */}
-                                  <div className="grid grid-cols-2 gap-x-5 sm:gap-x-7 gap-y-2 sm:gap-y-2.5">
+                                  <div className="grid grid-cols-2 gap-x-4 sm:gap-x-7 gap-y-1.5 sm:gap-y-2.5">
                                     {/* Item 2: Stress Test */}
                                     <div className="flex items-start gap-2 sm:gap-2.5">
                                       <img
                                         src="/bento-icons/target.png"
                                         alt="Stress Test"
-                                        className="w-[18px] h-[18px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                        className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
                                       />
-                                      <p className="text-[12.5px] sm:text-[13.5px] lg:text-[14px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.4]">
+                                      <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
                                         <strong className="font-bold text-neutral-950">Stress Test.</strong>{" "}
                                         See how you&apos;d hold up in a crash.
                                       </p>
@@ -8437,9 +8368,9 @@ export function BlueprintHero() {
                                       <img
                                         src="/bento-icons/question-bubble.png"
                                         alt="What if I..."
-                                        className="w-[18px] h-[18px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                        className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
                                       />
-                                      <p className="text-[12.5px] sm:text-[13.5px] lg:text-[14px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.4]">
+                                      <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
                                         <strong className="font-bold text-neutral-950">&quot;What if I...&quot;.</strong>{" "}
                                         Model a decision before you make it.
                                       </p>
@@ -8450,9 +8381,9 @@ export function BlueprintHero() {
                                       <img
                                         src="/bento-icons/flag.png"
                                         alt="Goal Readiness Score"
-                                        className="w-[18px] h-[18px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                        className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
                                       />
-                                      <p className="text-[12.5px] sm:text-[13.5px] lg:text-[14px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.4]">
+                                      <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
                                         <strong className="font-bold text-neutral-950">Goal Readiness Score.</strong>{" "}
                                         Every goal, tracked as one score.
                                       </p>
@@ -8463,9 +8394,9 @@ export function BlueprintHero() {
                                       <img
                                         src="/bento-icons/ascending-steps.png"
                                         alt="Succession Readiness"
-                                        className="w-[18px] h-[18px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                        className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
                                       />
-                                      <p className="text-[12.5px] sm:text-[13.5px] lg:text-[14px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.4]">
+                                      <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
                                         <strong className="font-bold text-neutral-950">Succession Readiness.</strong>{" "}
                                         Is your family prepared without you.
                                       </p>
@@ -8682,7 +8613,7 @@ export function BlueprintHero() {
                   {/* 3D Round Chrome/Gold Vault Safe (Exact replica of Reference Image & "Safe Movement") */}
                   <SafeVault3D
                     ref={safeVault3DRef}
-                    className="w-[270px] sm:w-[330px] lg:w-[390px] xl:w-[430px] h-[270px] sm:h-[330px] lg:h-[390px] xl:h-[430px]"
+                    className="w-[250px] sm:w-[320px] lg:w-[380px] xl:w-[420px] h-[250px] sm:h-[320px] lg:h-[380px] xl:h-[420px] max-h-[48vh] max-w-[48vh]"
                   />
                 </div>
 
@@ -8700,7 +8631,7 @@ export function BlueprintHero() {
                   }}
                 >
                   <div
-                    className="relative w-[94vw] max-w-[760px] sm:max-w-[840px] md:max-w-[900px] lg:max-w-[960px] h-[420px] sm:h-[480px] md:h-[520px] lg:h-[550px] rounded-[16px] sm:rounded-[22px]"
+                    className="relative w-[94vw] max-w-[760px] sm:max-w-[840px] md:max-w-[900px] lg:max-w-[960px] h-[360px] sm:h-[440px] md:h-[490px] lg:h-[540px] max-h-[62vh] rounded-[16px] sm:rounded-[22px]"
                     style={{
                       perspective: "1400px",
                       transformStyle: "preserve-3d",
