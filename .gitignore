@@ -31,7 +31,9 @@ next-env.d.ts
 # test / mcp
 .playwright-mcp/
 
-# scratch
+# scratch & audits
 /scratch/
+/audit_screenshots/
+/scripts/capture_viewports.js
 .claude/.headroom_wrap_marker.json
 .claude/settings.local.json
