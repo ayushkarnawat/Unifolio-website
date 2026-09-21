@@ -1736,10 +1736,10 @@ export function BlueprintHero() {
         // - On tablets (768-1023), vault is 260-340px
         // - On mobile (<768), vault is 220-280px
         const effectiveVaultW = isDesktopScreen
-          ? Math.round(Math.min(490, Math.max(340, Math.min(liveH * 0.46, liveW * 0.31))))
+          ? Math.round(Math.min(680, Math.max(480, Math.min(liveH * 0.62, liveW * 0.42))))
           : isTabletScreen
-          ? Math.round(Math.min(340, Math.max(260, Math.min(liveH * 0.36, liveW * 0.40))))
-          : Math.round(Math.min(280, Math.max(220, Math.min(liveH * 0.30, liveW * 0.65))));
+          ? Math.round(Math.min(460, Math.max(350, Math.min(liveH * 0.48, liveW * 0.52))))
+          : Math.round(Math.min(340, Math.max(260, Math.min(liveH * 0.37, liveW * 0.76))));
 
         const headingW = isDesktopScreen
           ? (liveW >= 1600 ? 560 : liveW >= 1280 ? 500 : 450)
@@ -1764,8 +1764,10 @@ export function BlueprintHero() {
         // Vault center is -(headingW + gap) / 2 from center.
         // Heading center is +(effectiveVaultW + gap) / 2 from center.
         // Left margin strictly equals right margin!
-        const leftShift = isMobileScreen ? 0 : Math.round((headingW + gap) / 2);
-        const rightShiftX = isMobileScreen ? 0 : Math.round((effectiveVaultW + gap) / 2);
+        // Extra leftward nudge so the vault sits visually to the left side of the composition
+        const leftNudge = isMobileScreen ? 0 : isDesktopScreen ? Math.round(liveW * 0.075) : Math.round(liveW * 0.045);
+        const leftShift = isMobileScreen ? 0 : Math.round((headingW + gap) / 2) + leftNudge;
+        const rightShiftX = isMobileScreen ? 0 : Math.round((effectiveVaultW + gap) / 2) - leftNudge;
         const heroShiftX = rightShiftX;
 
         const targetRingX = Math.round(viewportCenterX - clusterCenterX);
@@ -8313,61 +8315,76 @@ export function BlueprintHero() {
                               // TILE 01: Understand what you own
                               <div className="flex flex-col h-full justify-start">
                                 <div>
-                                  <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-[32px] tracking-[-0.035em] text-neutral-950 leading-[1.12]">
+                                  <h3
+                                    className="font-sans font-black tracking-[-0.035em] text-neutral-950 leading-[1.12]"
+                                    style={{ fontSize: "clamp(20px, 2.2vw, 32px)" }}
+                                  >
                                     <span className="text-[#22C55E]">Understand</span> what you own
                                   </h3>
                                 </div>
 
                                 {/* Vertical Floating Information Layout */}
-                                <div className="flex flex-col justify-start flex-1 mt-3.5 sm:mt-5 lg:mt-6 gap-3 sm:gap-4.5 lg:gap-6">
+                                <div className="flex flex-col justify-start flex-1 mt-3.5 sm:mt-5 lg:mt-6 gap-3 sm:gap-4 lg:gap-5">
                                   {/* Item 1: Overlap Check */}
-                                  <div className="flex items-start gap-2.5 sm:gap-3.5">
+                                  <div className="flex items-start gap-2.5 sm:gap-3">
                                     <img
                                       src="/bento-icons/stacked-sheets.png"
                                       alt="Overlap Check"
-                                      className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[13.5px] sm:text-[15px] lg:text-[16.5px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.5]">
-                                      <strong className="font-bold text-neutral-950">Overlap Check.</strong>{" "}
+                                    <p
+                                      className="text-neutral-700 font-medium leading-[1.5]"
+                                      style={{ fontSize: "clamp(14.5px, 1.2vw, 17.5px)" }}
+                                    >
+                                      <strong className="font-bold text-neutral-950">Overlap Check.</strong><br />
                                       Spot when &quot;diversified&quot; funds are secretly the same bet.
                                     </p>
                                   </div>
 
                                   {/* Item 2: Performance, in Context */}
-                                  <div className="flex items-start gap-2.5 sm:gap-3.5">
+                                  <div className="flex items-start gap-2.5 sm:gap-3">
                                     <img
                                       src="/bento-icons/rising-graph.png"
                                       alt="Performance, in Context"
-                                      className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[13.5px] sm:text-[15px] lg:text-[16.5px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.5]">
-                                      <strong className="font-bold text-neutral-950">Performance, in Context.</strong>{" "}
+                                    <p
+                                      className="text-neutral-700 font-medium leading-[1.5]"
+                                      style={{ fontSize: "clamp(14.5px, 1.2vw, 17.5px)" }}
+                                    >
+                                      <strong className="font-bold text-neutral-950">Performance, in Context.</strong><br />
                                       Real returns, measured against what matters.
                                     </p>
                                   </div>
 
                                   {/* Item 3: Hidden Fee Finder */}
-                                  <div className="flex items-start gap-2.5 sm:gap-3.5">
+                                  <div className="flex items-start gap-2.5 sm:gap-3">
                                     <img
                                       src="/bento-icons/rupee-coin.png"
                                       alt="Hidden Fee Finder"
-                                      className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[13.5px] sm:text-[15px] lg:text-[16.5px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.5]">
-                                      <strong className="font-bold text-neutral-950">Hidden Fee Finder.</strong>{" "}
+                                    <p
+                                      className="text-neutral-700 font-medium leading-[1.5]"
+                                      style={{ fontSize: "clamp(14.5px, 1.2vw, 17.5px)" }}
+                                    >
+                                      <strong className="font-bold text-neutral-950">Hidden Fee Finder.</strong><br />
                                       What expense ratios are quietly costing you.
                                     </p>
                                   </div>
 
                                   {/* Item 4: Peer Benchmarking */}
-                                  <div className="flex items-start gap-2.5 sm:gap-3.5">
+                                  <div className="flex items-start gap-2.5 sm:gap-3">
                                     <img
                                       src="/bento-icons/people-group.png"
                                       alt="Peer Benchmarking"
-                                      className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[13.5px] sm:text-[15px] lg:text-[16.5px] text-neutral-700 font-medium leading-[1.38] sm:leading-[1.5]">
-                                      <strong className="font-bold text-neutral-950">Peer Benchmarking.</strong>{" "}
+                                    <p
+                                      className="text-neutral-700 font-medium leading-[1.5]"
+                                      style={{ fontSize: "clamp(14.5px, 1.2vw, 17.5px)" }}
+                                    >
+                                      <strong className="font-bold text-neutral-950">Peer Benchmarking.</strong><br />
                                       Compared against people like you, not a generic index.
                                     </p>
                                   </div>
@@ -8377,10 +8394,17 @@ export function BlueprintHero() {
                               // TILE 02: Skip the dashboards. Just ask
                               <div className="flex h-full items-center justify-between gap-3 sm:gap-4">
                                 <div className="max-w-[260px] sm:max-w-[290px] lg:max-w-[315px] flex flex-col justify-start shrink-0">
-                                  <h3 className="font-sans font-black text-xl sm:text-2xl lg:text-[26px] tracking-[-0.03em] text-neutral-950 leading-tight">
-                                    Skip the dashboards. <span className="text-[#22C55E]">Just ask</span>
+                                  <h3
+                                    className="font-sans font-black tracking-[-0.03em] text-neutral-950 leading-tight"
+                                    style={{ fontSize: "clamp(18px, 1.85vw, 26px)" }}
+                                  >
+                                    Skip the Dashboards.<br />
+                                    <span className="text-[#22C55E]">Just ask.</span>
                                   </h3>
-                                  <p className="mt-2 text-[12.5px] sm:text-[13.5px] lg:text-[14.5px] text-neutral-700 font-medium leading-[1.4]">
+                                  <p
+                                    className="mt-3 text-neutral-700 font-medium leading-[1.52]"
+                                    style={{ fontSize: "clamp(12.5px, 1.0vw, 15px)" }}
+                                  >
                                     Not a chart. A question. Ask what&apos;s dragging your returns, whether you&apos;re overexposed, or if a decision makes sense, and get an answer from your own portfolio.
                                   </p>
                                 </div>
@@ -8397,31 +8421,43 @@ export function BlueprintHero() {
                             ) : idx === 2 ? (
                               // TILE 03: See everything
                               <div className="flex flex-col h-full justify-start">
-                                <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-[32px] tracking-[-0.035em] text-neutral-950 leading-[1.12]">
+                                <h3
+                                  className="font-sans font-black tracking-[-0.035em] text-neutral-950 leading-[1.12]"
+                                  style={{ fontSize: "clamp(20px, 2.2vw, 32px)" }}
+                                >
                                   See <span className="text-[#22C55E]">everything</span>
                                 </h3>
-                                <p className="mt-2.5 sm:mt-3.5 text-[13px] sm:text-[14px] lg:text-[15.5px] text-neutral-700 font-medium leading-relaxed">
+                                <p
+                                  className="mt-3.5 sm:mt-4 text-neutral-700 font-medium leading-[1.52]"
+                                  style={{ fontSize: "clamp(13px, 1.05vw, 16px)" }}
+                                >
                                   Mutual funds, stocks, bank accounts, loans, credit cards, real estate. Every asset and liability, aggregated into one accurate number.
                                 </p>
                               </div>
                             ) : idx === 3 ? (
                               // TILE 04: Know your risk
                               <div className="relative flex flex-col h-full justify-start">
-                                <h3 className="font-sans font-black text-xl sm:text-2xl lg:text-[25px] tracking-[-0.03em] text-neutral-950 leading-tight mb-2.5 sm:mb-3.5 relative z-10">
+                                <h3
+                                  className="font-sans font-black tracking-[-0.03em] text-neutral-950 leading-tight mb-3 sm:mb-4 relative z-10"
+                                  style={{ fontSize: "clamp(18px, 1.75vw, 25px)" }}
+                                >
                                   Know your <span className="text-[#22C55E]">risk</span>
                                 </h3>
 
-                                {/* 2 × 2 Floating Information Layout (No sub-cards, no borders, no backgrounds) */}
-                                <div className="grid grid-cols-2 gap-x-4 sm:gap-x-7 gap-y-2.5 sm:gap-y-3.5 flex-1 relative z-10">
+                                {/* 2 × 2 Floating Information Layout */}
+                                <div className="grid grid-cols-2 gap-x-3 sm:gap-x-5 gap-y-2 sm:gap-y-2.5 flex-1 relative z-10">
                                   {/* Item 1: Family Runway */}
                                   <div className="flex items-start gap-2 sm:gap-2.5">
                                     <img
                                       src="/bento-icons/pulse-line.png"
                                       alt="Family Runway"
-                                      className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[17px] h-[17px] sm:w-[19px] sm:h-[19px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
-                                      <strong className="font-bold text-neutral-950">Family Runway.</strong>{" "}
+                                    <p
+                                      className="text-neutral-700 font-medium leading-[1.4]"
+                                      style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
+                                    >
+                                      <strong className="font-bold text-neutral-950">Family Runway.</strong><br />
                                       How long your family&apos;s savings would actually last.
                                     </p>
                                   </div>
@@ -8431,10 +8467,13 @@ export function BlueprintHero() {
                                     <img
                                       src="/bento-icons/shield.png"
                                       alt="Real Safety Cushion"
-                                      className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[17px] h-[17px] sm:w-[19px] sm:h-[19px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
-                                      <strong className="font-bold text-neutral-950">Real Safety Cushion.</strong>{" "}
+                                    <p
+                                      className="text-neutral-700 font-medium leading-[1.4]"
+                                      style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
+                                    >
+                                      <strong className="font-bold text-neutral-950">Real Safety Cushion.</strong><br />
                                       Built from your real numbers, not a generic rule of thumb.
                                     </p>
                                   </div>
@@ -8444,10 +8483,13 @@ export function BlueprintHero() {
                                     <img
                                       src="/bento-icons/stacked-coins.png"
                                       alt="Sleeping Money"
-                                      className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[17px] h-[17px] sm:w-[19px] sm:h-[19px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
-                                      <strong className="font-bold text-neutral-950">Sleeping Money.</strong>{" "}
+                                    <p
+                                      className="text-neutral-700 font-medium leading-[1.4]"
+                                      style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
+                                    >
+                                      <strong className="font-bold text-neutral-950">Sleeping Money.</strong><br />
                                       Surplus cash sitting idle.
                                     </p>
                                   </div>
@@ -8457,10 +8499,13 @@ export function BlueprintHero() {
                                     <img
                                       src="/bento-icons/people-group-alt.png"
                                       alt="Family Risk Map"
-                                      className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[17px] h-[17px] sm:w-[19px] sm:h-[19px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
-                                      <strong className="font-bold text-neutral-950">Family Risk Map.</strong>{" "}
+                                    <p
+                                      className="text-neutral-700 font-medium leading-[1.4]"
+                                      style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
+                                    >
+                                      <strong className="font-bold text-neutral-950">Family Risk Map.</strong><br />
                                       Where your family is financially exposed.
                                     </p>
                                   </div>
@@ -8470,36 +8515,45 @@ export function BlueprintHero() {
                             ) : (
                               // TILE 05: Plan Ahead
                               <div className="relative flex flex-col h-full justify-start">
-                                <h3 className="font-sans font-black text-xl sm:text-2xl lg:text-[25px] tracking-[-0.03em] text-neutral-950 leading-tight mb-2 sm:mb-3 relative z-10">
+                                <h3
+                                  className="font-sans font-black tracking-[-0.03em] text-neutral-950 leading-tight mb-3 sm:mb-4 relative z-10"
+                                  style={{ fontSize: "clamp(18px, 1.75vw, 25px)" }}
+                                >
                                   <span className="text-[#22C55E]">Plan</span> Ahead
                                 </h3>
 
                                 {/* 5 Floating Information Clusters */}
                                 <div className="flex flex-col justify-start flex-1 relative z-10">
                                   {/* Featured Anchor Item 1: Financial Snapshot */}
-                                  <div className="flex items-start gap-2 sm:gap-2.5 mb-1.5 sm:mb-2.5">
+                                  <div className="flex items-start gap-2 sm:gap-2.5 mb-2 sm:mb-2.5">
                                     <img
                                       src="/bento-icons/rising-graph.png"
                                       alt="Financial Snapshot"
-                                      className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                      className="w-[17px] h-[17px] sm:w-[19px] sm:h-[19px] shrink-0 mt-0.5 object-contain"
                                     />
-                                    <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
-                                      <strong className="font-bold text-neutral-950">Financial Snapshot.</strong>{" "}
+                                    <p
+                                      className="text-neutral-700 font-medium leading-[1.4]"
+                                      style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
+                                    >
+                                      <strong className="font-bold text-neutral-950">Financial Snapshot.</strong><br />
                                       Always know where you stand.
                                     </p>
                                   </div>
 
                                   {/* 2 × 2 Balanced Floating Grid for the 4 Scenarios */}
-                                  <div className="grid grid-cols-2 gap-x-4 sm:gap-x-7 gap-y-1.5 sm:gap-y-2.5">
+                                  <div className="grid grid-cols-2 gap-x-3 sm:gap-x-5 gap-y-2 sm:gap-y-2.5">
                                     {/* Item 2: Stress Test */}
                                     <div className="flex items-start gap-2 sm:gap-2.5">
                                       <img
                                         src="/bento-icons/target.png"
                                         alt="Stress Test"
-                                        className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                        className="w-[17px] h-[17px] sm:w-[19px] sm:h-[19px] shrink-0 mt-0.5 object-contain"
                                       />
-                                      <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
-                                        <strong className="font-bold text-neutral-950">Stress Test.</strong>{" "}
+                                      <p
+                                        className="text-neutral-700 font-medium leading-[1.4]"
+                                        style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
+                                      >
+                                        <strong className="font-bold text-neutral-950">Stress Test.</strong><br />
                                         See how you&apos;d hold up in a crash.
                                       </p>
                                     </div>
@@ -8509,10 +8563,13 @@ export function BlueprintHero() {
                                       <img
                                         src="/bento-icons/question-bubble.png"
                                         alt="What if I..."
-                                        className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                        className="w-[17px] h-[17px] sm:w-[19px] sm:h-[19px] shrink-0 mt-0.5 object-contain"
                                       />
-                                      <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
-                                        <strong className="font-bold text-neutral-950">&quot;What if I...&quot;.</strong>{" "}
+                                      <p
+                                        className="text-neutral-700 font-medium leading-[1.4]"
+                                        style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
+                                      >
+                                        <strong className="font-bold text-neutral-950">&quot;What if I...&quot;.</strong><br />
                                         Model a decision before you make it.
                                       </p>
                                     </div>
@@ -8522,10 +8579,13 @@ export function BlueprintHero() {
                                       <img
                                         src="/bento-icons/flag.png"
                                         alt="Goal Readiness Score"
-                                        className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                        className="w-[17px] h-[17px] sm:w-[19px] sm:h-[19px] shrink-0 mt-0.5 object-contain"
                                       />
-                                      <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
-                                        <strong className="font-bold text-neutral-950">Goal Readiness Score.</strong>{" "}
+                                      <p
+                                        className="text-neutral-700 font-medium leading-[1.4]"
+                                        style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
+                                      >
+                                        <strong className="font-bold text-neutral-950">Goal Readiness Score.</strong><br />
                                         Every goal, tracked as one score.
                                       </p>
                                     </div>
@@ -8535,10 +8595,13 @@ export function BlueprintHero() {
                                       <img
                                         src="/bento-icons/ascending-steps.png"
                                         alt="Succession Readiness"
-                                        className="w-[17px] h-[17px] sm:w-[20px] sm:h-[20px] shrink-0 mt-0.5 object-contain"
+                                        className="w-[17px] h-[17px] sm:w-[19px] sm:h-[19px] shrink-0 mt-0.5 object-contain"
                                       />
-                                      <p className="text-[12px] sm:text-[13px] lg:text-[14px] text-neutral-700 font-medium leading-[1.32] sm:leading-[1.4]">
-                                        <strong className="font-bold text-neutral-950">Succession Readiness.</strong>{" "}
+                                      <p
+                                        className="text-neutral-700 font-medium leading-[1.4]"
+                                        style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
+                                      >
+                                        <strong className="font-bold text-neutral-950">Succession Readiness.</strong><br />
                                         Is your family prepared without you.
                                       </p>
                                     </div>
@@ -9235,7 +9298,7 @@ export function BlueprintHero() {
                 </span>
               </h2>
 
-              <div className="mt-6 sm:mt-7 md:mt-8">
+              <div className="mt-10 sm:mt-11 md:mt-12">
                 <LinkButton
                   ref={ctaRef}
                   href="#contact"

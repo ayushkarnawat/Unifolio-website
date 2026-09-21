@@ -318,8 +318,8 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
                   style={{
                     left: "50%",
                     top: "50%",
-                    width: "82%",
-                    height: "82%",
+                    width: "87%",
+                    height: "87%",
                     objectFit: "contain",
                     transform: "translate(-49.13%, -48.49%)",
                   }}
