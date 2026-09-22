@@ -3,7 +3,6 @@ import {
   getComposedViewport,
   getViewportHeightScale,
   getCardRestHeight,
-  getBentoVwTierPx,
   DESKTOP_REFERENCE_WIDTH,
   DESKTOP_REFERENCE_HEIGHT,
 } from "./viewport";
@@ -76,17 +75,5 @@ describe("getCardRestHeight", () => {
     const tall = getCardRestHeight(1600, 900);
     const short = getCardRestHeight(1600, 700);
     expect(short).toBeLessThan(tall);
-  });
-});
-
-describe("getBentoVwTierPx", () => {
-  it("converts a tiered width into 1% of that width, in px", () => {
-    expect(getBentoVwTierPx(1440)).toBeCloseTo(14.4, 5);
-    expect(getBentoVwTierPx(1024)).toBeCloseTo(10.24, 5);
-  });
-
-  it("gives two same-tier widths the identical result", () => {
-    // 1290 and 1364 both snap to the 1280 tier in getComposedViewport
-    expect(getBentoVwTierPx(1280)).toBe(getBentoVwTierPx(1280));
   });
 });

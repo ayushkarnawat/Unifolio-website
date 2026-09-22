@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
-import { getComposedViewport, getCardRestHeight, getViewportHeightScale, getBentoVwTierPx, DESKTOP_REFERENCE_WIDTH } from "@/lib/viewport";
+import { getComposedViewport, getCardRestHeight, getViewportHeightScale, DESKTOP_REFERENCE_WIDTH } from "@/lib/viewport";
 import { HeroApertureVisual } from "@/components/hero/HeroApertureVisual";
 import { LinkButton } from "@/components/ui/Button";
 import { SafeVault3D, SafeVault3DRef } from "@/components/blueprint/SafeVault3D";
@@ -799,13 +799,12 @@ export function BlueprintHero() {
         if (front) {
           gsap.set(front, {
             borderRadius: "0px",
-            borderColor: "rgba(255, 255, 255, 0.75)",
-            boxShadow:
-              "0 20px 45px -12px rgba(16, 44, 28, 0.08), 0 8px 18px -6px rgba(0, 0, 0, 0.04), 0 0 20px -4px rgba(34, 197, 94, 0.08), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95), inset 0 0.5px 0.5px 0 rgba(255, 255, 255, 0.8), inset 0 -1.5px 3px 0 rgba(34, 197, 94, 0.06)",
+            borderColor: "rgba(255, 255, 255, 0.12)",
+            boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4)",
           });
         }
         if (back) gsap.set(back, { borderRadius: "0px", borderColor: "transparent" });
-        if (flipper) gsap.set(flipper, { rotateY: 0 }); // Front face forward always — no black back-face
+        if (flipper) gsap.set(flipper, { rotateY: 180 }); // Back face forward initially
         if (defaultEl) gsap.set(defaultEl, { autoAlpha: 1, scale: 1, y: 0 });
         if (hoverEl) gsap.set(hoverEl, { autoAlpha: 0, y: 8 });
         const illus = cardIllustrationRefs.current[i];
@@ -1723,8 +1722,8 @@ export function BlueprintHero() {
         const stackCardScale = isDesktop ? 0.62 : isTablet ? 0.58 : 0.54;
 
         // Viewport centering offset: positions the safe docked on the left side of the viewport
-        const viewportCenterY = vHeight / 2;
-        const viewportCenterX = vWidth / 2;
+        const viewportCenterY = (typeof window !== "undefined" ? window.innerHeight : 900) / 2;
+        const viewportCenterX = (typeof window !== "undefined" ? window.innerWidth : 1440) / 2;
 
         const isMobileScreen = liveW < 768;
         const isTabletScreen = liveW >= 768 && liveW < 1024;
@@ -1942,7 +1941,6 @@ export function BlueprintHero() {
               });
             }
             safeVault3DRef.current?.setOpenProgress(0);
-            safeVault3DRef.current?.resetRim?.();
             safeVault3DRef.current?.setCardsProgress?.(0);
             safeVault3DRef.current?.pauseAmbient?.();
 
@@ -2154,7 +2152,6 @@ export function BlueprintHero() {
           {
             onUpdate: () => {
               safeVault3DRef.current?.setOpenProgress(0);
-              safeVault3DRef.current?.resetRim?.();
               safeVault3DRef.current?.setCardsProgress?.(0);
               safeVault3DRef.current?.pauseAmbient?.();
             },
@@ -4009,14 +4006,7 @@ export function BlueprintHero() {
 
             const faqEl = document.getElementById("faq");
             if (faqEl) {
-              isNavigatingRef.current = true;
-              smoothScrollTo(faqEl, {
-                duration: 0.40,
-                ease: "power2.out",
-                onComplete: () => {
-                  isNavigatingRef.current = false;
-                },
-              });
+              smoothScrollTo(faqEl, { duration: 0.40, ease: "power2.out" });
             }
             dispatchActiveSection("faq");
           },
@@ -4509,7 +4499,6 @@ export function BlueprintHero() {
               });
             }
             safeVault3DRef.current?.setOpenProgress(0);
-            safeVault3DRef.current?.resetRim?.();
             safeVault3DRef.current?.setCardsProgress?.(0);
             safeVault3DRef.current?.pauseAmbient?.(true);
 
@@ -4846,7 +4835,6 @@ export function BlueprintHero() {
               autoAlpha: 0,
               onComplete: () => {
                 safeVault3DRef.current?.setOpenProgress(0);
-                safeVault3DRef.current?.resetRim?.();
                 safeVault3DRef.current?.setCardsProgress?.(0);
                 safeVault3DRef.current?.pauseAmbient?.();
               },
@@ -5535,7 +5523,6 @@ export function BlueprintHero() {
               });
             }
             safeVault3DRef.current?.setOpenProgress(0);
-            safeVault3DRef.current?.resetRim?.();
             safeVault3DRef.current?.setCardsProgress?.(0);
             safeVault3DRef.current?.resumeAmbient?.();
             allProductCards.forEach((wrapper) => {
@@ -6747,9 +6734,6 @@ export function BlueprintHero() {
       // grid, and again on window resize to re-layout for the new viewport.
       const applyBentoLayoutToCards = (vw: number, vh: number) => {
         const bento = computeBentoLayout(vw, vh);
-        if (cardsClusterRef.current) {
-          cardsClusterRef.current.style.setProperty("--bento-vw-tier", `${getBentoVwTierPx(vw)}px`);
-        }
         PRODUCT_CARDS.forEach((_card, i) => {
           const wrapper = cardWrapperRefs.current[i];
           if (wrapper) {
@@ -7146,20 +7130,19 @@ export function BlueprintHero() {
               scale: 1,
             });
           }
-          if (flipper) gsap.set(flipper, { rotateY: 0 }); // Front face forward always — no black back-face
+          if (flipper) gsap.set(flipper, { rotateY: 180 });
           if (front) {
             front.style.background = "";
             gsap.set(front, {
               borderRadius: "0px",
               background: "",
-              backgroundColor: "rgba(255, 255, 255, 0.74)",
-              borderColor: "rgba(255, 255, 255, 0.75)",
-              boxShadow:
-                "0 20px 45px -12px rgba(16, 44, 28, 0.08), 0 8px 18px -6px rgba(0, 0, 0, 0.04), 0 0 20px -4px rgba(34, 197, 94, 0.08), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95), inset 0 0.5px 0.5px 0 rgba(255, 255, 255, 0.8), inset 0 -1.5px 3px 0 rgba(34, 197, 94, 0.06)",
+              backgroundColor: "#070908",
+              borderColor: "rgba(255, 255, 255, 0.12)",
+              boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4)",
               clearProps: "background",
             });
           }
-          if (back) gsap.set(back, { opacity: 0, autoAlpha: 0, visibility: "hidden" });
+          if (back) gsap.set(back, { opacity: 1, autoAlpha: 1, visibility: "visible" });
           if (grad) gsap.set(grad, { opacity: 1, autoAlpha: 1, visibility: "visible", display: "block" });
           if (glass) gsap.set(glass, { opacity: 0, autoAlpha: 0, visibility: "hidden" });
           if (illus)
@@ -7261,26 +7244,7 @@ export function BlueprintHero() {
         if (heroIntroRef.current) gsap.set(heroIntroRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
         if (heroVisualRef.current) gsap.set(heroVisualRef.current, { opacity: 0, scale: 5.5, xPercent: -12.87, yPercent: 0.88 });
 
-        // Reset the cluster's transform to identity BEFORE measuring it —
-        // computeDockLayout() reads a live getBoundingClientRect() of this
-        // element, so measuring it while it's still offset/rotated from a
-        // prior state (e.g. left over from consolidateRingToStack) produces
-        // the wrong dock position. See report §1a.
-        const clusterEl = cardsClusterRef.current;
-        if (clusterEl) {
-          gsap.set(clusterEl, {
-            opacity: 1,
-            x: 0,
-            y: 0,
-            rotateX: 0,
-            rotateY: 0,
-            rotateZ: 0,
-            scaleX: 1,
-            scaleY: 1,
-            scale: 1,
-          });
-        }
-
+        // Layout measurements
         // Layout measurements via unified dock layout coordinator
         const dockLayout = computeDockLayout();
         const leftX = dockLayout.targetLeftX;
@@ -7327,9 +7291,23 @@ export function BlueprintHero() {
           });
         }
         safeVault3DRef.current?.setOpenProgress(0);
-        safeVault3DRef.current?.resetRim?.();
         safeVault3DRef.current?.setCardsProgress?.(0);
         safeVault3DRef.current?.resumeAmbient?.();
+
+        const clusterEl = cardsClusterRef.current;
+        if (clusterEl) {
+          gsap.set(clusterEl, {
+            opacity: 1,
+            x: 0,
+            y: 0,
+            rotateX: 0,
+            rotateY: 0,
+            rotateZ: 0,
+            scaleX: 1,
+            scaleY: 1,
+            scale: 1,
+          });
+        }
 
         if (securityStageRef.current) {
           gsap.set(securityStageRef.current, { autoAlpha: 1, opacity: 1, visibility: "visible", zIndex: 35 });
@@ -7489,7 +7467,6 @@ export function BlueprintHero() {
         if (safeContainerRef.current) {
           gsap.set(safeContainerRef.current, { opacity: 0, visibility: "hidden" });
           safeVault3DRef.current?.setOpenProgress(0);
-          safeVault3DRef.current?.resetRim?.();
           safeVault3DRef.current?.setCardsProgress?.(0);
           safeVault3DRef.current?.pauseAmbient?.();
         }
@@ -8340,7 +8317,7 @@ export function BlueprintHero() {
                                 <div>
                                   <h3
                                     className="font-sans font-black tracking-[-0.035em] text-neutral-950 leading-[1.12]"
-                                    style={{ fontSize: "clamp(20px, calc(2.2 * var(--bento-vw-tier, 14.4px)), 32px)" }}
+                                    style={{ fontSize: "clamp(20px, 2.2vw, 32px)" }}
                                   >
                                     <span className="text-[#22C55E]">Understand</span> what you own
                                   </h3>
@@ -8357,7 +8334,7 @@ export function BlueprintHero() {
                                     />
                                     <p
                                       className="text-neutral-700 font-medium leading-[1.5]"
-                                      style={{ fontSize: "clamp(14.5px, calc(1.2 * var(--bento-vw-tier, 14.4px)), 17.5px)" }}
+                                      style={{ fontSize: "clamp(14.5px, 1.2vw, 17.5px)" }}
                                     >
                                       <strong className="font-bold text-neutral-950">Overlap Check.</strong><br />
                                       Spot when &quot;diversified&quot; funds are secretly the same bet.
@@ -8373,7 +8350,7 @@ export function BlueprintHero() {
                                     />
                                     <p
                                       className="text-neutral-700 font-medium leading-[1.5]"
-                                      style={{ fontSize: "clamp(14.5px, calc(1.2 * var(--bento-vw-tier, 14.4px)), 17.5px)" }}
+                                      style={{ fontSize: "clamp(14.5px, 1.2vw, 17.5px)" }}
                                     >
                                       <strong className="font-bold text-neutral-950">Performance, in Context.</strong><br />
                                       Real returns, measured against what matters.
@@ -8389,7 +8366,7 @@ export function BlueprintHero() {
                                     />
                                     <p
                                       className="text-neutral-700 font-medium leading-[1.5]"
-                                      style={{ fontSize: "clamp(14.5px, calc(1.2 * var(--bento-vw-tier, 14.4px)), 17.5px)" }}
+                                      style={{ fontSize: "clamp(14.5px, 1.2vw, 17.5px)" }}
                                     >
                                       <strong className="font-bold text-neutral-950">Hidden Fee Finder.</strong><br />
                                       What expense ratios are quietly costing you.
@@ -8405,7 +8382,7 @@ export function BlueprintHero() {
                                     />
                                     <p
                                       className="text-neutral-700 font-medium leading-[1.5]"
-                                      style={{ fontSize: "clamp(14.5px, calc(1.2 * var(--bento-vw-tier, 14.4px)), 17.5px)" }}
+                                      style={{ fontSize: "clamp(14.5px, 1.2vw, 17.5px)" }}
                                     >
                                       <strong className="font-bold text-neutral-950">Peer Benchmarking.</strong><br />
                                       Compared against people like you, not a generic index.
@@ -8419,14 +8396,14 @@ export function BlueprintHero() {
                                 <div className="max-w-[260px] sm:max-w-[290px] lg:max-w-[315px] flex flex-col justify-start shrink-0">
                                   <h3
                                     className="font-sans font-black tracking-[-0.03em] text-neutral-950 leading-tight"
-                                    style={{ fontSize: "clamp(18px, calc(1.85 * var(--bento-vw-tier, 14.4px)), 26px)" }}
+                                    style={{ fontSize: "clamp(18px, 1.85vw, 26px)" }}
                                   >
                                     Skip the Dashboards.<br />
                                     <span className="text-[#22C55E]">Just ask.</span>
                                   </h3>
                                   <p
                                     className="mt-3 text-neutral-700 font-medium leading-[1.52]"
-                                    style={{ fontSize: "clamp(12.5px, calc(1.0 * var(--bento-vw-tier, 14.4px)), 15px)" }}
+                                    style={{ fontSize: "clamp(12.5px, 1.0vw, 15px)" }}
                                   >
                                     Not a chart. A question. Ask what&apos;s dragging your returns, whether you&apos;re overexposed, or if a decision makes sense, and get an answer from your own portfolio.
                                   </p>
@@ -8446,13 +8423,13 @@ export function BlueprintHero() {
                               <div className="flex flex-col h-full justify-start">
                                 <h3
                                   className="font-sans font-black tracking-[-0.035em] text-neutral-950 leading-[1.12]"
-                                  style={{ fontSize: "clamp(20px, calc(2.2 * var(--bento-vw-tier, 14.4px)), 32px)" }}
+                                  style={{ fontSize: "clamp(20px, 2.2vw, 32px)" }}
                                 >
                                   See <span className="text-[#22C55E]">everything</span>
                                 </h3>
                                 <p
                                   className="mt-3.5 sm:mt-4 text-neutral-700 font-medium leading-[1.52]"
-                                  style={{ fontSize: "clamp(13px, calc(1.05 * var(--bento-vw-tier, 14.4px)), 16px)" }}
+                                  style={{ fontSize: "clamp(13px, 1.05vw, 16px)" }}
                                 >
                                   Mutual funds, stocks, bank accounts, loans, credit cards, real estate. Every asset and liability, aggregated into one accurate number.
                                 </p>
@@ -8462,7 +8439,7 @@ export function BlueprintHero() {
                               <div className="relative flex flex-col h-full justify-start">
                                 <h3
                                   className="font-sans font-black tracking-[-0.03em] text-neutral-950 leading-tight mb-3 sm:mb-4 relative z-10"
-                                  style={{ fontSize: "clamp(18px, calc(1.75 * var(--bento-vw-tier, 14.4px)), 25px)" }}
+                                  style={{ fontSize: "clamp(18px, 1.75vw, 25px)" }}
                                 >
                                   Know your <span className="text-[#22C55E]">risk</span>
                                 </h3>
@@ -8478,7 +8455,7 @@ export function BlueprintHero() {
                                     />
                                     <p
                                       className="text-neutral-700 font-medium leading-[1.4]"
-                                      style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
+                                      style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
                                     >
                                       <strong className="font-bold text-neutral-950">Family Runway.</strong><br />
                                       How long your family&apos;s savings would actually last.
@@ -8494,7 +8471,7 @@ export function BlueprintHero() {
                                     />
                                     <p
                                       className="text-neutral-700 font-medium leading-[1.4]"
-                                      style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
+                                      style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
                                     >
                                       <strong className="font-bold text-neutral-950">Real Safety Cushion.</strong><br />
                                       Built from your real numbers, not a generic rule of thumb.
@@ -8510,7 +8487,7 @@ export function BlueprintHero() {
                                     />
                                     <p
                                       className="text-neutral-700 font-medium leading-[1.4]"
-                                      style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
+                                      style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
                                     >
                                       <strong className="font-bold text-neutral-950">Sleeping Money.</strong><br />
                                       Surplus cash sitting idle.
@@ -8526,7 +8503,7 @@ export function BlueprintHero() {
                                     />
                                     <p
                                       className="text-neutral-700 font-medium leading-[1.4]"
-                                      style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
+                                      style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
                                     >
                                       <strong className="font-bold text-neutral-950">Family Risk Map.</strong><br />
                                       Where your family is financially exposed.
@@ -8540,7 +8517,7 @@ export function BlueprintHero() {
                               <div className="relative flex flex-col h-full justify-start">
                                 <h3
                                   className="font-sans font-black tracking-[-0.03em] text-neutral-950 leading-tight mb-3 sm:mb-4 relative z-10"
-                                  style={{ fontSize: "clamp(18px, calc(1.75 * var(--bento-vw-tier, 14.4px)), 25px)" }}
+                                  style={{ fontSize: "clamp(18px, 1.75vw, 25px)" }}
                                 >
                                   <span className="text-[#22C55E]">Plan</span> Ahead
                                 </h3>
@@ -8556,7 +8533,7 @@ export function BlueprintHero() {
                                     />
                                     <p
                                       className="text-neutral-700 font-medium leading-[1.4]"
-                                      style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
+                                      style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
                                     >
                                       <strong className="font-bold text-neutral-950">Financial Snapshot.</strong><br />
                                       Always know where you stand.
@@ -8574,7 +8551,7 @@ export function BlueprintHero() {
                                       />
                                       <p
                                         className="text-neutral-700 font-medium leading-[1.4]"
-                                        style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
+                                        style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
                                       >
                                         <strong className="font-bold text-neutral-950">Stress Test.</strong><br />
                                         See how you&apos;d hold up in a crash.
@@ -8590,7 +8567,7 @@ export function BlueprintHero() {
                                       />
                                       <p
                                         className="text-neutral-700 font-medium leading-[1.4]"
-                                        style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
+                                        style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
                                       >
                                         <strong className="font-bold text-neutral-950">&quot;What if I...&quot;.</strong><br />
                                         Model a decision before you make it.
@@ -8606,7 +8583,7 @@ export function BlueprintHero() {
                                       />
                                       <p
                                         className="text-neutral-700 font-medium leading-[1.4]"
-                                        style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
+                                        style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
                                       >
                                         <strong className="font-bold text-neutral-950">Goal Readiness Score.</strong><br />
                                         Every goal, tracked as one score.
@@ -8622,7 +8599,7 @@ export function BlueprintHero() {
                                       />
                                       <p
                                         className="text-neutral-700 font-medium leading-[1.4]"
-                                        style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
+                                        style={{ fontSize: "clamp(12.5px, 0.95vw, 14px)" }}
                                       >
                                         <strong className="font-bold text-neutral-950">Succession Readiness.</strong><br />
                                         Is your family prepared without you.

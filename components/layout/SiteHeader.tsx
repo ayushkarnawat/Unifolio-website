@@ -67,9 +67,6 @@ export function SiteHeader() {
     { scope: headerRef, dependencies: [isHomepage] }
   );
 
-  // On homepage, BlueprintNav is rendered directly in page.tsx instead.
-  if (isHomepage) return null;
-
   return (
     <header
       ref={headerRef}
