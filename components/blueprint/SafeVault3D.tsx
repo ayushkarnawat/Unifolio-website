@@ -8,6 +8,7 @@ export interface SafeVault3DRef {
   setCardsProgress?: (progress: number) => void;
   triggerRimStep?: (direction?: 1 | -1, stateIndex?: number) => void;
   resetRim?: () => void;
+  resetToClosed?: () => void;
   pauseAmbient?: (reset?: boolean) => void;
   resumeAmbient?: () => void;
 }
@@ -167,9 +168,25 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
         resetRim: () => {
           if (rimTweenRef.current) {
             rimTweenRef.current.kill();
+            rimTweenRef.current = null;
           }
           rimSecurityAngleRef.current = 0;
-          if (discRef.current && animProgressRef.current <= 0.26) {
+          if (discRef.current) {
+            gsap.set(discRef.current, {
+              rotate: 0,
+              transformOrigin: "50% 50%",
+            });
+          }
+        },
+        resetToClosed: () => {
+          if (rimTweenRef.current) {
+            rimTweenRef.current.kill();
+            rimTweenRef.current = null;
+          }
+          rimSecurityAngleRef.current = 0;
+          animProgressRef.current = 0;
+          updateDoorMotion(0);
+          if (discRef.current) {
             gsap.set(discRef.current, {
               rotate: 0,
               transformOrigin: "50% 50%",

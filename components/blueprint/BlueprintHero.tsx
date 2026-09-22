@@ -1723,52 +1723,63 @@ export function BlueprintHero() {
         const stackCardScale = isDesktop ? 0.62 : isTablet ? 0.58 : 0.54;
 
         // Viewport centering offset: positions the safe docked on the left side of the viewport
-        const viewportCenterY = vHeight / 2;
-        const viewportCenterX = vWidth / 2;
+        const viewportCenterY = liveH / 2;
+        const viewportCenterX = liveW / 2;
 
         const isMobileScreen = liveW < 768;
         const isTabletScreen = liveW >= 768 && liveW < 1024;
         const isDesktopScreen = liveW >= 1024;
 
         // Visual proportions of vault & heading matching reference composition
-        // Increased vault size with responsive clamp:
-        // - On large screens (1920+), vault reaches 480-490px for high visual presence
-        // - On MacBooks and standard laptops (1366-1440), vault scales smoothly with 46% of viewport height (350-415px)
-        // - On tablets (768-1023), vault is 260-340px
-        // - On mobile (<768), vault is 220-280px
+        // Responsive clamp:
+        // - On large screens (1920+), vault reaches 460-480px for high visual presence
+        // - On MacBooks and standard laptops (1366-1440), vault scales smoothly with 44% of viewport height (340-400px)
+        // - On tablets (768-1023), vault is 260-320px
+        // - On mobile (<768), vault is 200-260px
         const effectiveVaultW = isDesktopScreen
-          ? Math.round(Math.min(680, Math.max(480, Math.min(liveH * 0.62, liveW * 0.42))))
+          ? Math.round(Math.min(520, Math.max(380, Math.min(liveH * 0.54, liveW * 0.36))))
           : isTabletScreen
-          ? Math.round(Math.min(460, Math.max(350, Math.min(liveH * 0.48, liveW * 0.52))))
-          : Math.round(Math.min(340, Math.max(260, Math.min(liveH * 0.37, liveW * 0.76))));
+          ? Math.round(Math.min(380, Math.max(300, Math.min(liveH * 0.44, liveW * 0.44))))
+          : Math.round(Math.min(300, Math.max(220, Math.min(liveH * 0.35, liveW * 0.70))));
 
         const headingW = isDesktopScreen
-          ? (liveW >= 1600 ? 560 : liveW >= 1280 ? 500 : 450)
+          ? (liveW >= 1600 ? 540 : liveW >= 1280 ? 480 : 440)
           : isTabletScreen
           ? Math.min(360, Math.round(liveW * 0.44))
           : Math.min(liveW - 40, 340);
 
         const gap = isDesktopScreen
-          ? Math.round(Math.min(96, Math.max(52, (liveW - effectiveVaultW - headingW) * 0.28)))
+          ? Math.round(Math.min(84, Math.max(48, (liveW - effectiveVaultW - headingW) * 0.22)))
           : isTabletScreen
-          ? Math.round(Math.max(32, liveW * 0.04))
-          : 24;
+          ? Math.round(Math.max(28, liveW * 0.035))
+          : 20;
 
-        // Ensure safeContainerRef has its width & height explicitly synced with effectiveVaultW
-        if (safeContainerRef.current) {
-          safeContainerRef.current.style.width = `${effectiveVaultW}px`;
-          safeContainerRef.current.style.height = `${effectiveVaultW}px`;
+        // Symmetric composition with safety margin protection across all viewports:
+        // Group total width = vault width + gap + heading width.
+        // Vault is on the left, heading is on the right, centered with equal margins.
+        const minMargin = isMobileScreen ? 16 : isTabletScreen ? 32 : 48;
+        const maxCompW = liveW - minMargin * 2;
+        let finalVaultW = effectiveVaultW;
+        let finalHeadingW = headingW;
+        let finalGap = gap;
+        const compW = finalVaultW + finalGap + finalHeadingW;
+        if (compW > maxCompW && !isMobileScreen) {
+          const shrinkFactor = maxCompW / compW;
+          finalVaultW = Math.round(finalVaultW * shrinkFactor);
+          finalHeadingW = Math.round(finalHeadingW * shrinkFactor);
+          finalGap = Math.max(20, Math.round(finalGap * shrinkFactor));
         }
 
-        // Symmetric horizontal offsets:
-        // On desktop/tablet, composition is centered:
-        // Vault center is -(headingW + gap) / 2 from center.
-        // Heading center is +(effectiveVaultW + gap) / 2 from center.
-        // Left margin strictly equals right margin!
-        // Extra leftward nudge so the vault sits visually to the left side of the composition
-        const leftNudge = isMobileScreen ? 0 : isDesktopScreen ? Math.round(liveW * 0.075) : Math.round(liveW * 0.045);
-        const leftShift = isMobileScreen ? 0 : Math.round((headingW + gap) / 2) + leftNudge;
-        const rightShiftX = isMobileScreen ? 0 : Math.round((effectiveVaultW + gap) / 2) - leftNudge;
+        // Ensure safeContainerRef has its width & height explicitly synced with finalVaultW
+        if (safeContainerRef.current) {
+          safeContainerRef.current.style.width = `${finalVaultW}px`;
+          safeContainerRef.current.style.height = `${finalVaultW}px`;
+        }
+
+        // Symmetrical offsets from screen center:
+        // Left margin strictly equals right margin: (liveW - compW) / 2
+        const leftShift = isMobileScreen ? 0 : Math.round((finalHeadingW + finalGap) / 2);
+        const rightShiftX = isMobileScreen ? 0 : Math.round((finalVaultW + finalGap) / 2);
         const heroShiftX = rightShiftX;
 
         const targetRingX = Math.round(viewportCenterX - clusterCenterX);
@@ -1941,8 +1952,7 @@ export function BlueprintHero() {
                 y: targetRingY,
               });
             }
-            safeVault3DRef.current?.setOpenProgress(0);
-            safeVault3DRef.current?.resetRim?.();
+            safeVault3DRef.current?.resetToClosed?.();
             safeVault3DRef.current?.setCardsProgress?.(0);
             safeVault3DRef.current?.pauseAmbient?.();
 
@@ -2153,8 +2163,7 @@ export function BlueprintHero() {
           {},
           {
             onUpdate: () => {
-              safeVault3DRef.current?.setOpenProgress(0);
-              safeVault3DRef.current?.resetRim?.();
+              safeVault3DRef.current?.resetToClosed?.();
               safeVault3DRef.current?.setCardsProgress?.(0);
               safeVault3DRef.current?.pauseAmbient?.();
             },
@@ -4508,8 +4517,7 @@ export function BlueprintHero() {
                 y: targetRingYRef.current,
               });
             }
-            safeVault3DRef.current?.setOpenProgress(0);
-            safeVault3DRef.current?.resetRim?.();
+            safeVault3DRef.current?.resetToClosed?.();
             safeVault3DRef.current?.setCardsProgress?.(0);
             safeVault3DRef.current?.pauseAmbient?.(true);
 
@@ -4845,8 +4853,7 @@ export function BlueprintHero() {
               visibility: "hidden",
               autoAlpha: 0,
               onComplete: () => {
-                safeVault3DRef.current?.setOpenProgress(0);
-                safeVault3DRef.current?.resetRim?.();
+                safeVault3DRef.current?.resetToClosed?.();
                 safeVault3DRef.current?.setCardsProgress?.(0);
                 safeVault3DRef.current?.pauseAmbient?.();
               },
@@ -5437,32 +5444,25 @@ export function BlueprintHero() {
           gsap.set(docFlipperRef.current, { rotateY: 0, z: 0 });
         }
 
+        // Reset cluster transform to identity before computing dock layout so measurement is pristine
+        if (cardsClusterRef.current) {
+          gsap.set(cardsClusterRef.current, {
+            x: 0,
+            y: 0,
+            scale: 1.0,
+            scaleX: 1.0,
+            scaleY: 1.0,
+            rotateX: 0,
+            rotateY: 0,
+            rotateZ: 0,
+          });
+        }
+
+        const dockLayout = computeDockLayout();
+        const targetLeftX = dockLayout.targetLeftX;
+        const targetRingY = dockLayout.targetRingY;
         const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
         const isTablet = typeof window !== "undefined" && window.innerWidth >= 768;
-        const vh = typeof window !== "undefined" ? window.innerHeight : 800;
-        const vw = typeof window !== "undefined" ? window.innerWidth : 1440;
-        const viewportCenterY = vh / 2;
-        const viewportCenterX = vw / 2;
-        // Clamped separately from viewportCenterX: the shift amounts below should stay
-        // proportioned to the reference desktop width, while viewportCenterX itself must
-        // keep tracking the real viewport center for the cluster-centering math above.
-        const composedCenterX = getComposedViewport().vw / 2;
-        const clusterRect = cardsClusterRef.current?.getBoundingClientRect();
-        const clusterCenterX = clusterRect ? (clusterRect.left + clusterRect.width / 2) : viewportCenterX;
-        const clusterCenterY = clusterRect ? (clusterRect.top + clusterRect.height / 2) : viewportCenterY;
-        const fallbackTargetRingY = Math.round(viewportCenterY - clusterCenterY + 18);
-        const fallbackTargetRingX = Math.round(viewportCenterX - clusterCenterX);
-        const leftShift = isDesktop
-          ? Math.round(composedCenterX * 0.44)
-          : isTablet
-          ? Math.round(composedCenterX * 0.32)
-          : Math.round(composedCenterX * 0.20);
-        const fallbackTargetLeftX = fallbackTargetRingX - leftShift;
-
-        const targetLeftX = targetLeftXRef.current ?? fallbackTargetLeftX;
-        const targetRingY = targetRingYRef.current ?? fallbackTargetRingY;
-
-        const vhVal = getComposedViewport(1440, 900).vh;
         const stackCardScale = isDesktop ? 0.60 : isTablet ? 0.56 : 0.52;
         const targetEnvelopeY = isDesktop ? 90 : isTablet ? 70 : 50;
         const frontX = 35;
@@ -5470,12 +5470,8 @@ export function BlueprintHero() {
         const allProductCards = cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
         const allCompanionCards = companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
         const allCards = [...allProductCards, ...allCompanionCards];
-        const shiftX = rightShiftXRef.current ?? (isDesktop
-          ? Math.round(composedCenterX * 0.35)
-          : isTablet
-          ? Math.round(composedCenterX * 0.24)
-          : Math.round(composedCenterX * 0.14));
-        const headingY = securityHeadingYRef.current || 0;
+        const shiftX = dockLayout.rightShiftX;
+        const headingY = dockLayout.securityHeadingY;
 
         const revTl = gsap.timeline({
           onComplete: () => {
@@ -5534,8 +5530,7 @@ export function BlueprintHero() {
                 y: targetRingY,
               });
             }
-            safeVault3DRef.current?.setOpenProgress(0);
-            safeVault3DRef.current?.resetRim?.();
+            safeVault3DRef.current?.resetToClosed?.();
             safeVault3DRef.current?.setCardsProgress?.(0);
             safeVault3DRef.current?.resumeAmbient?.();
             allProductCards.forEach((wrapper) => {
@@ -5825,7 +5820,11 @@ export function BlueprintHero() {
         currentSecurityStateRef.current = nextIdx;
 
         // Subtle vault interaction: rotate outer locking rim smoothly between Security states while door remains closed
-        safeVault3DRef.current?.triggerRimStep?.(direction, nextIdx);
+        if (nextIdx === 0) {
+          safeVault3DRef.current?.resetToClosed?.();
+        } else {
+          safeVault3DRef.current?.triggerRimStep?.(direction, nextIdx);
+        }
 
         // Cancel previous state transition timeline if running
         if (securityStateTransitionTlRef.current) {
@@ -5957,8 +5956,11 @@ export function BlueprintHero() {
           onComplete: () => {
             securityStateTransitionTlRef.current = null;
             isSecurityTransitioningRef.current = false;
+            hasTriggeredThisGestureRef.current = false;
+            wheelGestureActiveRef.current = false;
             if (nextIdx === 0) {
               if (nextEl) gsap.set(nextEl, { clipPath: "none" });
+              safeVault3DRef.current?.resetToClosed?.();
               playMoneyAnimation();
             } else if (nextIdx === 1) {
               playTypoEyesAnimation();
@@ -6226,7 +6228,7 @@ export function BlueprintHero() {
           const headingY = securityHeadingYRef.current ?? 0;
           if (state0El) gsap.set(state0El, { opacity: 1, visibility: "visible", x: shiftX, y: headingY, xPercent: -50, yPercent: -50, scale: 1, clipPath: "none" });
           currentSecurityStateRef.current = 0;
-          safeVault3DRef.current?.resetRim?.();
+          safeVault3DRef.current?.resetToClosed?.();
         }
 
 
@@ -6292,7 +6294,13 @@ export function BlueprintHero() {
         if (stateRef.current === "about") {
           e.preventDefault();
           e.stopImmediatePropagation();
-          if (hasTriggeredThisGestureRef.current) return;
+          if (hasTriggeredThisGestureRef.current) {
+            if (!isSecurityTransitioningRef.current && !isFlippingDocRef.current && Date.now() - lastSecurityScrollTimeRef.current >= 280) {
+              hasTriggeredThisGestureRef.current = false;
+            } else {
+              return;
+            }
+          }
           if (isSecurityTransitioningRef.current || isFlippingDocRef.current) return;
 
           if (e.deltaY > 8) {
@@ -6350,7 +6358,13 @@ export function BlueprintHero() {
           // A state transition is already animating or gesture is locked:
           // ignore every extra wheel tick from this gesture so one trackpad swipe
           // — regardless of velocity or momentum duration — only ever advances a single state.
-          if (hasTriggeredThisGestureRef.current) return;
+          if (hasTriggeredThisGestureRef.current) {
+            if (!isSecurityTransitioningRef.current && Date.now() - lastSecurityScrollTimeRef.current >= 240) {
+              hasTriggeredThisGestureRef.current = false;
+            } else {
+              return;
+            }
+          }
           if (isSecurityTransitioningRef.current) return;
 
           // Responsive scrolling cadence between states
@@ -6832,8 +6846,45 @@ export function BlueprintHero() {
       };
       window.addEventListener("resize", handleResizeLines);
 
+      // Centralized timeline cleanup to prevent zombie substate mutations during navigation
+      const killAllSubstateTimelines = () => {
+        const tls = [
+          moneyAnimTlRef,
+          typoEyesTlRef,
+          pwdMaskTlRef,
+          lockAnimTlRef,
+          connectionAnimTlRef,
+          indiaAnimTlRef,
+          sellAnimTlRef,
+          securityStateTransitionTlRef,
+          consolidationTlRef,
+          productToRingTlRef,
+          heroToProductTlRef,
+        ];
+        tls.forEach((tlRef) => {
+          if (tlRef.current) {
+            tlRef.current.kill();
+            tlRef.current = null;
+          }
+        });
+        if (ringRotateTweenRef.current) {
+          ringRotateTweenRef.current.kill();
+          ringRotateTweenRef.current = null;
+        }
+        if (aboutOrbitTweenRef.current) {
+          aboutOrbitTweenRef.current.kill();
+          aboutOrbitTweenRef.current = null;
+        }
+        isSecurityTransitioningRef.current = false;
+        transitionAnimatingRef.current = false;
+        isNavigatingRef.current = false;
+        wheelGestureActiveRef.current = false;
+        hasTriggeredThisGestureRef.current = false;
+      };
+
       // Instant State Initializers (used when jumping back from FAQ / Contact or direct navbar routing)
       const instantShowProduct = () => {
+        killAllSubstateTimelines();
         gsap.killTweensOf(window);
         lockScrollYRef.current = 0;
         window.scrollTo(0, 0);
@@ -6988,6 +7039,7 @@ export function BlueprintHero() {
       };
 
       const instantResetHero = () => {
+        killAllSubstateTimelines();
         gsap.killTweensOf(window);
         lockScrollYRef.current = 0;
         window.scrollTo(0, 0);
@@ -7178,10 +7230,7 @@ export function BlueprintHero() {
 
 
       const instantShowSecurity = () => {
-        if (aboutOrbitTweenRef.current) {
-          aboutOrbitTweenRef.current.kill();
-          aboutOrbitTweenRef.current = null;
-        }
+        killAllSubstateTimelines();
         if (aboutContentRef.current) {
           gsap.set(aboutContentRef.current, { opacity: 0, visibility: "hidden" });
         }
@@ -7191,20 +7240,7 @@ export function BlueprintHero() {
         if (unifiedEnvelopeRef.current) {
           gsap.set(unifiedEnvelopeRef.current, { opacity: 0, visibility: "hidden" });
         }
-
-        if (consolidationTlRef.current) {
-          consolidationTlRef.current.kill();
-          consolidationTlRef.current = null;
-        }
         isRingConsolidatedRef.current = false;
-
-        if (typoEyesTlRef.current) { typoEyesTlRef.current.kill(); typoEyesTlRef.current = null; }
-        if (pwdMaskTlRef.current) { pwdMaskTlRef.current.kill(); pwdMaskTlRef.current = null; }
-        if (lockAnimTlRef.current) { lockAnimTlRef.current.kill(); lockAnimTlRef.current = null; }
-        if (connectionAnimTlRef.current) { connectionAnimTlRef.current.kill(); connectionAnimTlRef.current = null; }
-        if (indiaAnimTlRef.current) { indiaAnimTlRef.current.kill(); indiaAnimTlRef.current = null; }
-        if (sellAnimTlRef.current) { sellAnimTlRef.current.kill(); sellAnimTlRef.current = null; }
-        if (moneyAnimTlRef.current) { moneyAnimTlRef.current.kill(); moneyAnimTlRef.current = null; }
 
         stateRef.current = "ring";
         transitionStartedRef.current = true;
@@ -7326,8 +7362,7 @@ export function BlueprintHero() {
             visibility: "visible",
           });
         }
-        safeVault3DRef.current?.setOpenProgress(0);
-        safeVault3DRef.current?.resetRim?.();
+        safeVault3DRef.current?.resetToClosed?.();
         safeVault3DRef.current?.setCardsProgress?.(0);
         safeVault3DRef.current?.resumeAmbient?.();
 
@@ -7384,42 +7419,7 @@ export function BlueprintHero() {
 
       // Instant State Initializer for About section
       const instantShowAbout = () => {
-        // 1. Kill any active tweens and animations
-        if (aboutOrbitTweenRef.current) {
-          aboutOrbitTweenRef.current.kill();
-          aboutOrbitTweenRef.current = null;
-        }
-        if (consolidationTlRef.current) {
-          consolidationTlRef.current.kill();
-          consolidationTlRef.current = null;
-        }
-        if (heroToProductTlRef.current) {
-          heroToProductTlRef.current.kill();
-          heroToProductTlRef.current = null;
-        }
-        if (restingToBentoTlRef.current) {
-          restingToBentoTlRef.current.kill();
-          restingToBentoTlRef.current = null;
-        }
-        if (ringRotateTweenRef.current) {
-          ringRotateTweenRef.current.kill();
-          ringRotateTweenRef.current = null;
-        }
-        if (productToRingTlRef.current) {
-          productToRingTlRef.current.kill();
-          productToRingTlRef.current = null;
-        }
-        if (securityStateTransitionTlRef.current) {
-          securityStateTransitionTlRef.current.kill();
-          securityStateTransitionTlRef.current = null;
-        }
-        if (typoEyesTlRef.current) { typoEyesTlRef.current.kill(); typoEyesTlRef.current = null; }
-        if (pwdMaskTlRef.current) { pwdMaskTlRef.current.kill(); pwdMaskTlRef.current = null; }
-        if (lockAnimTlRef.current) { lockAnimTlRef.current.kill(); lockAnimTlRef.current = null; }
-        if (connectionAnimTlRef.current) { connectionAnimTlRef.current.kill(); connectionAnimTlRef.current = null; }
-        if (indiaAnimTlRef.current) { indiaAnimTlRef.current.kill(); indiaAnimTlRef.current = null; }
-        if (sellAnimTlRef.current) { sellAnimTlRef.current.kill(); sellAnimTlRef.current = null; }
-        if (moneyAnimTlRef.current) { moneyAnimTlRef.current.kill(); moneyAnimTlRef.current = null; }
+        killAllSubstateTimelines();
         gsap.killTweensOf(window);
 
         // 2. Clear flags & state
@@ -7488,8 +7488,7 @@ export function BlueprintHero() {
 
         if (safeContainerRef.current) {
           gsap.set(safeContainerRef.current, { opacity: 0, visibility: "hidden" });
-          safeVault3DRef.current?.setOpenProgress(0);
-          safeVault3DRef.current?.resetRim?.();
+          safeVault3DRef.current?.resetToClosed?.();
           safeVault3DRef.current?.setCardsProgress?.(0);
           safeVault3DRef.current?.pauseAmbient?.();
         }
@@ -7615,11 +7614,7 @@ export function BlueprintHero() {
 
       // Instant State Initializer for FAQ section
       const instantShowFaq = () => {
-        if (aboutOrbitTweenRef.current) { aboutOrbitTweenRef.current.kill(); aboutOrbitTweenRef.current = null; }
-        if (consolidationTlRef.current) { consolidationTlRef.current.kill(); consolidationTlRef.current = null; }
-        if (heroToProductTlRef.current) { heroToProductTlRef.current.kill(); heroToProductTlRef.current = null; }
-        if (restingToBentoTlRef.current) { restingToBentoTlRef.current.kill(); restingToBentoTlRef.current = null; }
-        if (productToRingTlRef.current) { productToRingTlRef.current.kill(); productToRingTlRef.current = null; }
+        killAllSubstateTimelines();
         gsap.killTweensOf(window);
 
         isNavigatingRef.current = false;
@@ -7667,11 +7662,7 @@ export function BlueprintHero() {
 
       // Instant State Initializer for Contact section
       const instantShowContact = () => {
-        if (aboutOrbitTweenRef.current) { aboutOrbitTweenRef.current.kill(); aboutOrbitTweenRef.current = null; }
-        if (consolidationTlRef.current) { consolidationTlRef.current.kill(); consolidationTlRef.current = null; }
-        if (heroToProductTlRef.current) { heroToProductTlRef.current.kill(); heroToProductTlRef.current = null; }
-        if (restingToBentoTlRef.current) { restingToBentoTlRef.current.kill(); restingToBentoTlRef.current = null; }
-        if (productToRingTlRef.current) { productToRingTlRef.current.kill(); productToRingTlRef.current = null; }
+        killAllSubstateTimelines();
         gsap.killTweensOf(window);
 
         isNavigatingRef.current = false;
@@ -7724,6 +7715,7 @@ export function BlueprintHero() {
       // both upwards and downwards after arrival.
       // =======================================================================
       const navigateToSection = (targetSection: string) => {
+        killAllSubstateTimelines();
         pendingNavSectionRef.current = null;
         targetNavSectionRef.current = null;
         isNavigatingRef.current = false;
