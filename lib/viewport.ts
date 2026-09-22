@@ -75,3 +75,15 @@ export function getCardRestHeight(vWidth: number, vHeight?: number): number {
   }
   return baseH;
 }
+
+/**
+ * Converts an already-tiered/clamped composed viewport width (see
+ * getComposedViewport) into the equivalent "1% of that width" CSS length in
+ * px. Bento card copy uses this inside `clamp()` in place of the browser's
+ * raw, un-tiered `vw` unit, so two laptops in the same width tier render
+ * identical text sizes, not just an identical box (see
+ * Docs/2026-09-22-scroll-and-animation-glitch-root-cause-report.md §8).
+ */
+export function getBentoVwTierPx(composedVw: number): number {
+  return composedVw * 0.01;
+}
