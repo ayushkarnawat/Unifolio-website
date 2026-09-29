@@ -516,6 +516,8 @@ export function BlueprintHero() {
   const aboutSharedRef = useRef<AboutSceneShared>({
     dispatchActiveSection: () => {},
     consolidateRingToStack: () => {},
+    applyPortalClip: () => {},
+    maxRadiusPx: 2500,
   });
   const onProductToRingCompletedRef = useRef<(() => void) | null>(null);
   const onRingToProductCompletedRef = useRef<(() => void) | null>(null);
@@ -847,6 +849,8 @@ export function BlueprintHero() {
       securitySharedRef.current.dispatchActiveSection = dispatchActiveSection;
       aboutSharedRef.current.dispatchActiveSection = dispatchActiveSection;
       aboutSharedRef.current.consolidateRingToStack = () => securitySceneRef.current?.consolidateRingToStack();
+      aboutSharedRef.current.applyPortalClip = applyPortalClip;
+      aboutSharedRef.current.maxRadiusPx = maxRadiusPx;
       // Re-run SecurityVaultScene's own mount-time computeDockLayout() warm-up
       // now that the bridge above is populated with the REAL computeBentoLayout.
       // SecurityVaultScene is a child, so its own useGSAP mount effect (which
@@ -1376,6 +1380,8 @@ export function BlueprintHero() {
             headlineRef,
             ctaRef,
             floorLineRef,
+            heroIntroRef,
+            heroVisualRef,
             cardsStageRef,
             cardsClusterRef,
             cardWrapperRefs,
@@ -1480,6 +1486,10 @@ export function BlueprintHero() {
             stageRef,
             irisPortalRef,
             headerRef,
+            heroIntroRef,
+            heroVisualRef,
+            portalRimRef,
+            portalRippleRef,
             productWorldRef,
             cardsStageRef,
             cardsClusterRef,

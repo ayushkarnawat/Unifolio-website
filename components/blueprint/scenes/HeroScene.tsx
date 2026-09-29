@@ -237,6 +237,19 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
         setIsAperturePaused(false);
         if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "none";
         if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "none";
+
+        // Fully hide the iris mask portal, rim, and product world so no card circle lingers
+        if (irisPortalRef.current) gsap.set(irisPortalRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
+        if (portalRimRef.current) gsap.set(portalRimRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
+        if (portalRippleRef.current) gsap.set(portalRippleRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
+        if (productWorldRef.current) gsap.set(productWorldRef.current, { opacity: 0, visibility: "hidden" });
+        if (heroIntroRef.current) gsap.set(heroIntroRef.current, { autoAlpha: 1, opacity: 1, scale: 1, x: 0, y: 0 });
+        if (heroVisualRef.current) gsap.set(heroVisualRef.current, { opacity: 1, scale: 1, xPercent: 0, yPercent: 0 });
+
+        cardBackRefs.current.forEach((el) => {
+          if (el) gsap.set(el, { opacity: 1, visibility: "visible" });
+        });
+
         gsap.set(
           [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
           { autoAlpha: 0, opacity: 0, visibility: "hidden" }
@@ -262,6 +275,11 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
     // Ensure Product Header (headline, CTA) and floor line start hidden at t = 0
     tl.set(
       [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
+      { autoAlpha: 0, opacity: 0, visibility: "hidden" },
+      0.0
+    );
+    tl.set(
+      [irisPortalRef.current, portalRimRef.current, portalRippleRef.current],
       { autoAlpha: 0, opacity: 0, visibility: "hidden" },
       0.0
     );
@@ -522,10 +540,14 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
   const triggerHeroToProduct = () => {
     if (transitionAnimatingRef.current || stateRef.current !== "hero") return;
     transitionAnimatingRef.current = true;
-    engine.armBusySafetyValve(transitionAnimatingRef, 10390);
+    engine.armBusySafetyValve(transitionAnimatingRef, 1400);
     stateRef.current = "sculpting";
     isHoldingProductRef.current = false;
     productCompleteRef.current = false;
+
+    cardBackRefs.current.forEach((el) => {
+      if (el) gsap.set(el, { opacity: 1, visibility: "visible" });
+    });
 
     if (heroToProductTlRef.current) {
       heroToProductTlRef.current.kill();
@@ -541,10 +563,15 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
     )
       return;
     transitionAnimatingRef.current = true;
-    engine.armBusySafetyValve(transitionAnimatingRef, 10390);
+    engine.armBusySafetyValve(transitionAnimatingRef, 1200);
     stateRef.current = "sculpting";
     isHoldingProductRef.current = false;
     productCompleteRef.current = false;
+
+    // Suppress obsidian black card back during reverse so it doesn't flash
+    cardBackRefs.current.forEach((el) => {
+      if (el) gsap.set(el, { opacity: 0, visibility: "hidden" });
+    });
 
     if (!heroToProductTlRef.current) {
       heroToProductTlRef.current = createHeroToProductTimeline();

@@ -253,6 +253,31 @@ function hideSecuritySurfaces(ctx: SceneTransitionContext) {
 }
 
 /**
+ * Hide all Hero layer surfaces so they can't bleed through Product, Security,
+ * About, FAQ, or Contact scenes.
+ */
+function hideHeroSurfaces(ctx: SceneTransitionContext) {
+  if (ctx.heroIntroRef.current) {
+    gsap.set(ctx.heroIntroRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
+  }
+  if (ctx.heroVisualRef.current) {
+    gsap.set(ctx.heroVisualRef.current, { opacity: 0, scale: 5.5, xPercent: -12.87, yPercent: 0.88 });
+  }
+  gsap.set(
+    [
+      ctx.headerRef.current,
+      ctx.headlineRef.current,
+      ctx.subheadRef.current,
+      ctx.ctaRef.current,
+      ctx.floorLineRef.current,
+    ],
+    { autoAlpha: 0, opacity: 0, visibility: "hidden" }
+  );
+  if (ctx.portalRimRef.current) gsap.set(ctx.portalRimRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
+  if (ctx.portalRippleRef.current) gsap.set(ctx.portalRippleRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
+}
+
+/**
  * Jump the page directly to a macro state, from any other macro state, with no
  * animation. This is the single entry point for nav-pill clicks, "Back to Top",
  * the About scroll-drift recovery, and any future history/deep-link handler.
@@ -267,9 +292,11 @@ export function resetToState(target: SceneResetTarget, ctx: SceneTransitionConte
   ctx.disarmBusySafetyValve(ctx.transitionAnimatingRef);
   ctx.disarmBusySafetyValve(ctx.isSecurityTransitioningRef);
   ctx.disarmBusySafetyValve(ctx.isNavigatingRef);
+  ctx.disarmBusySafetyValve(ctx.isFlippingDocRef);
   ctx.transitionAnimatingRef.current = false;
   ctx.isSecurityTransitioningRef.current = false;
   ctx.isNavigatingRef.current = false;
+  ctx.isFlippingDocRef.current = false;
   ctx.wheelGestureActiveRef.current = false;
   ctx.hasTriggeredThisGestureRef.current = false;
   ctx.pendingNavSectionRef.current = null;
@@ -381,17 +408,12 @@ function resetToRing(ctx: SceneTransitionContext) {
     gsap.set(ctx.stageRef.current, { opacity: 1, visibility: "visible" });
   }
 
-  // Hide Hero elements
-  gsap.set(
-    [ctx.headerRef.current, ctx.headlineRef.current, ctx.ctaRef.current, ctx.floorLineRef.current],
-    { autoAlpha: 0, opacity: 0, visibility: "hidden" }
-  );
+  ctx.setIsAperturePaused(true);
+  hideHeroSurfaces(ctx);
   ctx.applyPortalClip(ctx.maxRadiusPx, 50.0, 50.0);
   if (ctx.irisPortalRef.current) {
     gsap.set(ctx.irisPortalRef.current, { autoAlpha: 1, opacity: 1, clipPath: "circle(150% at 50% 50%)" });
   }
-  if (ctx.portalRimRef.current) gsap.set(ctx.portalRimRef.current, { autoAlpha: 0 });
-  if (ctx.portalRippleRef.current) gsap.set(ctx.portalRippleRef.current, { autoAlpha: 0 });
   if (ctx.productWorldRef.current) {
     gsap.set(ctx.productWorldRef.current, {
       scale: 1,
@@ -401,12 +423,6 @@ function resetToRing(ctx: SceneTransitionContext) {
       yPercent: 0,
       opacity: 1,
     });
-  }
-  if (ctx.heroIntroRef.current) {
-    gsap.set(ctx.heroIntroRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
-  }
-  if (ctx.heroVisualRef.current) {
-    gsap.set(ctx.heroVisualRef.current, { opacity: 0, scale: 5.5, xPercent: -12.87, yPercent: 0.88 });
   }
 
   // Reset the cluster's transform to identity BEFORE measuring it —
@@ -564,10 +580,10 @@ function resetToProduct(ctx: SceneTransitionContext) {
   lockNativeScroll();
   ScrollTrigger.refresh();
 
+  ctx.setIsAperturePaused(true);
   ctx.applyPortalClip(ctx.maxRadiusPx, 50.0, 50.0);
   if (ctx.irisPortalRef.current) gsap.set(ctx.irisPortalRef.current, { autoAlpha: 1 });
-  if (ctx.portalRimRef.current) gsap.set(ctx.portalRimRef.current, { autoAlpha: 0 });
-  if (ctx.portalRippleRef.current) gsap.set(ctx.portalRippleRef.current, { autoAlpha: 0 });
+  hideHeroSurfaces(ctx);
   if (ctx.productWorldRef.current) {
     gsap.set(ctx.productWorldRef.current, {
       scale: 1,
@@ -578,14 +594,6 @@ function resetToProduct(ctx: SceneTransitionContext) {
       opacity: 1,
     });
   }
-  if (ctx.heroIntroRef.current) gsap.set(ctx.heroIntroRef.current, { autoAlpha: 0 });
-  if (ctx.heroVisualRef.current) {
-    gsap.set(ctx.heroVisualRef.current, { opacity: 0, scale: 5.5, xPercent: -12.87, yPercent: 0.88 });
-  }
-  if (ctx.headerRef.current) gsap.set(ctx.headerRef.current, { autoAlpha: 0 });
-  if (ctx.headlineRef.current) gsap.set(ctx.headlineRef.current, { opacity: 0 });
-  if (ctx.subheadRef.current) gsap.set(ctx.subheadRef.current, { opacity: 0 });
-  if (ctx.ctaRef.current) gsap.set(ctx.ctaRef.current, { opacity: 0, scale: 0.9 });
   if (ctx.cardsClusterRef.current) {
     gsap.set(ctx.cardsClusterRef.current, {
       opacity: 1,
@@ -679,6 +687,7 @@ function resetToHero(ctx: SceneTransitionContext) {
   ctx.isHoldingProductRef.current = false;
   ctx.transitionStartedRef.current = false;
   ctx.transitionCompleteRef.current = false;
+  ctx.setIsAperturePaused(false);
   ctx.dispatchActiveSection("hero");
 
   if (ctx.arrivalIdleTimeoutRef.current) {
@@ -852,17 +861,12 @@ function resetToAbout(ctx: SceneTransitionContext) {
     });
   }
 
-  // Hide Hero, Product, Safe Vault, and Security elements
-  gsap.set(
-    [ctx.headerRef.current, ctx.headlineRef.current, ctx.ctaRef.current, ctx.floorLineRef.current],
-    { autoAlpha: 0, opacity: 0, visibility: "hidden" }
-  );
+  ctx.setIsAperturePaused(true);
+  hideHeroSurfaces(ctx);
   ctx.applyPortalClip(ctx.maxRadiusPx, 50.0, 50.0);
   if (ctx.irisPortalRef.current) {
     gsap.set(ctx.irisPortalRef.current, { autoAlpha: 1, opacity: 1, clipPath: "circle(150% at 50% 50%)" });
   }
-  if (ctx.portalRimRef.current) gsap.set(ctx.portalRimRef.current, { autoAlpha: 0 });
-  if (ctx.portalRippleRef.current) gsap.set(ctx.portalRippleRef.current, { autoAlpha: 0 });
   if (ctx.productWorldRef.current) {
     gsap.set(ctx.productWorldRef.current, {
       scale: 1,
@@ -872,12 +876,6 @@ function resetToAbout(ctx: SceneTransitionContext) {
       yPercent: 0,
       opacity: 1,
     });
-  }
-  if (ctx.heroIntroRef.current) {
-    gsap.set(ctx.heroIntroRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
-  }
-  if (ctx.heroVisualRef.current) {
-    gsap.set(ctx.heroVisualRef.current, { opacity: 0, scale: 5.5, xPercent: -12.87, yPercent: 0.88 });
   }
 
   hideSecuritySurfaces(ctx);
@@ -1030,6 +1028,8 @@ function resetToNativeScrollSection(
   releaseNativeScroll();
   unpinStage(ctx);
 
+  ctx.setIsAperturePaused(true);
+  hideHeroSurfaces(ctx);
   hideAboutSurfaces(ctx);
   // Deliberate widening vs. the old instantShowFaq/instantShowContact, which hid
   // only `securityStageRef` and left the individual sub-state headings alone:
@@ -1039,7 +1039,34 @@ function resetToNativeScrollSection(
   hideSecuritySurfaces(ctx);
   if (ctx.safeContainerRef.current) {
     gsap.set(ctx.safeContainerRef.current, { opacity: 0, visibility: "hidden" });
+    ctx.safeVault3DRef.current?.resetToClosed?.();
+    ctx.safeVault3DRef.current?.setCardsProgress?.(0);
     ctx.safeVault3DRef.current?.pauseAmbient?.();
+  }
+
+  // Hide all 26 product and companion cards
+  const allProductCards = ctx.cardWrapperRefs.current.slice(0, 5).filter(Boolean) as HTMLElement[];
+  const allCompanionCards = ctx.companionCardRefs.current.slice(0, 21).filter(Boolean) as HTMLElement[];
+  [...allProductCards, ...allCompanionCards].forEach((cardEl) => {
+    if (cardEl) gsap.set(cardEl, { opacity: 0, autoAlpha: 0, visibility: "hidden" });
+  });
+
+  ctx.applyPortalClip(ctx.maxRadiusPx, 50.0, 50.0);
+  if (ctx.irisPortalRef.current) {
+    gsap.set(ctx.irisPortalRef.current, { autoAlpha: 1, opacity: 1, clipPath: "circle(150% at 50% 50%)" });
+  }
+  if (ctx.productWorldRef.current) {
+    gsap.set(ctx.productWorldRef.current, {
+      scale: 1,
+      scaleX: 1,
+      scaleY: 1,
+      xPercent: 0,
+      yPercent: 0,
+      opacity: 1,
+    });
+  }
+  if (ctx.cardsStageRef.current) {
+    ctx.cardsStageRef.current.style.pointerEvents = "";
   }
 
   ScrollTrigger.refresh();

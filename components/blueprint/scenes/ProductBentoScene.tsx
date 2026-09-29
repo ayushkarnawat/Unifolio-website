@@ -256,7 +256,8 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
         const restTop = Math.round((clusterH - hRest) / 2);
         const initialCardLayouts = PRODUCT_CARDS.map((card, i) => {
           const wrapper = cardWrapperRefs.current[i];
-          const hasMeasuredOffset = wrapper && wrapper.offsetLeft > 0 && wrapper.offsetHeight > 0;
+          const isAbsoluteBento = wrapper && wrapper.style.position === "absolute";
+          const hasMeasuredOffset = wrapper && !isAbsoluteBento && wrapper.offsetLeft > 0 && wrapper.offsetHeight > 0;
           const fallbackL = Math.round((clusterW / 2) + (i - 2) * (wRest + gapRest) - wRest / 2);
           const fallbackT = Math.round(restTop);
           return {
@@ -448,7 +449,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
             >
               <div
                 ref={cardsClusterRef}
-                className="relative flex items-center justify-center gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-3.5 xl:gap-4 w-full max-w-[1340px] mx-auto overflow-visible py-1.5 px-2 no-scrollbar will-change-transform min-h-[295px] sm:min-h-[320px] md:min-h-[340px] lg:min-h-[355px] xl:min-h-[370px] 2xl:min-h-[385px]"
+                className="relative flex items-center justify-center gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-3.5 xl:gap-4 w-full max-w-[1340px] mx-auto overflow-visible py-1.5 px-2 no-scrollbar min-h-[295px] sm:min-h-[320px] md:min-h-[340px] lg:min-h-[355px] xl:min-h-[370px] 2xl:min-h-[385px]"
                 style={{ transformStyle: "preserve-3d" }}
               >
                 {PRODUCT_CARDS.map((card, idx) => {
@@ -466,14 +467,14 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                       ref={(el) => {
                         cardWrapperRefs.current[idx] = el;
                       }}
-                      className="relative shrink-0 w-[175px] sm:w-[190px] md:w-[205px] lg:w-[215px] xl:w-[225px] 2xl:w-[235px] h-[285px] sm:h-[310px] md:h-[330px] lg:h-[345px] xl:h-[360px] 2xl:h-[375px] cursor-default will-change-transform"
+                      className="relative shrink-0 w-[175px] sm:w-[190px] md:w-[205px] lg:w-[215px] xl:w-[225px] 2xl:w-[235px] h-[285px] sm:h-[310px] md:h-[330px] lg:h-[345px] xl:h-[360px] 2xl:h-[375px] cursor-default"
                       style={{ transformStyle: "preserve-3d" }}
                     >
                       <div
                         ref={(el) => {
                           cardFlipperRefs.current[idx] = el;
                         }}
-                        className="relative w-full h-full will-change-transform"
+                        className="relative w-full h-full"
                         style={{ transformStyle: "preserve-3d" }}
                       >
                         {/* CARD FRONT FACE (Light Frosted Architectural Glass) */}
@@ -481,12 +482,12 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                           ref={(el) => {
                             cardFrontRefs.current[idx] = el;
                           }}
-                          className="absolute inset-0 w-full h-full rounded-[20px] overflow-hidden will-change-transform flex flex-col justify-between"
+                          className="absolute inset-0 w-full h-full rounded-[20px] overflow-hidden flex flex-col justify-between"
                           style={{
                             backfaceVisibility: "hidden",
                             WebkitBackfaceVisibility: "hidden",
-                            backdropFilter: "blur(24px)",
-                            WebkitBackdropFilter: "blur(24px)",
+                            backdropFilter: "blur(16px)",
+                            WebkitBackdropFilter: "blur(16px)",
                             backgroundColor: "rgba(255, 255, 255, 0.74)",
                             border: "1px solid rgba(255, 255, 255, 0.75)",
                             boxShadow:
@@ -999,7 +1000,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                             cardBackRefs.current[idx] = el;
                           }}
                           data-card-text="true"
-                          className="product-card-text absolute inset-0 w-full h-full rounded-[20px] overflow-hidden bg-[#000000] border border-white/12 shadow-2xl p-4 sm:p-5 flex flex-col justify-between will-change-transform"
+                          className="product-card-text absolute inset-0 w-full h-full rounded-[20px] overflow-hidden bg-[#000000] border border-white/12 shadow-2xl p-4 sm:p-5 flex flex-col justify-between"
                           style={{
                             backfaceVisibility: "hidden",
                             WebkitBackfaceVisibility: "hidden",
@@ -1119,7 +1120,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                       ref={(el) => {
                         companionCardRefs.current[cIdx] = el;
                       }}
-                      className="absolute shrink-0 w-[175px] sm:w-[190px] md:w-[205px] lg:w-[215px] xl:w-[225px] 2xl:w-[235px] h-[285px] sm:h-[310px] md:h-[330px] lg:h-[345px] xl:h-[360px] 2xl:h-[375px] rounded-[20px] overflow-hidden pointer-events-none will-change-transform"
+                      className="absolute shrink-0 w-[175px] sm:w-[190px] md:w-[205px] lg:w-[215px] xl:w-[225px] 2xl:w-[235px] h-[285px] sm:h-[310px] md:h-[330px] lg:h-[345px] xl:h-[360px] 2xl:h-[375px] rounded-[20px] overflow-hidden pointer-events-none"
                       style={{
                         transformStyle: "preserve-3d",
                         opacity: 0,

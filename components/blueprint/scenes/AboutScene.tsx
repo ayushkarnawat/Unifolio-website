@@ -81,6 +81,10 @@ export interface AboutSceneRefs {
   stageRef: MutableRefObject<HTMLDivElement | null>;
   irisPortalRef: MutableRefObject<HTMLDivElement | null>;
   headerRef: MutableRefObject<HTMLDivElement | null>;
+  heroIntroRef: MutableRefObject<HTMLDivElement | null>;
+  heroVisualRef: MutableRefObject<HTMLDivElement | null>;
+  portalRimRef: MutableRefObject<HTMLDivElement | null>;
+  portalRippleRef: MutableRefObject<HTMLDivElement | null>;
   productWorldRef: MutableRefObject<HTMLDivElement | null>;
   cardsStageRef: MutableRefObject<HTMLDivElement | null>;
   cardsClusterRef: MutableRefObject<HTMLDivElement | null>;
@@ -95,6 +99,8 @@ export interface AboutSceneRefs {
 export interface AboutSceneShared {
   dispatchActiveSection: (section: string) => void;
   consolidateRingToStack: () => void;
+  applyPortalClip?: (r: number, x: number, y: number) => void;
+  maxRadiusPx?: number;
 }
 
 /**
@@ -152,6 +158,10 @@ export const AboutScene = forwardRef<AboutSceneHandle, AboutSceneProps>(
       stageRef,
       irisPortalRef,
       headerRef,
+      heroIntroRef,
+      heroVisualRef,
+      portalRimRef,
+      portalRippleRef,
       productWorldRef,
       cardsStageRef,
       cardsClusterRef,
@@ -213,6 +223,7 @@ export const AboutScene = forwardRef<AboutSceneHandle, AboutSceneProps>(
       if (aboutDocPageRef.current === targetPage) return;
 
       isFlippingDocRef.current = true;
+      engine.armBusySafetyValve(isFlippingDocRef, 1500);
       lastSecurityScrollTimeRef.current = Date.now();
 
       const flipper = docFlipperRef.current;
@@ -292,11 +303,7 @@ export const AboutScene = forwardRef<AboutSceneHandle, AboutSceneProps>(
     const exitAboutToFaq = () => {
       if (isSecurityTransitioningRef.current) return;
       isSecurityTransitioningRef.current = true;
-      // Safety valve (Task 3 / final-review fix): guarantees this busy-flag can
-      // never stay stuck true forever if a killed timeline never fires the
-      // completion callback that would normally clear it. 10390ms = the
-      // longest real transition (consolidateRingToStack, ~9.89s) + 500ms margin.
-      engine.armBusySafetyValve(isSecurityTransitioningRef, 10390);
+      engine.armBusySafetyValve(isSecurityTransitioningRef, 1200);
       lastSecurityScrollTimeRef.current = Date.now();
 
       if (aboutOrbitTweenRef.current) {
@@ -336,7 +343,7 @@ export const AboutScene = forwardRef<AboutSceneHandle, AboutSceneProps>(
           const faqEl = document.getElementById("faq");
           if (faqEl) {
             isNavigatingRef.current = true;
-            engine.armBusySafetyValve(isNavigatingRef, 10390);
+            engine.armBusySafetyValve(isNavigatingRef, 1200);
             smoothScrollTo(faqEl, {
               duration: 0.40,
               ease: "power2.out",
@@ -358,7 +365,7 @@ export const AboutScene = forwardRef<AboutSceneHandle, AboutSceneProps>(
       }
 
       isSecurityTransitioningRef.current = true;
-      engine.armBusySafetyValve(isSecurityTransitioningRef, 10390);
+      engine.armBusySafetyValve(isSecurityTransitioningRef, 1200);
       stateRef.current = "about";
       setIsAperturePaused(true);
       productCompleteRef.current = true;
@@ -382,8 +389,19 @@ export const AboutScene = forwardRef<AboutSceneHandle, AboutSceneProps>(
         gsap.set(stageRef.current, { scale: 1, scaleX: 1, scaleY: 1, x: 0, y: 0 });
       }
 
-      if (irisPortalRef.current) gsap.set(irisPortalRef.current, { opacity: 1, clipPath: "circle(150% at 50% 50%)" });
-      if (headerRef.current) gsap.set(headerRef.current, { opacity: 0 });
+      if (shared.current.applyPortalClip) {
+        shared.current.applyPortalClip(shared.current.maxRadiusPx ?? 2500, 50.0, 50.0);
+      }
+      if (irisPortalRef.current) {
+        irisPortalRef.current.style.removeProperty("-webkit-clip-path");
+        irisPortalRef.current.style.clipPath = "circle(150% at 50% 50%)";
+        gsap.set(irisPortalRef.current, { autoAlpha: 1, opacity: 1, visibility: "visible" });
+      }
+      if (portalRimRef.current) gsap.set(portalRimRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
+      if (portalRippleRef.current) gsap.set(portalRippleRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
+      if (heroIntroRef.current) gsap.set(heroIntroRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
+      if (heroVisualRef.current) gsap.set(heroVisualRef.current, { opacity: 0, scale: 5.5, xPercent: -12.87, yPercent: 0.88 });
+      if (headerRef.current) gsap.set(headerRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
       if (securityStageRef.current) gsap.set(securityStageRef.current, { opacity: 0, visibility: "hidden" });
       if (safeContainerRef.current) {
         gsap.set(safeContainerRef.current, { opacity: 0, visibility: "hidden" });
@@ -529,7 +547,7 @@ export const AboutScene = forwardRef<AboutSceneHandle, AboutSceneProps>(
             scaleX: stackCardScale,
             scaleY: stackCardScale,
             opacity: 1,
-            duration: 0.55,
+            duration: 0.40,
             ease: "power2.out",
           }
         );
@@ -548,16 +566,18 @@ export const AboutScene = forwardRef<AboutSceneHandle, AboutSceneProps>(
             scaleX: 1,
             scaleY: 1,
             visibility: "visible",
-            duration: 0.55,
+            duration: 0.40,
             ease: "power2.out",
             onComplete: () => {
               isSecurityTransitioningRef.current = false;
+              lastSecurityScrollTimeRef.current = Date.now();
               shared.current.dispatchActiveSection("about");
             },
           }
         );
       } else {
         isSecurityTransitioningRef.current = false;
+        lastSecurityScrollTimeRef.current = Date.now();
         shared.current.dispatchActiveSection("about");
       }
     };
@@ -710,7 +730,7 @@ export function AboutBackgroundSlot({ aboutContentRef }: AboutBackgroundSlotProp
         ].map((mote, mIdx) => (
           <div
             key={mIdx}
-            className="absolute rounded-full pointer-events-none will-change-transform"
+            className="absolute rounded-full pointer-events-none"
             style={{
               left: mote.left,
               top: mote.top,
@@ -831,7 +851,7 @@ export function AboutEnvelopeSlot({
                     >
                       <div
                         ref={philosophyDocRef}
-                        className="absolute left-1/2 -translate-x-1/2 pointer-events-none will-change-transform"
+                        className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
                         style={{
                           top: "20px",
                           opacity: 0,
@@ -841,7 +861,7 @@ export function AboutEnvelopeSlot({
                       >
                       <div
                         ref={docPaperSheetRef}
-                        className="relative w-[95vw] max-w-[620px] sm:max-w-[700px] md:max-w-[780px] lg:max-w-[860px] xl:max-w-[920px] will-change-[height,transform]"
+                        className="relative w-[95vw] max-w-[620px] sm:max-w-[700px] md:max-w-[780px] lg:max-w-[860px] xl:max-w-[920px]"
                         style={{
                           height: "320px",
                           perspective: "2500px",
@@ -851,7 +871,7 @@ export function AboutEnvelopeSlot({
                         {/* 3D Double-Sided Flipping Paper Sheet */}
                         <div
                           ref={docFlipperRef}
-                          className="relative w-full h-full will-change-transform"
+                          className="relative w-full h-full"
                           style={{
                             transformStyle: "preserve-3d",
                             transformOrigin: "50% 50%",

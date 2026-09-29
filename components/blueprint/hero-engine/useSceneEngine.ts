@@ -102,10 +102,12 @@ export function useSceneEngine() {
   function armBusySafetyValve(flagRef: MutableRefObject<boolean>, maxMs: number) {
     const existing = safetyValveTimersRef.current.get(flagRef);
     if (existing) clearTimeout(existing);
+    // Ceiling safety valve: never block inputs for longer than 2.2s even if caller requested 10s
+    const effectiveMs = Math.min(maxMs, 2200);
     const timer = setTimeout(() => {
       flagRef.current = false;
       safetyValveTimersRef.current.delete(flagRef);
-    }, maxMs);
+    }, effectiveMs);
     safetyValveTimersRef.current.set(flagRef, timer);
   }
 
@@ -158,7 +160,7 @@ export function useSceneEngine() {
         e.preventDefault();
         e.stopImmediatePropagation();
         if (hasTriggeredThisGestureRef.current) {
-          if (!isSecurityTransitioningRef.current && !isFlippingDocRef.current && Date.now() - lastSecurityScrollTimeRef.current >= 280) {
+          if (!isSecurityTransitioningRef.current && !isFlippingDocRef.current && Date.now() - lastSecurityScrollTimeRef.current >= 240) {
             hasTriggeredThisGestureRef.current = false;
           } else {
             return;
@@ -199,9 +201,15 @@ export function useSceneEngine() {
         // Upward scroll at or near the top of FAQ: gracefully re-enter About
         const faqEl = document.getElementById("faq");
         const faqTop = faqEl ? faqEl.offsetTop : window.innerHeight;
-        if (e.deltaY < -10 && window.scrollY <= Math.max(100, faqTop - 50)) {
-          if (hasTriggeredThisGestureRef.current) return;
-          if (Date.now() - lastSecurityScrollTimeRef.current < 150) return;
+        if (e.deltaY < -8 && window.scrollY <= Math.max(100, faqTop - 20)) {
+          if (hasTriggeredThisGestureRef.current) {
+            if (Date.now() - lastSecurityScrollTimeRef.current >= 180) {
+              hasTriggeredThisGestureRef.current = false;
+            } else {
+              return;
+            }
+          }
+          if (Date.now() - lastSecurityScrollTimeRef.current < 120) return;
           e.preventDefault();
           e.stopImmediatePropagation();
           hasTriggeredThisGestureRef.current = true;

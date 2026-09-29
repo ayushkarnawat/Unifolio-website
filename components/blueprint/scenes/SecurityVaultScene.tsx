@@ -88,12 +88,13 @@ import {
  * (and owned) in BlueprintHero.tsx — see header comment above.
  */
 export interface SecurityVaultSceneRefs {
-  // --- stage / hero / product DOM shared with other scenes -----------------
   stageRef: MutableRefObject<HTMLDivElement | null>;
   headerRef: MutableRefObject<HTMLDivElement | null>;
   headlineRef: MutableRefObject<HTMLHeadingElement | null>;
   ctaRef: MutableRefObject<HTMLAnchorElement | null>;
   floorLineRef: MutableRefObject<HTMLDivElement | null>;
+  heroIntroRef: MutableRefObject<HTMLDivElement | null>;
+  heroVisualRef: MutableRefObject<HTMLDivElement | null>;
   cardsStageRef: MutableRefObject<HTMLDivElement | null>;
   cardsClusterRef: MutableRefObject<HTMLDivElement | null>;
   cardWrapperRefs: MutableRefObject<(HTMLDivElement | null)[]>;
@@ -283,6 +284,8 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
       headlineRef,
       ctaRef,
       floorLineRef,
+      heroIntroRef,
+      heroVisualRef,
       cardsStageRef,
       cardsClusterRef,
       cardWrapperRefs,
@@ -3674,6 +3677,9 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
           consolidationTlRef.current = null;
         }
 
+        if (heroIntroRef.current) gsap.set(heroIntroRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
+        if (heroVisualRef.current) gsap.set(heroVisualRef.current, { opacity: 0, scale: 5.5, xPercent: -12.87, yPercent: 0.88 });
+
         aboutDocPageRef.current = 1;
         isFlippingDocRef.current = false;
         if (docFlipperRef.current) {
@@ -4349,6 +4355,9 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
           stageRef.current.style.zIndex = "40";
         }
 
+        if (heroIntroRef.current) gsap.set(heroIntroRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
+        if (heroVisualRef.current) gsap.set(heroVisualRef.current, { opacity: 0, scale: 5.5, xPercent: -12.87, yPercent: 0.88 });
+
         // 4. Create and start timeline
         if (ringRotateTweenRef.current) {
           ringRotateTweenRef.current.kill();
@@ -4559,7 +4568,7 @@ export function SecurityVaultSlot({
                 {/* LUXURY ROUND 3D SAFE (Matching "Safe Movement") */}
                 <div
                   ref={safeContainerRef}
-                  className="absolute pointer-events-none select-none will-change-transform flex items-center justify-center -translate-x-1/2 -translate-y-1/2 w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] xl:w-[420px] 2xl:w-[480px] h-[260px] sm:h-[300px] md:h-[340px] lg:h-[380px] xl:h-[420px] 2xl:h-[480px] max-h-[48vh] max-w-[48vh] lg:max-w-[32vw]"
+                  className="absolute pointer-events-none select-none flex items-center justify-center -translate-x-1/2 -translate-y-1/2 w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] xl:w-[420px] 2xl:w-[480px] h-[260px] sm:h-[300px] md:h-[340px] lg:h-[380px] xl:h-[420px] 2xl:h-[480px] max-h-[48vh] max-w-[48vh] lg:max-w-[32vw]"
                   style={{
                     left: "50%",
                     top: "50%",
@@ -4683,7 +4692,7 @@ export function SecurityStageSlot(props: SecurityStageSlotProps) {
                     ref={(el) => {
                       securityStateRefs.current[idx] = el;
                     }}
-                    className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-fit max-w-[92vw] sm:max-w-[500px] md:max-w-[520px] lg:max-w-[560px] xl:max-w-[600px] text-left will-change-transform pointer-events-none"
+                    className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-fit max-w-[92vw] sm:max-w-[500px] md:max-w-[520px] lg:max-w-[560px] xl:max-w-[600px] text-left pointer-events-none"
                     style={{
                       opacity: 0,
                       visibility: "hidden",
@@ -4692,7 +4701,7 @@ export function SecurityStageSlot(props: SecurityStageSlotProps) {
                     {item.type === "hero" ? (
                       <div
                         ref={securityHeroRibbonRef}
-                        className="relative will-change-transform select-none flex flex-col items-center md:items-start text-center md:text-left w-fit max-w-full"
+                        className="relative select-none flex flex-col items-center md:items-start text-center md:text-left w-fit max-w-full"
                       >
                         <h2 className="font-sans font-black font-[900] text-[20px] min-[380px]:text-[22px] min-[440px]:text-[24px] sm:text-[26px] md:text-[30px] lg:text-[36px] xl:text-[40px] 2xl:text-[42px] text-neutral-950 tracking-[-0.035em] select-none flex flex-col items-center md:items-start gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-4 leading-[1.12] text-center md:text-left">
                           {/* Line 1: We take your data as seriously */}
@@ -4731,7 +4740,7 @@ export function SecurityStageSlot(props: SecurityStageSlotProps) {
                                 {/* Morphed Cash Banknote Stack Animation SVG (Centered directly within the bounding box of "MONEY") */}
                                 <span
                                   ref={moneyWrapperRef}
-                                  className="absolute inset-0 flex items-center justify-center pointer-events-none will-change-transform z-10"
+                                  className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
                                   style={{ opacity: 0, transform: "scale(0.85)" }}
                                   aria-hidden="true"
                                 >

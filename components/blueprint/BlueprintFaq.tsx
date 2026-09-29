@@ -261,8 +261,8 @@ export function BlueprintFaq() {
               <div
                 className="relative group/btn inline-flex rounded-full p-[1.5px] overflow-hidden transition-all duration-300 will-change-transform active:scale-90 hover:-translate-y-0.5 cursor-pointer shadow-[0_2px_14px_rgba(0,0,0,0.08),0_0_12px_rgba(34,197,94,0.18)]"
               >
-                <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin opacity-80 group-hover/btn:opacity-100 will-change-transform" />
-                <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin blur-[2.5px] opacity-50 group-hover/btn:opacity-80 will-change-transform" />
+                <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin [animation-play-state:paused] group-hover/btn:[animation-play-state:running] opacity-80 group-hover/btn:opacity-100" />
+                <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin [animation-play-state:paused] group-hover/btn:[animation-play-state:running] blur-[2.5px] opacity-50 group-hover/btn:opacity-80" />
                 <button
                   type="button"
                   onClick={handlePrev}
@@ -281,8 +281,8 @@ export function BlueprintFaq() {
               <div
                 className="relative group/btn inline-flex rounded-full p-[1.5px] overflow-hidden transition-all duration-300 will-change-transform active:scale-90 hover:-translate-y-0.5 cursor-pointer shadow-[0_2px_14px_rgba(0,0,0,0.08),0_0_12px_rgba(34,197,94,0.18)]"
               >
-                <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin opacity-80 group-hover/btn:opacity-100 will-change-transform" />
-                <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin blur-[2.5px] opacity-50 group-hover/btn:opacity-80 will-change-transform" />
+                <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin [animation-play-state:paused] group-hover/btn:[animation-play-state:running] opacity-80 group-hover/btn:opacity-100" />
+                <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin [animation-play-state:paused] group-hover/btn:[animation-play-state:running] blur-[2.5px] opacity-50 group-hover/btn:opacity-80" />
                 <button
                   type="button"
                   onClick={handleNext}
