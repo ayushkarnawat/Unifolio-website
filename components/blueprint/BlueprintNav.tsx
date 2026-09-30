@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { gsap, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
-import { LinkButton } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
+import { WaitlistModal } from "@/components/waitlist/WaitlistModal";
 
 interface NavItem {
   label: string;
@@ -187,6 +188,7 @@ export function BlueprintNav() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isLogoDocked, setIsLogoDocked] = useState(false);
   const [isHeroSection, setIsHeroSection] = useState(true);
+  const [waitlistOpen, setWaitlistOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -432,59 +434,18 @@ export function BlueprintNav() {
         })}
       </div>
 
-      {/* Right Navigation Actions: Login + Sign Up */}
+      {/* Right Navigation Action: Join the Waitlist */}
       <div
-        className={`flex items-center gap-2 sm:gap-2.5 transition-opacity duration-700 delay-200 ${
+        className={`flex items-center transition-opacity duration-700 delay-200 ${
           isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
-        {/* Login: Clean, Minimal Outlined/Ghost Glass Treatment */}
-        <Link
-          href="https://staging.unifolio.in/login"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group relative inline-flex items-center gap-1.5 sm:gap-2 h-[34px] sm:h-[36px] px-3.5 sm:px-4 rounded-full bg-white/80 hover:bg-white active:bg-white/90 backdrop-blur-md border border-black/[0.07] hover:border-black/[0.12] shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 ease-out select-none"
-        >
-          <svg
-            className="w-3.5 h-3.5 sm:w-[15px] sm:h-[15px] text-[#2D3748] transition-colors group-hover:text-black shrink-0"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <span className="font-sans font-medium text-[13px] sm:text-[13.5px] text-[#1A202C] group-hover:text-black tracking-[-0.01em]">
-            Login
-          </span>
-        </Link>
-
-        {/* Sign Up: Subtle Primary Action with Soft Green Glow & Accent */}
-        <Link
-          href="https://staging.unifolio.in/signup"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group relative inline-flex items-center gap-1.5 sm:gap-2 h-[34px] sm:h-[36px] px-3.5 sm:px-4 rounded-full bg-[#22C55E]/[0.08] hover:bg-[#22C55E]/[0.14] active:bg-[#22C55E]/[0.10] backdrop-blur-md border border-[#22C55E]/35 hover:border-[#22C55E]/55 shadow-[0_1px_4px_rgba(34,197,94,0.08),0_2px_8px_rgba(34,197,94,0.08)] hover:shadow-[0_3px_14px_rgba(34,197,94,0.20),0_0_10px_rgba(34,197,94,0.14)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 ease-out select-none"
-        >
-          <svg
-            className="w-3.5 h-3.5 sm:w-[15px] sm:h-[15px] text-[#16A34A] transition-transform duration-200 group-hover:scale-110 shrink-0"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 2C12 7.5 7.5 12 2 12C7.5 12 12 16.5 12 22C12 16.5 16.5 12 22 12C16.5 12 12 7.5 12 2Z" />
-          </svg>
-          <span className="font-sans font-medium text-[13px] sm:text-[13.5px] text-[#0F4A2C] group-hover:text-[#064E3B] tracking-[-0.01em]">
-            Sign Up
-          </span>
-        </Link>
+        <Button variant="primary" size="sm" onClick={() => setWaitlistOpen(true)}>
+          Join the Waitlist
+        </Button>
       </div>
+
+      <WaitlistModal open={waitlistOpen} onClose={() => setWaitlistOpen(false)} />
     </nav>
   );
 }
