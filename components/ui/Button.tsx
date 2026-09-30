@@ -51,7 +51,7 @@ function PhysicalButtonInner({
 
       {/* 2. Delicate Iridescent Light Beams Orbiting the Perimeter (From Reference Video) */}
       <div
-        className={`pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] will-change-transform transition-opacity duration-500 ${
+        className={`pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] [animation-play-state:paused] group-hover:[animation-play-state:running] group-focus-visible:[animation-play-state:running] transition-opacity duration-500 ${
           isPrimary
             ? "bg-iridescent-conic animate-iridescent-spin opacity-85 group-hover:opacity-100"
             : isSecondary
@@ -62,7 +62,7 @@ function PhysicalButtonInner({
 
       {/* 3. Soft Prismatic Diffusion Glow Layer (Corners catch rainbow chromatic dispersion) */}
       <div
-        className={`pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] blur-[2.5px] will-change-transform transition-opacity duration-500 ${
+        className={`pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] blur-[2.5px] [animation-play-state:paused] group-hover:[animation-play-state:running] group-focus-visible:[animation-play-state:running] transition-opacity duration-500 ${
           isPrimary
             ? "bg-iridescent-conic animate-iridescent-spin opacity-50 group-hover:opacity-80"
             : "bg-iridescent-subtle animate-iridescent-spin opacity-35 group-hover:opacity-60"
@@ -115,7 +115,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     <button
       ref={ref}
       disabled={disabled}
-      className={`group relative inline-flex items-center justify-center overflow-hidden transition-all duration-300 will-change-transform active:scale-[0.97] hover:-translate-y-0.5 cursor-pointer disabled:opacity-50 disabled:pointer-events-none disabled:hover:translate-y-0 ${
+      className={`group relative inline-flex items-center justify-center overflow-hidden transition-all duration-300 active:scale-[0.97] hover:-translate-y-0.5 cursor-pointer disabled:opacity-50 disabled:pointer-events-none disabled:hover:translate-y-0 ${
         sizeContainerClasses[size]
       } ${className}`}
       {...props}
@@ -151,7 +151,7 @@ export const LinkButton = forwardRef<HTMLAnchorElement, LinkButtonProps>(functio
   },
   ref
 ) {
-  const containerClasses = `group relative inline-flex items-center justify-center overflow-hidden transition-all duration-300 will-change-transform active:scale-[0.97] hover:-translate-y-0.5 cursor-pointer ${
+  const containerClasses = `group relative inline-flex items-center justify-center overflow-hidden transition-all duration-300 active:scale-[0.97] hover:-translate-y-0.5 cursor-pointer ${
     sizeContainerClasses[size]
   } ${className}`;
 

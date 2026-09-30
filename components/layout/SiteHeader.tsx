@@ -18,7 +18,7 @@ export function SiteHeader() {
 
   useGSAP(
     () => {
-      if (prefersReducedMotion() || !headerRef.current) return;
+      if (prefersReducedMotion() || !headerRef.current || isHomepage) return;
 
       if (isHomepage) {
         // On homepage, hide header during hero video playback, reveal on scroll past hero

@@ -65,6 +65,27 @@ export function InteractiveFluidBackground() {
     // Energy state for smooth bloom & slow dissipation
     let energy = 0; // 0 (dissipated) to 1 (full fluid bloom)
     let targetEnergy = 0;
+    let isRunning = false;
+    let isScrolling = false;
+    let scrollTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const startLoop = () => {
+      if (!isRunning) {
+        isRunning = true;
+        startTime = performance.now();
+        animId = requestAnimationFrame(render);
+      }
+    };
+
+    const handleScroll = () => {
+      isScrolling = true;
+      if (scrollTimer) clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        isScrolling = false;
+        if (mouse.isHovering) startLoop();
+      }, 120);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     const handlePointerMove = (e: PointerEvent | MouseEvent) => {
       mouse.targetX = e.clientX;
@@ -72,6 +93,7 @@ export function InteractiveFluidBackground() {
       mouse.isHovering = true;
       mouse.lastMoveTime = performance.now();
       targetEnergy = 1;
+      startLoop();
     };
 
     const handlePointerLeave = () => {
@@ -189,6 +211,10 @@ export function InteractiveFluidBackground() {
         ctx.fill();
       } else {
         ctx.clearRect(0, 0, width, height);
+        if (!mouse.isHovering) {
+          isRunning = false;
+          return;
+        }
       }
 
       animId = requestAnimationFrame(render);
@@ -198,18 +224,22 @@ export function InteractiveFluidBackground() {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         cancelAnimationFrame(animId);
+        isRunning = false;
       } else {
-        startTime = performance.now();
-        animId = requestAnimationFrame(render);
+        if (mouse.isHovering || energy > 0.001) {
+          startLoop();
+        }
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    animId = requestAnimationFrame(render);
+    startLoop();
 
     return () => {
       cancelAnimationFrame(animId);
+      if (scrollTimer) clearTimeout(scrollTimer);
       window.removeEventListener("resize", resize);
+      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("pointermove", handlePointerMove);
       document.removeEventListener("mouseleave", handlePointerLeave);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
