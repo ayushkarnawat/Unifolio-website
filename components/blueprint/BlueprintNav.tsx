@@ -36,7 +36,7 @@ function NavSketchIcon({
   const watercolorDeep = isHovered || isActive ? "rgba(34, 197, 94, 0.24)" : "rgba(34, 197, 94, 0.06)";
   const paperBack = isHovered || isActive ? "rgba(34, 197, 94, 0.06)" : "rgba(255, 255, 255, 0.65)";
 
-  // 1. PRODUCT: 3-Tier Floating Isometric Card Stack (Hand-Inked Drafting Pen with Underside Hatching)
+  // 1. PRODUCT: Hand-Inked Bento / Dashboard Grid
   if (id === "product") {
     return (
       <svg
@@ -46,71 +46,80 @@ function NavSketchIcon({
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        {/* Tier 3 (Bottom Card) */}
-        <path
-          d="M16 23.5L25.5 19.5L16 15.5L6.5 19.5L16 23.5Z"
-          fill={watercolorTint}
-          stroke={inkStroke}
-          strokeWidth="1.5"
-        />
-        {/* Tier 3 Rim Extrusion */}
-        <path
-          d="M6.5 19.5v1.8c0 .4.3.7.6.8L16 25.5l8.9-3.4c.3-.1.6-.4.6-.8v-1.8"
-          stroke={inkStroke}
-          strokeWidth="1.5"
-          fill="none"
-        />
-        {/* Tier 3 Underside Shadow Hatch Marks */}
-        <line x1="10" y1="21.5" x2="11.8" y2="23" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="13" y1="22.8" x2="14.8" y2="24.3" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="16" y1="24" x2="17.8" y2="25.5" stroke={hatchStroke} strokeWidth="1" />
-
-        {/* Tier 2 (Middle Card - Signature Emerald Core Wash) */}
-        <path
-          d="M16 18.5L25.5 14.5L16 10.5L6.5 14.5L16 18.5Z"
-          fill={watercolorDeep}
-          stroke={inkStroke}
-          strokeWidth="1.6"
-        />
-        {/* Tier 2 Rim Extrusion */}
-        <path
-          d="M6.5 14.5v1.6c0 .4.3.7.6.8L16 20.5l8.9-3.4c.3-.1.6-.4.6-.8v-1.6"
-          stroke={inkStroke}
-          strokeWidth="1.5"
-          fill="none"
-        />
-        {/* Tier 2 Underside Shadow Hatch Marks */}
-        <line x1="10" y1="16.5" x2="11.8" y2="18" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="13" y1="17.8" x2="14.8" y2="19.3" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="16" y1="19" x2="17.8" y2="20.5" stroke={hatchStroke} strokeWidth="1" />
-
-        {/* Tier 1 (Top Floating Glass Plate) */}
-        <path
-          d="M16 13.5L25.5 9.5L16 5.5L6.5 9.5L16 13.5Z"
+        {/* Tile 1: Top-Left Featured Card */}
+        <rect
+          x="5.5"
+          y="6"
+          width="9.5"
+          height="8.5"
+          rx="2"
           fill={paperBack}
           stroke={inkStroke}
-          strokeWidth="1.8"
+          strokeWidth="1.6"
         />
-        {/* Tier 1 Rim Extrusion */}
-        <path
-          d="M6.5 9.5v1.6c0 .4.3.7.6.8L16 15.5l8.9-3.4c.3-.1.6-.4.6-.8v-1.6"
+        <rect x="7" y="7.5" width="4.5" height="2" rx="0.6" fill={watercolorDeep} />
+        <line x1="7" y1="12" x2="12.5" y2="12" stroke={hatchStroke} strokeWidth="1" />
+
+        {/* Tile 2: Top-Right Card */}
+        <rect
+          x="17"
+          y="6"
+          width="9.5"
+          height="8.5"
+          rx="2"
+          fill={watercolorTint}
           stroke={inkStroke}
           strokeWidth="1.6"
-          fill="none"
         />
+        <line x1="19" y1="9" x2="24" y2="9" stroke={hatchStroke} strokeWidth="1" />
+        <line x1="19" y1="11.5" x2="22.5" y2="11.5" stroke={guideStroke} strokeWidth="1" />
 
-        {/* Architectural Drafting Corner Overshoot Ticks */}
-        <line x1="5.8" y1="9.8" x2="7.4" y2="9.1" stroke={guideStroke} strokeWidth="1" />
-        <line x1="24.8" y1="9.1" x2="26.4" y2="9.8" stroke={guideStroke} strokeWidth="1" />
-        <line x1="15.2" y1="5.1" x2="16.8" y2="5.9" stroke={guideStroke} strokeWidth="1" />
+        {/* Tile 3: Bottom-Left Card */}
+        <rect
+          x="5.5"
+          y="16.5"
+          width="9.5"
+          height="9.5"
+          rx="2"
+          fill={watercolorTint}
+          stroke={inkStroke}
+          strokeWidth="1.6"
+        />
+        <line x1="7.5" y1="19.5" x2="12" y2="23.5" stroke={hatchStroke} strokeWidth="1" />
+        <line x1="9.5" y1="19.5" x2="13" y2="22.5" stroke={guideStroke} strokeWidth="0.9" />
 
-        {/* Diagonal Hand-Inked Glare Reflection Stroke */}
-        <line x1="11" y1="9.5" x2="15.5" y2="11.5" stroke={hatchStroke} strokeWidth="1.2" />
+        {/* Tile 4: Bottom-Right Card */}
+        <rect
+          x="17"
+          y="16.5"
+          width="9.5"
+          height="9.5"
+          rx="2"
+          fill={paperBack}
+          stroke={inkStroke}
+          strokeWidth="1.6"
+        />
+        <line x1="19" y1="20" x2="24.5" y2="20" stroke={hatchStroke} strokeWidth="1" />
+        <line x1="19" y1="22.5" x2="23" y2="22.5" stroke={guideStroke} strokeWidth="1" />
+
+        {/* Architectural Drafting Corner Ticks */}
+        <line x1="4.2" y1="6" x2="5.5" y2="6" stroke={guideStroke} strokeWidth="1" />
+        <line x1="26.5" y1="26" x2="27.8" y2="26" stroke={guideStroke} strokeWidth="1" />
+
+        {/* Hand-Inked Accent Dot */}
+        <circle
+          cx="26.5"
+          cy="5.5"
+          r="1.5"
+          fill={isHovered || isActive ? "#22C55E" : inkStroke}
+          stroke={isHovered || isActive ? "#FFFFFF" : "none"}
+          strokeWidth="0.8"
+        />
       </svg>
     );
   }
 
-  // 2. SECURITY: 3D Beveled Shield (Architectural Pen with Right-Flank Hatching)
+  // 2. SECURITY: Hand-Inked Shield with Padlock
   if (id === "security") {
     return (
       <svg
@@ -120,48 +129,75 @@ function NavSketchIcon({
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        {/* 3D Extruded Depth Flank (Right Bevel Outline) */}
+        {/* Outer Shield Hand-Inked Outline */}
         <path
-          d="M22.8 6.5C23.6 7 24.5 7.8 25.2 9c1 1.7.9 7 .6 9.8-.4 3.4-3.5 6.4-9.8 8.4V26c6.5-2 10.2-5.5 10.8-9.5.3-3.2.3-8.8-.8-10.8-.7-1.3-1.8-2-3.2-2.4v3.2z"
-          fill={watercolorTint}
-          stroke={guideStroke}
-          strokeWidth="0.8"
-        />
-
-        {/* Architectural Diagonal Cross-Hatch Lines on Right 3D Flank */}
-        <line x1="23.2" y1="8.5" x2="25.2" y2="10.2" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="22.5" y1="12" x2="25.5" y2="14" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="21.5" y1="15.8" x2="24.8" y2="17.8" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="19.2" y1="19.8" x2="22.2" y2="21.8" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="17.2" y1="23.2" x2="19.2" y2="24.8" stroke={hatchStroke} strokeWidth="1" />
-
-        {/* Outer Shield Hand-Inked Perimeter */}
-        <path
-          d="M8.5 6.8C12 7.8 15 6 16 5.5c1 .5 4 2.3 7.5 1.3 1 3.5 1.5 9.5-.5 13.8C20.8 24.8 16 27 16 27s-4.8-2.2-7-6.4c-2-4.3-1.5-10.3-.5-13.8z"
+          d="M8 6.5C11.5 7.5 14.5 5.8 16 5.2c1.5.6 4.5 2.3 8 1.3 1.2 3.6 1.4 10.2-.4 14C21.8 24.2 16 27 16 27s-5.8-2.8-7.6-6.5c-1.8-3.8-1.6-10.4-.4-14z"
           fill={paperBack}
           stroke={inkStroke}
           strokeWidth="1.8"
         />
 
-        {/* Inner Recessed Bevel Core with Watercolor Emerald Wash */}
+        {/* Inner Emerald Watercolor Core */}
         <path
-          d="M10.8 9.5C13.2 10.2 15 9 16 8.5c1 .5 2.8 1.7 5.2 1 .7 2.8 1 7.2-.4 10.4-1.7 3.2-4.8 4.8-4.8 4.8s-3.1-1.6-4.8-4.8c-1.4-3.2-1.1-7.6-.4-10.4z"
+          d="M10.2 8.8C12.5 9.5 14.5 8.2 16 7.8c1.5.4 3.5 1.7 5.8 1 .8 2.6.8 7.5-.4 10.2-1.4 3-4.2 4.8-5.4 5.4-1.2-.6-4-2.4-5.4-5.4-1.2-2.7-1.2-7.6-.4-10.2z"
           fill={watercolorDeep}
-          stroke={isHovered || isActive ? "#22C55E" : hatchStroke}
-          strokeWidth="1.2"
+          stroke="none"
         />
 
-        {/* Center Vertical Crest Crease Line with Overshoot at Top/Bottom */}
-        <line x1="16" y1="4.8" x2="16" y2="27.5" stroke={inkStroke} strokeWidth="1.2" />
+        {/* Right-Flank Shadow Hatching */}
+        <line x1="19.5" y1="12" x2="22.5" y2="13.5" stroke={hatchStroke} strokeWidth="1" />
+        <line x1="18" y1="15.8" x2="21" y2="17.5" stroke={hatchStroke} strokeWidth="1" />
 
-        {/* Architectural Drafting Top Corner Ticks */}
-        <line x1="7.8" y1="6.5" x2="9.2" y2="7.2" stroke={guideStroke} strokeWidth="1" />
-        <line x1="22.8" y1="7.2" x2="24.2" y2="6.5" stroke={guideStroke} strokeWidth="1" />
+        {/* Center Padlock Inside Shield */}
+        <path
+          d="M13.5 14.8v-2a2.5 2.5 0 0 1 5 0v2"
+          stroke={inkStroke}
+          strokeWidth="1.5"
+          fill="none"
+        />
+        <rect
+          x="12"
+          y="14.8"
+          width="8"
+          height="6.2"
+          rx="1.6"
+          fill={paperBack}
+          stroke={inkStroke}
+          strokeWidth="1.5"
+        />
+        <circle
+          cx="16"
+          cy="17.2"
+          r="0.9"
+          fill={isHovered || isActive ? "#22C55E" : inkStroke}
+        />
+        <line
+          x1="16"
+          y1="17.8"
+          x2="16"
+          y2="19.5"
+          stroke={isHovered || isActive ? "#22C55E" : inkStroke}
+          strokeWidth="0.9"
+        />
+
+        {/* Architectural Drafting Corner Ticks */}
+        <line x1="7" y1="6.5" x2="8.5" y2="6.5" stroke={guideStroke} strokeWidth="1" />
+        <line x1="23.5" y1="6.5" x2="25" y2="6.5" stroke={guideStroke} strokeWidth="1" />
+
+        {/* Hand-Inked Accent Dot */}
+        <circle
+          cx="24.8"
+          cy="5.5"
+          r="1.5"
+          fill={isHovered || isActive ? "#22C55E" : inkStroke}
+          stroke={isHovered || isActive ? "#FFFFFF" : "none"}
+          strokeWidth="0.8"
+        />
       </svg>
     );
   }
 
-  // 3. ABOUT: 3D Celestial Sphere & Orbital Ring (Hand-Inked Planet with Shading Hatch)
+  // 3. ABOUT: Three Hand-Inked Overlapping Circles
   if (id === "about") {
     return (
       <svg
@@ -171,57 +207,50 @@ function NavSketchIcon({
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        {/* Orbital Ring - Rear Ellipse Arc (Drafting Construction Line behind Sphere) */}
-        <path
-          d="M6.2 18.2C5.5 16.5 6.2 14.8 8.5 13.2C13.2 10 21 9 25.8 11.2C27.5 12 28.2 13 28 14.2"
-          stroke={guideStroke}
-          strokeWidth="1.3"
-          strokeDasharray="1.5 2"
-          fill="none"
-        />
-
-        {/* Central 3D Celestial Sphere Body */}
+        {/* Top Circle */}
         <circle
           cx="16"
-          cy="15.5"
-          r="7.8"
+          cy="10.8"
+          r="5.8"
           fill={paperBack}
           stroke={inkStroke}
-          strokeWidth="1.8"
+          strokeWidth="1.7"
         />
 
-        {/* Hand-Inked Curvature Latitude Arcs */}
-        <path
-          d="M9.5 13.8C12 16.2 20 16.2 22.5 13.8"
-          stroke={hatchStroke}
-          strokeWidth="1.1"
-          fill="none"
-        />
-
-        {/* Lower-Right Crescent Shading Hatch Marks (Representing 3D Sphere Volume) */}
-        <path d="M15 19.5C17 19.5 19.5 18 20.5 16" stroke={hatchStroke} strokeWidth="1" fill="none" />
-        <path d="M17 21C19 20.8 21.2 19 22 17" stroke={hatchStroke} strokeWidth="1" fill="none" />
-        <path d="M19 22C20.5 21.5 22.5 20 23 18.5" stroke={guideStroke} strokeWidth="0.9" fill="none" />
-
-        {/* Orbital Ring - Front Sweeping Arc (Bold Hand-Inked Foreground Curve) */}
-        <path
-          d="M5 16.5C4.2 18.2 5.5 20 8.8 21.6C14.2 24.2 22.5 24 27.2 20.8C28.8 19.8 29.2 18.5 28.5 17.2"
-          stroke={inkStroke}
-          strokeWidth="1.9"
-          fill="none"
-        />
-
-        {/* Ring Orbit Tangent Overshoot Ticks (Classic Drafting Style) */}
-        <line x1="3.8" y1="15.8" x2="5.5" y2="17" stroke={guideStroke} strokeWidth="1" />
-        <line x1="28.2" y1="17" x2="29.8" y2="15.8" stroke={guideStroke} strokeWidth="1" />
-
-        {/* Hand-Drafted Orbital Satellite Node with Crosshair Axis */}
-        <line x1="6.8" y1="16.5" x2="6.8" y2="21" stroke={guideStroke} strokeWidth="0.8" />
-        <line x1="4.5" y1="18.8" x2="9" y2="18.8" stroke={guideStroke} strokeWidth="0.8" />
+        {/* Bottom-Left Circle */}
         <circle
-          cx="6.8"
-          cy="18.8"
-          r="1.8"
+          cx="11"
+          cy="19.2"
+          r="5.8"
+          fill={watercolorTint}
+          stroke={inkStroke}
+          strokeWidth="1.7"
+        />
+
+        {/* Bottom-Right Circle */}
+        <circle
+          cx="21"
+          cy="19.2"
+          r="5.8"
+          fill={watercolorDeep}
+          stroke={inkStroke}
+          strokeWidth="1.7"
+        />
+
+        {/* Center Intersecting Volume Shadow Hatching */}
+        <line x1="14.2" y1="15" x2="17.8" y2="15" stroke={hatchStroke} strokeWidth="1" />
+        <line x1="13.2" y1="18" x2="18.8" y2="18" stroke={hatchStroke} strokeWidth="1" />
+
+        {/* Architectural Drafting Tangent Ticks */}
+        <line x1="16" y1="3.5" x2="16" y2="5" stroke={guideStroke} strokeWidth="0.9" />
+        <line x1="3.8" y1="19.2" x2="5.2" y2="19.2" stroke={guideStroke} strokeWidth="0.9" />
+        <line x1="26.8" y1="19.2" x2="28.2" y2="19.2" stroke={guideStroke} strokeWidth="0.9" />
+
+        {/* Hand-Inked Accent Dot */}
+        <circle
+          cx="23.5"
+          cy="5.8"
+          r="1.5"
           fill={isHovered || isActive ? "#22C55E" : inkStroke}
           stroke={isHovered || isActive ? "#FFFFFF" : "none"}
           strokeWidth="0.8"
@@ -230,7 +259,7 @@ function NavSketchIcon({
     );
   }
 
-  // 4. FAQ: Dimensional Dual Speech Bubbles (Architectural Drafting with Depth Hatching)
+  // 4. FAQ: Hand-Inked Circle with Question Mark
   if (id === "faq") {
     return (
       <svg
@@ -240,42 +269,64 @@ function NavSketchIcon({
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        {/* Rear Offset Bubble with Shadow Hatching */}
-        <path
-          d="M13.5 6.5h8c3.2 0 5.5 2.2 5.5 5.2v2.8c0 3-2.3 5.2-5.5 5.2h-.8l1.8 3.5-3.8-2.2"
-          stroke={hatchStroke}
-          strokeWidth="1.4"
-          fill={watercolorDeep}
-        />
-        {/* Rear Bubble Corner Drafting Ticks */}
-        <line x1="13" y1="6.5" x2="14.5" y2="6.5" stroke={guideStroke} strokeWidth="1" />
-        <line x1="27" y1="11.5" x2="27" y2="13" stroke={guideStroke} strokeWidth="1" />
-
-        {/* Diagonal Hatching Inside Rear Bubble Shadow */}
-        <line x1="18" y1="8.5" x2="21" y2="10.5" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="21.5" y1="9.5" x2="24.5" y2="11.5" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="23.5" y1="12.5" x2="26" y2="14.5" stroke={hatchStroke} strokeWidth="1" />
-
-        {/* Front Primary Speech Bubble */}
-        <path
-          d="M7 10h11.5c3.2 0 5.5 2.2 5.5 5.2v3.2c0 3-2.3 5.2-5.5 5.2h-3.8L9 26.5v-2.9H7C3.8 23.6 2 21.4 2 18.4v-3.2C2 12.2 3.8 10 7 10z"
+        {/* Outer Circular Boundary */}
+        <circle
+          cx="16"
+          cy="16"
+          r="11"
           fill={paperBack}
           stroke={inkStroke}
           strokeWidth="1.8"
         />
 
-        {/* Front Bubble Corner Overshoot Line */}
-        <line x1="6.5" y1="10" x2="5.5" y2="10" stroke={guideStroke} strokeWidth="1" />
+        {/* Inner Drafting Construction Circle */}
+        <circle
+          cx="16"
+          cy="16"
+          r="9.2"
+          fill={watercolorTint}
+          stroke={guideStroke}
+          strokeWidth="0.8"
+          strokeDasharray="1.5 2"
+        />
 
-        {/* 3 Communication Message Dots ··· inside Front Bubble */}
-        <circle cx="8" cy="16.5" r="1.3" fill={inkStroke} stroke="none" />
-        <circle cx="12.8" cy="16.5" r="1.3" fill={inkStroke} stroke="none" />
-        <circle cx="17.6" cy="16.5" r="1.3" fill={isHovered || isActive ? "#22C55E" : inkStroke} stroke="none" />
+        {/* Bottom-Right Volume Shadow Hatching */}
+        <line x1="21.5" y1="18.5" x2="23.8" y2="20.5" stroke={hatchStroke} strokeWidth="1" />
+        <line x1="18.5" y1="22" x2="20.8" y2="24" stroke={hatchStroke} strokeWidth="1" />
+
+        {/* Hand-Inked Question Mark Glyph */}
+        <path
+          d="M13 12.2C13.2 10.2 14.6 9 16.2 9C18 9 19.5 10.3 19.5 12C19.5 13.5 18.5 14.5 17.2 15.3C16.4 15.8 16 16.4 16 17.5"
+          stroke={inkStroke}
+          strokeWidth="1.8"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <circle
+          cx="16"
+          cy="21"
+          r="1.2"
+          fill={isHovered || isActive ? "#22C55E" : inkStroke}
+        />
+
+        {/* Architectural Drafting Ticks */}
+        <line x1="16" y1="3.8" x2="16" y2="5" stroke={guideStroke} strokeWidth="0.9" />
+        <line x1="27" y1="16" x2="28.2" y2="16" stroke={guideStroke} strokeWidth="0.9" />
+
+        {/* Hand-Inked Accent Dot */}
+        <circle
+          cx="25"
+          cy="7"
+          r="1.5"
+          fill={isHovered || isActive ? "#22C55E" : inkStroke}
+          stroke={isHovered || isActive ? "#FFFFFF" : "none"}
+          strokeWidth="0.8"
+        />
       </svg>
     );
   }
 
-  // 5. CONTACT: 3D Perspective Open Envelope (Hand-Inked Drafting Mail with Inner Glow Wash)
+  // 5. CONTACT: Hand-Inked Rounded Speech / Chat Bubble
   return (
     <svg
       viewBox="0 0 32 32"
@@ -284,55 +335,47 @@ function NavSketchIcon({
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      {/* Open Top Flap Folded Upward & Back in Perspective */}
+      {/* Main Rounded Bubble Perimeter with Tail */}
       <path
-        d="M5.5 12.5L16 4.8L26.5 12.5"
-        stroke={inkStroke}
-        strokeWidth="1.6"
-        fill={watercolorTint}
-      />
-      {/* Apex Drafting Overshoot Cross-Lines at (16, 4.8) */}
-      <line x1="15.2" y1="5.4" x2="16.8" y2="4.2" stroke={guideStroke} strokeWidth="1" />
-      <line x1="16.8" y1="5.4" x2="15.2" y2="4.2" stroke={guideStroke} strokeWidth="1" />
-
-      {/* Luminous Emerald Watercolor Pocket Lining (Signature SS2 Green Interior) */}
-      <path
-        d="M6 12.5L16 6L26 12.5L16 19.5Z"
-        fill={watercolorDeep}
-        stroke={isHovered || isActive ? "#22C55E" : hatchStroke}
-        strokeWidth="1.1"
-      />
-
-      {/* Interior Shadow Hatch Lines inside Open Pocket */}
-      <line x1="12" y1="11" x2="14" y2="12.5" stroke={hatchStroke} strokeWidth="0.9" />
-      <line x1="15" y1="12" x2="17" y2="13.5" stroke={hatchStroke} strokeWidth="0.9" />
-      <line x1="18" y1="11" x2="20" y2="12.5" stroke={hatchStroke} strokeWidth="0.9" />
-
-      {/* Main Perspective Envelope Body / Pouch */}
-      <path
-        d="M5.5 12.5h21c.8 0 1.5.6 1.4 1.4l-1.2 10.2c-.1.8-.8 1.4-1.6 1.4H6.9c-.8 0-1.5-.6-1.6-1.4L4.1 13.9c-.1-.8.6-1.4 1.4-1.4z"
+        d="M7 8h15c3.2 0 5.5 2.2 5.5 5.2v4.8c0 3-2.3 5.2-5.5 5.2h-3.8L12 27v-3.8H7C3.8 23.2 2 21 2 18v-4.8C2 10.2 3.8 8 7 8z"
         fill={paperBack}
         stroke={inkStroke}
         strokeWidth="1.8"
       />
 
-      {/* Folded Pouch Front V-Seams with Hand-Drawn Overlap at Center */}
+      {/* Inner Watercolor Wash */}
       <path
-        d="M4.5 13.5L13.8 20.2c1.3.9 3.1.9 4.4 0L27.5 13.5"
-        stroke={inkStroke}
-        strokeWidth="1.5"
-        fill="none"
+        d="M7 9.8h15c2.2 0 4 1.5 4 3.8v4.2c0 2.3-1.8 3.8-4 3.8h-4.5L13.5 24v-2.4H7c-2.2 0-4-1.5-4-3.8v-4.2c0-2.3 1.8-3.8 4-3.8z"
+        fill={watercolorTint}
       />
 
-      {/* Bottom Envelope Fold Creases with Corner Drafting Ticks */}
-      <path
-        d="M5.5 24.5L12 19M26.5 24.5L20 19"
-        stroke={hatchStroke}
-        strokeWidth="1.2"
-        fill="none"
+      {/* Underside Shadow Hatch Lines */}
+      <line x1="8.5" y1="19.5" x2="11.5" y2="21.5" stroke={hatchStroke} strokeWidth="1" />
+      <line x1="12" y1="19.5" x2="14.5" y2="21.5" stroke={hatchStroke} strokeWidth="1" />
+
+      {/* 3 Message Dots inside Bubble */}
+      <circle cx="9" cy="15.5" r="1.3" fill={inkStroke} />
+      <circle cx="14" cy="15.5" r="1.3" fill={inkStroke} />
+      <circle
+        cx="19"
+        cy="15.5"
+        r="1.3"
+        fill={isHovered || isActive ? "#22C55E" : inkStroke}
       />
-      <line x1="4.8" y1="24.8" x2="6.2" y2="24.2" stroke={guideStroke} strokeWidth="1" />
-      <line x1="25.8" y1="24.2" x2="27.2" y2="24.8" stroke={guideStroke} strokeWidth="1" />
+
+      {/* Drafting Corner Overshoot Ticks */}
+      <line x1="5.5" y1="8" x2="7" y2="8" stroke={guideStroke} strokeWidth="1" />
+      <line x1="27.5" y1="12" x2="27.5" y2="13.5" stroke={guideStroke} strokeWidth="1" />
+
+      {/* Hand-Inked Accent Dot */}
+      <circle
+        cx="24.5"
+        cy="6.5"
+        r="1.5"
+        fill={isHovered || isActive ? "#22C55E" : inkStroke}
+        stroke={isHovered || isActive ? "#FFFFFF" : "none"}
+        strokeWidth="0.8"
+      />
     </svg>
   );
 }
