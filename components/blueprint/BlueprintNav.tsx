@@ -30,13 +30,10 @@ function NavSketchIcon({
   isHovered: boolean;
 }) {
   const inkStroke = isHovered || isActive ? "#22C55E" : "#111613";
-  const hatchStroke = isHovered || isActive ? "rgba(34, 197, 94, 0.60)" : "rgba(17, 22, 19, 0.40)";
-  const guideStroke = isHovered || isActive ? "rgba(34, 197, 94, 0.35)" : "rgba(17, 22, 19, 0.22)";
-  const watercolorTint = isHovered || isActive ? "rgba(34, 197, 94, 0.14)" : "rgba(17, 22, 19, 0.02)";
-  const watercolorDeep = isHovered || isActive ? "rgba(34, 197, 94, 0.24)" : "rgba(34, 197, 94, 0.06)";
-  const paperBack = isHovered || isActive ? "rgba(34, 197, 94, 0.06)" : "rgba(255, 255, 255, 0.65)";
+  const accentStroke = "#22C55E";
+  const strokeW = 2.1;
 
-  // 1. PRODUCT: Hand-Inked Bento / Dashboard Grid
+  // 1. PRODUCT: Bento / Dashboard Grid
   if (id === "product") {
     return (
       <svg
@@ -46,80 +43,25 @@ function NavSketchIcon({
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        {/* Tile 1: Top-Left Featured Card */}
-        <rect
-          x="5.5"
-          y="6"
-          width="9.5"
-          height="8.5"
-          rx="2"
-          fill={paperBack}
-          stroke={inkStroke}
-          strokeWidth="1.6"
-        />
-        <rect x="7" y="7.5" width="4.5" height="2" rx="0.6" fill={watercolorDeep} />
-        <line x1="7" y1="12" x2="12.5" y2="12" stroke={hatchStroke} strokeWidth="1" />
+        {/* Top-Left Tile */}
+        <rect x="4" y="4" width="10.5" height="10.5" rx="2.2" stroke={inkStroke} strokeWidth={strokeW} />
 
-        {/* Tile 2: Top-Right Card */}
-        <rect
-          x="17"
-          y="6"
-          width="9.5"
-          height="8.5"
-          rx="2"
-          fill={watercolorTint}
-          stroke={inkStroke}
-          strokeWidth="1.6"
-        />
-        <line x1="19" y1="9" x2="24" y2="9" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="19" y1="11.5" x2="22.5" y2="11.5" stroke={guideStroke} strokeWidth="1" />
+        {/* Bottom-Left Tile */}
+        <rect x="4" y="17.5" width="10.5" height="10.5" rx="2.2" stroke={inkStroke} strokeWidth={strokeW} />
 
-        {/* Tile 3: Bottom-Left Card */}
-        <rect
-          x="5.5"
-          y="16.5"
-          width="9.5"
-          height="9.5"
-          rx="2"
-          fill={watercolorTint}
-          stroke={inkStroke}
-          strokeWidth="1.6"
-        />
-        <line x1="7.5" y1="19.5" x2="12" y2="23.5" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="9.5" y1="19.5" x2="13" y2="22.5" stroke={guideStroke} strokeWidth="0.9" />
+        {/* Bottom-Right Tile with Bar Chart */}
+        <rect x="17.5" y="17.5" width="10.5" height="10.5" rx="2.2" stroke={inkStroke} strokeWidth={strokeW} />
+        <line x1="20.3" y1="25.2" x2="20.3" y2="22.4" stroke={inkStroke} strokeWidth={strokeW} />
+        <line x1="22.75" y1="25.2" x2="22.75" y2="20.4" stroke={inkStroke} strokeWidth={strokeW} />
+        <line x1="25.2" y1="25.2" x2="25.2" y2="19" stroke={inkStroke} strokeWidth={strokeW} />
 
-        {/* Tile 4: Bottom-Right Card */}
-        <rect
-          x="17"
-          y="16.5"
-          width="9.5"
-          height="9.5"
-          rx="2"
-          fill={paperBack}
-          stroke={inkStroke}
-          strokeWidth="1.6"
-        />
-        <line x1="19" y1="20" x2="24.5" y2="20" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="19" y1="22.5" x2="23" y2="22.5" stroke={guideStroke} strokeWidth="1" />
-
-        {/* Architectural Drafting Corner Ticks */}
-        <line x1="4.2" y1="6" x2="5.5" y2="6" stroke={guideStroke} strokeWidth="1" />
-        <line x1="26.5" y1="26" x2="27.8" y2="26" stroke={guideStroke} strokeWidth="1" />
-
-        {/* Hand-Inked Accent Dot */}
-        <circle
-          cx="26.5"
-          cy="5.5"
-          r="1.5"
-          fill={isHovered || isActive ? "#22C55E" : inkStroke}
-          stroke={isHovered || isActive ? "#FFFFFF" : "none"}
-          strokeWidth="0.8"
-        />
+        {/* Top-Right Accent Ring */}
+        <circle cx="22.75" cy="9.25" r="5" stroke={accentStroke} strokeWidth={strokeW} />
       </svg>
     );
   }
 
-  // 2. SECURITY: Hand-Inked Shield with Padlock
+  // 2. SECURITY: Shield with Padlock
   if (id === "security") {
     return (
       <svg
@@ -129,75 +71,30 @@ function NavSketchIcon({
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        {/* Outer Shield Hand-Inked Outline */}
+        {/* Shield Outline */}
         <path
-          d="M8 6.5C11.5 7.5 14.5 5.8 16 5.2c1.5.6 4.5 2.3 8 1.3 1.2 3.6 1.4 10.2-.4 14C21.8 24.2 16 27 16 27s-5.8-2.8-7.6-6.5c-1.8-3.8-1.6-10.4-.4-14z"
-          fill={paperBack}
+          d="M16 4.5L24 7.5V15C24 20.5 20.5 24.5 16 26.5C11.5 24.5 8 20.5 8 15V7.5L16 4.5Z"
           stroke={inkStroke}
-          strokeWidth="1.8"
+          strokeWidth={strokeW}
         />
 
-        {/* Inner Emerald Watercolor Core */}
+        {/* Padlock Shackle */}
         <path
-          d="M10.2 8.8C12.5 9.5 14.5 8.2 16 7.8c1.5.4 3.5 1.7 5.8 1 .8 2.6.8 7.5-.4 10.2-1.4 3-4.2 4.8-5.4 5.4-1.2-.6-4-2.4-5.4-5.4-1.2-2.7-1.2-7.6-.4-10.2z"
-          fill={watercolorDeep}
-          stroke="none"
-        />
-
-        {/* Right-Flank Shadow Hatching */}
-        <line x1="19.5" y1="12" x2="22.5" y2="13.5" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="18" y1="15.8" x2="21" y2="17.5" stroke={hatchStroke} strokeWidth="1" />
-
-        {/* Center Padlock Inside Shield */}
-        <path
-          d="M13.5 14.8v-2a2.5 2.5 0 0 1 5 0v2"
+          d="M13.3 16v-2.3a2.7 2.7 0 0 1 5.4 0V16"
           stroke={inkStroke}
-          strokeWidth="1.5"
-          fill="none"
-        />
-        <rect
-          x="12"
-          y="14.8"
-          width="8"
-          height="6.2"
-          rx="1.6"
-          fill={paperBack}
-          stroke={inkStroke}
-          strokeWidth="1.5"
-        />
-        <circle
-          cx="16"
-          cy="17.2"
-          r="0.9"
-          fill={isHovered || isActive ? "#22C55E" : inkStroke}
-        />
-        <line
-          x1="16"
-          y1="17.8"
-          x2="16"
-          y2="19.5"
-          stroke={isHovered || isActive ? "#22C55E" : inkStroke}
-          strokeWidth="0.9"
+          strokeWidth={strokeW}
         />
 
-        {/* Architectural Drafting Corner Ticks */}
-        <line x1="7" y1="6.5" x2="8.5" y2="6.5" stroke={guideStroke} strokeWidth="1" />
-        <line x1="23.5" y1="6.5" x2="25" y2="6.5" stroke={guideStroke} strokeWidth="1" />
+        {/* Padlock Body */}
+        <rect x="12.3" y="16" width="7.4" height="5.8" rx="1.5" stroke={inkStroke} strokeWidth={strokeW} />
 
-        {/* Hand-Inked Accent Dot */}
-        <circle
-          cx="24.8"
-          cy="5.5"
-          r="1.5"
-          fill={isHovered || isActive ? "#22C55E" : inkStroke}
-          stroke={isHovered || isActive ? "#FFFFFF" : "none"}
-          strokeWidth="0.8"
-        />
+        {/* Keyhole Accent */}
+        <circle cx="16" cy="18.9" r="1.05" fill={accentStroke} />
       </svg>
     );
   }
 
-  // 3. ABOUT: Three Hand-Inked Overlapping Circles
+  // 3. ABOUT: Three Overlapping Circles
   if (id === "about") {
     return (
       <svg
@@ -207,59 +104,22 @@ function NavSketchIcon({
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        {/* Top Circle */}
-        <circle
-          cx="16"
-          cy="10.8"
-          r="5.8"
-          fill={paperBack}
-          stroke={inkStroke}
-          strokeWidth="1.7"
-        />
+        {/* Left Circle */}
+        <circle cx="11.2" cy="19" r="5.2" stroke={inkStroke} strokeWidth={strokeW} />
 
-        {/* Bottom-Left Circle */}
-        <circle
-          cx="11"
-          cy="19.2"
-          r="5.8"
-          fill={watercolorTint}
-          stroke={inkStroke}
-          strokeWidth="1.7"
-        />
+        {/* Middle Circle */}
+        <circle cx="16" cy="19" r="5.2" stroke={inkStroke} strokeWidth={strokeW} />
 
-        {/* Bottom-Right Circle */}
-        <circle
-          cx="21"
-          cy="19.2"
-          r="5.8"
-          fill={watercolorDeep}
-          stroke={inkStroke}
-          strokeWidth="1.7"
-        />
+        {/* Right Circle */}
+        <circle cx="20.8" cy="19" r="5.2" stroke={inkStroke} strokeWidth={strokeW} />
 
-        {/* Center Intersecting Volume Shadow Hatching */}
-        <line x1="14.2" y1="15" x2="17.8" y2="15" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="13.2" y1="18" x2="18.8" y2="18" stroke={hatchStroke} strokeWidth="1" />
-
-        {/* Architectural Drafting Tangent Ticks */}
-        <line x1="16" y1="3.5" x2="16" y2="5" stroke={guideStroke} strokeWidth="0.9" />
-        <line x1="3.8" y1="19.2" x2="5.2" y2="19.2" stroke={guideStroke} strokeWidth="0.9" />
-        <line x1="26.8" y1="19.2" x2="28.2" y2="19.2" stroke={guideStroke} strokeWidth="0.9" />
-
-        {/* Hand-Inked Accent Dot */}
-        <circle
-          cx="23.5"
-          cy="5.8"
-          r="1.5"
-          fill={isHovered || isActive ? "#22C55E" : inkStroke}
-          stroke={isHovered || isActive ? "#FFFFFF" : "none"}
-          strokeWidth="0.8"
-        />
+        {/* Floating Accent Ring */}
+        <circle cx="16" cy="8.5" r="2.6" stroke={accentStroke} strokeWidth={strokeW} />
       </svg>
     );
   }
 
-  // 4. FAQ: Hand-Inked Circle with Question Mark
+  // 4. FAQ: Circle with Question Mark
   if (id === "faq") {
     return (
       <svg
@@ -269,64 +129,32 @@ function NavSketchIcon({
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        {/* Outer Circular Boundary */}
-        <circle
-          cx="16"
-          cy="16"
-          r="11"
-          fill={paperBack}
+        {/* Circle Boundary: Black Majority Arc */}
+        <path
+          d="M26.46 15.08A10.5 10.5 0 1 1 15.08 5.54"
           stroke={inkStroke}
-          strokeWidth="1.8"
+          strokeWidth={strokeW}
         />
 
-        {/* Inner Drafting Construction Circle */}
-        <circle
-          cx="16"
-          cy="16"
-          r="9.2"
-          fill={watercolorTint}
-          stroke={guideStroke}
-          strokeWidth="0.8"
-          strokeDasharray="1.5 2"
+        {/* Circle Boundary: Green Accent Arc */}
+        <path
+          d="M15.08 5.54A10.5 10.5 0 0 1 26.46 15.08"
+          stroke={accentStroke}
+          strokeWidth={strokeW}
         />
 
-        {/* Bottom-Right Volume Shadow Hatching */}
-        <line x1="21.5" y1="18.5" x2="23.8" y2="20.5" stroke={hatchStroke} strokeWidth="1" />
-        <line x1="18.5" y1="22" x2="20.8" y2="24" stroke={hatchStroke} strokeWidth="1" />
-
-        {/* Hand-Inked Question Mark Glyph */}
+        {/* Question Mark Glyph */}
         <path
           d="M13 12.2C13.2 10.2 14.6 9 16.2 9C18 9 19.5 10.3 19.5 12C19.5 13.5 18.5 14.5 17.2 15.3C16.4 15.8 16 16.4 16 17.5"
           stroke={inkStroke}
-          strokeWidth="1.8"
-          fill="none"
-          strokeLinecap="round"
+          strokeWidth={strokeW}
         />
-        <circle
-          cx="16"
-          cy="21"
-          r="1.2"
-          fill={isHovered || isActive ? "#22C55E" : inkStroke}
-        />
-
-        {/* Architectural Drafting Ticks */}
-        <line x1="16" y1="3.8" x2="16" y2="5" stroke={guideStroke} strokeWidth="0.9" />
-        <line x1="27" y1="16" x2="28.2" y2="16" stroke={guideStroke} strokeWidth="0.9" />
-
-        {/* Hand-Inked Accent Dot */}
-        <circle
-          cx="25"
-          cy="7"
-          r="1.5"
-          fill={isHovered || isActive ? "#22C55E" : inkStroke}
-          stroke={isHovered || isActive ? "#FFFFFF" : "none"}
-          strokeWidth="0.8"
-        />
+        <circle cx="16" cy="21" r="1.05" fill={accentStroke} />
       </svg>
     );
   }
 
-  // 5. CONTACT: Hand-Inked Rounded Speech / Chat Bubble
+  // 5. CONTACT: Rounded Speech / Chat Bubble
   return (
     <svg
       viewBox="0 0 32 32"
@@ -335,47 +163,20 @@ function NavSketchIcon({
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      {/* Main Rounded Bubble Perimeter with Tail */}
+      {/* Bubble Outline with Tail */}
       <path
         d="M7 8h15c3.2 0 5.5 2.2 5.5 5.2v4.8c0 3-2.3 5.2-5.5 5.2h-3.8L12 27v-3.8H7C3.8 23.2 2 21 2 18v-4.8C2 10.2 3.8 8 7 8z"
-        fill={paperBack}
         stroke={inkStroke}
-        strokeWidth="1.8"
+        strokeWidth={strokeW}
       />
 
-      {/* Inner Watercolor Wash */}
-      <path
-        d="M7 9.8h15c2.2 0 4 1.5 4 3.8v4.2c0 2.3-1.8 3.8-4 3.8h-4.5L13.5 24v-2.4H7c-2.2 0-4-1.5-4-3.8v-4.2c0-2.3 1.8-3.8 4-3.8z"
-        fill={watercolorTint}
-      />
-
-      {/* Underside Shadow Hatch Lines */}
-      <line x1="8.5" y1="19.5" x2="11.5" y2="21.5" stroke={hatchStroke} strokeWidth="1" />
-      <line x1="12" y1="19.5" x2="14.5" y2="21.5" stroke={hatchStroke} strokeWidth="1" />
-
-      {/* 3 Message Dots inside Bubble */}
+      {/* 3 Message Dots */}
       <circle cx="9" cy="15.5" r="1.3" fill={inkStroke} />
       <circle cx="14" cy="15.5" r="1.3" fill={inkStroke} />
-      <circle
-        cx="19"
-        cy="15.5"
-        r="1.3"
-        fill={isHovered || isActive ? "#22C55E" : inkStroke}
-      />
+      <circle cx="19" cy="15.5" r="1.3" fill={inkStroke} />
 
-      {/* Drafting Corner Overshoot Ticks */}
-      <line x1="5.5" y1="8" x2="7" y2="8" stroke={guideStroke} strokeWidth="1" />
-      <line x1="27.5" y1="12" x2="27.5" y2="13.5" stroke={guideStroke} strokeWidth="1" />
-
-      {/* Hand-Inked Accent Dot */}
-      <circle
-        cx="24.5"
-        cy="6.5"
-        r="1.5"
-        fill={isHovered || isActive ? "#22C55E" : inkStroke}
-        stroke={isHovered || isActive ? "#FFFFFF" : "none"}
-        strokeWidth="0.8"
-      />
+      {/* Floating Accent Ring */}
+      <circle cx="24.2" cy="8.8" r="2.6" stroke={accentStroke} strokeWidth={strokeW} />
     </svg>
   );
 }

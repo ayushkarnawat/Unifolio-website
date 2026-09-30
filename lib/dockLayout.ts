@@ -244,15 +244,15 @@ export function computeDockGeometry(input: DockGeometryInput): DockGeometry {
 
   // Visual proportions of vault & heading matching reference composition
   // Responsive clamp:
-  // - On large screens (1920+), vault reaches 460-480px for high visual presence
-  // - On MacBooks and standard laptops (1366-1440), vault scales smoothly with 44% of viewport height (340-400px)
-  // - On tablets (768-1023), vault is 260-320px
-  // - On mobile (<768), vault is 200-260px
+  // - On large screens (1920+), vault reaches up to 600px for high visual presence
+  // - On MacBooks and standard laptops (1366-1440), vault scales smoothly with 62% of viewport height (460-600px)
+  // - On tablets (768-1023), vault is 360-440px
+  // - On mobile (<768), vault is 260-340px
   const effectiveVaultW = isDesktopScreen
-    ? Math.round(Math.min(520, Math.max(380, Math.min(vHeight * 0.54, vWidth * 0.36))))
+    ? Math.round(Math.min(600, Math.max(460, Math.min(vHeight * 0.62, vWidth * 0.42))))
     : isTabletScreen
-    ? Math.round(Math.min(380, Math.max(300, Math.min(vHeight * 0.44, vWidth * 0.44))))
-    : Math.round(Math.min(300, Math.max(220, Math.min(vHeight * 0.35, vWidth * 0.70))));
+    ? Math.round(Math.min(440, Math.max(360, Math.min(vHeight * 0.52, vWidth * 0.52))))
+    : Math.round(Math.min(340, Math.max(260, Math.min(vHeight * 0.42, vWidth * 0.78))));
 
   const headingW = isDesktopScreen
     ? (vWidth >= 1600 ? 540 : vWidth >= 1280 ? 480 : 440)

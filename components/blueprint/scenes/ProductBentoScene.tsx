@@ -715,7 +715,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                                     />
                                     <p
                                       className="text-neutral-700 font-medium leading-[1.5]"
-                                      style={{ fontSize: "clamp(14.5px, calc(1.2 * var(--bento-vw-tier, 14.4px)), 17.5px)" }}
+                                      style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
                                     >
                                       <strong className="font-bold text-neutral-950">Overlap Check.</strong><br />
                                       Spot when &quot;diversified&quot; funds are secretly the same bet.
@@ -731,7 +731,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                                     />
                                     <p
                                       className="text-neutral-700 font-medium leading-[1.5]"
-                                      style={{ fontSize: "clamp(14.5px, calc(1.2 * var(--bento-vw-tier, 14.4px)), 17.5px)" }}
+                                      style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
                                     >
                                       <strong className="font-bold text-neutral-950">Performance, in Context.</strong><br />
                                       Real returns, measured against what matters.
@@ -747,7 +747,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                                     />
                                     <p
                                       className="text-neutral-700 font-medium leading-[1.5]"
-                                      style={{ fontSize: "clamp(14.5px, calc(1.2 * var(--bento-vw-tier, 14.4px)), 17.5px)" }}
+                                      style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
                                     >
                                       <strong className="font-bold text-neutral-950">Hidden Fee Finder.</strong><br />
                                       What expense ratios are quietly costing you.
@@ -763,7 +763,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                                     />
                                     <p
                                       className="text-neutral-700 font-medium leading-[1.5]"
-                                      style={{ fontSize: "clamp(14.5px, calc(1.2 * var(--bento-vw-tier, 14.4px)), 17.5px)" }}
+                                      style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
                                     >
                                       <strong className="font-bold text-neutral-950">Peer Benchmarking.</strong><br />
                                       Compared against people like you, not a generic index.
@@ -777,14 +777,14 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                                 <div className="max-w-[260px] sm:max-w-[290px] lg:max-w-[315px] flex flex-col justify-start shrink-0">
                                   <h3
                                     className="font-sans font-black tracking-[-0.03em] text-neutral-950 leading-tight"
-                                    style={{ fontSize: "clamp(18px, calc(1.85 * var(--bento-vw-tier, 14.4px)), 26px)" }}
+                                    style={{ fontSize: "clamp(20px, calc(2.2 * var(--bento-vw-tier, 14.4px)), 32px)" }}
                                   >
                                     Skip the Dashboards.<br />
                                     <span className="text-[#22C55E]">Just ask.</span>
                                   </h3>
                                   <p
                                     className="mt-3 text-neutral-700 font-medium leading-[1.52]"
-                                    style={{ fontSize: "clamp(12.5px, calc(1.0 * var(--bento-vw-tier, 14.4px)), 15px)" }}
+                                    style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
                                   >
                                     Not a chart. A question. Ask what&apos;s dragging your returns, whether you&apos;re overexposed, or if a decision makes sense, and get an answer from your own portfolio.
                                   </p>
@@ -810,7 +810,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                                 </h3>
                                 <p
                                   className="mt-3.5 sm:mt-4 text-neutral-700 font-medium leading-[1.52]"
-                                  style={{ fontSize: "clamp(13px, calc(1.05 * var(--bento-vw-tier, 14.4px)), 16px)" }}
+                                  style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
                                 >
                                   Mutual funds, stocks, bank accounts, loans, credit cards, real estate. Every asset and liability, aggregated into one accurate number.
                                 </p>
@@ -820,7 +820,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                               <div className="relative flex flex-col h-full justify-start">
                                 <h3
                                   className="font-sans font-black tracking-[-0.03em] text-neutral-950 leading-tight mb-3 sm:mb-4 relative z-10"
-                                  style={{ fontSize: "clamp(18px, calc(1.75 * var(--bento-vw-tier, 14.4px)), 25px)" }}
+                                  style={{ fontSize: "clamp(20px, calc(2.2 * var(--bento-vw-tier, 14.4px)), 32px)" }}
                                 >
                                   Know your <span className="text-[#22C55E]">risk</span>
                                 </h3>
@@ -898,7 +898,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                               <div className="relative flex flex-col h-full justify-start">
                                 <h3
                                   className="font-sans font-black tracking-[-0.03em] text-neutral-950 leading-tight mb-3 sm:mb-4 relative z-10"
-                                  style={{ fontSize: "clamp(18px, calc(1.75 * var(--bento-vw-tier, 14.4px)), 25px)" }}
+                                  style={{ fontSize: "clamp(20px, calc(2.2 * var(--bento-vw-tier, 14.4px)), 32px)" }}
                                 >
                                   <span className="text-[#22C55E]">Plan</span> Ahead
                                 </h3>
