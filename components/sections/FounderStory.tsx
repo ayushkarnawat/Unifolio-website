@@ -53,6 +53,9 @@ export function FounderStory({ content }: { content: typeof aboutContent }) {
         <h1 className="mt-3 font-serif text-4xl font-extrabold tracking-tight text-[#1C241E] sm:text-6xl lg:text-7xl leading-[1.02]">
           {content.heading}
         </h1>
+        <p className="mt-4 font-serif text-xl sm:text-2xl text-[#1C241E]/70 leading-snug">
+          {content.headingAccent}
+        </p>
         <p className="mt-6 font-sans text-lg sm:text-xl text-[#525E55] leading-relaxed">
           {content.intro}
         </p>
