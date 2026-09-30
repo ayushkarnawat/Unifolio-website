@@ -313,36 +313,36 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
                 className="absolute inset-0 w-full h-full object-contain pointer-events-none"
                 draggable={false}
               />
+            </div>
 
-              {/* Clean White Core Hub with Crisp Unifolio Ring Logo */}
-              <div
-                className="absolute rounded-full pointer-events-none overflow-hidden"
+            {/* Clean White Core Hub with Crisp Unifolio Ring Logo (Static - does not rotate with disc) */}
+            <div
+              className="absolute rounded-full pointer-events-none overflow-hidden"
+              style={{
+                left: "50%",
+                top: "50%",
+                height: "24.6%",
+                aspectRatio: "1 / 1",
+                transform: "translate(-50%, -50%)",
+                background: "radial-gradient(circle at 50% 48%, #FFFFFF 0%, #FDFDFD 65%, #F2F4F3 100%)",
+                boxShadow: "inset 0 1.5px 3px rgba(0,0,0,0.18), inset 0 -1px 2px rgba(255,255,255,0.8), 0 0 1px rgba(0,0,0,0.25)",
+                border: "1px solid rgba(0,0,0,0.12)",
+              }}
+            >
+              <img
+                src="/Logo/unifolio-ring-transparent.png"
+                alt="Unifolio Ring Logo"
+                className="absolute select-none pointer-events-none drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.08)]"
                 style={{
                   left: "50%",
                   top: "50%",
-                  height: "24.6%",
-                  aspectRatio: "1 / 1",
-                  transform: "translate(-50%, -50%)",
-                  background: "radial-gradient(circle at 50% 48%, #FFFFFF 0%, #FDFDFD 65%, #F2F4F3 100%)",
-                  boxShadow: "inset 0 1.5px 3px rgba(0,0,0,0.18), inset 0 -1px 2px rgba(255,255,255,0.8), 0 0 1px rgba(0,0,0,0.25)",
-                  border: "1px solid rgba(0,0,0,0.12)",
+                  width: "87%",
+                  height: "87%",
+                  objectFit: "contain",
+                  transform: "translate(-49.13%, -48.49%)",
                 }}
-              >
-                <img
-                  src="/Logo/unifolio-ring-transparent.png"
-                  alt="Unifolio Ring Logo"
-                  className="absolute select-none pointer-events-none drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.08)]"
-                  style={{
-                    left: "50%",
-                    top: "50%",
-                    width: "87%",
-                    height: "87%",
-                    objectFit: "contain",
-                    transform: "translate(-49.13%, -48.49%)",
-                  }}
-                  draggable={false}
-                />
-              </div>
+                draggable={false}
+              />
             </div>
           </div>
         </div>
