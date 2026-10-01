@@ -1483,7 +1483,7 @@ export function BlueprintHero() {
         {/* SECTION 3: SECURITY */}
         <section
           id="security"
-          className="relative w-full bg-[#FAF8F5] pt-24 sm:pt-28 pb-20 sm:pb-28 px-4 sm:px-6 lg:px-12 select-none overflow-hidden"
+          className="relative w-full bg-[#FAF8F5] pt-24 sm:pt-28 pb-20 sm:pb-28 px-4 sm:px-6 lg:px-12 select-none"
         >
           <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-between gap-12 lg:gap-16">
             {/* Left Column: Sticky Vault */}
