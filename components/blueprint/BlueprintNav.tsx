@@ -209,84 +209,48 @@ export function BlueprintNav() {
   const navContainerRef = useRef<HTMLDivElement | null>(null);
   const linkRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
 
-  const forcedSectionRef = useRef<string | null>(null);
-
   useEffect(() => {
-    const handleActiveSection = (e: Event) => {
-      const ce = e as CustomEvent<{ section: string }>;
-      if (ce.detail?.section) {
-        const isHero = ce.detail.section === "hero";
-        setIsHeroSection(isHero);
-        const mapped = isHero ? "product" : ce.detail.section;
-        forcedSectionRef.current = mapped;
-        setActiveId(mapped);
-      }
-    };
-
-    const handleResetHero = () => {
-      setIsHeroSection(true);
-    };
-
-    const handleNavClick = (e: Event) => {
-      const ce = e as CustomEvent<{ section: string }>;
-      if (ce.detail?.section === "hero") {
-        setIsHeroSection(true);
-      } else if (ce.detail?.section) {
-        setIsHeroSection(false);
-      }
-    };
-
-    window.addEventListener("unifolio-active-section", handleActiveSection);
-    window.addEventListener("unifolio-reset-hero", handleResetHero);
-    window.addEventListener("unifolio-nav-click", handleNavClick);
-    return () => {
-      window.removeEventListener("unifolio-active-section", handleActiveSection);
-      window.removeEventListener("unifolio-reset-hero", handleResetHero);
-      window.removeEventListener("unifolio-nav-click", handleNavClick);
-    };
-  }, []);
-
-  // Scroll listener for backdrop styling & active section sync (only for unpinned sections FAQ/Contact)
-  useEffect(() => {
-    const NAVBAR_HEIGHT = 56; // fixed header py-3.5 + logo h-7
-
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      const isScrolledNow = scrollY > 60;
-      setScrolled(isScrolledNow);
-      if (isScrolledNow) {
-        setIsHeroSection(false);
-      }
-
-      // Pinned BlueprintHero manages sections while scrollY <= 120.
-      // Do not infer or clobber activeId when scrollY is in the pinned region.
-      if (scrollY <= 120) {
-        return;
-      }
-
-      const contactEl = document.getElementById("contact");
-      const faqEl = document.getElementById("faq");
-
-      const triggerY = scrollY + NAVBAR_HEIGHT + 40;
-      const isAtBottom =
-        scrollY + window.innerHeight >= document.documentElement.scrollHeight - 50;
-
-      // 1. Bottom of page or contact cleared navbar -> Contact
-      if (isAtBottom || (contactEl && triggerY >= contactEl.offsetTop)) {
-        setActiveId("contact");
-        return;
-      }
-
-      // 2. FAQ section cleared navbar -> FAQ
-      if (faqEl && triggerY >= faqEl.offsetTop) {
-        setActiveId("faq");
-        return;
-      }
+      setScrolled(scrollY > 60);
+      setIsHeroSection(scrollY < 300);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // sync on mount
-    return () => window.removeEventListener("scroll", handleScroll);
+    handleScroll();
+
+    const sectionIds = ["hero", "product", "security", "about", "faq", "contact"];
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter(Boolean) as HTMLElement[];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            if (id === "hero") {
+              setIsHeroSection(true);
+              setActiveId("product");
+            } else {
+              setIsHeroSection(false);
+              setActiveId(id);
+            }
+          }
+        });
+      },
+      {
+        rootMargin: "-25% 0px -45% 0px",
+        threshold: 0.1,
+      }
+    );
+
+    sections.forEach((sec) => observer.observe(sec));
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      observer.disconnect();
+    };
   }, []);
 
   const isHero = isHeroSection && !scrolled;
@@ -300,13 +264,11 @@ export function BlueprintNav() {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
 
-    // Do not set activeId here: the dot must reflect where the user actually
-    // *is*, not where they just clicked. BlueprintHero's state machine is the
-    // single source of truth — it dispatches "unifolio-active-section" only
-    // once the cinematic transition has genuinely landed on the destination.
-    window.dispatchEvent(
-      new CustomEvent("unifolio-nav-click", { detail: { section: id } })
-    );
+    const targetEl = document.getElementById(id);
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: "smooth" });
+      setActiveId(id);
+    }
   };
 
   return (

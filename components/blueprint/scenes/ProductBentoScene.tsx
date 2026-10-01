@@ -2,11 +2,13 @@
 
 import {
   forwardRef,
+  useEffect,
+  useRef,
   useImperativeHandle,
   type MutableRefObject,
   type ReactNode,
 } from "react";
-import { gsap } from "@/lib/gsap";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 import {
   getComposedViewport,
   getCardRestHeight,
@@ -146,293 +148,282 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
 
     const { stateRef, transitionAnimatingRef } = engine;
 
-    // =======================================================================
-    // SCROLL-TRIGGERED BENTO TRANSFORMATION
-    // Directly animates the 5 resting cards into the reference bento geometry
-    // when the user scrolls down from the resting amphitheater state.
-    // =======================================================================
-      const createRestingToBentoTimeline = () => {
-        const { vw: vWidth, vh: vHeight } = getComposedViewport(1440, 800);
-        const { computeBentoLayout, dispatchActiveSection } = shared.current;
+    const hasPlayedBentoRef = useRef(false);
 
-        const tl = gsap.timeline({
-          paused: true,
-          onStart: () => {
-            stateRef.current = "sculpting";
-            transitionAnimatingRef.current = true;
-            // Safety valve (Task 3 / final-review fix) — see AboutScene.tsx for
-            // the full rationale; 10390ms = longest real transition + 500ms margin.
-            engine.armBusySafetyValve(transitionAnimatingRef, 10390);
-            if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "none";
-            if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "none";
-            if (headerRef.current) headerRef.current.style.pointerEvents = "none";
-          },
-          onComplete: () => {
-            stateRef.current = "product";
-            transitionAnimatingRef.current = false;
-            if (cardsClusterRef.current) cardsClusterRef.current.style.pointerEvents = "";
-            if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "";
-            if (headerRef.current) headerRef.current.style.pointerEvents = "";
-            dispatchActiveSection("product");
-          },
-          onReverseComplete: () => {
-            stateRef.current = "product-resting";
-            transitionAnimatingRef.current = false;
-            if (cardsClusterRef.current) {
-              cardsClusterRef.current.style.pointerEvents = "";
-              cardsClusterRef.current.style.minHeight = "";
-            }
-            if (cardsStageRef.current) cardsStageRef.current.style.pointerEvents = "";
-            if (headerRef.current) headerRef.current.style.pointerEvents = "";
-            gsap.set(
-              [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
-              { autoAlpha: 1, opacity: 1, y: 0, scale: 1, visibility: "visible" }
-            );
-            cardWrapperRefs.current.forEach((el, i) => {
-              if (el) {
-                el.style.position = "";
-                el.style.left = "";
-                el.style.top = "";
-                el.style.width = "";
-                el.style.height = "";
-                gsap.set(el, {
-                  x: 0,
-                  y: PRODUCT_CARDS[i].restY,
-                  z: PRODUCT_CARDS[i].restZ,
-                  rotateX: 0,
-                  rotateY: PRODUCT_CARDS[i].restRotateY,
-                  rotateZ: PRODUCT_CARDS[i].restRotateZ,
-                  scale: 1,
-                  opacity: 1,
-                });
-              }
-            });
-            dispatchActiveSection("product");
-          },
-        });
+    // =======================================================================
+    // RESTING -> BENTO GRID SCROLL-TRIGGERED FORMATION
+    // Sets initial resting cards layout, then morphs into bento on scroll.
+    // =======================================================================
+    const setupRestingLayout = (vw: number, vh: number) => {
+      const { computeBentoLayout } = shared.current;
+      const bento = computeBentoLayout(vw, vh);
+      const clusterEl = cardsClusterRef.current;
+      if (clusterEl) {
+        clusterEl.style.setProperty("--bento-vw-tier", `${getBentoVwTierPx(vw)}px`);
+        clusterEl.style.minHeight = `${Math.round(bento.bentoH)}px`;
+        clusterEl.style.height = `${Math.round(bento.bentoH)}px`;
+        clusterEl.style.width = "100%";
+      }
+      if (cardsStageRef.current) {
+        cardsStageRef.current.style.minHeight = `${Math.round(bento.bentoH)}px`;
+      }
 
-        // 1. Smoothly fade out the headline, CTA, and floor reflection line in-place
-        // Finishes quickly before cards expand into bento. On reverse, headline only
-        // fades back in at the very end when cards have settled into resting slots.
-        const heroFadeDuration = 0.16;
+      const wRest = vw >= 1536 ? 235 : vw >= 1280 ? 225 : vw >= 1024 ? 215 : vw >= 768 ? 205 : vw >= 640 ? 190 : 175;
+      const hRest = getCardRestHeight(vw, vh);
+      const gapRest = vw >= 1280 ? 16 : vw >= 768 ? 14 : vw >= 640 ? 12 : 10;
+      const clusterW = clusterEl?.offsetWidth || Math.min(vw, 1340);
+      const clusterH = Math.max(clusterEl?.offsetHeight || 0, bento.bentoH);
+      const restTop = Math.round((clusterH - hRest) / 2);
+
+      PRODUCT_CARDS.forEach((card, i) => {
+        const wrapper = cardWrapperRefs.current[i];
+        const frontFace = cardFrontRefs.current[i];
+        const defContent = cardDefaultRefs.current[i];
+        const gradBg = cardGradientBgRefs.current[i];
+        const glassOverlay = cardGlassOverlayRefs.current[i];
+        const centerIllu = cardIllustrationRefs.current[i];
+        const bentoContent = bentoTileContentRefs.current[i];
+
+        const fallbackL = Math.round((clusterW / 2) + (i - 2) * (wRest + gapRest) - wRest / 2);
+        const fallbackT = Math.round(restTop);
+
+        if (wrapper) {
+          gsap.set(wrapper, {
+            position: "absolute",
+            left: fallbackL,
+            top: fallbackT,
+            width: wRest,
+            height: hRest,
+            transformOrigin: "center center",
+            rotateX: 0,
+            rotateY: card.restRotateY,
+            rotateZ: card.restRotateZ,
+            z: card.restZ,
+            x: 0,
+            y: card.restY,
+            scaleX: 1,
+            scaleY: 1,
+            zIndex: 20 + i,
+            opacity: 1,
+            visibility: "visible",
+          });
+        }
+        if (frontFace) {
+          gsap.set(frontFace, {
+            borderRadius: "20px",
+            backgroundColor: "rgba(255, 255, 255, 0.74)",
+            borderColor: "rgba(255, 255, 255, 0.75)",
+            boxShadow:
+              "0 20px 45px -12px rgba(16, 44, 28, 0.08), 0 8px 18px -6px rgba(0, 0, 0, 0.04), 0 0 20px -4px rgba(34, 197, 94, 0.08), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95), inset 0 0.5px 0.5px 0 rgba(255, 255, 255, 0.8), inset 0 -1.5px 3px 0 rgba(34, 197, 94, 0.06)",
+          });
+        }
+        if (gradBg) gsap.set(gradBg, { autoAlpha: 1, visibility: "visible" });
+        if (glassOverlay) gsap.set(glassOverlay, { autoAlpha: 0 });
+        if (centerIllu) gsap.set(centerIllu, { autoAlpha: 1, opacity: 0.88, visibility: "visible" });
+        if (defContent) gsap.set(defContent, { autoAlpha: 1, opacity: 1, visibility: "visible" });
+        if (bentoContent) gsap.set(bentoContent, { autoAlpha: 0, opacity: 0, y: 14, visibility: "hidden" });
+      });
+      return bento;
+    };
+
+    // Applies the bento grid's computed geometry to the 5 product card wrappers.
+    // Pure/idempotent — runs on mount (if already past trigger) and on window resize.
+    const applyBentoLayoutToCards = (vw: number, vh: number) => {
+      const { computeBentoLayout } = shared.current;
+      const bento = computeBentoLayout(vw, vh);
+      if (cardsClusterRef.current) {
+        cardsClusterRef.current.style.setProperty("--bento-vw-tier", `${getBentoVwTierPx(vw)}px`);
+        cardsClusterRef.current.style.minHeight = `${Math.round(bento.bentoH)}px`;
+        cardsClusterRef.current.style.height = `${Math.round(bento.bentoH)}px`;
+        cardsClusterRef.current.style.width = "100%";
+      }
+      if (cardsStageRef.current) {
+        cardsStageRef.current.style.minHeight = `${Math.round(bento.bentoH)}px`;
+      }
+
+      const clusterEl = cardsClusterRef.current;
+      const clusterW = clusterEl?.offsetWidth || Math.min(vw, 1340);
+      const gridLeft = Math.max(0, Math.round((clusterW - bento.bentoW) / 2));
+
+      PRODUCT_CARDS.forEach((_card, i) => {
+        const wrapper = cardWrapperRefs.current[i];
+        if (wrapper) {
+          const relLeft = bento.tileLefts[i] - bento.tileLefts[0];
+          const relTop = bento.tileTops[i] - bento.tileTops[0];
+          gsap.set(wrapper, {
+            position: "absolute",
+            left: Math.round(gridLeft + relLeft),
+            top: Math.round(relTop),
+            width: Math.round(bento.tileWidths[i]),
+            height: Math.round(bento.tileHeights[i]),
+            x: 0,
+            y: 0,
+            z: 0,
+            rotateX: 0,
+            rotateY: 0,
+            rotateZ: 0,
+            scale: 1,
+            opacity: 1,
+          });
+        }
+        const front = cardFrontRefs.current[i];
+        if (front) {
+          gsap.set(front, {
+            borderRadius: "24px",
+            backgroundColor: "rgba(220, 235, 226, 0.74)",
+            borderColor: "rgba(255, 255, 255, 0.60)",
+            boxShadow:
+              "0 28px 56px -14px rgba(12, 38, 24, 0.14), 0 10px 24px -8px rgba(34, 197, 94, 0.12), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1.5px 3px 0 rgba(34, 197, 94, 0.08)",
+          });
+        }
+        const bentoContent = bentoTileContentRefs.current[i];
+        if (bentoContent) {
+          gsap.set(bentoContent, { autoAlpha: 1, y: 0, visibility: "visible" });
+        }
+        const defContent = cardDefaultRefs.current[i];
+        if (defContent) gsap.set(defContent, { autoAlpha: 0, visibility: "hidden" });
+        const gradBg = cardGradientBgRefs.current[i];
+        if (gradBg) gsap.set(gradBg, { autoAlpha: 0, visibility: "hidden" });
+        const glassOverlay = cardGlassOverlayRefs.current[i];
+        if (glassOverlay) gsap.set(glassOverlay, { autoAlpha: 0, visibility: "hidden" });
+        const centerIllu = cardIllustrationRefs.current[i];
+        if (centerIllu) gsap.set(centerIllu, { autoAlpha: 0, visibility: "hidden" });
+      });
+      return bento;
+    };
+
+    const createRestingToBentoTimeline = () => {
+      const { vw: vWidth, vh: vHeight } = getComposedViewport(1440, 800);
+      const { computeBentoLayout } = shared.current;
+      const bento = computeBentoLayout(vWidth, vHeight);
+      const clusterEl = cardsClusterRef.current;
+      const clusterW = clusterEl?.offsetWidth || Math.min(vWidth, 1340);
+      const gridLeft = Math.max(0, Math.round((clusterW - bento.bentoW) / 2));
+
+      const tl = gsap.timeline();
+      const bentoCardStartTime = 0.02;
+
+      PRODUCT_CARDS.forEach((card, i) => {
+        const wrapper = cardWrapperRefs.current[i];
+        if (!wrapper) return;
+
+        const targetL = Math.round(gridLeft + (bento.tileLefts[i] - bento.tileLefts[0]));
+        const targetT = Math.round(bento.tileTops[i] - bento.tileTops[0]);
+        const targetW = Math.round(bento.tileWidths[i]);
+        const targetH = Math.round(bento.tileHeights[i]);
+
         tl.to(
-          [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
+          wrapper,
           {
-            autoAlpha: 0,
-            y: 8,
-            duration: heroFadeDuration,
+            left: targetL,
+            top: targetT,
+            width: targetW,
+            height: targetH,
+            x: 0,
+            y: 0,
+            z: 0,
+            rotateX: 0,
+            rotateY: 0,
+            rotateZ: 0,
+            duration: 0.70,
             ease: "power2.inOut",
           },
-          0.0
+          bentoCardStartTime + i * 0.02
         );
 
-        tl.set(
-          [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
-          {
-            autoAlpha: 0,
-            opacity: 0,
-            visibility: "hidden",
-          },
-          heroFadeDuration
-        );
+        const defContent = cardDefaultRefs.current[i];
+        const gradBg = cardGradientBgRefs.current[i];
+        const glassOverlay = cardGlassOverlayRefs.current[i];
+        const centerIllu = cardIllustrationRefs.current[i];
+        const frontFace = cardFrontRefs.current[i];
+        const bentoContent = bentoTileContentRefs.current[i];
 
-        // 2. Physical Card-to-Bento Direct Movement
-        const clusterEl = cardsClusterRef.current;
-        const wRest = vWidth >= 1536 ? 235 : vWidth >= 1280 ? 225 : vWidth >= 1024 ? 215 : vWidth >= 768 ? 205 : vWidth >= 640 ? 190 : 175;
-        const hRest = getCardRestHeight(vWidth, vHeight);
-        const gapRest = vWidth >= 1280 ? 16 : vWidth >= 768 ? 14 : vWidth >= 640 ? 12 : 10;
-
-        const clusterW = clusterEl?.offsetWidth || Math.min(vWidth, 1340);
-        const clusterH = Math.max(clusterEl?.offsetHeight || 0, hRest + 20);
-
-        // Lock clusterEl minimum height to its current rendered height so converting in-flow
-        // children to absolute positioning never collapses the container or causes layout shift.
-        if (clusterEl && clusterEl.offsetHeight > 0) {
-          clusterEl.style.minHeight = `${clusterEl.offsetHeight}px`;
+        if (defContent) {
+          tl.to(defContent, { autoAlpha: 0, duration: 0.36, ease: "power2.inOut" }, bentoCardStartTime + 0.12);
+        }
+        if (gradBg) {
+          tl.to(gradBg, { autoAlpha: 0, duration: 0.40, ease: "power2.inOut" }, bentoCardStartTime + 0.12);
+        }
+        if (glassOverlay) {
+          tl.to(glassOverlay, { autoAlpha: 0, duration: 0.40, ease: "power2.inOut" }, bentoCardStartTime + 0.12);
+        }
+        if (centerIllu) {
+          tl.to(centerIllu, { autoAlpha: 0, duration: 0.36, ease: "power2.inOut" }, bentoCardStartTime + 0.12);
         }
 
-        // Measure true current resting coordinates directly from the DOM before setting absolute positioning.
-        // This eliminates any subpixel/rounding jump between the flex layout and absolute coordinates.
-        const restTop = Math.round((clusterH - hRest) / 2);
-        const initialCardLayouts = PRODUCT_CARDS.map((card, i) => {
-          const wrapper = cardWrapperRefs.current[i];
-          const isAbsoluteBento = wrapper && wrapper.style.position === "absolute";
-          const hasMeasuredOffset = wrapper && !isAbsoluteBento && wrapper.offsetLeft > 0 && wrapper.offsetHeight > 0;
-          const fallbackL = Math.round((clusterW / 2) + (i - 2) * (wRest + gapRest) - wRest / 2);
-          const fallbackT = Math.round(restTop);
-          return {
-            left: hasMeasuredOffset ? wrapper.offsetLeft : fallbackL,
-            top: hasMeasuredOffset ? wrapper.offsetTop : fallbackT,
-            width: hasMeasuredOffset ? wrapper.offsetWidth : wRest,
-            height: hasMeasuredOffset ? wrapper.offsetHeight : hRest,
-          };
-        });
-
-        const bento = computeBentoLayout(vWidth, vHeight);
-        const bentoCardStartTime = 0.02;
-
-        PRODUCT_CARDS.forEach((card, i) => {
-          const wrapper = cardWrapperRefs.current[i];
-          if (!wrapper) return;
-
-          const initial = initialCardLayouts[i];
-          const targetL = Math.round(bento.tileLefts[i]);
-          const targetT = Math.round(bento.tileTops[i]);
-          const targetW = bento.tileWidths[i];
-          const targetH = bento.tileHeights[i];
-
-          // Lock in-place instantly at t = 0 with exact current resting position & resting transforms.
-          // Zero visual delta between in-flow and absolute mode.
-          tl.set(
-            wrapper,
-            {
-              position: "absolute",
-              left: initial.left,
-              top: initial.top,
-              width: initial.width,
-              height: initial.height,
-              transformOrigin: "center center",
-              rotateX: 0,
-              rotateY: card.restRotateY,
-              rotateZ: card.restRotateZ,
-              z: card.restZ,
-              x: 0,
-              y: card.restY,
-              scaleX: 1,
-              scaleY: 1,
-              zIndex: 20 + i,
-            },
-            0.0
-          );
-
-          // Card expands seamlessly from exact resting amphitheater position into Bento grid
+        if (frontFace) {
           tl.to(
-            wrapper,
+            frontFace,
             {
-              left: targetL,
-              top: targetT,
-              width: targetW,
-              height: targetH,
-              x: 0,
-              y: 0,
-              z: 0,
-              rotateX: 0,
-              rotateY: 0,
-              rotateZ: 0,
-              duration: 0.70,
+              backgroundColor: "rgba(220, 235, 226, 0.74)",
+              borderColor: "rgba(255, 255, 255, 0.60)",
+              boxShadow:
+                "0 28px 56px -14px rgba(12, 38, 24, 0.14), 0 10px 24px -8px rgba(34, 197, 94, 0.12), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1.5px 3px 0 rgba(34, 197, 94, 0.08)",
+              borderRadius: "24px",
+              backdropFilter: "blur(16px)",
+              duration: 0.78,
               ease: "power2.inOut",
             },
-            bentoCardStartTime + i * 0.02
+            bentoCardStartTime + 0.22
           );
-
-          // 1. Smoothly fade out initial dark-card text, dark gradient, and centered amphitheater illustration
-          const defContent = cardDefaultRefs.current[i];
-          const gradBg = cardGradientBgRefs.current[i];
-          const glassOverlay = cardGlassOverlayRefs.current[i];
-          const centerIllu = cardIllustrationRefs.current[i];
-          const frontFace = cardFrontRefs.current[i];
-          const bentoContent = bentoTileContentRefs.current[i];
-
-          if (defContent) {
-            tl.to(defContent, { autoAlpha: 0, duration: 0.36, ease: "power2.inOut" }, bentoCardStartTime + 0.12);
-          }
-          if (gradBg) {
-            tl.to(gradBg, { autoAlpha: 0, duration: 0.40, ease: "power2.inOut" }, bentoCardStartTime + 0.12);
-          }
-          if (glassOverlay) {
-            tl.to(glassOverlay, { autoAlpha: 0, duration: 0.40, ease: "power2.inOut" }, bentoCardStartTime + 0.12);
-          }
-          if (centerIllu) {
-            tl.to(centerIllu, { autoAlpha: 0, duration: 0.36, ease: "power2.inOut" }, bentoCardStartTime + 0.12);
-          }
-
-          // 2. Transition card surface into slightly darker frosted glass bento
-          if (frontFace) {
-            tl.to(
-              frontFace,
-              {
-                backgroundColor: "rgba(220, 235, 226, 0.74)",
-                borderColor: "rgba(255, 255, 255, 0.60)",
-                boxShadow:
-                  "0 28px 56px -14px rgba(12, 38, 24, 0.14), 0 10px 24px -8px rgba(34, 197, 94, 0.12), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1.5px 3px 0 rgba(34, 197, 94, 0.08)",
-                borderRadius: "24px",
-                backdropFilter: "blur(16px)",
-                duration: 0.78,
-                ease: "power2.inOut",
-              },
-              bentoCardStartTime + 0.22
-            );
-          }
-
-          // 3. Smoothly fade in rich designed bento tile content
-          if (bentoContent) {
-            tl.fromTo(
-              bentoContent,
-              { autoAlpha: 0, y: 14 },
-              { autoAlpha: 1, y: 0, duration: 0.64, ease: "power2.out" },
-              bentoCardStartTime + 0.50 + i * 0.04
-            );
-          }
-        });
-
-        tl.to({}, { duration: 0.08 }, bentoCardStartTime + 1.15);
-
-        tl.timeScale(CINEMATIC_TIMESCALE);
-        return tl;
-      };
-
-
-      const triggerRestingToBento = () => {
-        if (transitionAnimatingRef.current || stateRef.current !== "product-resting") return;
-        transitionAnimatingRef.current = true;
-        engine.armBusySafetyValve(transitionAnimatingRef, 10390);
-        stateRef.current = "sculpting";
-
-        if (restingToBentoTlRef.current) {
-          restingToBentoTlRef.current.kill();
         }
-        restingToBentoTlRef.current = createRestingToBentoTimeline();
-        restingToBentoTlRef.current.play(0);
-      };
 
-      const triggerBentoToResting = () => {
-        if (transitionAnimatingRef.current || stateRef.current !== "product") return;
-        transitionAnimatingRef.current = true;
-        engine.armBusySafetyValve(transitionAnimatingRef, 10390);
-        stateRef.current = "sculpting";
+        if (bentoContent) {
+          tl.fromTo(
+            bentoContent,
+            { autoAlpha: 0, y: 14, visibility: "visible" },
+            { autoAlpha: 1, y: 0, duration: 0.64, ease: "power2.out" },
+            bentoCardStartTime + 0.50 + i * 0.04
+          );
+        }
+      });
 
-        if (!restingToBentoTlRef.current) {
-          restingToBentoTlRef.current = createRestingToBentoTimeline();
-          restingToBentoTlRef.current.progress(1);
+      tl.timeScale(CINEMATIC_TIMESCALE);
+      return tl;
+    };
+
+    const triggerRestingToBento = () => {
+      hasPlayedBentoRef.current = true;
+      if (restingToBentoTlRef.current) restingToBentoTlRef.current.kill();
+      restingToBentoTlRef.current = createRestingToBentoTimeline();
+    };
+    const triggerBentoToResting = () => {};
+
+    useEffect(() => {
+      const { vw, vh } = getComposedViewport(window.innerWidth, window.innerHeight);
+
+      // Check if already scrolled past the trigger line (e.g. deep link to #security / #about)
+      const rect = cardsClusterRef.current?.getBoundingClientRect();
+      const isPast = rect && rect.top < window.innerHeight * 0.7;
+
+      if (isPast) {
+        hasPlayedBentoRef.current = true;
+        applyBentoLayoutToCards(vw, vh);
+      } else {
+        setupRestingLayout(vw, vh);
+        const trigger = ScrollTrigger.create({
+          trigger: cardsClusterRef.current,
+          start: "top 70%",
+          once: true,
+          onEnter: () => {
+            hasPlayedBentoRef.current = true;
+            createRestingToBentoTimeline();
+          },
+        });
+        return () => trigger.kill();
+      }
+
+      const updateLayout = () => {
+        const { vw: curVw, vh: curVh } = getComposedViewport(window.innerWidth, window.innerHeight);
+        if (hasPlayedBentoRef.current) {
+          applyBentoLayoutToCards(curVw, curVh);
         } else {
-          restingToBentoTlRef.current.progress(1);
+          setupRestingLayout(curVw, curVh);
         }
-        restingToBentoTlRef.current.reverse();
       };
-
-      // Applies the bento grid's computed geometry to the 5 product card wrappers.
-      // Pure/idempotent — safe to call on mount, on the forward transition into the
-      // grid, and again on window resize to re-layout for the new viewport.
-      const applyBentoLayoutToCards = (vw: number, vh: number) => {
-        const { computeBentoLayout } = shared.current;
-        const bento = computeBentoLayout(vw, vh);
-        if (cardsClusterRef.current) {
-          cardsClusterRef.current.style.setProperty("--bento-vw-tier", `${getBentoVwTierPx(vw)}px`);
-        }
-        PRODUCT_CARDS.forEach((_card, i) => {
-          const wrapper = cardWrapperRefs.current[i];
-          if (wrapper) {
-            gsap.set(wrapper, {
-              position: "absolute",
-              left: Math.round(bento.tileLefts[i]),
-              top: Math.round(bento.tileTops[i]),
-              width: bento.tileWidths[i],
-              height: bento.tileHeights[i],
-            });
-          }
-        });
-        return bento;
-      };
+      window.addEventListener("resize", updateLayout);
+      return () => window.removeEventListener("resize", updateLayout);
+    }, []);
 
     useImperativeHandle(
       forwardedRef,
@@ -444,12 +435,12 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
       <>
             <div
               ref={cardsStageRef}
-              className="w-full flex items-center justify-center relative shrink-0 pt-1 sm:pt-2 pb-1 min-h-[295px] sm:min-h-[320px] md:min-h-[340px] lg:min-h-[355px] xl:min-h-[370px] 2xl:min-h-[385px]"
+              className="w-full flex items-center justify-center relative shrink-0 pt-2 pb-6"
               style={{ perspective: "1400px", zIndex: 30 }}
             >
               <div
                 ref={cardsClusterRef}
-                className="relative flex items-center justify-center gap-2.5 sm:gap-3 md:gap-3.5 lg:gap-3.5 xl:gap-4 w-full max-w-[1340px] mx-auto overflow-visible py-1.5 px-2 no-scrollbar min-h-[295px] sm:min-h-[320px] md:min-h-[340px] lg:min-h-[355px] xl:min-h-[370px] 2xl:min-h-[385px]"
+                className="relative w-full max-w-[1340px] mx-auto overflow-visible py-1 px-2 no-scrollbar"
                 style={{ transformStyle: "preserve-3d" }}
               >
                 {PRODUCT_CARDS.map((card, idx) => {
@@ -467,7 +458,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                       ref={(el) => {
                         cardWrapperRefs.current[idx] = el;
                       }}
-                      className="relative shrink-0 w-[175px] sm:w-[190px] md:w-[205px] lg:w-[215px] xl:w-[225px] 2xl:w-[235px] h-[285px] sm:h-[310px] md:h-[330px] lg:h-[345px] xl:h-[360px] 2xl:h-[375px] cursor-default"
+                      className="absolute cursor-default"
                       style={{ transformStyle: "preserve-3d" }}
                     >
                       <div
@@ -477,21 +468,21 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                         className="relative w-full h-full"
                         style={{ transformStyle: "preserve-3d" }}
                       >
-                        {/* CARD FRONT FACE (Light Frosted Architectural Glass) */}
+                        {/* CARD FRONT FACE (Light Frosted Architectural Glass Bento) */}
                         <div
                           ref={(el) => {
                             cardFrontRefs.current[idx] = el;
                           }}
-                          className="absolute inset-0 w-full h-full rounded-[20px] overflow-hidden flex flex-col justify-between"
+                          className="absolute inset-0 w-full h-full rounded-[24px] overflow-hidden flex flex-col justify-between"
                           style={{
                             backfaceVisibility: "hidden",
                             WebkitBackfaceVisibility: "hidden",
                             backdropFilter: "blur(16px)",
                             WebkitBackdropFilter: "blur(16px)",
-                            backgroundColor: "rgba(255, 255, 255, 0.74)",
-                            border: "1px solid rgba(255, 255, 255, 0.75)",
+                            backgroundColor: "rgba(220, 235, 226, 0.74)",
+                            border: "1px solid rgba(255, 255, 255, 0.60)",
                             boxShadow:
-                              "0 20px 45px -12px rgba(16, 44, 28, 0.08), 0 8px 18px -6px rgba(0, 0, 0, 0.04), 0 0 20px -4px rgba(34, 197, 94, 0.08), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95), inset 0 0.5px 0.5px 0 rgba(255, 255, 255, 0.8), inset 0 -1.5px 3px 0 rgba(34, 197, 94, 0.06)",
+                              "0 28px 56px -14px rgba(12, 38, 24, 0.14), 0 10px 24px -8px rgba(34, 197, 94, 0.12), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1.5px 3px 0 rgba(34, 197, 94, 0.08)",
                           }}
                         >
                           {/* Multi-Tone Organic Frosted Glass Gradient (Warm ivory -> Faint mint -> Cool translucent) */}
@@ -665,7 +656,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                           </div>
 
                           {/* =================================================================== */}
-                          {/* BENTO TILE RICH GLASS CONTENT (Activated during Bento State)        */}
+                          {/* BENTO TILE RICH GLASS CONTENT (Direct Bento State)                  */}
                           {/* =================================================================== */}
                           <div
                             ref={(el) => {

@@ -2,13 +2,44 @@
 
 import {
   forwardRef,
+  useEffect,
   useImperativeHandle,
+  useState,
   type MutableRefObject,
 } from "react";
 import { gsap, ScrollTrigger, smoothScrollTo } from "@/lib/gsap";
 import { getComposedViewport } from "@/lib/viewport";
 import type { SceneEngine } from "../hero-engine/useSceneEngine";
-import { CINEMATIC_TIMESCALE } from "../BlueprintHero";
+import { CINEMATIC_TIMESCALE, PRODUCT_CARDS } from "../BlueprintHero";
+
+export const SCATTER_SLOTS = [
+  { x: -160, y: -45, z: 8,  rotZ: -14, rotX: -4, rotY: 6,   scale: 0.65 },
+  { x: 145,  y: 35,  z: 12, rotZ: 12,  rotX: 5,  rotY: -7,  scale: 0.66 },
+  { x: -75,  y: 65,  z: 16, rotZ: -8,  rotX: 3,  rotY: 4,   scale: 0.68 },
+  { x: 95,   y: -55, z: 10, rotZ: 15,  rotX: -5, rotY: -5,  scale: 0.65 },
+  { x: -190, y: 20,  z: 6,  rotZ: -12, rotX: 2,  rotY: 8,   scale: 0.62 },
+  { x: 180,  y: -25, z: 14, rotZ: 10,  rotX: -3, rotY: -8,  scale: 0.63 },
+  { x: -40,  y: -75, z: 18, rotZ: 7,   rotX: -6, rotY: 3,   scale: 0.67 },
+  { x: 50,   y: 80,  z: 15, rotZ: -11, rotX: 6,  rotY: -4,  scale: 0.66 },
+  { x: -125, y: -80, z: 9,  rotZ: -16, rotX: -4, rotY: 7,   scale: 0.64 },
+  { x: 130,  y: 85,  z: 11, rotZ: 13,  rotX: 4,  rotY: -6,  scale: 0.65 },
+  { x: -105, y: 35,  z: 17, rotZ: -6,  rotX: 2,  rotY: 5,   scale: 0.68 },
+  { x: 110,  y: -30, z: 13, rotZ: 9,   rotX: -3, rotY: -5,  scale: 0.66 },
+  { x: -15,  y: 45,  z: 22, rotZ: 5,   rotX: 4,  rotY: 2,   scale: 0.70 },
+  { x: 25,   y: -40, z: 20, rotZ: -7,  rotX: -4, rotY: -3,  scale: 0.69 },
+  { x: -215, y: -20, z: 5,  rotZ: -15, rotX: -2, rotY: 9,   scale: 0.61 },
+  { x: 210,  y: 30,  z: 7,  rotZ: 16,  rotX: 3,  rotY: -9,  scale: 0.61 },
+  { x: -65,  y: -40, z: 19, rotZ: 8,   rotX: -3, rotY: 4,   scale: 0.68 },
+  { x: 75,   y: 45,  z: 16, rotZ: -9,  rotX: 4,  rotY: -4,  scale: 0.67 },
+  { x: -145, y: 70,  z: 8,  rotZ: 11,  rotX: 5,  rotY: 6,   scale: 0.63 },
+  { x: 155,  y: -70, z: 10, rotZ: -13, rotX: -5, rotY: -7,  scale: 0.63 },
+  { x: -30,  y: 90,  z: 21, rotZ: -5,  rotX: 6,  rotY: 2,   scale: 0.69 },
+  { x: 35,   y: -85, z: 19, rotZ: 6,   rotX: -6, rotY: -2,  scale: 0.69 },
+  { x: -85,  y: 10,  z: 23, rotZ: 4,   rotX: 1,  rotY: 3,   scale: 0.71 },
+  { x: 80,   y: -10, z: 24, rotZ: -4,  rotX: -1, rotY: -3,  scale: 0.71 },
+  { x: -10,  y: -15, z: 26, rotZ: 2,   rotX: -2, rotY: 1,   scale: 0.72 },
+  { x: 10,   y: 15,  z: 27, rotZ: -2,  rotX: 2,  rotY: -1,  scale: 0.72 },
+];
 
 /**
  * Task 8 — the fourth and last scene extraction in the BlueprintHero
@@ -217,7 +248,8 @@ export const AboutScene = forwardRef<AboutSceneHandle, AboutSceneProps>(
       };
     };
 
-    const flipDocToPage = (targetPage: 1 | 2) => {
+    const flipDocToPage = (_targetPage: 1 | 2) => {};
+    const _unusedFlipDocToPage = (targetPage: 1 | 2) => {
       if (isFlippingDocRef.current) return;
       if (!docFlipperRef.current) return;
       if (aboutDocPageRef.current === targetPage) return;
@@ -300,7 +332,8 @@ export const AboutScene = forwardRef<AboutSceneHandle, AboutSceneProps>(
       }
     };
 
-    const exitAboutToFaq = () => {
+    const exitAboutToFaq = () => {};
+    const _unusedExitAboutToFaq = () => {
       if (isSecurityTransitioningRef.current) return;
       isSecurityTransitioningRef.current = true;
       engine.armBusySafetyValve(isSecurityTransitioningRef, 1200);
@@ -357,7 +390,8 @@ export const AboutScene = forwardRef<AboutSceneHandle, AboutSceneProps>(
       });
     };
 
-    const jumpToAboutState = (targetPage: 1 | 2 = 1) => {
+    const jumpToAboutState = (_targetPage: 1 | 2 = 1) => {};
+    const _unusedJumpToAboutState = (targetPage: 1 | 2 = 1) => {
       if (stateRef.current === "about") return;
       if (stateRef.current === "ring") {
         shared.current.consolidateRingToStack();
@@ -611,7 +645,7 @@ export function AboutBackgroundSlot({ aboutContentRef }: AboutBackgroundSlotProp
     <div
       ref={aboutContentRef}
       className="absolute inset-0 pointer-events-none overflow-hidden will-change-[opacity]"
-      style={{ opacity: 0, visibility: "hidden", zIndex: 0 }}
+      style={{ opacity: 1, visibility: "visible", zIndex: 0 }}
     >
       {/* 1. Lighter, subtle, luminous ambient sage-green wash over clean base */}
       <div
@@ -784,99 +818,365 @@ export function AboutEnvelopeSlot({
   envelopeTopFlapRef,
   envelopeSealRef,
 }: AboutEnvelopeSlotProps) {
-  return (
-                <>
-                {/* Unified Physical Envelope (Morphed Single Object) */}
-                <div
-                  ref={unifiedEnvelopeRef}
-                  className="absolute pointer-events-none will-change-transform flex items-center justify-center"
-                  style={{
-                    left: "50%",
-                    top: "50%",
-                    transform: "translate(-50%, -50%)",
-                    opacity: 0,
-                    visibility: "hidden",
-                    zIndex: 30,
-                  }}
-                >
-                  <div
-                    className="relative w-[94vw] max-w-[760px] sm:max-w-[840px] md:max-w-[900px] lg:max-w-[960px] h-[360px] sm:h-[440px] md:h-[490px] lg:h-[540px] max-h-[62vh] rounded-[16px] sm:rounded-[22px]"
-                    style={{
-                      perspective: "1400px",
-                      transformStyle: "preserve-3d",
-                      boxShadow:
-                        "0 40px 90px -15px rgba(0, 0, 0, 0.80), 0 20px 40px -8px rgba(0, 0, 0, 0.60)",
-                    }}
-                  >
-                    {/* LAYER 1 (z-1): Envelope Backplate / Back Wall */}
-                    <div
-                      className="absolute inset-0 rounded-[16px] sm:rounded-[22px] overflow-hidden"
-                      style={{
-                        zIndex: 1,
-                        background:
-                          "linear-gradient(145deg, rgba(8, 32, 21, 0.98) 0%, rgba(4, 20, 13, 0.99) 55%, rgba(1, 10, 6, 1.0) 100%)",
-                        border: "1px solid rgba(255, 255, 255, 0.16)",
-                      }}
-                    >
-                      {/* Deep Cavity Shadow & Ambient Glow */}
-                      <div
-                        className="absolute inset-0 pointer-events-none opacity-50"
-                        style={{
-                          background:
-                            "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(34, 197, 94, 0.15), transparent 70%)",
-                        }}
-                      />
-                      {/* Interior Top Shadow */}
-                      <div
-                        className="absolute inset-x-0 top-0 h-28 pointer-events-none"
-                        style={{
-                          background:
-                            "linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, transparent 100%)",
-                        }}
-                      />
-                    </div>
+  const [activePage, setActivePage] = useState(1);
 
-                    {/* LAYER 2 (z-10 -> z-35): Editorial Document (Emerges from inside envelope cavity) */}
-                    {/* Cavity clipping wrapper: strictly occludes document within envelope bottom and sides, open at top */}
-                    <div
-                      ref={docCavityWrapperRef}
-                      className="absolute inset-0 pointer-events-none"
-                      style={{
-                        zIndex: 10,
-                        visibility: "hidden",
-                        opacity: 0,
-                        clipPath: "inset(-2000px 0px 0px 0px round 0 0 22px 22px)",
-                        WebkitClipPath: "inset(-2000px 0px 0px 0px round 0 0 22px 22px)",
-                      }}
-                    >
-                      <div
-                        ref={philosophyDocRef}
-                        className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
-                        style={{
-                          top: "20px",
-                          opacity: 0,
-                          visibility: "hidden",
-                          transformOrigin: "50% 0%",
-                        }}
-                      >
-                      <div
-                        ref={docPaperSheetRef}
-                        className="relative w-[95vw] max-w-[620px] sm:max-w-[700px] md:max-w-[780px] lg:max-w-[860px] xl:max-w-[920px]"
-                        style={{
-                          height: "320px",
-                          perspective: "2500px",
-                          transformStyle: "preserve-3d",
-                        }}
-                      >
-                        {/* 3D Double-Sided Flipping Paper Sheet */}
-                        <div
-                          ref={docFlipperRef}
-                          className="relative w-full h-full"
-                          style={{
-                            transformStyle: "preserve-3d",
-                            transformOrigin: "50% 50%",
-                          }}
-                        >
+  useEffect(() => {
+    const playEnvelopeEmergence = () => {
+      const tl = gsap.timeline();
+
+      // 1. Unifolio Ring Seal unlocks & dissolves
+      if (envelopeSealRef.current) {
+        tl.to(
+          envelopeSealRef.current,
+          {
+            scale: 1.16,
+            opacity: 0,
+            duration: 0.20,
+            ease: "power2.out",
+          },
+          0.0
+        );
+      }
+
+      // 2. Top Flap hinges open along fold line (rotateX: 0 -> -175deg)
+      if (envelopeTopFlapRef.current) {
+        tl.to(
+          envelopeTopFlapRef.current,
+          {
+            rotateX: -175,
+            duration: 0.57,
+            ease: "power2.inOut",
+            force3D: true,
+          },
+          0.08
+        );
+        tl.set(envelopeTopFlapRef.current, { zIndex: 0 }, 0.35);
+        tl.to(
+          envelopeTopFlapRef.current,
+          {
+            opacity: 0,
+            duration: 0.35,
+            ease: "power2.out",
+          },
+          0.85
+        );
+      }
+
+      // 3. Document emerges from envelope pocket
+      if (docCavityWrapperRef.current) {
+        tl.set(docCavityWrapperRef.current, { visibility: "visible", opacity: 1 }, 0.65);
+      }
+      if (philosophyDocRef.current) {
+        tl.set(philosophyDocRef.current, { visibility: "visible", opacity: 1 }, 0.65);
+        tl.to(
+          philosophyDocRef.current,
+          {
+            y: -490,
+            rotateX: 14,
+            rotateY: 1.2,
+            z: 40,
+            duration: 1.10,
+            ease: "power2.out",
+            force3D: true,
+          },
+          0.65
+        );
+      }
+
+      // 4. Document clears envelope mouth & expands to full height
+      if (docCavityWrapperRef.current) {
+        tl.set(
+          docCavityWrapperRef.current,
+          {
+            zIndex: 35,
+            clipPath: "none",
+            WebkitClipPath: "none",
+          },
+          1.75
+        );
+      }
+      if (docPaperSheetRef.current) {
+        tl.to(
+          docPaperSheetRef.current,
+          {
+            height: 930,
+            duration: 0.85,
+            ease: "power2.inOut",
+          },
+          1.75
+        );
+      }
+      if (philosophyDocRef.current) {
+        tl.to(
+          philosophyDocRef.current,
+          {
+            rotateX: -3.5,
+            duration: 0.45,
+            ease: "sine.inOut",
+            force3D: true,
+          },
+          1.75
+        );
+        tl.to(
+          philosophyDocRef.current,
+          {
+            y: -375,
+            rotateZ: -2.8,
+            rotateX: 2.0,
+            rotateY: 2.2,
+            z: 55,
+            duration: 0.65,
+            ease: "power2.out",
+            force3D: true,
+          },
+          2.20
+        );
+      }
+
+      // 5. Ink copy reveals and wipes down
+      if (docInkCopyRef.current) {
+        tl.set(docInkCopyRef.current, { visibility: "visible" }, 2.65);
+        tl.fromTo(
+          docInkCopyRef.current,
+          { opacity: 0 },
+          {
+            opacity: 1,
+            duration: 0.35,
+            ease: "power1.in",
+          },
+          2.65
+        );
+        tl.fromTo(
+          docInkCopyRef.current,
+          {
+            clipPath: "inset(0 0 100% 0)",
+            WebkitClipPath: "inset(0 0 100% 0)",
+          },
+          {
+            clipPath: "inset(0 0 0% 0)",
+            WebkitClipPath: "inset(0 0 0% 0)",
+            duration: 1.15,
+            ease: "power2.inOut",
+          },
+          2.65
+        );
+        tl.fromTo(
+          docInkCopyRef.current,
+          {
+            filter: "contrast(1.25) brightness(0.85)",
+          },
+          {
+            filter: "contrast(1) brightness(1)",
+            duration: 1.15,
+            ease: "power2.out",
+          },
+          2.65
+        );
+      }
+
+      tl.timeScale(1.4);
+      return tl;
+    };
+
+    // Check if already scrolled past on initial mount (e.g. deep link to #about)
+    const rect = unifiedEnvelopeRef.current?.getBoundingClientRect();
+    const isPast = rect && rect.top < window.innerHeight * 0.6;
+
+    if (isPast) {
+      if (envelopeSealRef.current) gsap.set(envelopeSealRef.current, { opacity: 0, scale: 1.16 });
+      if (envelopeTopFlapRef.current) gsap.set(envelopeTopFlapRef.current, { rotateX: -175, zIndex: 0, opacity: 0 });
+      if (docCavityWrapperRef.current) gsap.set(docCavityWrapperRef.current, { zIndex: 35, visibility: "visible", opacity: 1, clipPath: "none", WebkitClipPath: "none" });
+      if (docPaperSheetRef.current) gsap.set(docPaperSheetRef.current, { height: 930 });
+      if (philosophyDocRef.current) {
+        gsap.set(philosophyDocRef.current, {
+          visibility: "visible",
+          opacity: 1,
+          y: -375,
+          rotateZ: -2.8,
+          rotateX: 2.0,
+          rotateY: 2.2,
+          z: 55,
+        });
+      }
+      if (docInkCopyRef.current) {
+        gsap.set(docInkCopyRef.current, {
+          visibility: "visible",
+          opacity: 1,
+          clipPath: "inset(0 0 0% 0)",
+          WebkitClipPath: "inset(0 0 0% 0)",
+          filter: "contrast(1) brightness(1)",
+        });
+      }
+    } else {
+      if (envelopeSealRef.current) gsap.set(envelopeSealRef.current, { opacity: 1, scale: 1, visibility: "visible" });
+      if (envelopeTopFlapRef.current) gsap.set(envelopeTopFlapRef.current, { rotateX: 0, zIndex: 30, opacity: 1 });
+      if (docCavityWrapperRef.current) {
+        gsap.set(docCavityWrapperRef.current, {
+          zIndex: 10,
+          visibility: "hidden",
+          opacity: 0,
+          clipPath: "inset(-2000px 0px 0px 0px round 0 0 22px 22px)",
+          WebkitClipPath: "inset(-2000px 0px 0px 0px round 0 0 22px 22px)",
+        });
+      }
+      if (docPaperSheetRef.current) gsap.set(docPaperSheetRef.current, { height: 320 });
+      if (philosophyDocRef.current) {
+        gsap.set(philosophyDocRef.current, {
+          visibility: "hidden",
+          opacity: 0,
+          y: 220,
+          rotateX: 0,
+          rotateY: 0,
+          rotateZ: 0,
+          z: 0,
+          scale: 1,
+          transformOrigin: "50% 0%",
+        });
+      }
+      if (docInkCopyRef.current) {
+        gsap.set(docInkCopyRef.current, {
+          clipPath: "inset(0 0 100% 0)",
+          WebkitClipPath: "inset(0 0 100% 0)",
+          opacity: 0,
+          visibility: "hidden",
+          filter: "contrast(1.25) brightness(0.85)",
+        });
+      }
+
+      const trigger = ScrollTrigger.create({
+        trigger: unifiedEnvelopeRef.current,
+        start: "top 60%",
+        once: true,
+        onEnter: () => {
+          playEnvelopeEmergence();
+        },
+      });
+
+      return () => trigger.kill();
+    }
+  }, []);
+
+  return (
+    <div
+      ref={unifiedEnvelopeRef}
+      className="relative flex items-center justify-center w-full select-none mt-28 sm:mt-36 md:mt-44"
+      style={{
+        transformStyle: "preserve-3d",
+        zIndex: 30,
+      }}
+    >
+      {/* 26 SCATTER CARDS AROUND ENVELOPE (Layered behind the envelope and document) */}
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
+        {SCATTER_SLOTS.map((slot, i) => {
+          const card = PRODUCT_CARDS[i % PRODUCT_CARDS.length];
+          return (
+            <div
+              key={`scatter-card-${i}`}
+              className="absolute pointer-events-none rounded-[16px] overflow-hidden select-none hidden md:block"
+              style={{
+                left: `calc(50% + ${slot.x * 2.2}px)`,
+                top: `calc(50% + ${slot.y * 1.5}px)`,
+                transform: `translate(-50%, -50%) rotateZ(${slot.rotZ}deg) rotateX(${slot.rotX}deg) rotateY(${slot.rotY}deg) scale(${slot.scale * 0.72})`,
+                width: "180px",
+                height: "270px",
+                zIndex: slot.z,
+                backdropFilter: "blur(14px)",
+                WebkitBackdropFilter: "blur(14px)",
+                backgroundColor: "rgba(245, 240, 230, 0.75)",
+                border: "1px solid rgba(255, 255, 255, 0.8)",
+                boxShadow: "0 14px 32px -8px rgba(16, 44, 28, 0.10)",
+                opacity: 0.70,
+              }}
+            >
+              <div className="p-4 flex flex-col justify-between h-full">
+                <span className="font-mono text-[9px] text-neutral-400">UNIFOLIO // {card.num}</span>
+                <span className="font-sans font-bold text-[11px] tracking-wider text-neutral-600 uppercase">{card.title}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div
+        className="relative w-[94vw] max-w-[760px] sm:max-w-[840px] md:max-w-[900px] lg:max-w-[960px] h-[360px] sm:h-[440px] md:h-[490px] lg:h-[540px] max-h-[62vh] rounded-[16px] sm:rounded-[22px]"
+        style={{
+          zIndex: 15,
+          perspective: "1400px",
+          transformStyle: "preserve-3d",
+          boxShadow:
+            "0 40px 90px -15px rgba(0, 0, 0, 0.80), 0 20px 40px -8px rgba(0, 0, 0, 0.60)",
+        }}
+      >
+        {/* LAYER 1 (z-1): Envelope Backplate / Back Wall */}
+        <div
+          className="absolute inset-0 rounded-[16px] sm:rounded-[22px] overflow-hidden"
+          style={{
+            zIndex: 1,
+            background:
+              "linear-gradient(145deg, rgba(8, 32, 21, 0.98) 0%, rgba(4, 20, 13, 0.99) 55%, rgba(1, 10, 6, 1.0) 100%)",
+            border: "1px solid rgba(255, 255, 255, 0.16)",
+          }}
+        >
+          {/* Deep Cavity Shadow & Ambient Glow */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-50"
+            style={{
+              background:
+                "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(34, 197, 94, 0.15), transparent 70%)",
+            }}
+          />
+          {/* Interior Top Shadow */}
+          <div
+            className="absolute inset-x-0 top-0 h-28 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, transparent 100%)",
+            }}
+          />
+        </div>
+
+        {/* LAYER 2 (z-10 -> z-35): Editorial Document (Emerges from inside envelope cavity) */}
+        {/* Cavity clipping wrapper: strictly occludes document within envelope bottom and sides, open at top */}
+        <div
+          ref={docCavityWrapperRef}
+          className="absolute inset-0 pointer-events-auto"
+          style={{
+            zIndex: 30,
+            visibility: "visible",
+            opacity: 1,
+          }}
+        >
+          <div
+            ref={philosophyDocRef}
+            className="absolute left-1/2 -translate-x-1/2 pointer-events-auto select-auto"
+            style={{
+              top: "-280px",
+              opacity: 1,
+              visibility: "visible",
+              transformOrigin: "50% 0%",
+              zIndex: 35,
+            }}
+          >
+          <div
+            ref={docPaperSheetRef}
+            className="relative w-[95vw] max-w-[620px] sm:max-w-[700px] md:max-w-[780px] lg:max-w-[860px] xl:max-w-[920px]"
+            style={{
+              height: "560px",
+              perspective: "2500px",
+              transformStyle: "preserve-3d",
+            }}
+          >
+            {/* 3D Double-Sided Flipping Paper Sheet */}
+            <div
+              ref={docFlipperRef}
+              className="relative w-full h-full"
+              style={{
+                transformStyle: "preserve-3d",
+                transformOrigin: "50% 50%",
+                transform: activePage === 2 ? "rotateY(-180deg)" : "rotateY(0deg)",
+                transition: "transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)",
+              }}
+            >
                           {/* ============================================================ */}
                           {/* FRONT FACE: PAGE 1 (First Paragraph Only)                    */}
                           {/* ============================================================ */}
@@ -950,15 +1250,13 @@ export function AboutEnvelopeSlot({
                             {/* Printed Ink Copy: FIRST PARAGRAPH (Large, Bold, Editorial, Premium) */}
                             <div
                               ref={docInkCopyRef}
-                              className="relative z-10 flex-1 flex flex-col justify-center select-text pointer-events-auto will-change-[clip-path,opacity,filter] py-4 sm:py-6"
+                              className="relative z-10 flex-1 flex flex-col justify-center select-text pointer-events-auto will-change-[clip-path,opacity,filter] py-2 sm:py-4"
                               style={{
-                                clipPath: "inset(0 0 100% 0)",
-                                WebkitClipPath: "inset(0 0 100% 0)",
-                                opacity: 0,
+                                opacity: 1,
                               }}
                             >
                               {/* Dominant Editorial Opening Statement - Unified Single Paragraph */}
-                              <h2 className="font-serif font-bold text-[28px] sm:text-[36px] md:text-[44px] lg:text-[50px] xl:text-[54px] text-neutral-950 leading-[1.16] tracking-tight text-left">
+                              <h2 className="font-serif font-bold text-[24px] sm:text-[30px] md:text-[36px] lg:text-[40px] text-neutral-950 leading-[1.2] tracking-tight text-left">
                                 In most families, someone ends up in charge of the money.
                                 <br />
                                 Not because they trained for it.{" "}
@@ -966,7 +1264,7 @@ export function AboutEnvelopeSlot({
                               </h2>
 
                               {/* Supporting sentence (Small text) */}
-                              <p className="mt-8 sm:mt-10 md:mt-12 font-serif font-semibold text-[18px] sm:text-[22px] md:text-[25px] lg:text-[28px] text-neutral-800 leading-[1.4] max-w-[720px] text-left">
+                              <p className="mt-5 sm:mt-7 font-serif font-semibold text-[15px] sm:text-[17px] md:text-[19px] lg:text-[21px] text-neutral-800 leading-[1.4] max-w-[720px] text-left">
                                 Their financial data lives across a dozen apps and statements. There&apos;s a gap between seeing it all and actually understanding it.
                               </p>
                             </div>
@@ -976,9 +1274,16 @@ export function AboutEnvelopeSlot({
                               <span className="font-mono text-[11px] sm:text-[12px] font-bold tracking-[0.2em] uppercase text-neutral-700">
                                 01 / 02
                               </span>
-                              <span className="font-sans text-[10.5px] sm:text-[12px] font-bold tracking-[0.16em] uppercase flex items-center gap-1.5 text-neutral-900">
-                                SCROLL DOWN TO TURN PAGE &rarr;
-                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActivePage(2);
+                                }}
+                                className="font-sans text-[10.5px] sm:text-[12px] font-bold tracking-[0.16em] uppercase flex items-center gap-1.5 text-neutral-900 hover:text-[#22C55E] cursor-pointer transition-colors"
+                              >
+                                TURN TO PAGE 2 &rarr;
+                              </button>
                             </div>
                           </div>
 
@@ -1055,27 +1360,27 @@ export function AboutEnvelopeSlot({
                             <div className="w-full h-[1px] bg-neutral-300/80 my-3 sm:my-5" />
 
                             {/* Printed Ink Copy: SECOND PARAGRAPH (Large, Bold, Premium, Editorial) */}
-                            <div className="relative z-10 flex-1 flex flex-col justify-start select-text pointer-events-auto pt-3 sm:pt-5 md:pt-7">
+                            <div className="relative z-10 flex-1 flex flex-col justify-start select-text pointer-events-auto pt-2 sm:pt-4">
                               {/* Dominant Large Editorial Statement */}
-                              <h2 className="font-serif font-bold text-[32px] sm:text-[42px] md:text-[50px] lg:text-[58px] text-neutral-950 leading-[1.08] tracking-tight text-left">
+                              <h2 className="font-serif font-bold text-[26px] sm:text-[32px] md:text-[38px] lg:text-[44px] text-neutral-950 leading-[1.12] tracking-tight text-left">
                                 Unifolio exists<br />
                                 to close that gap.
                               </h2>
 
-                              {/* Supporting sentence beneath it (Enlarged size, positioned further down) */}
-                              <p className="mt-10 sm:mt-14 md:mt-18 lg:mt-20 font-serif font-semibold text-[19px] sm:text-[23px] md:text-[26px] lg:text-[28px] text-neutral-900 leading-[1.38] max-w-[700px] text-left">
+                              {/* Supporting sentence beneath it */}
+                              <p className="mt-4 sm:mt-6 font-serif font-semibold text-[15px] sm:text-[17px] md:text-[19px] lg:text-[21px] text-neutral-900 leading-[1.38] max-w-[700px] text-left">
                                 The same clarity a wealth manager gives their wealthiest clients, now available to anyone. Whether they hold ₹5 lakh or ₹5 crore. Whether they&apos;ve studied finance or never touched a balance sheet.
                               </p>
 
-                              {/* Thin hairline divider rule between supporting sentence and closing statement (Centered with equal spacing) */}
-                              <div className="w-full h-[1px] bg-neutral-300/70 my-5 sm:my-7 md:my-9 lg:my-10" />
+                              {/* Thin hairline divider rule between supporting sentence and closing statement */}
+                              <div className="w-full h-[1px] bg-neutral-300/70 my-3 sm:my-5" />
 
-                              {/* Closing Statement (Evenly spaced) */}
-                              <div className="space-y-1.5 sm:space-y-2 text-left">
-                                <p className="font-serif font-semibold text-[20px] sm:text-[25px] md:text-[29px] text-neutral-950 leading-snug">
+                              {/* Closing Statement */}
+                              <div className="space-y-1 sm:space-y-1.5 text-left">
+                                <p className="font-serif font-semibold text-[16px] sm:text-[19px] md:text-[22px] text-neutral-950 leading-snug">
                                   Seeing your money isn&apos;t the same as
                                 </p>
-                                <p className="font-serif font-bold text-[32px] sm:text-[40px] md:text-[48px] lg:text-[54px] text-[#22C55E] tracking-tight leading-[1.08]">
+                                <p className="font-serif font-bold text-[24px] sm:text-[30px] md:text-[36px] lg:text-[40px] text-[#22C55E] tracking-tight leading-[1.1]">
                                   understanding it.
                                 </p>
                               </div>
@@ -1086,7 +1391,16 @@ export function AboutEnvelopeSlot({
                               <span className="font-mono text-[11px] sm:text-[12px] font-bold tracking-[0.2em] uppercase text-neutral-700">
                                 02 / 02
                               </span>
-                              <span />
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActivePage(1);
+                                }}
+                                className="font-sans text-[10.5px] sm:text-[12px] font-bold tracking-[0.16em] uppercase flex items-center gap-1.5 text-neutral-900 hover:text-[#22C55E] cursor-pointer transition-colors"
+                              >
+                                &larr; BACK TO PAGE 1
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -1172,8 +1486,7 @@ export function AboutEnvelopeSlot({
                       />
                     </div>
 
-                    {/* LAYER 4 (z-30): 3D Hinged Top Flap with Seal Clasp */}
-                    {/* Hinged exactly at the top fold line (top: 0, transformOrigin: "50% 0%") */}
+                    {/* LAYER 4: Open Top Flap */}
                     <div
                       ref={envelopeTopFlapRef}
                       className="absolute inset-x-0 top-0 pointer-events-none will-change-transform"
@@ -1181,6 +1494,7 @@ export function AboutEnvelopeSlot({
                         zIndex: 30,
                         height: "54%",
                         transformOrigin: "50% 0%",
+                        transform: "rotateX(0deg)",
                         transformStyle: "preserve-3d",
                       }}
                     >
@@ -1204,7 +1518,7 @@ export function AboutEnvelopeSlot({
                           </linearGradient>
                         </defs>
 
-                        {/* Closed Top Triangular Flap Polygon */}
+                        {/* Open Top Triangular Flap Polygon */}
                         <polygon
                           points="0,0 960,0 480,295"
                           fill="url(#flapGradient)"
@@ -1242,6 +1556,5 @@ export function AboutEnvelopeSlot({
                     </div>
                   </div>
                 </div>
-                </>
   );
 }
