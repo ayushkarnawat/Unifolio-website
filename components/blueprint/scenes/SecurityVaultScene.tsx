@@ -4682,19 +4682,8 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
       };
 
       const triggers: ScrollTrigger[] = [];
-
-      // Only one sub-state's text is ever visible at a time. Discrete per-state
-      // ScrollTrigger onEnter/onLeave callbacks are not reliable here: a fast
-      // real scroll (fast wheel flick, trackpad momentum, scrollbar drag) can
-      // jump clean over one state's entire active band in a single tick,
-      // skipping its onLeave and leaving it stuck visible. Instead, one trigger
-      // spans the whole stack and recomputes — on every scroll update — which
-      // single state is closest to the viewport's focus line, forcing every
-      // other state hidden. This is self-correcting regardless of scroll speed.
-      securityStateRefs.current.forEach((el) => {
-        if (!el) return;
-        gsap.set(el, { autoAlpha: 0 });
-      });
+      let rafId: number | null = null;
+      let cancelled = false;
 
       const showState = (el: HTMLDivElement) => {
         gsap.to(el, { autoAlpha: 1, duration: 0.4, ease: "power2.out", overwrite: true });
@@ -4750,10 +4739,39 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
         activeIdx = -1;
       };
 
-      const firstEl = securityStateRefs.current.find(Boolean) as HTMLDivElement | undefined;
-      const lastEl = [...securityStateRefs.current].reverse().find(Boolean) as HTMLDivElement | undefined;
+      // Only one sub-state's text is ever visible at a time. Discrete per-state
+      // ScrollTrigger onEnter/onLeave callbacks are not reliable here: a fast
+      // real scroll (fast wheel flick, trackpad momentum, scrollbar drag) can
+      // jump clean over one state's entire active band in a single tick,
+      // skipping its onLeave and leaving it stuck visible. Instead, one trigger
+      // spans the whole stack and recomputes — on every scroll update — which
+      // single state is closest to the viewport's focus line, forcing every
+      // other state hidden. This is self-correcting regardless of scroll speed.
+      //
+      // `securityStateRefs` is attached by the sibling `SecurityStageSlot`
+      // (mounted later in the tree). In production builds (no StrictMode
+      // double-effect-invoke to paper over it), this effect can run on a
+      // commit where those refs haven't attached yet, so the one-shot `[]`
+      // mount effect must retry across frames rather than silently setting up
+      // nothing forever.
+      const trySetup = (attemptsLeft: number) => {
+        if (cancelled) return;
 
-      if (firstEl && lastEl) {
+        const firstEl = securityStateRefs.current.find(Boolean) as HTMLDivElement | undefined;
+        const lastEl = [...securityStateRefs.current].reverse().find(Boolean) as HTMLDivElement | undefined;
+
+        if (!firstEl || !lastEl) {
+          if (attemptsLeft > 0) {
+            rafId = requestAnimationFrame(() => trySetup(attemptsLeft - 1));
+          }
+          return;
+        }
+
+        securityStateRefs.current.forEach((el) => {
+          if (!el) return;
+          gsap.set(el, { autoAlpha: 0 });
+        });
+
         const st = ScrollTrigger.create({
           trigger: firstEl,
           start: "top bottom",
@@ -4768,9 +4786,13 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
           onLeaveBack: hideAll,
         });
         triggers.push(st);
-      }
+      };
+
+      trySetup(60);
 
       return () => {
+        cancelled = true;
+        if (rafId !== null) cancelAnimationFrame(rafId);
         triggers.forEach((st) => st.kill());
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
