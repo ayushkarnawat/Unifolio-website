@@ -12,6 +12,7 @@ import { getComposedViewport } from "@/lib/viewport";
 import { computeDockGeometry, type BentoGeometry } from "@/lib/dockLayout";
 import { SafeVault3D, type SafeVault3DRef } from "@/components/blueprint/SafeVault3D";
 import type { SceneEngine } from "../hero-engine/useSceneEngine";
+import { releaseNativeScroll } from "../hero-engine/sceneTransitions";
 import {
   CINEMATIC_TIMESCALE,
   PRODUCT_CARDS,
