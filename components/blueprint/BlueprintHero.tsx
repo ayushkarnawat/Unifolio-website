@@ -491,9 +491,9 @@ export function BlueprintHero() {
   const onProductToHeroCompletedRef = useRef<(() => void) | null>(null);
   const heroSceneRef = useRef<HeroSceneHandle>(null);
   const heroSharedRef = useRef<HeroSceneShared>({
-    dispatchActiveSection: () => {},
+    dispatchActiveSection: () => { },
     portalState: { radius: 175, x: 62.87, y: 49.12 },
-    applyPortalClip: () => {},
+    applyPortalClip: () => { },
   });
   const productSceneRef = useRef<ProductBentoSceneHandle>(null);
   const productSharedRef = useRef<ProductBentoSceneShared>({
@@ -507,7 +507,7 @@ export function BlueprintHero() {
       tileLefts: [0, 0, 0, 0, 0],
       tileTops: [0, 0, 0, 0, 0],
     }),
-    dispatchActiveSection: () => {},
+    dispatchActiveSection: () => { },
   });
   const securitySceneRef = useRef<SecurityVaultSceneHandle>(null);
   const securitySharedRef = useRef<SecurityVaultSceneShared>({
@@ -521,15 +521,15 @@ export function BlueprintHero() {
       tileLefts: [0, 0, 0, 0, 0],
       tileTops: [0, 0, 0, 0, 0],
     }),
-    dispatchActiveSection: () => {},
+    dispatchActiveSection: () => { },
     computeEnvelopeParams: () => ({ isDesk: false, isTab: false, envScale: 1, scatterSlots: [] }),
-    jumpToAboutState: () => {},
+    jumpToAboutState: () => { },
   });
   const aboutSceneRef = useRef<AboutSceneHandle>(null);
   const aboutSharedRef = useRef<AboutSceneShared>({
-    dispatchActiveSection: () => {},
-    consolidateRingToStack: () => {},
-    applyPortalClip: () => {},
+    dispatchActiveSection: () => { },
+    consolidateRingToStack: () => { },
+    applyPortalClip: () => { },
     maxRadiusPx: 2500,
   });
   const onProductToRingCompletedRef = useRef<(() => void) | null>(null);
@@ -1574,24 +1574,26 @@ export function BlueprintHero() {
           </div>
         </section>
 
-        {/* SECTION 4: ABOUT */}
+        {/* SECTION 4: ABOUT (Option 1: Single-Viewport In-Place Editorial Morph) */}
         <section
           id="about"
-          className="relative w-full bg-[#FAF8F5] pt-16 sm:pt-20 lg:pt-24 pb-32 sm:pb-40 px-4 sm:px-6 lg:px-8 select-none overflow-hidden"
+          className="relative w-full bg-[#FAF8F5] h-[220vh] select-none"
         >
-          <AboutBackgroundSlot aboutContentRef={aboutContentRef} />
+          <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between pt-8 sm:pt-10 pb-8 sm:pb-10 px-4 sm:px-6 lg:px-8">
+            <AboutBackgroundSlot aboutContentRef={aboutContentRef} />
 
-          <div className="relative z-10 max-w-6xl mx-auto flex flex-col">
-            <AboutEnvelopeSlot
-              unifiedEnvelopeRef={unifiedEnvelopeRef}
-              docCavityWrapperRef={docCavityWrapperRef}
-              philosophyDocRef={philosophyDocRef}
-              docPaperSheetRef={docPaperSheetRef}
-              docFlipperRef={docFlipperRef}
-              docInkCopyRef={docInkCopyRef}
-              envelopeTopFlapRef={envelopeTopFlapRef}
-              envelopeSealRef={envelopeSealRef}
-            />
+            <div className="relative z-10 max-w-5xl xl:max-w-6xl mx-auto w-full h-full flex flex-col justify-between">
+              <AboutEnvelopeSlot
+                unifiedEnvelopeRef={unifiedEnvelopeRef}
+                docCavityWrapperRef={docCavityWrapperRef}
+                philosophyDocRef={philosophyDocRef}
+                docPaperSheetRef={docPaperSheetRef}
+                docFlipperRef={docFlipperRef}
+                docInkCopyRef={docInkCopyRef}
+                envelopeTopFlapRef={envelopeTopFlapRef}
+                envelopeSealRef={envelopeSealRef}
+              />
+            </div>
           </div>
         </section>
       </div>
