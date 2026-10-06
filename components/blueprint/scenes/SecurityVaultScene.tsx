@@ -4693,7 +4693,13 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
       };
 
       const computeActiveIndex = () => {
-        const focusY = window.innerHeight * 0.5;
+        // Anchor the crossfade focus line on the vault's own rendered center
+        // (not a hardcoded viewport fraction) so the active text's entry
+        // position lines up with the bolt regardless of viewport height or
+        // the vault's exact dock offset. Read-only: nothing here writes to
+        // safeContainerRef, so there's no feedback loop with its layout.
+        const vaultRect = safeContainerRef.current?.getBoundingClientRect();
+        const focusY = vaultRect ? vaultRect.top + vaultRect.height / 2 : window.innerHeight * 0.5;
         let bestIdx = 0;
         let bestDist = Infinity;
         securityStateRefs.current.forEach((el, idx) => {
@@ -4928,7 +4934,7 @@ export function SecurityStageSlot(props: SecurityStageSlotProps) {
   return (
     <div
       ref={securityStageRef}
-      className="relative w-full flex flex-col gap-24 sm:gap-32 lg:gap-36 select-none"
+      className="relative w-full flex flex-col gap-24 sm:gap-32 lg:gap-8 lg:pb-[28rem] select-none"
     >
       {SECURITY_STATES.map((item, idx) => (
         <div

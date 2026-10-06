@@ -1495,7 +1495,7 @@ export function BlueprintHero() {
             </div>
 
             {/* Right Column: Stacked Narrative Sub-states */}
-            <div className="w-full lg:w-7/12 flex flex-col justify-start lg:pt-40">
+            <div className="w-full lg:w-7/12 flex flex-col justify-start">
               <SecurityStageSlot
                 securityStageRef={securityStageRef}
                 securityStateRefs={securityStateRefs}
