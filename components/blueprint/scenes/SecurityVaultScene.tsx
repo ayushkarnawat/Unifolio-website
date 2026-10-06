@@ -4699,7 +4699,11 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
         // the vault's exact dock offset. Read-only: nothing here writes to
         // safeContainerRef, so there's no feedback loop with its layout.
         const vaultRect = safeContainerRef.current?.getBoundingClientRect();
-        const focusY = vaultRect ? vaultRect.top + vaultRect.height / 2 : window.innerHeight * 0.5;
+        const vaultIsOnScreen =
+          vaultRect && vaultRect.top > -50 && vaultRect.top < window.innerHeight;
+        const focusY = vaultIsOnScreen
+          ? vaultRect.top + vaultRect.height / 2
+          : window.innerHeight * 0.5;
         let bestIdx = 0;
         let bestDist = Infinity;
         securityStateRefs.current.forEach((el, idx) => {
