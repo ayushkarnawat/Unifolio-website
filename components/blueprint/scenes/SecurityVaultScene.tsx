@@ -4692,34 +4692,84 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
         gsap.to(el, { autoAlpha: 0, duration: 0.3, ease: "power2.in", overwrite: true });
       };
 
+      // Must match the `lg:top-36` Tailwind offset shared by the vault
+      // wrapper and every state block below (9rem, 16px/rem).
+      const STICKY_TOP_PX = 144;
+
+      // Before the vault's sticky parent actually locks into its pinned
+      // position, the vault is still sliding into view in normal document
+      // flow — its rect.top changes on every scroll tick, just like any
+      // other in-flow element. Once truly stuck, rect.top stops changing no
+      // matter how far you keep scrolling, which is detected by comparing
+      // consecutive reads rather than against an absolute offset (the inner
+      // element's rect.top is the sticky offset plus its own padding, so it
+      // doesn't land on STICKY_TOP_PX exactly). This comparison must be
+      // redone fresh on every call, not latched — a sticky element un-sticks
+      // going either direction, and a "once stuck, stays stuck" bit would
+      // misfire near both the top and bottom boundaries of the section.
+      let prevVaultTop: number | null = null;
+      let activeIdx = -1;
+
       const computeActiveIndex = () => {
-        // Anchor the crossfade focus line on the vault's own rendered center
-        // (not a hardcoded viewport fraction) so the active text's entry
-        // position lines up with the bolt regardless of viewport height or
-        // the vault's exact dock offset. Read-only: nothing here writes to
-        // safeContainerRef, so there's no feedback loop with its layout.
+        // Each state block shares the vault's own sticky offset, so once a
+        // block is actually locked into its sticky position its rect.top
+        // lands on STICKY_TOP_PX exactly. Because sibling sticky elements
+        // sharing one parent only release when the *parent's* bottom edge
+        // forces them out (not their own box's bottom), several blocks can
+        // be simultaneously "stuck" at once as scrolling progresses — among
+        // those, the highest index is the one that engaged most recently,
+        // so that's the one to show. Before the vault itself locks in
+        // (still sliding through normal flow, e.g. the section is only just
+        // peeking into view) or after it has released (scrolled fully past,
+        // whether exiting top or bottom), fall back to nearest-center
+        // against the viewport midpoint so the earliest/latest states still
+        // resolve sensibly.
         const vaultRect = safeContainerRef.current?.getBoundingClientRect();
-        const vaultIsOnScreen =
-          vaultRect && vaultRect.top > -50 && vaultRect.top < window.innerHeight;
-        const focusY = vaultIsOnScreen
-          ? vaultRect.top + vaultRect.height / 2
-          : window.innerHeight * 0.5;
-        let bestIdx = 0;
-        let bestDist = Infinity;
+        const vaultStuck =
+          vaultRect !== undefined &&
+          vaultRect !== null &&
+          prevVaultTop !== null &&
+          Math.abs(vaultRect.top - prevVaultTop) < 0.5;
+        if (vaultRect) prevVaultTop = vaultRect.top;
+        if (!vaultStuck) {
+          // Once a state has actually engaged, "not stuck" just means the
+          // vault is mid-release at the very top or bottom boundary of the
+          // section — every block is sliding away together and none of them
+          // is meaningfully "nearest center" anymore. Hold whatever was last
+          // shown; the real onLeave/onLeaveBack (hideAll) governs when it
+          // actually disappears. Nearest-center below is only for the very
+          // first engagement, before anything has been shown yet.
+          if (activeIdx !== -1) return activeIdx;
+          const focusY = window.innerHeight * 0.5;
+          let bestIdx = 0;
+          let bestDist = Infinity;
+          securityStateRefs.current.forEach((el, idx) => {
+            if (!el) return;
+            const rect = el.getBoundingClientRect();
+            const dist = Math.abs(rect.top + rect.height / 2 - focusY);
+            if (dist < bestDist) {
+              bestDist = dist;
+              bestIdx = idx;
+            }
+          });
+          return bestIdx;
+        }
+        // Once the vault is stuck, "none currently stuck" only happens past
+        // the last state's own dwell, as everything scrolls away together —
+        // default to the last state, not `activeIdx` (hideAll resets that to
+        // -1, and relying on it falls back to index 0 if the trigger is ever
+        // re-evaluated near the boundary, e.g. after a late layout shift
+        // triggers GSAP's own internal refresh).
+        let bestIdx = securityStateRefs.current.length - 1;
         securityStateRefs.current.forEach((el, idx) => {
           if (!el) return;
           const rect = el.getBoundingClientRect();
-          const center = rect.top + rect.height / 2;
-          const dist = Math.abs(center - focusY);
-          if (dist < bestDist) {
-            bestDist = dist;
+          if (Math.abs(rect.top - STICKY_TOP_PX) < 1) {
             bestIdx = idx;
           }
         });
         return bestIdx;
       };
-
-      let activeIdx = -1;
 
       const setActive = (idx: number, direction: 1 | -1) => {
         if (idx === activeIdx) return;
@@ -4785,7 +4835,11 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
         const st = ScrollTrigger.create({
           trigger: firstEl,
           start: "top bottom",
-          endTrigger: lastEl,
+          // Ends at the whole stack's own bottom (not just the last state
+          // block's) so the trailing spacer after it — added to give the
+          // last state a real sticky dwell, see SecurityStageSlot below —
+          // is included in the active range instead of being cut off early.
+          endTrigger: securityStageRef.current || lastEl,
           end: "bottom top",
           onUpdate: (self) => {
             setActive(computeActiveIndex(), self.direction >= 0 ? 1 : -1);
@@ -4938,7 +4992,7 @@ export function SecurityStageSlot(props: SecurityStageSlotProps) {
   return (
     <div
       ref={securityStageRef}
-      className="relative w-full flex flex-col gap-24 sm:gap-32 lg:gap-8 lg:pb-[28rem] select-none"
+      className="relative w-full flex flex-col gap-24 sm:gap-32 lg:gap-0 select-none"
     >
       {SECURITY_STATES.map((item, idx) => (
         <div
@@ -4946,7 +5000,7 @@ export function SecurityStageSlot(props: SecurityStageSlotProps) {
           ref={(el) => {
             securityStateRefs.current[idx] = el;
           }}
-          className="relative w-full max-w-xl text-left"
+          className="relative w-full max-w-xl text-left lg:sticky lg:top-36 lg:min-h-[480px] lg:flex lg:items-center"
         >
                     {item.type === "hero" ? (
                       <div
@@ -5533,6 +5587,13 @@ export function SecurityStageSlot(props: SecurityStageSlotProps) {
                     )}
         </div>
       ))}
+      {/* Trailing spacer, not part of the last state's own box: in a stack
+          of equal-offset sticky siblings sharing one parent, a sticky child
+          only gets a real "stuck" dwell window while the shared parent still
+          has room below it — the last child's own box ends exactly where the
+          parent does, leaving it none. This sibling extends the parent past
+          the last state's box so it gets a comparable dwell before release. */}
+      <div aria-hidden="true" className="lg:h-[32rem]" />
     </div>
   );
 }
