@@ -1531,16 +1531,57 @@ export function BlueprintHero() {
               />
             </div>
           </div>
+
+          {/* Sparse transition fragments bridging Security into About */}
+          <div className="absolute inset-x-0 bottom-2 pointer-events-none overflow-hidden select-none hidden md:block h-32">
+            <div className="max-w-6xl mx-auto h-full relative">
+              <div
+                className="absolute left-[6%] bottom-4 rounded-[6px] border border-neutral-300/40 bg-[#F5F1E8]/70 p-2 shadow-[0_1px_2px_rgba(28,36,30,0.02)] -rotate-6 scale-90 opacity-20 pointer-events-none"
+                style={{ width: "140px" }}
+              >
+                <div className="flex items-center justify-between border-b border-neutral-300/30 pb-0.5 mb-1">
+                  <span className="font-mono text-[7.5px] font-bold text-neutral-400 uppercase">REGULATOR</span>
+                  <span className="font-mono text-[7.5px] text-neutral-400">RBI // AA</span>
+                </div>
+                <p className="font-sans text-[9.5px] font-semibold text-neutral-600 truncate">Account Aggregator</p>
+                <p className="font-mono text-[7.5px] text-neutral-400 mt-0.5 truncate">Consent Verified</p>
+              </div>
+
+              <div
+                className="absolute right-[10%] bottom-8 rounded-[6px] border border-neutral-300/40 bg-[#F5F1E8]/70 p-2 shadow-[0_1px_2px_rgba(28,36,30,0.02)] rotate-4 scale-85 opacity-22 pointer-events-none"
+                style={{ width: "135px" }}
+              >
+                <div className="flex items-center justify-between border-b border-neutral-300/30 pb-0.5 mb-1">
+                  <span className="font-mono text-[7.5px] font-bold text-neutral-400 uppercase">MUTUAL FUNDS</span>
+                  <span className="font-mono text-[7.5px] text-neutral-400">CAS // CAMS</span>
+                </div>
+                <p className="font-sans text-[9.5px] font-semibold text-neutral-600 truncate">Folio Statements</p>
+                <p className="font-mono text-[7.5px] text-neutral-400 mt-0.5 truncate">Encrypted Transit</p>
+              </div>
+
+              <div
+                className="absolute left-[36%] bottom-2 rounded-[6px] border border-neutral-300/30 bg-[#F5F1E8]/60 p-2 shadow-[0_1px_2px_rgba(28,36,30,0.02)] rotate-2 scale-80 opacity-18 pointer-events-none"
+                style={{ width: "130px" }}
+              >
+                <div className="flex items-center justify-between border-b border-neutral-300/30 pb-0.5 mb-1">
+                  <span className="font-mono text-[7.5px] font-bold text-neutral-400 uppercase">EQUITY</span>
+                  <span className="font-mono text-[7.5px] text-neutral-400">CDSL // DEMAT</span>
+                </div>
+                <p className="font-sans text-[9.5px] font-semibold text-neutral-600 truncate">Holding Summary</p>
+                <p className="font-mono text-[7.5px] text-neutral-400 mt-0.5 truncate">Read-Only Link</p>
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* SECTION 4: ABOUT */}
         <section
           id="about"
-          className="relative w-full bg-[#FAF8F5] pt-36 sm:pt-44 lg:pt-52 pb-32 sm:pb-40 px-4 sm:px-6 lg:px-8 select-none overflow-hidden"
+          className="relative w-full bg-[#FAF8F5] pt-16 sm:pt-20 lg:pt-24 pb-32 sm:pb-40 px-4 sm:px-6 lg:px-8 select-none overflow-hidden"
         >
           <AboutBackgroundSlot aboutContentRef={aboutContentRef} />
 
-          <div className="relative z-10 max-w-6xl mx-auto flex flex-col items-center">
+          <div className="relative z-10 max-w-6xl mx-auto flex flex-col">
             <AboutEnvelopeSlot
               unifiedEnvelopeRef={unifiedEnvelopeRef}
               docCavityWrapperRef={docCavityWrapperRef}
