@@ -462,49 +462,49 @@ export function AboutEnvelopeSlot({
         {/* BEAT 1: The Problem (Active on initial entry) */}
         <div
           ref={beat1Ref}
-          className="absolute inset-x-0 flex flex-col justify-center max-w-3xl lg:mr-auto pl-0 lg:pl-2 text-left z-10"
+          className="absolute inset-x-0 flex flex-col justify-center max-w-3xl lg:max-w-4xl lg:mr-auto pl-0 lg:pl-2 text-left z-10"
         >
           <span className="font-mono text-[11px] sm:text-xs font-bold tracking-[0.25em] uppercase text-neutral-400 block mb-3 sm:mb-4">
             01 / The Problem
           </span>
 
-          <h2 className="font-serif font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-[54px] text-neutral-950 leading-[1.12] tracking-[-0.025em]">
+          <h2 className="font-serif font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-[54px] xl:text-[60px] text-neutral-950 leading-[1.12] tracking-[-0.025em]">
             In most families, someone ends up in charge of the money.
-            <span className="block mt-2 sm:mt-3 font-normal text-neutral-700">
+            <span className="block mt-3 sm:mt-4 font-normal text-neutral-700">
               Not because they trained for it.{" "}
               <span className="font-serif italic font-medium text-[#22C55E] tracking-normal">
                 Because someone has to.
               </span>
             </span>
           </h2>
-
-          <div className="mt-6 sm:mt-8 pl-5 sm:pl-6 border-l-2 border-neutral-300/80 max-w-xl">
-            <p className="font-sans font-normal text-base sm:text-lg md:text-xl text-neutral-600 leading-relaxed">
-              Their financial data lives across a dozen apps and statements. There&apos;s a gap between seeing it all and actually understanding it.
-            </p>
-          </div>
         </div>
 
         {/* BEAT 2: The Resolution (Reveals in place as user scrolls) */}
         <div
           ref={beat2Ref}
-          className="absolute inset-x-0 flex flex-col justify-center max-w-4xl lg:ml-auto pr-0 lg:pr-2 text-left z-10"
+          className="absolute inset-x-0 flex flex-col justify-center max-w-3xl lg:max-w-4xl lg:ml-auto pr-0 lg:pr-2 text-left z-10"
           style={{ opacity: 0, pointerEvents: "none" }}
         >
           <span className="font-mono text-[11px] sm:text-xs font-bold tracking-[0.25em] uppercase text-[#22C55E] block mb-3 sm:mb-4">
             02 / The Resolution
           </span>
 
-          <h3 className="font-serif font-black text-3xl sm:text-4xl md:text-5xl lg:text-[60px] xl:text-[66px] text-neutral-950 leading-[1.04] tracking-[-0.03em]">
-            Unifolio exists <br className="hidden sm:inline" />
-            <span className="font-serif italic font-light text-neutral-800">
-              to close{" "}
+          <h3 className="font-serif font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-[54px] xl:text-[60px] text-neutral-950 leading-[1.12] tracking-[-0.025em]">
+            Unifolio brings the whole family&apos;s finances <br className="hidden sm:inline" />
+            into one place,{" "}
+            <span className="block mt-3 sm:mt-4 font-normal text-neutral-800">
+              and helps you{" "}
+              <span className="font-serif italic font-light text-neutral-900">
+                actually{" "}
+              </span>
+              <span className="font-serif italic font-semibold text-[#22C55E] tracking-normal">
+                understand them.
+              </span>
             </span>
-            that gap.
           </h3>
 
-          {/* Connective Green Swoosh Flourish — Cleanly positioned below "that gap.", 100% collision-free */}
-          <div className="relative w-48 sm:w-64 h-6 sm:h-7 mt-3 mb-2 pointer-events-none overflow-visible">
+          {/* Connective Green Swoosh Flourish — Cleanly positioned below "actually understand them.", 100% collision-free */}
+          <div className="relative w-56 sm:w-72 h-6 sm:h-7 mt-3 mb-2 pointer-events-none overflow-visible">
             <svg
               viewBox="0 0 260 26"
               fill="none"
@@ -520,20 +520,6 @@ export function AboutEnvelopeSlot({
               />
               <circle cx="252" cy="6" r="3.5" fill="#22C55E" />
             </svg>
-          </div>
-
-          <p className="mt-3 sm:mt-4 font-sans font-normal text-base sm:text-lg md:text-xl text-neutral-700 leading-snug max-w-2xl">
-            The same clarity a wealth manager gives their wealthiest clients, now available to anyone. Whether they hold ₹5 lakh or ₹5 crore. Whether they&apos;ve studied finance or never touched a balance sheet.
-          </p>
-
-          {/* Closing Statement */}
-          <div className="mt-8 sm:mt-10 pt-5 sm:pt-6 border-t border-neutral-300/70 max-w-2xl">
-            <p className="font-sans text-base sm:text-lg md:text-xl text-neutral-800 font-medium">
-              Seeing your money isn&apos;t the same as{" "}
-              <span className="block sm:inline font-serif italic font-extrabold text-2xl sm:text-3xl md:text-4xl text-[#22C55E] tracking-tight">
-                understanding it.
-              </span>
-            </p>
           </div>
         </div>
       </div>
