@@ -394,7 +394,13 @@ export function BlueprintNav() {
           isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
-        <Button variant="primary" size="sm" onClick={() => setWaitlistOpen(true)}>
+        <Button
+          variant="primary"
+          size="md"
+          className="shadow-[0_2px_12px_rgba(34,197,94,0.12)] hover:shadow-[0_4px_20px_rgba(34,197,94,0.24)]"
+          innerClassName="px-5 sm:px-6 py-2.5 sm:py-3 text-[13.5px] sm:text-sm font-semibold tracking-tight whitespace-nowrap"
+          onClick={() => setWaitlistOpen(true)}
+        >
           Join the Waitlist
         </Button>
       </div>

@@ -385,9 +385,9 @@ export function BlueprintContact() {
       onMouseLeave={handleMouseLeave}
       className={`relative w-full ${
         mode === "intro"
-          ? "min-h-screen flex flex-col justify-between"
-          : "min-h-[680px] sm:min-h-[740px] lg:min-h-[820px] py-20 sm:py-28 lg:py-32 px-6 sm:px-12 lg:px-16 xl:px-20 flex items-center justify-center"
-      } bg-[#FAF8F5] text-[#111613] select-none overflow-hidden border-t border-black/[0.08]`}
+          ? "flex flex-col pt-12 sm:pt-16 lg:pt-20 pb-8 sm:pb-10"
+          : "min-h-[680px] sm:min-h-[740px] lg:min-h-[820px] py-20 sm:py-28 lg:py-32 flex items-center justify-center"
+      } px-6 sm:px-12 lg:px-20 xl:px-24 bg-[#FAF8F5] text-[#111613] select-none overflow-hidden border-t border-black/[0.08]`}
     >
       {/* Fine Subtle Micro Particle Dot Grid on Clean Light Ground */}
       <div className="pointer-events-none absolute inset-0 w-full h-full flex items-center justify-center z-0 overflow-hidden">
@@ -402,10 +402,10 @@ export function BlueprintContact() {
       {mode === "intro" && (
         <div
           ref={introViewRef}
-          className="relative z-10 w-full flex-1 flex flex-col justify-between px-6 sm:px-12 lg:px-20 xl:px-24 pt-8 sm:pt-12 lg:pt-14 pb-8 sm:pb-10 max-w-[1520px] mx-auto"
+          className="relative z-10 w-full flex flex-col max-w-[1520px] mx-auto"
         >
           {/* Main Visual Center Stage */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-24 items-center mb-auto py-4 sm:py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-24 items-center pb-12 sm:pb-16 lg:pb-20">
             
             {/* Left Column: Oversized Monumental Headline & Interactive CTA */}
             <div className="contact-hero-left lg:col-span-7 space-y-9 sm:space-y-11">
