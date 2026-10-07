@@ -132,34 +132,34 @@ export function BlueprintContact() {
       gsap.from(".contact-hero-left", {
         scrollTrigger: {
           trigger: containerRef.current,
-          start: "top 75%",
+          start: "top 88%",
         },
-        y: 35,
+        y: 25,
         opacity: 0,
-        duration: 1.2,
+        duration: 0.9,
         ease: "power2.out",
       });
 
       gsap.from(".contact-hero-right", {
         scrollTrigger: {
           trigger: containerRef.current,
-          start: "top 75%",
+          start: "top 88%",
         },
-        y: 35,
+        y: 25,
         opacity: 0,
-        duration: 1.2,
-        delay: 0.15,
+        duration: 0.9,
+        delay: 0.1,
         ease: "power2.out",
       });
 
       gsap.from(".contact-footer-bar", {
         scrollTrigger: {
           trigger: containerRef.current,
-          start: "top 65%",
+          start: "top 80%",
         },
         opacity: 0,
-        duration: 1.2,
-        delay: 0.3,
+        duration: 0.9,
+        delay: 0.2,
         ease: "power2.out",
       });
     },
@@ -389,9 +389,6 @@ export function BlueprintContact() {
           : "min-h-[680px] sm:min-h-[740px] lg:min-h-[820px] py-20 sm:py-28 lg:py-32 px-6 sm:px-12 lg:px-16 xl:px-20 flex items-center justify-center"
       } bg-[#FAF8F5] text-[#111613] select-none overflow-hidden border-t border-black/[0.08]`}
     >
-      {/* Seamless Top Blend from FAQ */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#FAF8F5] to-transparent z-20" />
-
       {/* Fine Subtle Micro Particle Dot Grid on Clean Light Ground */}
       <div className="pointer-events-none absolute inset-0 w-full h-full flex items-center justify-center z-0 overflow-hidden">
         <div ref={parallaxBgRef} className="absolute inset-0 w-full h-full will-change-transform">
@@ -405,10 +402,10 @@ export function BlueprintContact() {
       {mode === "intro" && (
         <div
           ref={introViewRef}
-          className="relative z-10 w-full flex-1 flex flex-col justify-between px-6 sm:px-12 lg:px-20 xl:px-24 pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-10 max-w-[1520px] mx-auto"
+          className="relative z-10 w-full flex-1 flex flex-col justify-between px-6 sm:px-12 lg:px-20 xl:px-24 pt-8 sm:pt-12 lg:pt-14 pb-8 sm:pb-10 max-w-[1520px] mx-auto"
         >
           {/* Main Visual Center Stage */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-24 items-center my-auto py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-24 items-center mb-auto py-4 sm:py-6">
             
             {/* Left Column: Oversized Monumental Headline & Interactive CTA */}
             <div className="contact-hero-left lg:col-span-7 space-y-9 sm:space-y-11">
