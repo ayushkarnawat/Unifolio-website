@@ -3,6 +3,8 @@
 import { forwardRef, useImperativeHandle, type MutableRefObject, type ReactNode } from "react";
 import { gsap } from "@/lib/gsap";
 import { HeroApertureVisual } from "@/components/hero/HeroApertureVisual";
+import { Button } from "@/components/ui/Button";
+import { ArrowRight } from "lucide-react";
 import type { SceneEngine } from "../hero-engine/useSceneEngine";
 
 export interface HeroSceneRefs {
@@ -101,6 +103,21 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
           <p className="mt-4 sm:mt-5 text-sm sm:text-base md:text-lg lg:text-[19px] text-[#5A685D] font-medium tracking-tight leading-relaxed select-none">
             Track. Understand. Act with confidence.
           </p>
+          <div className="mt-7 sm:mt-8 flex items-center">
+            <Button
+              type="button"
+              size="md"
+              variant="primary"
+              className="shadow-md shadow-emerald-500/15"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("unifolio-open-waitlist"));
+              }}
+            >
+              <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_10px_#22C55E] group-hover:scale-125 transition-transform" />
+              <span className="font-bold text-sm sm:text-base tracking-tight">Join the waitlist</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 text-neutral-600 stroke-[2.5]" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

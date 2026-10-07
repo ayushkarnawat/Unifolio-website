@@ -186,23 +186,15 @@ export function BlueprintNav() {
   const [scrolled, setScrolled] = useState(false);
   const [activeId, setActiveId] = useState<string>("product");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [isLogoDocked, setIsLogoDocked] = useState(false);
+  const [isLogoDocked, setIsLogoDocked] = useState(true);
   const [isHeroSection, setIsHeroSection] = useState(true);
   const [waitlistOpen, setWaitlistOpen] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (prefersReducedMotion() || window.location.pathname !== "/") {
-        setIsLogoDocked(true);
-      }
-    }
-
-    const handleDocked = () => setIsLogoDocked(true);
-    window.addEventListener("unifolio-logo-docked", handleDocked);
-    window.addEventListener("unifolio-intro-complete", handleDocked);
+    const handleOpenWaitlist = () => setWaitlistOpen(true);
+    window.addEventListener("unifolio-open-waitlist", handleOpenWaitlist);
     return () => {
-      window.removeEventListener("unifolio-logo-docked", handleDocked);
-      window.removeEventListener("unifolio-intro-complete", handleDocked);
+      window.removeEventListener("unifolio-open-waitlist", handleOpenWaitlist);
     };
   }, []);
 

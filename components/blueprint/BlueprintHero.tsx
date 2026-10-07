@@ -709,8 +709,8 @@ export function BlueprintHero() {
       gsap.set(portalRippleRef.current, { autoAlpha: 0 });
       applyPortalClip(initialRadiusPx, 62.87, 49.12);
 
-      // Hero Intro initial state
-      gsap.set(heroIntroRef.current, { opacity: 0, autoAlpha: 1, x: 0, y: 16, scale: 1 });
+      // Hero Intro initial state - immediately visible for direct landing
+      gsap.set(heroIntroRef.current, { opacity: 1, autoAlpha: 1, x: 0, y: 0, scale: 1 });
       gsap.set(heroVisualRef.current, {
         opacity: 1,
         scale: 1,
@@ -1406,10 +1406,10 @@ export function BlueprintHero() {
           ref={productWorldRef}
           className="relative w-full min-h-screen bg-[#FAF8F5] flex flex-col justify-start items-center px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-16 sm:pb-20 overflow-hidden select-none"
         >
-          {/* Product Hero Content (Headline, CTA) */}
+          {/* Product Hero Content (Headline) */}
           <div
             ref={headerRef}
-            className="w-full max-w-5xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mb-8 sm:mb-12 px-2 will-change-transform"
+            className="w-full max-w-5xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mb-8 sm:mb-12 px-2 will-change-transform pt-10 sm:pt-14 md:pt-16"
           >
             <h2
               ref={headlineRef}
@@ -1423,26 +1423,6 @@ export function BlueprintHero() {
                 Understand it.
               </span>
             </h2>
-
-            <div className="mt-8 sm:mt-10">
-              <LinkButton
-                ref={ctaRef}
-                href="#contact"
-                size="md"
-                variant="primary"
-                className="shadow-md shadow-emerald-500/15"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.dispatchEvent(
-                    new CustomEvent("unifolio-nav-click", { detail: { section: "contact" } })
-                  );
-                }}
-              >
-                <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_10px_#22C55E] group-hover:scale-125 transition-transform" />
-                <span className="font-bold text-sm sm:text-base tracking-tight">Join the waitlist</span>
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 text-neutral-600 stroke-[2.5]" />
-              </LinkButton>
-            </div>
           </div>
 
           {/* Product Bento Grid */}
