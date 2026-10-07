@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { useGSAP } from "@gsap/react";
-import { gsap, ScrollTrigger, smoothScrollTo } from "@/lib/gsap";
+import { gsap, ScrollTrigger, smoothScrollTo, prefersReducedMotion } from "@/lib/gsap";
 import { getComposedViewport } from "@/lib/viewport";
 import { computeDockGeometry, type BentoGeometry } from "@/lib/dockLayout";
 import { SafeVault3D, type SafeVault3DRef } from "@/components/blueprint/SafeVault3D";
@@ -4685,11 +4685,33 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
       let rafId: number | null = null;
       let cancelled = false;
 
-      const showState = (el: HTMLDivElement) => {
-        gsap.to(el, { autoAlpha: 1, duration: 0.4, ease: "power2.out", overwrite: true });
+      const showState = (el: HTMLDivElement, direction: 1 | -1 = 1) => {
+        const inner = (el.firstElementChild as HTMLElement) || el;
+        const reduced = prefersReducedMotion();
+        const startY = reduced ? 0 : direction >= 0 ? 140 : -140;
+        gsap.set(el, { autoAlpha: 1 });
+        gsap.fromTo(
+          inner,
+          { opacity: 0, y: startY },
+          { opacity: 1, y: 0, duration: 0.58, ease: "power2.out", overwrite: true }
+        );
       };
-      const hideState = (el: HTMLDivElement) => {
-        gsap.to(el, { autoAlpha: 0, duration: 0.3, ease: "power2.in", overwrite: true });
+
+      const hideState = (el: HTMLDivElement, direction: 1 | -1 = 1) => {
+        const inner = (el.firstElementChild as HTMLElement) || el;
+        const reduced = prefersReducedMotion();
+        const targetY = reduced ? 0 : direction >= 0 ? -140 : 140;
+        gsap.to(inner, {
+          opacity: 0,
+          y: targetY,
+          duration: 0.48,
+          ease: "power2.out",
+          overwrite: true,
+          onComplete: () => {
+            gsap.set(el, { autoAlpha: 0 });
+            gsap.set(inner, { y: 0 });
+          },
+        });
       };
 
       // Must match the `lg:top-36` Tailwind offset shared by the vault
@@ -4707,68 +4729,27 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
       // redone fresh on every call, not latched — a sticky element un-sticks
       // going either direction, and a "once stuck, stays stuck" bit would
       // misfire near both the top and bottom boundaries of the section.
-      let prevVaultTop: number | null = null;
       let activeIdx = -1;
 
       const computeActiveIndex = () => {
-        // Each state block shares the vault's own sticky offset, so once a
-        // block is actually locked into its sticky position its rect.top
-        // lands on STICKY_TOP_PX exactly. Because sibling sticky elements
-        // sharing one parent only release when the *parent's* bottom edge
-        // forces them out (not their own box's bottom), several blocks can
-        // be simultaneously "stuck" at once as scrolling progresses — among
-        // those, the highest index is the one that engaged most recently,
-        // so that's the one to show. Before the vault itself locks in
-        // (still sliding through normal flow, e.g. the section is only just
-        // peeking into view) or after it has released (scrolled fully past,
-        // whether exiting top or bottom), fall back to nearest-center
-        // against the viewport midpoint so the earliest/latest states still
-        // resolve sensibly.
-        const vaultRect = safeContainerRef.current?.getBoundingClientRect();
-        const vaultStuck =
-          vaultRect !== undefined &&
-          vaultRect !== null &&
-          prevVaultTop !== null &&
-          Math.abs(vaultRect.top - prevVaultTop) < 0.5;
-        if (vaultRect) prevVaultTop = vaultRect.top;
-        if (!vaultStuck) {
-          // Once a state has actually engaged, "not stuck" just means the
-          // vault is mid-release at the very top or bottom boundary of the
-          // section — every block is sliding away together and none of them
-          // is meaningfully "nearest center" anymore. Hold whatever was last
-          // shown; the real onLeave/onLeaveBack (hideAll) governs when it
-          // actually disappears. Nearest-center below is only for the very
-          // first engagement, before anything has been shown yet.
-          if (activeIdx !== -1) return activeIdx;
-          const focusY = window.innerHeight * 0.5;
-          let bestIdx = 0;
-          let bestDist = Infinity;
-          securityStateRefs.current.forEach((el, idx) => {
-            if (!el) return;
-            const rect = el.getBoundingClientRect();
-            const dist = Math.abs(rect.top + rect.height / 2 - focusY);
-            if (dist < bestDist) {
-              bestDist = dist;
-              bestIdx = idx;
-            }
-          });
-          return bestIdx;
-        }
-        // Once the vault is stuck, "none currently stuck" only happens past
-        // the last state's own dwell, as everything scrolls away together —
-        // default to the last state, not `activeIdx` (hideAll resets that to
-        // -1, and relying on it falls back to index 0 if the trigger is ever
-        // re-evaluated near the boundary, e.g. after a late layout shift
-        // triggers GSAP's own internal refresh).
-        let bestIdx = securityStateRefs.current.length - 1;
+        // Find which state has reached the sticky threshold.
+        // Elements in CSS sticky at `lg:top-36` have rect.top <= STICKY_TOP_PX + 8 once scrolled to.
+        let highestReachedIdx = -1;
         securityStateRefs.current.forEach((el, idx) => {
           if (!el) return;
           const rect = el.getBoundingClientRect();
-          if (Math.abs(rect.top - STICKY_TOP_PX) < 1) {
-            bestIdx = idx;
+          if (rect.top <= STICKY_TOP_PX + 8) {
+            highestReachedIdx = Math.max(highestReachedIdx, idx);
           }
         });
-        return bestIdx;
+
+        // When entering from Product into Security (no element has hit the sticky line yet),
+        // or when at the top of Security, default strictly to 0 (resting state).
+        if (highestReachedIdx === -1) {
+          return 0;
+        }
+
+        return highestReachedIdx;
       };
 
       const setActive = (idx: number, direction: 1 | -1) => {
@@ -4778,11 +4759,15 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
         currentSecurityStateRef.current = idx;
         securityStateRefs.current.forEach((el, i) => {
           if (!el) return;
-          if (i === idx) showState(el);
-          else if (i !== prevIdx) gsap.set(el, { autoAlpha: 0 });
+          if (i === idx) showState(el, direction);
+          else if (i !== prevIdx) {
+            gsap.set(el, { autoAlpha: 0 });
+            const inner = (el.firstElementChild as HTMLElement) || el;
+            gsap.set(inner, { y: 0 });
+          }
         });
         const prevEl = prevIdx >= 0 ? securityStateRefs.current[prevIdx] : null;
-        if (prevEl) hideState(prevEl);
+        if (prevEl) hideState(prevEl, direction);
         if (prevIdx >= 0) cleanups[prevIdx]?.();
         if (idx === 0) {
           safeVault3DRef.current?.resetToClosed?.();
@@ -4794,9 +4779,14 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
 
       const hideAll = () => {
         securityStateRefs.current.forEach((el) => {
-          if (el) hideState(el);
+          if (el) {
+            gsap.to(el, { autoAlpha: 0, duration: 0.3, overwrite: true });
+            const inner = (el.firstElementChild as HTMLElement) || el;
+            gsap.set(inner, { y: 0 });
+          }
         });
         activeIdx = -1;
+        safeVault3DRef.current?.resetToClosed?.();
       };
 
       // Only one sub-state's text is ever visible at a time. Discrete per-state
@@ -4830,6 +4820,8 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
         securityStateRefs.current.forEach((el) => {
           if (!el) return;
           gsap.set(el, { autoAlpha: 0 });
+          const inner = (el.firstElementChild as HTMLElement) || el;
+          gsap.set(inner, { y: 0 });
         });
 
         const st = ScrollTrigger.create({
