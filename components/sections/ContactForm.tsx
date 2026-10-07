@@ -79,6 +79,19 @@ export function ContactForm() {
       </div>
 
       <div>
+        <label htmlFor="phone" className="block font-mono text-xs uppercase tracking-wider text-ink-faint">
+          Phone Number
+        </label>
+        <input
+          id="phone"
+          name="phone"
+          type="tel"
+          placeholder="+91 98765 43210"
+          className="mt-1.5 w-full rounded-xl border border-ink/10 bg-paper-subtle/50 px-4 py-3 font-sans text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:bg-paper focus:outline-none transition-colors"
+        />
+      </div>
+
+      <div>
         <label htmlFor="topic" className="block font-mono text-xs uppercase tracking-wider text-ink-faint">
           Inquiry Nature
         </label>

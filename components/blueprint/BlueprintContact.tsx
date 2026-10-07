@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, ArrowRight, ArrowLeft, X, Check, Sparkles, ChevronRight } from "lucide-react";
+import { Mail, ArrowRight, ArrowLeft, X, Check, Sparkles, ChevronRight, ChevronDown } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { gsap, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
 import { Button } from "@/components/ui/Button";
@@ -14,7 +14,14 @@ interface FormData {
   focusArea: string;
   primaryGoal: string;
   email: string;
+  phone: string;
 }
+
+const ORGANIZATION_OPTIONS = [
+  "Family Office",
+  "Fund",
+  "Private Portfolio",
+];
 
 const FOCUS_PILLS = [
   "CAS & CAMS Direct Import",
@@ -44,15 +51,32 @@ export function BlueprintContact() {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [inputFocused, setInputFocused] = useState<boolean>(false);
+  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    setDropdownOpen(false);
+  }, [currentStep]);
   const [formData, setFormData] = useState<FormData>({
     name: "",
     organization: "",
     focusArea: "",
     primaryGoal: "",
     email: "",
+    phone: "",
   });
 
-  const totalSteps = 5;
+  const totalSteps = 6;
 
   // Validation to conditionally reveal the next button
   const canProceed = () => {
@@ -67,6 +91,8 @@ export function BlueprintContact() {
         return formData.primaryGoal.trim().length > 0;
       case 4:
         return formData.email.trim().length > 0;
+      case 5:
+        return formData.phone.trim().length > 0;
       default:
         return false;
     }
@@ -635,35 +661,77 @@ export function BlueprintContact() {
               </div>
             )}
 
-            {/* Step 2: Organization / Portfolio Type */}
+            {/* Step 2: Organization / Portfolio Type (Custom Premium Dropdown) */}
             {currentStep === 1 && (
               <div className="space-y-6 w-full max-w-xl">
                 <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] tracking-tight leading-tight">
                   I represent / invest as
                 </h3>
                 <div
-                  ref={inputMagneticRef}
-                  onMouseMove={handleInputMouseMove}
-                  onMouseLeave={handleInputMouseLeave}
-                  className="relative w-full max-w-md mx-auto group/input will-change-transform"
+                  ref={dropdownRef}
+                  className="relative w-full max-w-md mx-auto will-change-transform z-30"
                 >
-                  {/* Subtle Border Light Shimmer on Hover/Focus */}
+                  {/* Subtle Border Light Shimmer on Hover/Focus/Open */}
                   <div
-                    className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
-                      inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
+                    className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent transition-opacity duration-500 pointer-events-none ${
+                      dropdownOpen ? "opacity-100 animate-pulse" : "opacity-0 hover:opacity-60"
                     }`}
                   />
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={formData.organization}
-                    onFocus={() => setInputFocused(true)}
-                    onBlur={() => setInputFocused(false)}
-                    onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Family Office / Fund / Private Portfolio"
-                    className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-lg sm:text-xl text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
-                  />
+
+                  {/* Premium Trigger Capsule */}
+                  <button
+                    type="button"
+                    onClick={() => setDropdownOpen((prev) => !prev)}
+                    className={`relative w-full flex items-center justify-between rounded-2xl px-6 py-4 text-lg sm:text-xl text-[#111613] transition-all duration-300 font-sans tracking-tight cursor-pointer ${
+                      dropdownOpen
+                        ? "bg-[#FAF8F5] border border-[#22C55E] shadow-[0_0_35px_rgba(34,197,94,0.22)]"
+                        : "bg-black/[0.03] border border-black/15 hover:border-black/30 hover:bg-black/[0.05]"
+                    }`}
+                  >
+                    <span className="flex-1 text-center font-normal">
+                      {formData.organization ? (
+                        <span className="text-[#111613] font-medium">{formData.organization}</span>
+                      ) : (
+                        <span className="text-black/35 font-light">Select representation...</span>
+                      )}
+                    </span>
+                    <ChevronDown
+                      className={`w-5 h-5 text-neutral-500 shrink-0 transition-transform duration-300 ${
+                        dropdownOpen ? "rotate-180 text-[#22C55E]" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {/* Premium Frosted Floating Menu */}
+                  {dropdownOpen && (
+                    <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-2xl border border-black/[0.08] bg-[#FAF8F5]/95 backdrop-blur-2xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.12),0_4px_16px_rgba(34,197,94,0.08)] flex flex-col gap-1.5 animate-in fade-in-0 zoom-in-95 duration-200">
+                      {ORGANIZATION_OPTIONS.map((opt) => {
+                        const isSelected = formData.organization === opt;
+                        return (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => {
+                              setFormData({ ...formData, organization: opt });
+                              setDropdownOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-base sm:text-lg transition-all duration-200 cursor-pointer ${
+                              isSelected
+                                ? "bg-[#22C55E]/12 text-[#0A2E14] font-semibold border border-[#22C55E]/30"
+                                : "text-[#111613]/80 hover:bg-black/[0.05] hover:text-[#111613] font-normal"
+                            }`}
+                          >
+                            <span>{opt}</span>
+                            {isSelected && (
+                              <div className="w-5 h-5 rounded-full bg-[#22C55E] text-white flex items-center justify-center shrink-0">
+                                <Check className="w-3 h-3 stroke-[3]" />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -812,7 +880,7 @@ export function BlueprintContact() {
               </div>
             )}
 
-            {/* Step 5: Email & Final Submission */}
+            {/* Step 5: Email */}
             {currentStep === 4 && (
               <div className="space-y-6 w-full max-w-xl">
                 <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] tracking-tight leading-tight">
@@ -839,6 +907,39 @@ export function BlueprintContact() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     onKeyDown={handleKeyDown}
                     placeholder="hello@example.com"
+                    className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-lg sm:text-xl text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Step 6: Phone Number & Final Submission */}
+            {currentStep === 5 && (
+              <div className="space-y-6 w-full max-w-xl">
+                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] tracking-tight leading-tight">
+                  You can call me at
+                </h3>
+                <div
+                  ref={inputMagneticRef}
+                  onMouseMove={handleInputMouseMove}
+                  onMouseLeave={handleInputMouseLeave}
+                  className="relative w-full max-w-md mx-auto group/input will-change-transform"
+                >
+                  {/* Subtle Border Light Shimmer on Hover/Focus */}
+                  <div
+                    className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
+                      inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
+                    }`}
+                  />
+                  <input
+                    ref={inputRef}
+                    type="tel"
+                    value={formData.phone}
+                    onFocus={() => setInputFocused(true)}
+                    onBlur={() => setInputFocused(false)}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onKeyDown={handleKeyDown}
+                    placeholder="+91 98765 43210"
                     className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-lg sm:text-xl text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
                   />
                 </div>
@@ -934,6 +1035,7 @@ export function BlueprintContact() {
                   focusArea: "",
                   primaryGoal: "",
                   email: "",
+                  phone: "",
                 });
               }}
               className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#22C55E] hover:text-[#111613] transition-colors cursor-pointer"
