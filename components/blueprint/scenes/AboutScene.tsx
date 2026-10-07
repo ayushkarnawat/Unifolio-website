@@ -252,10 +252,6 @@ export function AboutEnvelopeSlot({
   const beat1Ref = useRef<HTMLDivElement | null>(null);
   const beat2Ref = useRef<HTMLDivElement | null>(null);
   const swooshRef = useRef<SVGPathElement | null>(null);
-  const pillTextRef = useRef<HTMLSpanElement | null>(null);
-  const pillDotRef = useRef<HTMLSpanElement | null>(null);
-  const progressBarRef = useRef<HTMLDivElement | null>(null);
-  const scrollCueRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const beat1 = beat1Ref.current;
@@ -290,37 +286,6 @@ export function AboutEnvelopeSlot({
           start: "top top",
           end: "bottom bottom",
           scrub: 0.6,
-          onUpdate: (self) => {
-            const p = self.progress;
-
-            // Fill bottom progress bar
-            if (progressBarRef.current) {
-              progressBarRef.current.style.width = `${Math.min(100, Math.max(0, p * 100))}%`;
-            }
-
-            // Toggle top pill indicator between Beat 1 and Beat 2
-            if (p >= 0.48) {
-              if (pillDotRef.current) {
-                pillDotRef.current.classList.add("bg-[#22C55E]", "shadow-[0_0_8px_rgba(34,197,94,0.6)]");
-                pillDotRef.current.classList.remove("bg-neutral-400");
-              }
-              if (pillTextRef.current) {
-                pillTextRef.current.textContent = "02 / 02 • THE RESOLUTION";
-                pillTextRef.current.classList.add("text-neutral-900");
-                pillTextRef.current.classList.remove("text-neutral-500");
-              }
-            } else {
-              if (pillDotRef.current) {
-                pillDotRef.current.classList.remove("bg-[#22C55E]", "shadow-[0_0_8px_rgba(34,197,94,0.6)]");
-                pillDotRef.current.classList.add("bg-neutral-400");
-              }
-              if (pillTextRef.current) {
-                pillTextRef.current.textContent = "01 / 02 • THE PROBLEM";
-                pillTextRef.current.classList.remove("text-neutral-900");
-                pillTextRef.current.classList.add("text-neutral-500");
-              }
-            }
-          },
         },
       });
 
@@ -338,11 +303,6 @@ export function AboutEnvelopeSlot({
         },
         0.22
       );
-
-      // Scroll cue disappears as scroll initiates
-      if (scrollCueRef.current) {
-        tl.to(scrollCueRef.current, { opacity: 0, duration: 0.15, ease: "power1.out" }, 0.18);
-      }
 
       // 0.35 -> 0.65: Collage fragments smoothly rotate to 0deg (Scattered -> Tidy)
       const collageCards = document.querySelectorAll<HTMLElement>(".about-collage-card");
@@ -372,7 +332,7 @@ export function AboutEnvelopeSlot({
         0.48
       );
 
-      // Connective green flourish underline draws under "to close that gap"
+      // Connective green flourish underline draws under "actually understand them."
       if (swooshRef.current) {
         tl.to(
           swooshRef.current,
@@ -393,17 +353,6 @@ export function AboutEnvelopeSlot({
     return () => ctx.revert();
   }, []);
 
-  const handlePillClick = (targetBeat: 1 | 2) => {
-    const track = containerRef.current?.closest("#about");
-    if (!track) return;
-    const rect = track.getBoundingClientRect();
-    const scrollY = window.scrollY;
-    const trackTop = scrollY + rect.top;
-    const scrollableRange = rect.height - window.innerHeight;
-    const targetY = targetBeat === 1 ? trackTop : trackTop + scrollableRange * 0.80;
-    window.scrollTo({ top: targetY, behavior: "smooth" });
-  };
-
   return (
     <div
       ref={(el) => {
@@ -412,51 +361,9 @@ export function AboutEnvelopeSlot({
           unifiedEnvelopeRef.current = el;
         }
       }}
-      className="relative w-full h-full flex flex-col justify-between select-none"
+      className="relative w-full h-full flex flex-col items-center justify-center select-none"
       style={{ zIndex: 10 }}
     >
-      {/* Top Masthead Eyebrow & Brand Signature */}
-      <div className="flex items-center justify-between w-full border-b border-neutral-300/60 pb-4 sm:pb-5">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 relative shrink-0">
-            <img
-              src="/Logo/unifolio-ring-transparent.png"
-              alt="Unifolio Ring"
-              className="w-full h-full object-contain select-none pointer-events-none"
-            />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-mono text-[11px] sm:text-xs font-semibold tracking-[0.22em] uppercase text-neutral-900">
-              About Us
-            </span>
-            <span className="font-sans text-[11px] sm:text-xs text-neutral-400 tracking-wider">
-              The Philosophy // Statement 04
-            </span>
-          </div>
-        </div>
-
-        {/* Interactive Mode Pill Indicator */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => handlePillClick(2)}
-            className="flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full border border-neutral-300/60 bg-[#F5F1E8]/70 hover:bg-[#F5F1E8] text-xs font-mono transition-all cursor-pointer"
-            title="Click to jump between beats"
-          >
-            <span
-              ref={pillDotRef}
-              className="w-2 h-2 rounded-full bg-neutral-400 transition-all duration-300 shrink-0"
-            />
-            <span
-              ref={pillTextRef}
-              className="font-semibold text-neutral-500 tracking-wider transition-colors duration-300 text-[10px] sm:text-xs uppercase"
-            >
-              01 / 02 • THE PROBLEM
-            </span>
-          </button>
-        </div>
-      </div>
-
       {/* Center Stage: Single Viewport In-Place Focus */}
       <div className="relative w-full flex-1 flex items-center justify-center my-auto min-h-[360px] sm:min-h-[440px]">
         {/* BEAT 1: The Problem (Active on initial entry) */}
@@ -464,10 +371,6 @@ export function AboutEnvelopeSlot({
           ref={beat1Ref}
           className="absolute inset-x-0 flex flex-col justify-center max-w-3xl lg:max-w-4xl lg:mr-auto pl-0 lg:pl-2 text-left z-10"
         >
-          <span className="font-mono text-[11px] sm:text-xs font-bold tracking-[0.25em] uppercase text-neutral-400 block mb-3 sm:mb-4">
-            01 / The Problem
-          </span>
-
           <h2 className="font-serif font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-[54px] xl:text-[60px] text-neutral-950 leading-[1.12] tracking-[-0.025em]">
             In most families, someone ends up in charge of the money.
             <span className="block mt-3 sm:mt-4 font-normal text-neutral-700">
@@ -485,10 +388,6 @@ export function AboutEnvelopeSlot({
           className="absolute inset-x-0 flex flex-col justify-center max-w-3xl lg:max-w-4xl lg:ml-auto pr-0 lg:pr-2 text-left z-10"
           style={{ opacity: 0, pointerEvents: "none" }}
         >
-          <span className="font-mono text-[11px] sm:text-xs font-bold tracking-[0.25em] uppercase text-[#22C55E] block mb-3 sm:mb-4">
-            02 / The Resolution
-          </span>
-
           <h3 className="font-serif font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-[54px] xl:text-[60px] text-neutral-950 leading-[1.12] tracking-[-0.025em]">
             Unifolio brings the whole family&apos;s finances <br className="hidden sm:inline" />
             into one place,{" "}
@@ -521,30 +420,6 @@ export function AboutEnvelopeSlot({
               <circle cx="252" cy="6" r="3.5" fill="#22C55E" />
             </svg>
           </div>
-        </div>
-      </div>
-
-      {/* Bottom Bar: Scroll Progress Rail & Subtle Prompt */}
-      <div className="flex items-center justify-between w-full pt-3 sm:pt-4 border-t border-neutral-300/40">
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-[10px] sm:text-xs text-neutral-400 uppercase tracking-widest">
-            Progression
-          </span>
-          <div className="w-24 sm:w-32 h-1 bg-neutral-300/50 rounded-full overflow-hidden">
-            <div
-              ref={progressBarRef}
-              className="h-full bg-[#22C55E] transition-all duration-75"
-              style={{ width: "0%" }}
-            />
-          </div>
-        </div>
-
-        <div
-          ref={scrollCueRef}
-          className="flex items-center gap-1.5 font-mono text-[10px] sm:text-xs text-neutral-500 tracking-wider"
-        >
-          <span>Scroll to resolve</span>
-          <span className="animate-bounce font-sans">↓</span>
         </div>
       </div>
     </div>
