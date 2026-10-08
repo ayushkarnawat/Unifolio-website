@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Minus, ArrowRight } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import { faqContent } from "@/content/faq";
-import { Button } from "@/components/ui/Button";
 
 export function BlueprintFaq() {
   // First item open by default (matching the reference layout)
@@ -22,37 +21,14 @@ export function BlueprintFaq() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-20 items-start">
           
           {/* =========================================================================
-              LEFT COLUMN: Editorial Header, Subtext & Contact CTA
+              LEFT COLUMN: Editorial Header
              ========================================================================= */}
           <div className="lg:col-span-5 lg:sticky lg:top-36 space-y-6 sm:space-y-8">
-            <div className="space-y-4">
+            <div>
               <h2 className="font-sans font-extrabold text-4xl sm:text-5xl md:text-6xl lg:text-[58px] xl:text-[64px] text-[#111613] tracking-tight leading-[1.06]">
-                General questions <br className="hidden sm:inline" />
-                asked by investors.
+                Questions investors <br className="hidden sm:inline" />
+                commonly ask.
               </h2>
-
-              <p className="font-sans text-lg sm:text-xl lg:text-[21px] text-[#5A685D] leading-relaxed max-w-lg pt-1 font-normal">
-                Our team is always here to help you with quick, clear, and reliable answers whenever needed.
-              </p>
-            </div>
-
-            {/* Quick Contact Action Button (Matches Join the Waitlist style) */}
-            <div className="pt-2">
-              <Button
-                type="button"
-                size="md"
-                variant="primary"
-                className="shadow-md shadow-emerald-500/15"
-                onClick={() => {
-                  window.dispatchEvent(
-                    new CustomEvent("unifolio-nav-click", { detail: { section: "contact" } })
-                  );
-                }}
-              >
-                <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_10px_#22C55E] group-hover:scale-125 transition-transform" />
-                <span className="font-bold text-sm sm:text-base tracking-tight">Ask us a question</span>
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 text-neutral-600 stroke-[2.5]" />
-              </Button>
             </div>
           </div>
 

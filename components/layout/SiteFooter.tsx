@@ -174,7 +174,7 @@ export function SiteFooter() {
 
         {/* Bottom Bar */}
         <div className="mt-14 flex flex-col gap-3 border-t border-[#1C241E]/10 pt-8 font-sans text-xs text-[#8E9B91] sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Unifolio Technologies Inc. All rights reserved.</p>
+          <p>Copyright © 2026 Keystone Wealthtech Pvt. Ltd. All Rights Reserved.</p>
           <p className="text-[#525E55]">Art-directed Financial Sketchbook for Indian Wealth</p>
         </div>
       </div>
