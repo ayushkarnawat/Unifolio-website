@@ -4884,6 +4884,12 @@ export function SecurityVaultSlot({
         zIndex: 25,
       }}
     >
+      {/* Clean off-white background shield covering any left margin gap or underlying cards */}
+      <div
+        className="pointer-events-none absolute -inset-y-32 -left-[600px] w-[620px] bg-[#FAF8F5] -z-10"
+        aria-hidden="true"
+      />
+
       {/* Subtle Ambient Soft Shadow Underneath (Reinforces Floating Effect) */}
       <div
         className="absolute -bottom-8 sm:-bottom-10 left-1/2 -translate-x-1/2 w-[85%] h-[32px] sm:h-[42px] rounded-[100%] pointer-events-none"

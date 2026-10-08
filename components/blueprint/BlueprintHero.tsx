@@ -1465,6 +1465,12 @@ export function BlueprintHero() {
           id="security"
           className="relative w-full bg-[#FAF8F5] pt-24 sm:pt-28 pb-20 sm:pb-28 px-4 sm:px-6 lg:px-12 select-none"
         >
+          {/* Seamless edge guard ensuring no clip artifacts or dark slivers on the left margin */}
+          <div
+            className="pointer-events-none absolute inset-y-0 left-0 w-2 sm:w-2.5 bg-[#FAF8F5] z-30"
+            aria-hidden="true"
+          />
+
           <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-between gap-12 lg:gap-16">
             {/* Left Column: Sticky Vault */}
             <div className="w-full lg:w-5/12 flex items-center justify-center lg:sticky lg:top-36 shrink-0 py-4">
