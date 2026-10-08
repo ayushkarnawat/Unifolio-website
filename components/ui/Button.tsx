@@ -3,7 +3,7 @@
 import Link from "next/link";
 import React, { forwardRef, type AnchorHTMLAttributes, type ButtonHTMLAttributes, type ReactNode } from "react";
 
-export type ButtonVariant = "primary" | "secondary" | "subtle" | "pill" | "outline" | "ghost" | "dark" | "accent";
+export type ButtonVariant = "primary" | "secondary" | "subtle" | "pill" | "outline" | "ghost" | "dark" | "accent" | "green" | "unifolio";
 export type ButtonSize = "sm" | "md" | "lg";
 
 interface BasePhysicalProps {
@@ -40,6 +40,7 @@ function PhysicalButtonInner({
   innerClassName?: string;
   glow?: boolean;
 }) {
+  const isGreen = variant === "green" || variant === "unifolio";
   const isPrimary = variant === "primary" || variant === "accent";
   const isSecondary = variant === "secondary" || variant === "ghost" || variant === "dark" || variant === "outline";
   const isPill = variant === "pill";
@@ -47,12 +48,16 @@ function PhysicalButtonInner({
   return (
     <>
       {/* 1. Dimensional Outer Track Base Border */}
-      <div className="pointer-events-none absolute inset-0 rounded-full border border-black/[0.08] transition-colors duration-300" />
+      <div
+        className={`pointer-events-none absolute inset-0 rounded-full border transition-colors duration-300 ${
+          isGreen ? "border-green-600/30" : "border-black/[0.08]"
+        }`}
+      />
 
       {/* 2. Delicate Iridescent Light Beams Orbiting the Perimeter (From Reference Video) */}
       <div
         className={`pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] [animation-play-state:paused] group-hover:[animation-play-state:running] group-focus-visible:[animation-play-state:running] transition-opacity duration-500 ${
-          isPrimary
+          isGreen || isPrimary
             ? "bg-iridescent-conic animate-iridescent-spin opacity-85 group-hover:opacity-100"
             : isSecondary
             ? "bg-iridescent-subtle animate-iridescent-spin opacity-60 group-hover:opacity-85"
@@ -63,7 +68,7 @@ function PhysicalButtonInner({
       {/* 3. Soft Prismatic Diffusion Glow Layer (Corners catch rainbow chromatic dispersion) */}
       <div
         className={`pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] blur-[2.5px] [animation-play-state:paused] group-hover:[animation-play-state:running] group-focus-visible:[animation-play-state:running] transition-opacity duration-500 ${
-          isPrimary
+          isGreen || isPrimary
             ? "bg-iridescent-conic animate-iridescent-spin opacity-50 group-hover:opacity-80"
             : "bg-iridescent-subtle animate-iridescent-spin opacity-35 group-hover:opacity-60"
         }`}
@@ -74,7 +79,9 @@ function PhysicalButtonInner({
         className={`relative z-10 w-full h-full rounded-full flex items-center justify-center font-sans select-none transition-all duration-300 overflow-hidden ${
           sizeInnerClasses[size]
         } ${
-          isPrimary
+          isGreen
+            ? "bg-[#22C55E] hover:bg-[#16A34A] text-white font-bold shadow-[0_4px_14px_rgba(34,197,94,0.35)] btn-physical-surface-green"
+            : isPrimary
             ? "bg-white/80 hover:bg-white/92 text-[#111613] backdrop-blur-xl btn-physical-surface-light"
             : isSecondary
             ? "bg-black/[0.03] hover:bg-black/[0.06] text-[#111613]/90 backdrop-blur-xl btn-physical-surface-light"
@@ -82,13 +89,29 @@ function PhysicalButtonInner({
         } ${innerClassName}`}
       >
         {/* Fine Specular Top Horizon Highlight */}
-        <div className="pointer-events-none absolute inset-x-3 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/90 to-transparent" />
+        <div
+          className={`pointer-events-none absolute inset-x-3 top-0 h-[1px] ${
+            isGreen
+              ? "bg-gradient-to-r from-transparent via-white/45 to-transparent"
+              : "bg-gradient-to-r from-transparent via-white/90 to-transparent"
+          }`}
+        />
 
         {/* Subtle Ambient Sheen */}
-        <div className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-b from-white/[0.12] to-transparent opacity-70 group-hover:opacity-100 transition-opacity" />
+        <div
+          className={`pointer-events-none absolute inset-0 rounded-full ${
+            isGreen
+              ? "bg-gradient-to-b from-white/[0.22] to-transparent opacity-70 group-hover:opacity-100 transition-opacity"
+              : "bg-gradient-to-b from-white/[0.12] to-transparent opacity-70 group-hover:opacity-100 transition-opacity"
+          }`}
+        />
 
         {/* Content */}
-        <span className="relative z-10 inline-flex items-center gap-2 font-medium tracking-wide">
+        <span
+          className={`relative z-10 inline-flex items-center gap-2 tracking-wide ${
+            isGreen ? "font-bold text-white" : "font-medium"
+          }`}
+        >
           {children}
         </span>
       </div>

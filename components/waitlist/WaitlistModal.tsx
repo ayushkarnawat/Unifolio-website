@@ -1,10 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { WaitlistForm } from "./WaitlistForm";
 
 export function WaitlistModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -16,9 +23,9 @@ export function WaitlistModal({ open, onClose }: { open: boolean; onClose: () =>
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-[#111613]/40 backdrop-blur-sm"
@@ -29,18 +36,19 @@ export function WaitlistModal({ open, onClose }: { open: boolean; onClose: () =>
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-4 top-4 rounded-full p-1.5 text-ink-faint hover:bg-black/[0.05] hover:text-ink transition-colors"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-ink-faint hover:bg-black/[0.05] hover:text-ink transition-colors cursor-pointer"
         >
           <X className="h-4 w-4" />
         </button>
-        <h2 className="font-serif text-2xl font-bold text-ink">Join the Waitlist</h2>
-        <p className="mt-2 font-sans text-sm text-ink-soft">
+        <h2 className="font-serif text-2xl font-bold text-ink text-center">Join the waitlist</h2>
+        <p className="mt-2 font-sans text-sm text-ink-soft text-center">
           Be first in line when Unifolio opens up. No spam, just one email when it&apos;s your turn.
         </p>
         <div className="mt-6">
           <WaitlistForm onSuccess={onClose} />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

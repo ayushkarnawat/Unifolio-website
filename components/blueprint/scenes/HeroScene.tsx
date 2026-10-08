@@ -107,15 +107,15 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
             <Button
               type="button"
               size="md"
-              variant="primary"
-              className="shadow-md shadow-emerald-500/15"
+              variant="green"
+              className="shadow-lg shadow-emerald-500/25"
               onClick={() => {
                 window.dispatchEvent(new CustomEvent("unifolio-open-waitlist"));
               }}
             >
-              <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_10px_#22C55E] group-hover:scale-125 transition-transform" />
-              <span className="font-bold text-sm sm:text-base tracking-tight">Join the waitlist</span>
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 text-neutral-600 stroke-[2.5]" />
+              <span className="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_white] group-hover:scale-125 transition-transform" />
+              <span className="font-extrabold text-sm sm:text-base tracking-tight text-white">Join the waitlist</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 text-white stroke-[2.8]" />
             </Button>
           </div>
         </div>

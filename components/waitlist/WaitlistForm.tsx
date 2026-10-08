@@ -58,20 +58,13 @@ export function WaitlistForm({ onSuccess }: { onSuccess?: () => void }) {
         <input id="wl-phone" name="phone" type="tel" placeholder="+91 98765 43210"
           className="mt-1.5 w-full rounded-xl border border-ink/10 bg-paper-subtle/50 px-4 py-3 font-sans text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:bg-paper focus:outline-none transition-colors" />
       </div>
-      <div>
-        <label htmlFor="wl-role" className="block font-mono text-xs uppercase tracking-wider text-ink-faint">I am a...</label>
-        <select id="wl-role" name="role"
-          className="mt-1.5 w-full rounded-xl border border-ink/10 bg-paper-subtle/50 px-4 py-3 font-sans text-sm text-ink focus:border-accent focus:bg-paper focus:outline-none transition-colors">
-          <option>Individual Investor</option>
-          <option>Family Office / HNI</option>
-          <option>Financial Advisor / RIA</option>
-          <option>Other</option>
-        </select>
-      </div>
-      <button type="submit" disabled={status === "loading"}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 font-mono text-xs font-semibold uppercase tracking-wider text-paper transition-all hover:bg-ink/90 disabled:opacity-60">
-        <span>{status === "loading" ? "Joining…" : "Join the Waitlist"}</span>
-        <ArrowRight className="h-3.5 w-3.5" />
+      <button
+        type="submit"
+        disabled={status === "loading"}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#22C55E] hover:bg-[#16A34A] px-6 py-3.5 font-sans text-sm font-bold text-white shadow-[0_4px_16px_rgba(34,197,94,0.35)] transition-all active:scale-[0.98] disabled:opacity-60 cursor-pointer"
+      >
+        <span>{status === "loading" ? "Joining…" : "Join the waitlist"}</span>
+        <ArrowRight className="h-4 w-4 stroke-[2.5] text-white" />
       </button>
       {status === "error" && (
         <p className="flex items-center gap-1 font-mono text-xs text-red-500">
