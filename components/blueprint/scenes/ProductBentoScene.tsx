@@ -683,83 +683,97 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                             />
                             {/* Bento Top Specular Bevel Highlight Line */}
                             <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/80 to-transparent pointer-events-none -z-10" />
+
                             {idx === 0 ? (
                               // TILE 01: Understand what you own
-                              <div className="flex flex-col h-full justify-start">
-                                <div>
-                                  <h3
-                                    className="font-sans font-black tracking-[-0.035em] text-neutral-950 leading-[1.12]"
-                                    style={{ fontSize: "clamp(20px, calc(2.2 * var(--bento-vw-tier, 14.4px)), 32px)" }}
-                                  >
-                                    <span className="text-[#22C55E]">Understand</span> what you own
-                                  </h3>
+                              <div className="relative flex flex-col h-full justify-start">
+                                {/* CONTENT LAYER - 100% original layout flow */}
+                                <div className="relative z-10 flex flex-col justify-start">
+                                  <div>
+                                    <h3
+                                      className="font-sans font-black tracking-[-0.035em] text-neutral-950 leading-[1.12]"
+                                      style={{ fontSize: "clamp(20px, calc(2.2 * var(--bento-vw-tier, 14.4px)), 32px)" }}
+                                    >
+                                      <span className="text-[#22C55E]">Understand</span> what you own
+                                    </h3>
+                                  </div>
+
+                                  {/* Vertical Floating Information Layout */}
+                                  <div className="flex flex-col justify-start mt-3.5 sm:mt-5 lg:mt-6 gap-3 sm:gap-4 lg:gap-5">
+                                    {/* Item 1: Overlap Check */}
+                                    <div className="flex items-start gap-2.5 sm:gap-3">
+                                      <img
+                                        src="/bento-icons/stacked-sheets.png"
+                                        alt="Overlap Check"
+                                        className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
+                                      />
+                                      <p
+                                        className="text-neutral-700 font-medium leading-[1.5]"
+                                        style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
+                                      >
+                                        <strong className="font-bold text-neutral-950">Overlap Check.</strong><br />
+                                        Spot when &quot;diversified&quot; funds are secretly the same bet.
+                                      </p>
+                                    </div>
+
+                                    {/* Item 2: Performance, in Context */}
+                                    <div className="flex items-start gap-2.5 sm:gap-3">
+                                      <img
+                                        src="/bento-icons/rising-graph.png"
+                                        alt="Performance, in Context"
+                                        className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
+                                      />
+                                      <p
+                                        className="text-neutral-700 font-medium leading-[1.5]"
+                                        style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
+                                      >
+                                        <strong className="font-bold text-neutral-950">Performance, in Context.</strong><br />
+                                        Real returns, measured against what matters.
+                                      </p>
+                                    </div>
+
+                                    {/* Item 3: Hidden Fee Finder */}
+                                    <div className="flex items-start gap-2.5 sm:gap-3">
+                                      <img
+                                        src="/bento-icons/rupee-coin.png"
+                                        alt="Hidden Fee Finder"
+                                        className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
+                                      />
+                                      <p
+                                        className="text-neutral-700 font-medium leading-[1.5]"
+                                        style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
+                                      >
+                                        <strong className="font-bold text-neutral-950">Hidden Fee Finder.</strong><br />
+                                        What expense ratios are quietly costing you.
+                                      </p>
+                                    </div>
+
+                                    {/* Item 4: Peer Benchmarking */}
+                                    <div className="flex items-start gap-2.5 sm:gap-3">
+                                      <img
+                                        src="/bento-icons/people-group.png"
+                                        alt="Peer Benchmarking"
+                                        className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
+                                      />
+                                      <p
+                                        className="text-neutral-700 font-medium leading-[1.5]"
+                                        style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
+                                      >
+                                        <strong className="font-bold text-neutral-950">Peer Benchmarking.</strong><br />
+                                        Compared against people like you, not a generic index.
+                                      </p>
+                                    </div>
+                                  </div>
                                 </div>
 
-                                {/* Vertical Floating Information Layout */}
-                                <div className="flex flex-col justify-start flex-1 mt-3.5 sm:mt-5 lg:mt-6 gap-3 sm:gap-4 lg:gap-5">
-                                  {/* Item 1: Overlap Check */}
-                                  <div className="flex items-start gap-2.5 sm:gap-3">
-                                    <img
-                                      src="/bento-icons/stacked-sheets.png"
-                                      alt="Overlap Check"
-                                      className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
-                                    />
-                                    <p
-                                      className="text-neutral-700 font-medium leading-[1.5]"
-                                      style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
-                                    >
-                                      <strong className="font-bold text-neutral-950">Overlap Check.</strong><br />
-                                      Spot when &quot;diversified&quot; funds are secretly the same bet.
-                                    </p>
-                                  </div>
-
-                                  {/* Item 2: Performance, in Context */}
-                                  <div className="flex items-start gap-2.5 sm:gap-3">
-                                    <img
-                                      src="/bento-icons/rising-graph.png"
-                                      alt="Performance, in Context"
-                                      className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
-                                    />
-                                    <p
-                                      className="text-neutral-700 font-medium leading-[1.5]"
-                                      style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
-                                    >
-                                      <strong className="font-bold text-neutral-950">Performance, in Context.</strong><br />
-                                      Real returns, measured against what matters.
-                                    </p>
-                                  </div>
-
-                                  {/* Item 3: Hidden Fee Finder */}
-                                  <div className="flex items-start gap-2.5 sm:gap-3">
-                                    <img
-                                      src="/bento-icons/rupee-coin.png"
-                                      alt="Hidden Fee Finder"
-                                      className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
-                                    />
-                                    <p
-                                      className="text-neutral-700 font-medium leading-[1.5]"
-                                      style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
-                                    >
-                                      <strong className="font-bold text-neutral-950">Hidden Fee Finder.</strong><br />
-                                      What expense ratios are quietly costing you.
-                                    </p>
-                                  </div>
-
-                                  {/* Item 4: Peer Benchmarking */}
-                                  <div className="flex items-start gap-2.5 sm:gap-3">
-                                    <img
-                                      src="/bento-icons/people-group.png"
-                                      alt="Peer Benchmarking"
-                                      className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] shrink-0 mt-0.5 object-contain"
-                                    />
-                                    <p
-                                      className="text-neutral-700 font-medium leading-[1.5]"
-                                      style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
-                                    >
-                                      <strong className="font-bold text-neutral-950">Peer Benchmarking.</strong><br />
-                                      Compared against people like you, not a generic index.
-                                    </p>
-                                  </div>
+                                {/* DECORATIVE ILLUSTRATION LAYER - LOWER-RIGHT WHITESPACE */}
+                                <div className="absolute right-2 sm:right-3 lg:right-4 bottom-2 sm:bottom-2.5 lg:bottom-3 pointer-events-none select-none z-0 flex items-end justify-end">
+                                  <img
+                                    src="/product-cards/sketch-understand.png"
+                                    alt=""
+                                    aria-hidden="true"
+                                    className="w-auto h-auto max-h-[85px] sm:max-h-[98px] lg:max-h-[110px] max-w-[90px] sm:max-w-[105px] lg:max-w-[118px] object-contain drop-shadow-sm"
+                                  />
                                 </div>
                               </div>
                             ) : idx === 1 ? (
@@ -792,19 +806,32 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                               </div>
                             ) : idx === 2 ? (
                               // TILE 03: See everything
-                              <div className="flex flex-col h-full justify-start">
-                                <h3
-                                  className="font-sans font-black tracking-[-0.035em] text-neutral-950 leading-[1.12]"
-                                  style={{ fontSize: "clamp(20px, calc(2.2 * var(--bento-vw-tier, 14.4px)), 32px)" }}
-                                >
-                                  See <span className="text-[#22C55E]">everything</span>
-                                </h3>
-                                <p
-                                  className="mt-3.5 sm:mt-4 text-neutral-700 font-medium leading-[1.52]"
-                                  style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
-                                >
-                                  Mutual funds, stocks, bank accounts, loans, credit cards, real estate. Every asset and liability, aggregated into one accurate number.
-                                </p>
+                              <div className="relative flex flex-col h-full justify-start">
+                                {/* CONTENT LAYER - 100% original layout flow */}
+                                <div className="relative z-10 flex flex-col justify-start">
+                                  <h3
+                                    className="font-sans font-black tracking-[-0.035em] text-neutral-950 leading-[1.12]"
+                                    style={{ fontSize: "clamp(20px, calc(2.2 * var(--bento-vw-tier, 14.4px)), 32px)" }}
+                                  >
+                                    See <span className="text-[#22C55E]">everything</span>
+                                  </h3>
+                                  <p
+                                    className="mt-3.5 sm:mt-4 text-neutral-700 font-medium leading-[1.52]"
+                                    style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
+                                  >
+                                    Mutual funds, stocks, bank accounts, loans, credit cards, real estate. Every asset and liability, aggregated into one accurate number.
+                                  </p>
+                                </div>
+
+                                {/* DECORATIVE ILLUSTRATION LAYER - LOWER-RIGHT WHITESPACE */}
+                                <div className="absolute right-2 sm:right-3 lg:right-3.5 bottom-1.5 sm:bottom-2 lg:bottom-2.5 pointer-events-none select-none z-0 flex items-end justify-end">
+                                  <img
+                                    src="/product-cards/sketch-see-everything.png"
+                                    alt=""
+                                    aria-hidden="true"
+                                    className="w-auto h-auto max-h-[46px] sm:max-h-[52px] lg:max-h-[58px] max-w-[76px] sm:max-w-[86px] lg:max-w-[96px] object-contain drop-shadow-sm"
+                                  />
+                                </div>
                               </div>
                             ) : idx === 3 ? (
                               // TILE 04: Know your risk
@@ -979,7 +1006,6 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                                     </div>
                                   </div>
                                 </div>
-
                               </div>
                             )}
                           </div>
