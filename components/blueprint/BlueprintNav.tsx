@@ -200,48 +200,115 @@ export function BlueprintNav() {
 
   const navContainerRef = useRef<HTMLDivElement | null>(null);
   const linkRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const isClickScrollingRef = useRef(false);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const rafIdRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const handleScroll = () => {
+    const updateActiveSection = () => {
       const scrollY = window.scrollY;
       setScrolled(scrollY > 60);
-      setIsHeroSection(scrollY < 300);
+
+      if (isClickScrollingRef.current) return;
+
+      // 1. Top of page: Hero / Product
+      if (scrollY < 160) {
+        setIsHeroSection(true);
+        setActiveId("product");
+        return;
+      }
+
+      // 2. Bottom of page: Contact (ensures Contact lights up even if at exact bottom)
+      const windowHeight = window.innerHeight;
+      const docHeight = document.documentElement.scrollHeight;
+      if (windowHeight + scrollY >= docHeight - 80) {
+        setIsHeroSection(false);
+        setActiveId("contact");
+        return;
+      }
+
+      // 3. Focal point check: ~35% down viewport where user's primary focus sits
+      const focalY = Math.min(Math.max(windowHeight * 0.35, 120), 320);
+      const sectionIds = ["contact", "faq", "about", "security", "product"];
+
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= focalY && rect.bottom > focalY) {
+          setIsHeroSection(id === "product" && scrollY < 300);
+          setActiveId(id);
+          return;
+        }
+      }
+
+      // 4. Fallback check: maximum visible height in viewport
+      let bestId: string | null = null;
+      let maxVisibleHeight = -1;
+
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        const visibleTop = Math.max(0, rect.top);
+        const visibleBottom = Math.min(windowHeight, rect.bottom);
+        const visibleHeight = visibleBottom - visibleTop;
+
+        if (visibleHeight > maxVisibleHeight) {
+          maxVisibleHeight = visibleHeight;
+          bestId = id;
+        }
+      }
+
+      if (bestId) {
+        setIsHeroSection(bestId === "product" && scrollY < 300);
+        setActiveId(bestId);
+      }
+    };
+
+    const handleScroll = () => {
+      if (rafIdRef.current !== null) return;
+      rafIdRef.current = requestAnimationFrame(() => {
+        rafIdRef.current = null;
+        updateActiveSection();
+      });
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
+    window.addEventListener("resize", handleScroll, { passive: true });
 
-    const sectionIds = ["hero", "product", "security", "about", "faq", "contact"];
-    const sections = sectionIds
-      .map((id) => document.getElementById(id))
-      .filter(Boolean) as HTMLElement[];
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            if (id === "hero") {
-              setIsHeroSection(true);
-              setActiveId("product");
-            } else {
-              setIsHeroSection(false);
-              setActiveId(id);
-            }
-          }
-        });
-      },
-      {
-        rootMargin: "-25% 0px -45% 0px",
-        threshold: 0.1,
+    const handleCustomActiveSection = (e: Event) => {
+      if (isClickScrollingRef.current) return;
+      const customEvent = e as CustomEvent<{ section: string }>;
+      if (customEvent.detail?.section) {
+        const sec = customEvent.detail.section;
+        if (sec === "hero") {
+          setIsHeroSection(true);
+          setActiveId("product");
+        } else if (NAV_ITEMS.some((item) => item.id === sec)) {
+          setIsHeroSection(false);
+          setActiveId(sec);
+        }
       }
-    );
+    };
 
-    sections.forEach((sec) => observer.observe(sec));
+    window.addEventListener("unifolio-active-section", handleCustomActiveSection);
+
+    // Initial evaluation
+    updateActiveSection();
+    const timer = setTimeout(updateActiveSection, 150);
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      observer.disconnect();
+      window.removeEventListener("resize", handleScroll);
+      window.removeEventListener("unifolio-active-section", handleCustomActiveSection);
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+      clearTimeout(timer);
     };
   }, []);
 
@@ -258,19 +325,34 @@ export function BlueprintNav() {
 
     const targetEl = document.getElementById(id);
     if (targetEl) {
-      targetEl.scrollIntoView({ behavior: "smooth" });
+      isClickScrollingRef.current = true;
       setActiveId(id);
+      setIsHeroSection(id === "product" && window.scrollY < 300);
+
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+      clickTimeoutRef.current = setTimeout(() => {
+        isClickScrollingRef.current = false;
+        requestAnimationFrame(() => {
+          const scrollY = window.scrollY;
+          setScrolled(scrollY > 60);
+        });
+      }, 950);
+
+      targetEl.scrollIntoView({ behavior: "smooth" });
     }
   };
 
   return (
-    <nav
-      className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-16 select-none transition-opacity duration-500 ease-out ${
+    <>
+      <nav
+      className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-16 py-4 select-none transition-all duration-300 ease-out ${
         isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
       } ${
         scrolled
-          ? "bg-[#FAF8F5]/85 border-b border-black/[0.06] backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] py-3.5"
-          : "bg-transparent border-b border-transparent py-5"
+          ? "bg-[#FAF8F5]/85 border-b border-black/[0.06] backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.06)]"
+          : "bg-transparent border-b border-transparent"
       }`}
     >
       {/* Left Brand Logo: Seamlessly swaps dark vs white wordmark */}
@@ -281,8 +363,14 @@ export function BlueprintNav() {
           if (typeof window !== "undefined") {
             if (window.location.pathname === "/" || window.location.pathname === "") {
               e.preventDefault();
-              // No local setActiveId: wait for BlueprintHero's own
-              // "unifolio-active-section" dispatch once Hero is actually reached.
+              isClickScrollingRef.current = true;
+              setActiveId("product");
+              setIsHeroSection(true);
+              if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+              clickTimeoutRef.current = setTimeout(() => {
+                isClickScrollingRef.current = false;
+              }, 950);
+              window.scrollTo({ top: 0, behavior: "smooth" });
               window.dispatchEvent(
                 new CustomEvent("unifolio-nav-click", { detail: { section: "hero" } })
               );
@@ -300,9 +388,7 @@ export function BlueprintNav() {
           width={152}
           height={35}
           priority
-          className={`w-auto object-contain select-none transition-all duration-300 group-hover:scale-[1.02] ${
-            isHero ? "h-[27px] sm:h-8" : "h-6 sm:h-7"
-          }`}
+          className="w-auto h-[27px] sm:h-8 object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
         />
       </Link>
 
@@ -395,17 +481,18 @@ export function BlueprintNav() {
         }`}
       >
         <Button
-          variant="primary"
+          variant="green"
           size="md"
-          className="shadow-[0_2px_12px_rgba(34,197,94,0.12)] hover:shadow-[0_4px_20px_rgba(34,197,94,0.24)]"
-          innerClassName="px-5 sm:px-6 py-2.5 sm:py-3 text-[13.5px] sm:text-sm font-semibold tracking-tight whitespace-nowrap"
+          className="shadow-[0_2px_14px_rgba(34,197,94,0.30)] hover:shadow-[0_4px_22px_rgba(34,197,94,0.45)]"
+          innerClassName="px-5 sm:px-6 py-2.5 sm:py-3 text-[13.5px] sm:text-sm font-bold text-white tracking-tight whitespace-nowrap"
           onClick={() => setWaitlistOpen(true)}
         >
           Join the Waitlist
         </Button>
       </div>
 
+      </nav>
       <WaitlistModal open={waitlistOpen} onClose={() => setWaitlistOpen(false)} />
-    </nav>
+    </>
   );
 }
