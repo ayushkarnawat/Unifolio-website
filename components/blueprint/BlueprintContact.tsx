@@ -745,7 +745,7 @@ export function BlueprintContact() {
                                 setFormData({ ...formData, organization: opt });
                                 setDropdownOpen(false);
                               }}
-                              className={`w-full flex items-center justify-between px-4.5 py-3.5 rounded-xl text-base sm:text-lg transition-all duration-200 cursor-pointer ${
+                              className={`w-full flex items-center justify-between px-4.5 py-3.5 rounded-xl text-base sm:text-lg cursor-pointer ${
                                 isSelected
                                   ? "bg-[#22C55E]/12 text-[#0A2E14] font-semibold border border-[#22C55E]/30"
                                   : "text-[#111613]/80 hover:bg-black/[0.05] hover:text-[#111613] font-normal"
@@ -766,7 +766,7 @@ export function BlueprintContact() {
                 </div>
               )}
 
-              {/* Step 3: Focus Area with Refined Tactile Option Buttons */}
+              {/* Step 3: Focus Area with Clean Static Option Buttons */}
               {currentStep === 2 && (
                 <div className="space-y-4 sm:space-y-5 w-full max-w-xl mx-auto">
                   <h3 className="font-sans font-light text-2xl sm:text-3xl md:text-[36px] lg:text-[38px] text-[#111613] tracking-tight leading-[1.15]">
@@ -797,7 +797,7 @@ export function BlueprintContact() {
                     />
                   </div>
 
-                  {/* Tactile Response Option Cards */}
+                  {/* Clean Static Response Option Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 max-w-lg mx-auto pt-2.5 sm:pt-3">
                     {FOCUS_PILLS.map((pill) => {
                       const isSelected = formData.focusArea === pill;
@@ -806,29 +806,22 @@ export function BlueprintContact() {
                           key={pill}
                           type="button"
                           onClick={() => setFormData({ ...formData, focusArea: pill })}
-                          className={`group relative flex items-center gap-3 px-4.5 py-3 rounded-xl border transition-all duration-300 cursor-pointer active:scale-[0.98] overflow-hidden ${
+                          className={`relative flex items-center gap-3 px-4.5 py-3 rounded-xl border cursor-pointer select-none ${
                             isSelected
-                              ? "border-[#22C55E]/60 bg-[#22C55E]/10 text-[#0A2E14] shadow-[0_4px_24px_rgba(34,197,94,0.22)] -translate-y-0.5"
-                              : "border-black/[0.08] bg-white/60 text-[#111613]/80 hover:border-black/20 hover:bg-white/90 hover:text-[#111613] hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
+                              ? "border-[#22C55E] bg-[#22C55E]/10 text-[#0A2E14] font-medium"
+                              : "border-black/[0.08] bg-white text-[#111613]/80 hover:border-black/20 hover:text-[#111613]"
                           }`}
                         >
                           <div
-                            className={`pointer-events-none absolute -inset-[150%] m-auto w-[400%] h-[400%] transition-opacity duration-500 will-change-transform ${
-                              isSelected
-                                ? "bg-iridescent-conic animate-iridescent-spin opacity-45"
-                                : "bg-iridescent-subtle animate-iridescent-spin opacity-0 group-hover:opacity-35"
-                            }`}
-                          />
-                          <div
-                            className={`relative z-10 w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-300 ${
+                            className={`w-4 h-4 rounded-full flex items-center justify-center border ${
                               isSelected
                                 ? "border-[#22C55E] bg-[#22C55E] text-black"
-                                : "border-black/20 group-hover:border-[#22C55E]/60"
+                                : "border-black/25"
                             }`}
                           >
                             {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                           </div>
-                          <span className="relative z-10 font-sans text-xs sm:text-[13px] font-medium tracking-wide text-left">
+                          <span className="font-sans text-xs sm:text-[13px] tracking-wide text-left">
                             {pill}
                           </span>
                         </button>
@@ -838,7 +831,7 @@ export function BlueprintContact() {
                 </div>
               )}
 
-              {/* Step 4: Primary Goal with Refined Tactile Option Buttons */}
+              {/* Step 4: Primary Goal with Clean Static Option Buttons */}
               {currentStep === 3 && (
                 <div className="space-y-4 sm:space-y-5 w-full max-w-xl mx-auto">
                   <h3 className="font-sans font-light text-2xl sm:text-3xl md:text-[36px] lg:text-[38px] text-[#111613] tracking-tight leading-[1.15]">
@@ -869,7 +862,7 @@ export function BlueprintContact() {
                     />
                   </div>
 
-                  {/* Tactile Response Option Cards */}
+                  {/* Clean Static Response Option Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 max-w-lg mx-auto pt-2.5 sm:pt-3">
                     {GOAL_PILLS.map((pill) => {
                       const isSelected = formData.primaryGoal === pill;
@@ -878,29 +871,22 @@ export function BlueprintContact() {
                           key={pill}
                           type="button"
                           onClick={() => setFormData({ ...formData, primaryGoal: pill })}
-                          className={`group relative flex items-center gap-3 px-4.5 py-3 rounded-xl border transition-all duration-300 cursor-pointer active:scale-[0.98] overflow-hidden ${
+                          className={`relative flex items-center gap-3 px-4.5 py-3 rounded-xl border cursor-pointer select-none ${
                             isSelected
-                              ? "border-[#22C55E]/60 bg-[#22C55E]/10 text-[#0A2E14] shadow-[0_4px_24px_rgba(34,197,94,0.22)] -translate-y-0.5"
-                              : "border-black/[0.08] bg-white/60 text-[#111613]/80 hover:border-black/20 hover:bg-white/90 hover:text-[#111613] hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
+                              ? "border-[#22C55E] bg-[#22C55E]/10 text-[#0A2E14] font-medium"
+                              : "border-black/[0.08] bg-white text-[#111613]/80 hover:border-black/20 hover:text-[#111613]"
                           }`}
                         >
                           <div
-                            className={`pointer-events-none absolute -inset-[150%] m-auto w-[400%] h-[400%] transition-opacity duration-500 will-change-transform ${
-                              isSelected
-                                ? "bg-iridescent-conic animate-iridescent-spin opacity-45"
-                                : "bg-iridescent-subtle animate-iridescent-spin opacity-0 group-hover:opacity-35"
-                            }`}
-                          />
-                          <div
-                            className={`relative z-10 w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-300 ${
+                            className={`w-4 h-4 rounded-full flex items-center justify-center border ${
                               isSelected
                                 ? "border-[#22C55E] bg-[#22C55E] text-black"
-                                : "border-black/20 group-hover:border-[#22C55E]/60"
+                                : "border-black/25"
                             }`}
                           >
                             {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                           </div>
-                          <span className="relative z-10 font-sans text-xs sm:text-[13px] font-medium tracking-wide text-left">
+                          <span className="font-sans text-xs sm:text-[13px] tracking-wide text-left">
                             {pill}
                           </span>
                         </button>
