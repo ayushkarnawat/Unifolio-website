@@ -686,9 +686,9 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
 
                             {idx === 0 ? (
                               // TILE 01: Understand what you own
-                              <div className="relative flex flex-col h-full justify-start">
+                              <div className="relative flex flex-col h-full justify-between">
                                 {/* CONTENT LAYER - 100% original layout flow */}
-                                <div className="relative z-10 flex flex-col justify-start">
+                                <div className="relative z-10 flex flex-col justify-start shrink-0">
                                   <div>
                                     <h3
                                       className="font-sans font-black tracking-[-0.035em] text-neutral-950 leading-[1.12]"
@@ -766,13 +766,13 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                                   </div>
                                 </div>
 
-                                {/* DECORATIVE ILLUSTRATION LAYER - LOWER-RIGHT WHITESPACE */}
-                                <div className="absolute right-2 sm:right-3 lg:right-4 bottom-2 sm:bottom-2.5 lg:bottom-3 pointer-events-none select-none z-0 flex items-end justify-end">
+                                {/* DECORATIVE ILLUSTRATION LAYER - CENTERED IN WHITESPACE */}
+                                <div className="relative z-0 flex-1 min-h-0 w-full flex items-center justify-center pt-2 sm:pt-3 pb-1 pointer-events-none select-none">
                                   <img
                                     src="/product-cards/sketch-understand.png"
                                     alt=""
                                     aria-hidden="true"
-                                    className="w-auto h-auto max-h-[85px] sm:max-h-[98px] lg:max-h-[110px] max-w-[90px] sm:max-w-[105px] lg:max-w-[118px] object-contain drop-shadow-sm"
+                                    className="w-auto h-auto max-h-[118px] sm:max-h-[135px] lg:max-h-[155px] max-w-[128px] sm:max-w-[150px] lg:max-w-[170px] object-contain drop-shadow-sm"
                                   />
                                 </div>
                               </div>

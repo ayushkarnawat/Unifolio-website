@@ -347,149 +347,141 @@ export function BlueprintNav() {
   return (
     <>
       <nav
-      className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-16 py-4 select-none transition-all duration-300 ease-out ${
-        isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
-      } ${
-        scrolled
-          ? "bg-[#FAF8F5]/85 border-b border-black/[0.06] backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.06)]"
-          : "bg-transparent border-b border-transparent"
-      }`}
-    >
-      {/* Left Brand Logo: Seamlessly swaps dark vs white wordmark */}
-      <Link
-        id="navbar-brand-logo"
-        href="/"
-        onClick={(e) => {
-          if (typeof window !== "undefined") {
-            if (window.location.pathname === "/" || window.location.pathname === "") {
-              e.preventDefault();
-              isClickScrollingRef.current = true;
-              setActiveId("product");
-              setIsHeroSection(true);
-              if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
-              clickTimeoutRef.current = setTimeout(() => {
-                isClickScrollingRef.current = false;
-              }, 950);
-              window.scrollTo({ top: 0, behavior: "smooth" });
-              window.dispatchEvent(
-                new CustomEvent("unifolio-nav-click", { detail: { section: "hero" } })
-              );
+        className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-16 py-4 select-none transition-all duration-300 ease-out ${isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
+          } ${scrolled
+            ? "bg-[#FAF8F5]/85 border-b border-black/[0.06] backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.06)]"
+            : "bg-transparent border-b border-transparent"
+          }`}
+      >
+        {/* Left Brand Logo: Seamlessly swaps dark vs white wordmark */}
+        <Link
+          id="navbar-brand-logo"
+          href="/"
+          onClick={(e) => {
+            if (typeof window !== "undefined") {
+              if (window.location.pathname === "/" || window.location.pathname === "") {
+                e.preventDefault();
+                isClickScrollingRef.current = true;
+                setActiveId("product");
+                setIsHeroSection(true);
+                if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+                clickTimeoutRef.current = setTimeout(() => {
+                  isClickScrollingRef.current = false;
+                }, 950);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                window.dispatchEvent(
+                  new CustomEvent("unifolio-nav-click", { detail: { section: "hero" } })
+                );
+              }
             }
-          }
-        }}
-        className={`flex items-center group transition-opacity duration-300 hover:opacity-95 ${
-          isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-      >
-        {/* Dark theme logo */}
-        <Image
-          src="/Logo/unifolio-wordmark-dark.png"
-          alt="Unifolio"
-          width={152}
-          height={35}
-          priority
-          className="w-auto h-[27px] sm:h-8 object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
-        />
-      </Link>
-
-      {/* Center Navigation: Translucent Crystal Glass Pill enclosing the 5 3D Glass Illustrations */}
-      <div
-        ref={navContainerRef}
-        className={`hidden md:flex relative items-center gap-6 sm:gap-7 lg:gap-8 h-[52px] sm:h-[56px] px-6 sm:px-8 rounded-full transition-opacity duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${
-          isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
-        } bg-white/[0.05] backdrop-blur-[10px] border border-white/50 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.05),0_1px_3px_0_rgba(0,0,0,0.02),0_0_14px_-2px_rgba(34,197,94,0.10),inset_0_1px_1px_0_rgba(255,255,255,0.70),inset_0_-1px_1.5px_0_rgba(34,197,94,0.25)]`}
-      >
-        {/* Top Rim Specular Glass Highlight */}
-        <div className="pointer-events-none absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent rounded-full opacity-85" />
-
-        {/* Bottom Emerald Refractive Edge Line */}
-        <div className="pointer-events-none absolute inset-x-10 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-[#22C55E]/35 to-transparent rounded-full opacity-75" />
-
-        {NAV_ITEMS.map((item) => {
-          const isActive = activeId === item.id;
-          const isHovered = hoveredId === item.id;
-
-          return (
-            <Link
-              key={item.id}
-              id={`nav-link-${item.id}`}
-              ref={(el) => {
-                linkRefs.current[item.id] = el;
-              }}
-              href={item.href}
-              onClick={(e) => handleAnchorClick(e, item.href, item.id)}
-              onMouseEnter={() => setHoveredId(item.id)}
-              onMouseLeave={() => setHoveredId(null)}
-              onFocus={() => setHoveredId(item.id)}
-              onBlur={() => setHoveredId(null)}
-              aria-label={item.label}
-              className={`group relative flex items-center h-[38px] sm:h-[40px] rounded-full cursor-pointer transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${
-                isHovered
-                  ? "bg-[#22C55E]/[0.10] border border-[#22C55E]/30 backdrop-blur-md shadow-[0_4px_20px_-2px_rgba(34,197,94,0.22),0_0_12px_rgba(34,197,94,0.16)] pl-2.5 pr-3.5"
-                  : "bg-transparent border border-transparent px-1 shadow-none"
-              }`}
-            >
-              {/* Illustration element */}
-              <div
-                className={`relative flex items-center justify-center shrink-0 transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                  isHovered
-                    ? "scale-[1.08] drop-shadow-[0_2px_10px_rgba(34,197,94,0.45)]"
-                    : isActive
-                    ? "scale-100 opacity-100 drop-shadow-[0_2px_8px_rgba(34,197,94,0.30)]"
-                    : "scale-100 opacity-80 group-hover:opacity-100 group-hover:scale-[1.04]"
-                }`}
-              >
-                <NavSketchIcon id={item.id} isActive={isActive} isHovered={isHovered} />
-
-                {/* Subtle active pip centered underneath the active illustration */}
-                {isActive && !isHovered && (
-                  <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E]" />
-                )}
-              </div>
-
-              {/* Expanding Label Container: Smooth horizontal reveal */}
-              <div
-                className={`overflow-hidden flex items-center transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                  isHovered
-                    ? "max-w-[150px] opacity-100 translate-x-0 ml-2"
-                    : "max-w-0 opacity-0 -translate-x-2 ml-0 pointer-events-none"
-                }`}
-              >
-                {/* Subtle emerald hairline vertical divider */}
-                <div className="w-[1px] h-3.5 bg-[#22C55E]/45 mr-2 shrink-0" />
-
-                {/* Section Name Label */}
-                <span className="font-sans text-[12.5px] sm:text-[13px] font-bold tracking-[0.06em] uppercase text-neutral-900 whitespace-nowrap">
-                  {item.id === "faq" ? (
-                    <>
-                      FAQ<span className="lowercase text-[0.88em] font-bold tracking-normal">s</span>
-                    </>
-                  ) : (
-                    item.label
-                  )}
-                </span>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-
-      {/* Right Navigation Action: Join the Waitlist */}
-      <div
-        className={`flex items-center transition-opacity duration-700 delay-200 ${
-          isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-      >
-        <Button
-          variant="green"
-          size="md"
-          className="shadow-[0_2px_14px_rgba(34,197,94,0.30)] hover:shadow-[0_4px_22px_rgba(34,197,94,0.45)]"
-          innerClassName="px-5 sm:px-6 py-2.5 sm:py-3 text-[13.5px] sm:text-sm font-bold text-white tracking-tight whitespace-nowrap"
-          onClick={() => setWaitlistOpen(true)}
+          }}
+          className={`flex items-center group transition-opacity duration-300 hover:opacity-95 ${isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
         >
-          Join the Waitlist
-        </Button>
-      </div>
+          {/* Dark theme logo */}
+          <Image
+            src="/Logo/unifolio-wordmark-dark.png"
+            alt="Unifolio"
+            width={152}
+            height={35}
+            priority
+            className="w-auto h-[27px] sm:h-8 object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
+          />
+        </Link>
+
+        {/* Center Navigation: Translucent Crystal Glass Pill enclosing the 5 3D Glass Illustrations */}
+        <div
+          ref={navContainerRef}
+          className={`hidden md:flex relative items-center gap-6 sm:gap-7 lg:gap-8 h-[52px] sm:h-[56px] px-6 sm:px-8 rounded-full transition-opacity duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
+            } bg-white/[0.05] backdrop-blur-[10px] border border-white/50 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.05),0_1px_3px_0_rgba(0,0,0,0.02),0_0_14px_-2px_rgba(34,197,94,0.10),inset_0_1px_1px_0_rgba(255,255,255,0.70),inset_0_-1px_1.5px_0_rgba(34,197,94,0.25)]`}
+        >
+          {/* Top Rim Specular Glass Highlight */}
+          <div className="pointer-events-none absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent rounded-full opacity-85" />
+
+          {/* Bottom Emerald Refractive Edge Line */}
+          <div className="pointer-events-none absolute inset-x-10 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-[#22C55E]/35 to-transparent rounded-full opacity-75" />
+
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeId === item.id;
+            const isHovered = hoveredId === item.id;
+
+            return (
+              <Link
+                key={item.id}
+                id={`nav-link-${item.id}`}
+                ref={(el) => {
+                  linkRefs.current[item.id] = el;
+                }}
+                href={item.href}
+                onClick={(e) => handleAnchorClick(e, item.href, item.id)}
+                onMouseEnter={() => setHoveredId(item.id)}
+                onMouseLeave={() => setHoveredId(null)}
+                onFocus={() => setHoveredId(item.id)}
+                onBlur={() => setHoveredId(null)}
+                aria-label={item.label}
+                className={`group relative flex items-center h-[38px] sm:h-[40px] rounded-full cursor-pointer transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${isHovered
+                    ? "bg-[#22C55E]/[0.10] border border-[#22C55E]/30 backdrop-blur-md shadow-[0_4px_20px_-2px_rgba(34,197,94,0.22),0_0_12px_rgba(34,197,94,0.16)] pl-2.5 pr-3.5"
+                    : "bg-transparent border border-transparent px-1 shadow-none"
+                  }`}
+              >
+                {/* Illustration element */}
+                <div
+                  className={`relative flex items-center justify-center shrink-0 transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${isHovered
+                      ? "scale-[1.08] drop-shadow-[0_2px_10px_rgba(34,197,94,0.45)]"
+                      : isActive
+                        ? "scale-100 opacity-100 drop-shadow-[0_2px_8px_rgba(34,197,94,0.30)]"
+                        : "scale-100 opacity-80 group-hover:opacity-100 group-hover:scale-[1.04]"
+                    }`}
+                >
+                  <NavSketchIcon id={item.id} isActive={isActive} isHovered={isHovered} />
+
+                  {/* Subtle active pip centered underneath the active illustration */}
+                  {isActive && !isHovered && (
+                    <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E]" />
+                  )}
+                </div>
+
+                {/* Expanding Label Container: Smooth horizontal reveal */}
+                <div
+                  className={`overflow-hidden flex items-center transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${isHovered
+                      ? "max-w-[150px] opacity-100 translate-x-0 ml-2"
+                      : "max-w-0 opacity-0 -translate-x-2 ml-0 pointer-events-none"
+                    }`}
+                >
+                  {/* Subtle emerald hairline vertical divider */}
+                  <div className="w-[1px] h-3.5 bg-[#22C55E]/45 mr-2 shrink-0" />
+
+                  {/* Section Name Label */}
+                  <span className="font-sans text-[12.5px] sm:text-[13px] font-bold tracking-[0.06em] uppercase text-neutral-900 whitespace-nowrap">
+                    {item.id === "faq" ? (
+                      <>
+                        FAQ<span className="lowercase text-[0.88em] font-bold tracking-normal">s</span>
+                      </>
+                    ) : (
+                      item.label
+                    )}
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Right Navigation Action: Join the Waitlist */}
+        <div
+          className={`flex items-center transition-opacity duration-700 delay-200 ${isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+        >
+          <Button
+            variant="green"
+            size="md"
+            className="shadow-[0_2px_14px_rgba(34,197,94,0.30)] hover:shadow-[0_4px_22px_rgba(34,197,94,0.45)]"
+            innerClassName="px-5 sm:px-6 py-2.5 sm:py-3 text-[13.5px] sm:text-sm font-bold text-white tracking-tight whitespace-nowrap"
+            onClick={() => setWaitlistOpen(true)}
+          >
+            Join the Waitlist
+          </Button>
+        </div>
 
       </nav>
       <WaitlistModal open={waitlistOpen} onClose={() => setWaitlistOpen(false)} />
