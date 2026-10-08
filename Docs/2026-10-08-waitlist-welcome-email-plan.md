@@ -1,11 +1,10 @@
 # Waitlist Welcome Email — Plan
 
 **Status:** Decisions settled with the user on 2026-10-08. This is a planning
-document; the build is done by Antigravity with two prompts, one per repo:
-`Docs/2026-10-08-waitlist-welcome-email-website-anti-gravity-execution-prompt.md`
-(run in this repo) and
-`Docs/2026-10-08-waitlist-welcome-email-infra-anti-gravity-execution-prompt.md`
-(self-contained; copy it to the Terraform infra repo and run it there).
+document. Phase 1 was done by hand in the AWS console; Phase 2 (backend) is
+written and run with `scripts/waitlist-api-setup.sh`; Phases 3–4 (email
+template, form) are built by Antigravity per
+`Docs/2026-10-08-waitlist-welcome-email-website-anti-gravity-execution-prompt.md`.
 Brainstorm page with the email mockups:
 https://claude.ai/artifact/JMcTm6zTuNREbT3ZLK3PBh
 
@@ -31,7 +30,7 @@ deliverability. Signups keep flowing into the existing Google Sheet.
 | "Bring a friend" button | Goes to the website for now: `https://unifolio.in/?ref=<code>&utm_…`. Visitors just see the homepage. The `ref` code is captured quietly so a referral program can be built later without losing history (see "Referral program, later"). |
 | Opt-in | Single opt-in, protected by Cloudflare Turnstile, a honeypot field, API throttling and send-once-per-address. |
 | Sequence | Welcome email only for v1. Contact list exists so launch announcements can be sent later. |
-| Infra style | Phase 1 (SES + DNS) via `scripts/ses-marketing-setup.sh` (AWS CLI, already written). Everything after that in **Terraform**, as a new separate environment in the existing infra repo, matching how `infra/envs/marketing` was done. |
+| Infra style | Phase 1 (SES + DNS) by hand in the AWS console (done 2026-10-08). Phase 2 (backend) with an AWS CLI script in this repo, not Terraform. Everything is built from this laptop and this repo. |
 
 ## Current state (verified in code)
 
@@ -51,8 +50,8 @@ deliverability. Signups keep flowing into the existing Google Sheet.
 - Three separate repos: this **website** repo, the **web app** repo (sends
   login OTPs through SES, untouched by this work), and the **Terraform infra**
   repo (contains `infra/envs/marketing`, S3 state backend; Route 53 hosts
-  `unifolio.in`). The Lambda and its Terraform go in the infra repo; the
-  email template and form changes go here.
+  `unifolio.in`). All of this project lives in the website repo; the other
+  two are not touched.
 
 ## Architecture
 
@@ -78,9 +77,9 @@ Lambda  waitlist-signup  (nodejs22.x, 256 MB, 10 s, reserved concurrency 10)
 
 Bounces and complaints flow: SES config set `unifolio-marketing` → SNS topic
 `unifolio-marketing-ses-alerts` → email to the team, plus SES's account-level
-suppression list. Lambda errors → CloudWatch alarm → same SNS topic.
+suppression list. Lambda errors → CloudWatch alarms → same SNS topic.
 
-## Phase 1 — SES and DNS (user does it in the AWS console)
+## Phase 1 — SES and DNS (done in the AWS console, 2026-10-08)
 
 Chosen route: click through the console following
 `Docs/2026-10-08-waitlist-ses-phase1-console-guide.md` (one CloudShell paste
@@ -105,54 +104,74 @@ the OTP identity.
 Note: SES allows **one contact list per region**, so it's named for all
 marketing, not just the waitlist. Future emails use new topics on the same list.
 
-## Phase 2 — Backend (Terraform + Lambda, infra repo)
+## Phase 2 — Backend (AWS CLI script, this repo)
 
-New environment `infra/envs/waitlist/` with its own state key in the existing
-state bucket (same isolation pattern as `infra/envs/marketing`). Provider
-region `ap-south-1`. Phase 1's SES resources are referenced by name, not
-managed here.
+Built and tested; the user runs the script. Everything lives in this repo:
 
-Resources:
+- `services/waitlist-api/handler.mjs`: the signup logic (no AWS imports).
+- `services/waitlist-api/index.mjs`: Lambda entry point; wires in DynamoDB, SES,
+  SSM, Turnstile and the Google Sheet.
+- `services/waitlist-api/handler.test.mjs`: `node --test services/waitlist-api/`
+  (11 tests: new signup, duplicate, honeypot, captcha, validation, SES failure,
+  sheet failure, referral codes).
+- `scripts/waitlist-api-setup.sh`: creates or updates every AWS piece; safe to re-run.
 
-1. **DynamoDB** `unifolio-waitlist`, on-demand, partition key `pk` (S), PITR on.
+Run order (laptop with `aws configure` done, or CloudShell with the repo files):
+
+```bash
+./scripts/waitlist-api-setup.sh secret                     # paste the Turnstile secret key (hidden)
+SHEET_WEBHOOK_URL='<Apps Script URL>' REPLY_TO='<inbox>' \
+  ./scripts/waitlist-api-setup.sh setup                    # asks y/N before the api.unifolio.in DNS change
+./scripts/waitlist-api-setup.sh smoke-test                 # CORS + API→Lambda check, sends no email
+./scripts/waitlist-api-setup.sh seed-counter <sheet rows>  # once, before launch
+./scripts/waitlist-api-setup.sh status | logs | deploy     # later: check, watch, ship code changes
+```
+
+Resources it creates (all `ap-south-1`, tagged `project=waitlist-email`):
+
+1. **DynamoDB** `unifolio-waitlist`, on-demand, partition key `pk` (S), PITR
+   on, deletion protection on.
    - Signup item: `pk = "SIGNUP#<email lowercased>"`, attributes `email`,
      `name`, `phone` (optional), `spot` (N), `referralCode` (S, 8 chars),
      `referredBy` (S, optional), `source` (page path), `createdAt` (ISO),
      `emailStatus` (`sent` | `failed`), `sesMessageId`, `sheetStatus`
      (`sent` | `failed`).
    - Counter item: `pk = "COUNTER#spot"`, attribute `value` (N).
-2. **SSM SecureString** `/unifolio/waitlist/turnstile-secret`: created by hand
-   with `aws ssm put-parameter` (keeps the secret out of Terraform state);
-   Terraform only references its ARN.
-3. **Lambda** `waitlist-signup`: `nodejs22.x` (Node 20 is past its Lambda
-   deprecation date), handler `index.handler`, single `index.mjs` zipped with
-   `archive_file`. Uses the AWS SDK v3 clients bundled in the runtime, so no
-   `node_modules`. Log group with 30-day retention.
-   Env vars: `TABLE_NAME`, `FROM_ADDRESS`, `REPLY_TO`, `CONFIG_SET`,
-   `CONTACT_LIST`, `CONTACT_TOPIC`, `TEMPLATE_NAME`, `TURNSTILE_SECRET_PARAM`,
-   `SHEET_WEBHOOK_URL`, `SITE_URL`.
-4. **IAM role** for the Lambda, least privilege:
-   - `dynamodb:PutItem`, `UpdateItem`, `GetItem` on the table ARN.
+2. **SSM SecureString** `/unifolio/waitlist/turnstile-secret`, via the
+   script's `secret` command (hidden prompt, so the key never lands in shell history).
+3. **IAM role** `unifolio-waitlist-signup-role`, least privilege:
+   - `dynamodb:PutItem`, `UpdateItem`, `GetItem` on the table only.
    - `ses:SendEmail` on identity `updates.unifolio.in`, configuration set
      `unifolio-marketing`, template `waitlist-welcome-v1`, contact list
      `unifolio-marketing`.
-   - `ses:CreateContact` on the contact list ARN.
-   - `ssm:GetParameter` on the one parameter ARN.
-   - Basic CloudWatch Logs.
+   - `ses:CreateContact` on the contact list.
+   - `ssm:GetParameter` on the one parameter.
+   - Writing to its own log group.
+4. **Lambda** `waitlist-signup`: `nodejs22.x` on arm64 (Node 20 is past its
+   Lambda deprecation date), 256 MB, 10 s, JSON logs to
+   `/aws/lambda/waitlist-signup` (30 days), reserved concurrency 10 (skipped
+   with a warning if the account's concurrency limit is under 100). Uses the
+   SDK v3 bundled in the runtime, so the zip is just `index.mjs` + `handler.mjs`.
+   Env vars: `TABLE_NAME`, `FROM_ADDRESS`, `REPLY_TO`, `CONFIG_SET`,
+   `CONTACT_LIST`, `CONTACT_TOPIC`, `TEMPLATE_NAME`, `TURNSTILE_SECRET_PARAM`,
+   `SHEET_WEBHOOK_URL`, `SITE_URL`.
 5. **API Gateway HTTP API** `unifolio-waitlist-api`, route `POST /waitlist` →
-   Lambda proxy integration (payload v2.0). CORS in the API config (not in the
-   Lambda): origins `https://unifolio.in`, `https://www.unifolio.in`,
-   `http://localhost:3000`; methods `POST`; headers `content-type`; max age
-   86400. `$default` stage, auto-deploy, default route throttling rate 5 /
-   burst 10, JSON access logs to CloudWatch.
-6. **Custom domain** `api.unifolio.in`: ACM certificate in **ap-south-1**
-   (regional endpoints need a same-region cert), DNS-validated in Route 53;
-   `aws_apigatewayv2_domain_name` (REGIONAL, TLS 1.2), API mapping to
-   `$default`, Route 53 A-alias record.
-7. **Alarms**: Lambda `Errors >= 1` over 5 min and `Throttles >= 1` over
-   5 min → SNS topic `unifolio-marketing-ses-alerts` (looked up by name).
-8. **Outputs**: `api_url` (`https://api.unifolio.in/waitlist`), table name,
-   Lambda name.
+   Lambda proxy (payload 2.0). CORS on the API: origins `https://unifolio.in`,
+   `https://www.unifolio.in`, `http://localhost:3000`; method `POST`; header
+   `content-type`; max age 86400. `$default` stage, auto-deploy, throttling
+   5 req/s burst 10, JSON access logs to `/aws/apigateway/unifolio-waitlist-api` (30 days).
+6. **Custom domain** `api.unifolio.in`: ACM certificate in ap-south-1,
+   DNS-validated in Route 53; regional API Gateway domain (TLS 1.2); mapping
+   to `$default`; Route 53 A-alias (asks before writing).
+7. **Alarms** → SNS `unifolio-marketing-ses-alerts`:
+   - `waitlist-signup-handled-errors`: a log metric filter on `level = ERROR`.
+     It catches email, sheet and server failures that the handler logs
+     without throwing.
+   - `waitlist-signup-crashes`: Lambda `Errors` (crashes and timeouts).
+   - `waitlist-signup-throttles`: Lambda `Throttles`.
+
+Not in Terraform. If the team later wants it there, these resources can be
+imported into a new environment in the infra repo.
 
 ### Lambda behaviour
 
@@ -299,18 +318,22 @@ compiled HTML under 100 KB so Gmail doesn't clip it.
 
 ## Phase 5 — Test and launch
 
-1. `SES_REGION=ap-south-1 ./scripts/ses-marketing-setup.sh status`: identity, DKIM and MAIL FROM all `SUCCESS`.
-2. `test-send`: bounce and complaint alerts arrive at the SNS subscriber.
-3. Upload the template, then call the API with `curl` from an allowed origin using
-   Turnstile's test secret/site key pair (always-pass keys), to an inbox you own.
-4. Same email again → `already_joined`, no second email, no second sheet row.
-5. Honeypot filled → 200, nothing stored.
-6. Rendering: Gmail web, Gmail Android/iOS, Apple Mail, Outlook (web + desktop), light and dark.
-7. mail-tester.com score ≥ 9/10.
-8. Unsubscribe link → SES hosted page → contact shows `OPT_OUT` for `product-updates`.
-9. Sheet receives exactly one row per new signup.
-10. Seed the counter (below), switch to real Turnstile keys, deploy the site, submit a real signup.
-11. Register `updates.unifolio.in` in Google Postmaster Tools.
+1. Phase 1 verified: identity, DKIM and MAIL FROM `SUCCESS` (done 2026-10-08).
+2. Simulator bounce and complaint alerts arrived at the SNS subscriber (done 2026-10-08).
+3. `./scripts/waitlist-api-setup.sh smoke-test`: CORS and the API → Lambda path, no email sent.
+4. Upload the template. For an end-to-end test before the real Turnstile
+   widget exists, store Turnstile's always-pass test secret
+   (`1x0000000000000000000000000000000AA`) with `secret`, sign up from
+   `localhost:3000` with the test site key (`1x00000000000000000000AA`) to an
+   inbox you own, then store the real secret again.
+5. Same email again → `already_joined`, no second email, no second sheet row.
+6. Honeypot filled → 200, nothing stored.
+7. Rendering: Gmail web, Gmail Android/iOS, Apple Mail, Outlook (web + desktop), light and dark.
+8. mail-tester.com score ≥ 9/10.
+9. Unsubscribe link → SES hosted page → contact shows `OPT_OUT` for `product-updates`.
+10. Sheet receives exactly one row per new signup.
+11. Seed the counter (below), switch to real Turnstile keys, deploy the site, submit a real signup.
+12. Register `updates.unifolio.in` in Google Postmaster Tools.
 
 ### Seeding the spot counter
 
@@ -318,10 +341,12 @@ People already in the Google Sheet joined earlier and should rank ahead. Before
 launch, count the sheet's signup rows (N) and seed the counter once:
 
 ```bash
-aws dynamodb put-item --region ap-south-1 --table-name unifolio-waitlist \
-  --item '{"pk":{"S":"COUNTER#spot"},"value":{"N":"<N>"}}' \
-  --condition-expression "attribute_not_exists(pk)"
+./scripts/waitlist-api-setup.sh seed-counter <N>
 ```
+
+It refuses to overwrite a counter that already exists, because people may
+already hold those numbers. **Seed before any test signup**, or delete the
+test signups and the counter item first.
 
 The first new signup then gets spot N+1. Existing sheet signups don't get a
 welcome email in v1. A one-off backfill send is possible later.
@@ -365,7 +390,7 @@ To turn it into a real program:
 - [ ] `aws ssm put-parameter --region ap-south-1 --name /unifolio/waitlist/turnstile-secret --type SecureString --value <secret>`
 - [ ] Google Apps Script web app URL (the current `NEXT_PUBLIC_WAITLIST_WEBHOOK_URL` value) for the Lambda's `SHEET_WEBHOOK_URL`.
 - [ ] Current number of signup rows in the sheet (counter seed).
-- [ ] `terraform apply` for `infra/envs/waitlist` (creates billed resources and a DNS record; needs explicit go-ahead).
+- [ ] Run `scripts/waitlist-api-setup.sh setup` (creates billed resources and the `api.unifolio.in` DNS record).
 
 ## Cost
 

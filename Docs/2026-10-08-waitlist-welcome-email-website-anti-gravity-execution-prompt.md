@@ -8,21 +8,22 @@ reasoning behind it, is `Docs/2026-10-08-waitlist-welcome-email-plan.md`.
 Read it completely before starting. The visual reference for the email is
 concept "B · Waitlist pass" on https://claude.ai/artifact/JMcTm6zTuNREbT3ZLK3PBh.
 
-**Three repos exist; you only work in this one:**
-- **Website repo (this one):** email template, template upload script, form changes.
-- **Infra repo (Terraform, separate):** the Lambda, API Gateway, DynamoDB,
-  `api.unifolio.in` domain and alarms. Built from its own prompt,
-  `Docs/2026-10-08-waitlist-welcome-email-infra-anti-gravity-execution-prompt.md`,
-  which the user carries over. Don't create Terraform or Lambda code here.
-- **Web app repo (separate):** sends the login OTPs through SES. Not touched at all.
+**Your scope:** the email template, its upload script, and the form changes.
 
-**Already done, don't redo:** Phase 1 SES/DNS setup is
-`scripts/ses-marketing-setup.sh` (AWS CLI, run by the user). Treat SES
+**Already built, don't modify** (ask first if the contract below seems wrong):
+- `services/waitlist-api/`: the Lambda behind `api.unifolio.in/waitlist`
+  (`handler.mjs` has the exact request validation and responses; read it).
+- `scripts/waitlist-api-setup.sh`: creates the AWS backend.
+- `scripts/ses-marketing-setup.sh`, `Docs/2026-10-08-waitlist-ses-phase1-console-guide.md`: Phase 1.
+
+The web app repo (login OTPs) and the Terraform infra repo are not involved.
+
+**Already done in AWS, don't redo:** Phase 1 SES/DNS setup. Treat SES
 identity `updates.unifolio.in`, configuration set `unifolio-marketing`,
 contact list `unifolio-marketing` (topic `product-updates`) and SNS topic
 `unifolio-marketing-ses-alerts` as existing in `ap-south-1`, account `811364789032`.
 
-**The API contract you build against** (implemented in the infra repo):
+**The API contract you build against** (implemented in `services/waitlist-api/handler.mjs`):
 `POST https://api.unifolio.in/waitlist`, `Content-Type: application/json`,
 CORS allows `https://unifolio.in`, `https://www.unifolio.in`, `http://localhost:3000`.
 
@@ -47,8 +48,9 @@ Responses:
 - Out of scope: `NewsletterBand.tsx`, `ContactForm.tsx`, anything OTP-related.
 
 **Hard rules:**
-- Do NOT run `scripts/deploy.sh`, `scripts/ses-upload-template.sh` (except
-  `bash -n`), or any AWS command that creates, updates or sends. Read-only
+- Do NOT run `scripts/deploy.sh`, `scripts/ses-upload-template.sh` or
+  `scripts/waitlist-api-setup.sh` (except `bash -n`), or any AWS command that
+  creates, updates or sends. Read-only
   `aws ... get-*/list-*` is fine.
 - No secrets in code or committed env files.
 
@@ -116,7 +118,9 @@ ignores real `.env*` files but not the `.example`.
   desktop and 375 px.
 - Email preview screenshots at 600 px and 375 px.
 
+Also confirm `node --test services/waitlist-api/` still passes (you shouldn't
+have touched it).
+
 **Report back with:** files changed, test output, screenshots, every
 placeholder still waiting on the user, and anything in the API contract
-above that turned out to be awkward for the frontend (so the infra prompt
-can be adjusted before it runs).
+that turned out to be awkward for the frontend.
