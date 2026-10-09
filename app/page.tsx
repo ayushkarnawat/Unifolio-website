@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { HeroIntroLogo } from "@/components/hero/HeroIntroLogo";
 import { BlueprintNav } from "@/components/blueprint/BlueprintNav";
 import { BlueprintHero } from "@/components/blueprint/BlueprintHero";
 import { BlueprintAboutMetrics } from "@/components/blueprint/BlueprintAboutMetrics";
@@ -23,9 +22,6 @@ export default function HomePage() {
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
       />
-
-      {/* Cinematic Initial Brand Logo Intro & Navbar Flight */}
-      <HeroIntroLogo />
 
       {/* Floating Pill Navigation Bar */}
       <BlueprintNav />

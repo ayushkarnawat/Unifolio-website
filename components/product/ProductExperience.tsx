@@ -1936,8 +1936,8 @@ export function ProductExperience() {
               ref={ctaRef}
               href="#contact"
               size="sm"
-              variant="primary"
-              className="shadow-sm shadow-emerald-500/10"
+              variant="green"
+              className="shadow-sm shadow-emerald-500/20"
               onClick={(e) => {
                 const target = document.getElementById("contact");
                 if (target) {
@@ -1946,9 +1946,9 @@ export function ProductExperience() {
                 }
               }}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E] group-hover:scale-125 transition-transform" />
-              <span>Join the waitlist</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 text-neutral-500" />
+              <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_white] group-hover:scale-125 transition-transform" />
+              <span className="font-bold text-white">Join the waitlist</span>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 text-white" />
             </LinkButton>
           </div>
         </div>

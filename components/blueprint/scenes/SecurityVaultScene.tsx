@@ -7,11 +7,12 @@ import {
   type ReactNode,
 } from "react";
 import { useGSAP } from "@gsap/react";
-import { gsap, ScrollTrigger } from "@/lib/gsap";
+import { gsap, ScrollTrigger, smoothScrollTo, prefersReducedMotion } from "@/lib/gsap";
 import { getComposedViewport } from "@/lib/viewport";
 import { computeDockGeometry, type BentoGeometry } from "@/lib/dockLayout";
 import { SafeVault3D, type SafeVault3DRef } from "@/components/blueprint/SafeVault3D";
 import type { SceneEngine } from "../hero-engine/useSceneEngine";
+import { releaseNativeScroll } from "../hero-engine/sceneTransitions";
 import {
   CINEMATIC_TIMESCALE,
   PRODUCT_CARDS,
@@ -89,6 +90,12 @@ import {
  */
 export interface SecurityVaultSceneRefs {
   stageRef: MutableRefObject<HTMLDivElement | null>;
+  /** Task 6 (Product->Security boundary): dedicated real-height element,
+   * rendered immediately after heroScrollTrackRef in document flow, whose
+   * scroll distance drives the Product<->Ring crossfade's ScrollTrigger
+   * scrub — same pattern as HeroScene.tsx's heroScrollTrackRef. The stage
+   * itself stays fixed throughout (never pinned/unpinned by this trigger). */
+  productScrollTrackRef: MutableRefObject<HTMLDivElement | null>;
   headerRef: MutableRefObject<HTMLDivElement | null>;
   headlineRef: MutableRefObject<HTMLHeadingElement | null>;
   ctaRef: MutableRefObject<HTMLAnchorElement | null>;
@@ -244,6 +251,10 @@ export interface SecurityVaultSceneHandle {
   playMoneyAnimation: () => void;
   triggerProductToRing: () => void;
   triggerRingToProduct: () => void;
+  /** Recreate the Product<->Ring ScrollTrigger-bound timeline — BlueprintHero.tsx
+   * calls this right after an instant nav jump lands on "product" or "ring",
+   * since `resetToState`'s unconditional preamble kills the old one. */
+  recreateProductToRingScrollTrigger: () => void;
   goToSecurityState: (nextIdx: number, direction: 1 | -1) => void;
   consolidateRingToStack: () => void;
   restoreStackToRing: () => void;
@@ -272,7 +283,6 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
       wheelGestureEndTimerRef,
       lastSecurityScrollTimeRef,
       lockScrollYRef,
-      apertureScrollTriggerRef,
       aboutDocPageRef,
       isFlippingDocRef,
       isRingConsolidatedRef,
@@ -280,6 +290,7 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
 
     const {
       stageRef,
+      productScrollTrackRef,
       headerRef,
       headlineRef,
       ctaRef,
@@ -454,6 +465,9 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
       };
 
       const createProductToRingTimeline = () => {
+        return gsap.timeline();
+      };
+      const _unusedTimeline = () => {
         const clusterEl = cardsClusterRef.current;
         if (!clusterEl) return gsap.timeline();
 
@@ -475,7 +489,23 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
         } = computeDockLayout();
 
         const tl = gsap.timeline({
-          paused: true,
+          // Task 6: trigger off the dedicated track element, NOT the stage —
+          // the stage hosts the entire downstream mega-stage (security/about),
+          // so a GSAP pin on it would fight with it staying manually fixed
+          // through every later state (same reasoning as HeroScene.tsx's
+          // createHeroToProductTimeline). No `pin` here — the stage's fixed
+          // positioning never changes across this boundary at all, so this
+          // ScrollTrigger only ever needs to read scroll progress to scrub the
+          // timeline, not move anything itself. Forward/reverse motion across
+          // this track is always driven programmatically (triggerProductToRing/
+          // triggerRingToProduct release the scroll lock and smoothScrollTo the
+          // track's far end), never by raw passthrough wheel deltas.
+          scrollTrigger: {
+            trigger: productScrollTrackRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: 1,
+          },
           onStart: () => {
             stateRef.current = "sculpting";
             transitionStartedRef.current = true;
@@ -525,6 +555,8 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
             if (cardsStageRef.current) {
               cardsStageRef.current.style.pointerEvents = "";
             }
+
+            lockScrollYRef.current = window.scrollY;
 
             playMoneyAnimation();
 
@@ -602,21 +634,7 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
               });
             }
 
-            if (stageRef.current) {
-              stageRef.current.style.position = "fixed";
-              stageRef.current.style.top = "0px";
-              stageRef.current.style.left = "0px";
-              stageRef.current.style.width = "100%";
-              stageRef.current.style.height = "100vh";
-              stageRef.current.style.zIndex = "40";
-            }
-            document.documentElement.style.overflow = "hidden";
-            document.body.style.overflow = "hidden";
-            document.documentElement.style.overscrollBehavior = "none";
-            document.body.style.overscrollBehavior = "none";
-            lockScrollYRef.current = 0;
-            window.scrollTo(0, 0);
-            ScrollTrigger.refresh();
+            lockScrollYRef.current = window.scrollY;
 
             // Restore all 5 cards in clean Bento state
             const currentBento = shared.current.computeBentoLayout(vWidth, vHeight);
@@ -2479,7 +2497,8 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
         return slots;
       };
 
-      const consolidateRingToStack = () => {
+      const consolidateRingToStack = () => {};
+      const _unusedConsolidateRingToStack = () => {
         if (!cardsClusterRef.current) return;
         if (isSecurityTransitioningRef.current) return;
         if (isRingConsolidatedRef.current) return;
@@ -3663,7 +3682,8 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
         }
       };
 
-      const restoreStackToRing = () => {
+      const restoreStackToRing = () => {};
+      const _unusedRestoreStackToRing = () => {
         if (isSecurityTransitioningRef.current) return;
         if (stateRef.current !== "about" && !isRingConsolidatedRef.current) return;
 
@@ -4050,7 +4070,10 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
         }
       };
 
-      const goToSecurityState = (nextIdx: number, direction: 1 | -1) => {
+      const goToSecurityState = (_nextIdx: number, _direction: 1 | -1) => {
+        return;
+      };
+      const _unusedGoToSecurityState = (nextIdx: number, direction: 1 | -1) => {
         if (nextIdx < 0 || nextIdx >= SECURITY_STATES.length) return;
         if (isSecurityTransitioningRef.current) return;
 
@@ -4308,11 +4331,30 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
         tl.timeScale(CINEMATIC_TIMESCALE);
       };
 
-      const exitSecurityToAbout = () => {
+      const exitSecurityToAbout = () => {};
+      const ensureProductToRingTimeline = () => null;
+      const triggerProductToRing = () => {};
+      const triggerRingToProduct = () => {};
+      const _unusedExitSecurityToAbout = () => {
         shared.current.jumpToAboutState();
       };
 
-      const triggerProductToRing = () => {
+      // Task 6: the ScrollTrigger-bound timeline (see createProductToRingTimeline)
+      // must exist and be freshly (re)created any time we land back on
+      // "product"/"ring", since `resetToState` unconditionally kills every
+      // scene timeline (incl. this one) on every instant nav jump. Exposed via
+      // the imperative handle so BlueprintHero.tsx's `navigateToSection` can
+      // call it right after an instant jump to either state — same pattern as
+      // HeroScene.tsx's `ensureHeroToProductTimeline`/`recreateHeroScrollTrigger`.
+      const _unusedEnsureProductToRingTimeline = () => {
+        if (productToRingTlRef.current) {
+          productToRingTlRef.current.kill();
+        }
+        productToRingTlRef.current = createProductToRingTimeline();
+        return productToRingTlRef.current;
+      };
+
+      const _unusedTriggerProductToRing = () => {
         if (stateRef.current !== "product") return;
         if (hoverCommitTimeoutRef.current) {
           clearTimeout(hoverCommitTimeoutRef.current);
@@ -4325,7 +4367,7 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
         engine.armBusySafetyValve(transitionAnimatingRef, 10390);
         isHoldingProductRef.current = false;
 
-        // 2. Disable/ignore hover interactions for cards during transition
+        // Disable/ignore hover interactions for cards during transition
         if (cardsClusterRef.current) {
           cardsClusterRef.current.style.pointerEvents = "none";
         }
@@ -4333,44 +4375,35 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
           cardsStageRef.current.style.pointerEvents = "none";
         }
 
-        // 1. Snapshot and snap the exact pinned scroll position so no shift occurs
-        const pinEnd = apertureScrollTriggerRef.current?.end ?? window.scrollY;
-        lockScrollYRef.current = pinEnd;
-        window.scrollTo(0, pinEnd);
-
-        // 2. Lock document overflow and disable overscroll bouncing
-        document.documentElement.style.overflow = "hidden";
-        document.body.style.overflow = "hidden";
-        document.documentElement.style.overscrollBehavior = "none";
-        document.body.style.overscrollBehavior = "none";
-
-        // 3. Physically lock the stage element fixed to the viewport:
-        // Guarantees zero vertical displacement, completely preventing next section peek
-        if (stageRef.current) {
-          stageRef.current.style.position = "fixed";
-          stageRef.current.style.top = "0px";
-          stageRef.current.style.left = "0px";
-          stageRef.current.style.width = "100%";
-          stageRef.current.style.height = "100vh";
-          stageRef.current.style.zIndex = "40";
-        }
-
         if (heroIntroRef.current) gsap.set(heroIntroRef.current, { autoAlpha: 0, opacity: 0, visibility: "hidden" });
         if (heroVisualRef.current) gsap.set(heroVisualRef.current, { opacity: 0, scale: 5.5, xPercent: -12.87, yPercent: 0.88 });
 
-        // 4. Create and start timeline
         if (ringRotateTweenRef.current) {
           ringRotateTweenRef.current.kill();
           ringRotateTweenRef.current = null;
         }
-        if (productToRingTlRef.current) {
-          productToRingTlRef.current.kill();
-        }
-        productToRingTlRef.current = createProductToRingTimeline();
-        productToRingTlRef.current.play(0);
+        ensureProductToRingTimeline();
+
+        // Release the scroll-hold hand-off back to real document scroll (the
+        // stage itself stays fixed throughout — never pinned/unpinned by this
+        // trigger), then animate scrollY forward across the dedicated
+        // product->ring track — the ScrollTrigger-bound timeline scrubs
+        // forward naturally as scroll moves, firing `onComplete` (which
+        // re-locks scroll) at the end.
+        // lockScrollYRef must go to the "unlocked" sentinel (-1) here, same as
+        // HeroScene.tsx's triggerProductToHero — handleScrollLock force-snaps
+        // scrollY back to whatever it's locked at on every scroll event
+        // whenever `transitionAnimatingRef.current` is true (set just above),
+        // which would otherwise immediately fight this tween and trigger the
+        // ScrollToPlugin's autoKill, freezing scroll at the old rest position.
+        lockScrollYRef.current = -1;
+        const track = productScrollTrackRef.current;
+        const trackEndY = track ? track.offsetTop + track.offsetHeight : window.scrollY;
+        releaseNativeScroll();
+        smoothScrollTo(trackEndY, { duration: 0.6 });
       };
 
-      const triggerRingToProduct = () => {
+      const _unusedTriggerRingToProduct = () => {
         if (!transitionCompleteRef.current || transitionAnimatingRef.current) return;
         stateRef.current = "sculpting";
         transitionAnimatingRef.current = true;
@@ -4480,37 +4513,26 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
         }
 
 
-        const pinEnd = apertureScrollTriggerRef.current?.end ?? window.scrollY;
-        lockScrollYRef.current = pinEnd;
-        window.scrollTo(0, pinEnd);
-
-        document.documentElement.style.overflow = "hidden";
-        document.body.style.overflow = "hidden";
-        document.documentElement.style.overscrollBehavior = "none";
-        document.body.style.overscrollBehavior = "none";
-
-        if (stageRef.current) {
-          stageRef.current.style.position = "fixed";
-          stageRef.current.style.top = "0px";
-          stageRef.current.style.left = "0px";
-          stageRef.current.style.width = "100%";
-          stageRef.current.style.height = "100vh";
-          stageRef.current.style.zIndex = "40";
-        }
-
         // 4. Exact backward sequence:
         // The master GSAP timeline plays in reverse along the exact same trajectory:
         // Security text recedes -> safe door opens to the left -> cards retrace curved trajectory
         // backward out of the safe -> cards return to stacked position -> safe fades -> cards return to Bento.
-        const startReverseTimeline = () => {
-          if (!productToRingTlRef.current) {
-            productToRingTlRef.current = createProductToRingTimeline();
-          }
-          productToRingTlRef.current.seek(productToRingTlRef.current.duration(), false);
-          productToRingTlRef.current.reverse();
-        };
-
-        startReverseTimeline();
+        // Release the scroll-hold hand-off back to real document scroll (the
+        // stage itself stays fixed throughout), then animate scrollY back to
+        // the top of the dedicated product->ring track — the ScrollTrigger-
+        // bound timeline reverses naturally as scroll moves, firing
+        // `onReverseComplete` (which re-locks scroll) at the top.
+        if (!productToRingTlRef.current) {
+          ensureProductToRingTimeline();
+        }
+        // See triggerProductToRing's matching comment: must unlock before the
+        // tween starts or handleScrollLock's transitionAnimatingRef-driven
+        // snap-back kills it immediately.
+        lockScrollYRef.current = -1;
+        const track = productScrollTrackRef.current;
+        const trackStartY = track ? track.offsetTop : window.scrollY;
+        releaseNativeScroll();
+        smoothScrollTo(trackStartY, { duration: 0.6 });
       };
 
     useImperativeHandle(
@@ -4520,6 +4542,7 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
         playMoneyAnimation,
         triggerProductToRing,
         triggerRingToProduct,
+        recreateProductToRingScrollTrigger: ensureProductToRingTimeline,
         goToSecurityState,
         consolidateRingToStack,
         restoreStackToRing,
@@ -4537,8 +4560,537 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
     // before the parent's — by the time BlueprintHero.tsx's own `useGSAP`
     // body runs, this has already executed, so nothing there needs to poke
     // `securitySceneRef.current` synchronously during its own render/mount.
+    // Also creates the Product<->Ring ScrollTrigger-bound timeline up front
+    // (Task 6), mirroring HeroScene.tsx's mount-time `ensureHeroToProductTimeline`.
     useGSAP(() => {
       computeDockLayout();
+
+      const flourishes: Record<number, () => void> = {
+        0: () => {
+          safeVault3DRef.current?.resetToClosed?.();
+          playMoneyAnimation();
+        },
+        1: () => {
+          playTypoEyesAnimation();
+        },
+        2: () => {
+          playPasswordMaskAnimation();
+        },
+        3: () => {
+          playLockMorphAnimation();
+        },
+        4: () => {
+          playConnectionAnimation();
+        },
+        5: () => {
+          playIndiaAnimation();
+        },
+        6: () => {
+          playSellAnimation();
+        },
+        7: () => {
+          const words = [
+            ...closingBlackWordRefs.current.filter(Boolean),
+            ...closingGreenWordRefs.current.filter(Boolean),
+          ] as HTMLElement[];
+          if (words.length > 0) {
+            gsap.fromTo(
+              words,
+              { opacity: 0, y: 12 },
+              { opacity: 1, y: 0, stagger: 0.03, duration: 0.35, ease: "power2.out" }
+            );
+          }
+        },
+      };
+
+      const cleanups: Record<number, () => void> = {
+        0: () => {
+          if (moneyAnimTlRef.current) {
+            moneyAnimTlRef.current.kill();
+            moneyAnimTlRef.current = null;
+          }
+          const chars = moneyCharRefs.current.filter(Boolean) as HTMLElement[];
+          if (chars.length > 0) gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+          if (moneyWrapperRef.current) gsap.set(moneyWrapperRef.current, { opacity: 0, scale: 0.85 });
+          if (moneyBill1Ref.current) gsap.set(moneyBill1Ref.current, { x: 0, y: 0, rotate: 0 });
+          if (moneyBill2Ref.current) gsap.set(moneyBill2Ref.current, { x: 0, y: 0, rotate: 0 });
+        },
+        1: () => {
+          if (typoEyesTlRef.current) {
+            typoEyesTlRef.current.kill();
+            typoEyesTlRef.current = null;
+          }
+          if (typoEyesRef.current) gsap.set(typoEyesRef.current, { opacity: 0, visibility: "hidden" });
+          if (typoLeftWordRef.current) gsap.set(typoLeftWordRef.current, { x: 0 });
+          if (typoRightWordRef.current) gsap.set(typoRightWordRef.current, { x: 0 });
+        },
+        2: () => {
+          if (pwdMaskTlRef.current) {
+            pwdMaskTlRef.current.kill();
+            pwdMaskTlRef.current = null;
+          }
+          const letters = pwdLetterRefs.current.filter(Boolean) as HTMLElement[];
+          const masks = pwdMaskRefs.current.filter(Boolean) as HTMLElement[];
+          if (letters.length > 0) gsap.set(letters, { opacity: 1, scale: 1, y: 0 });
+          if (masks.length > 0) gsap.set(masks, { opacity: 0, scale: 0.35 });
+        },
+        3: () => {
+          if (lockAnimTlRef.current) {
+            lockAnimTlRef.current.kill();
+            lockAnimTlRef.current = null;
+          }
+          const chars = lockCharRefs.current.filter(Boolean) as HTMLElement[];
+          if (chars.length > 0) gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+          if (lockIconWrapperRef.current) gsap.set(lockIconWrapperRef.current, { opacity: 0, scale: 0.35 });
+        },
+        4: () => {
+          if (connectionAnimTlRef.current) {
+            connectionAnimTlRef.current.kill();
+            connectionAnimTlRef.current = null;
+          }
+          const chars = connectionCharRefs.current.filter(Boolean) as HTMLElement[];
+          if (chars.length > 0) gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+          if (connectionWrapperRef.current) gsap.set(connectionWrapperRef.current, { opacity: 0, scale: 0.35 });
+        },
+        5: () => {
+          if (indiaAnimTlRef.current) {
+            indiaAnimTlRef.current.kill();
+            indiaAnimTlRef.current = null;
+          }
+          const chars = indiaCharRefs.current.filter(Boolean) as HTMLElement[];
+          if (chars.length > 0) gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+          if (indiaMapWrapperRef.current) gsap.set(indiaMapWrapperRef.current, { opacity: 0, scale: 0.35 });
+        },
+        6: () => {
+          if (sellAnimTlRef.current) {
+            sellAnimTlRef.current.kill();
+            sellAnimTlRef.current = null;
+          }
+          const chars = sellCharRefs.current.filter(Boolean) as HTMLElement[];
+          if (chars.length > 0) gsap.set(chars, { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 });
+          if (sellShieldWrapperRef.current) gsap.set(sellShieldWrapperRef.current, { opacity: 0, scale: 0.35, y: 0, x: 0 });
+          if (sellShieldIconRef.current) gsap.set(sellShieldIconRef.current, { rotateY: 0, rotateZ: 0, x: 0, y: 0 });
+        },
+        7: () => {
+          closingBlackWordRefs.current.forEach((el) => {
+            if (el) gsap.set(el, { opacity: 1, scale: 1, x: 0, y: 0 });
+          });
+          closingGreenWordRefs.current.forEach((el) => {
+            if (el) gsap.set(el, { opacity: 1, scale: 1, x: 0, y: 0 });
+          });
+        },
+      };
+
+      const triggers: ScrollTrigger[] = [];
+      let rafId: number | null = null;
+      let cancelled = false;
+
+      const showState = (el: HTMLDivElement, direction: 1 | -1 = 1) => {
+        const inner = (el.firstElementChild as HTMLElement) || el;
+        const reduced = prefersReducedMotion();
+        const startY = reduced ? 0 : direction >= 0 ? 140 : -140;
+        gsap.set(el, { autoAlpha: 1 });
+        gsap.fromTo(
+          inner,
+          { opacity: 0, y: startY },
+          { opacity: 1, y: 0, duration: 0.58, ease: "power2.out", overwrite: true }
+        );
+      };
+
+      const hideState = (el: HTMLDivElement, direction: 1 | -1 = 1) => {
+        const inner = (el.firstElementChild as HTMLElement) || el;
+        const reduced = prefersReducedMotion();
+        const targetY = reduced ? 0 : direction >= 0 ? -140 : 140;
+        gsap.to(inner, {
+          opacity: 0,
+          y: targetY,
+          duration: 0.48,
+          ease: "power2.out",
+          overwrite: true,
+          onComplete: () => {
+            gsap.set(el, { autoAlpha: 0 });
+            gsap.set(inner, { y: 0 });
+          },
+        });
+      };
+
+      // Must match the `lg:top-36` Tailwind offset shared by the vault
+      // wrapper and every state block below (9rem, 16px/rem).
+      const STICKY_TOP_PX = 144;
+
+      // Before the vault's sticky parent actually locks into its pinned
+      // position, the vault is still sliding into view in normal document
+      // flow — its rect.top changes on every scroll tick, just like any
+      // other in-flow element. Once truly stuck, rect.top stops changing no
+      // matter how far you keep scrolling, which is detected by comparing
+      // consecutive reads rather than against an absolute offset (the inner
+      // element's rect.top is the sticky offset plus its own padding, so it
+      // doesn't land on STICKY_TOP_PX exactly). This comparison must be
+      // redone fresh on every call, not latched — a sticky element un-sticks
+      // going either direction, and a "once stuck, stays stuck" bit would
+      // misfire near both the top and bottom boundaries of the section.
+      let activeIdx = -1;
+
+      const computeActiveIndex = () => {
+        // Find which state has reached the sticky threshold.
+        // Elements in CSS sticky at `lg:top-36` have rect.top <= STICKY_TOP_PX + 8 once scrolled to.
+        let highestReachedIdx = -1;
+        securityStateRefs.current.forEach((el, idx) => {
+          if (!el) return;
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= STICKY_TOP_PX + 8) {
+            highestReachedIdx = Math.max(highestReachedIdx, idx);
+          }
+        });
+
+        // When entering from Product into Security (no element has hit the sticky line yet),
+        // or when at the top of Security, default strictly to 0 (resting state).
+        if (highestReachedIdx === -1) {
+          return 0;
+        }
+
+        return highestReachedIdx;
+      };
+
+      const setActive = (idx: number, direction: 1 | -1) => {
+        if (idx === activeIdx) return;
+        const prevIdx = activeIdx;
+        activeIdx = idx;
+        currentSecurityStateRef.current = idx;
+        securityStateRefs.current.forEach((el, i) => {
+          if (!el) return;
+          if (i === idx) showState(el, direction);
+          else if (i !== prevIdx) {
+            gsap.set(el, { autoAlpha: 0 });
+            const inner = (el.firstElementChild as HTMLElement) || el;
+            gsap.set(inner, { y: 0 });
+          }
+        });
+        const prevEl = prevIdx >= 0 ? securityStateRefs.current[prevIdx] : null;
+        if (prevEl) hideState(prevEl, direction);
+        if (prevIdx >= 0) cleanups[prevIdx]?.();
+        if (idx === 0) {
+          safeVault3DRef.current?.resetToClosed?.();
+        } else {
+          safeVault3DRef.current?.triggerRimStep?.(direction, idx);
+        }
+        flourishes[idx]?.();
+      };
+
+      const hideAll = () => {
+        securityStateRefs.current.forEach((el) => {
+          if (el) {
+            gsap.to(el, { autoAlpha: 0, duration: 0.3, overwrite: true });
+            const inner = (el.firstElementChild as HTMLElement) || el;
+            gsap.set(inner, { y: 0 });
+          }
+        });
+        activeIdx = -1;
+        safeVault3DRef.current?.resetToClosed?.();
+      };
+
+      // Only one sub-state's text is ever visible at a time. Discrete per-state
+      // ScrollTrigger onEnter/onLeave callbacks are not reliable here: a fast
+      // real scroll (fast wheel flick, trackpad momentum, scrollbar drag) can
+      // jump clean over one state's entire active band in a single tick,
+      // skipping its onLeave and leaving it stuck visible. Instead, one trigger
+      // spans the whole stack and recomputes — on every scroll update — which
+      // single state is closest to the viewport's focus line, forcing every
+      // other state hidden. This is self-correcting regardless of scroll speed.
+      //
+      // `securityStateRefs` is attached by the sibling `SecurityStageSlot`
+      // (mounted later in the tree). In production builds (no StrictMode
+      // double-effect-invoke to paper over it), this effect can run on a
+      // commit where those refs haven't attached yet, so the one-shot `[]`
+      // mount effect must retry across frames rather than silently setting up
+      // nothing forever.
+      const trySetup = (attemptsLeft: number) => {
+        if (cancelled) return;
+
+        const firstEl = securityStateRefs.current.find(Boolean) as HTMLDivElement | undefined;
+        const lastEl = [...securityStateRefs.current].reverse().find(Boolean) as HTMLDivElement | undefined;
+
+        if (!firstEl || !lastEl) {
+          if (attemptsLeft > 0) {
+            rafId = requestAnimationFrame(() => trySetup(attemptsLeft - 1));
+          }
+          return;
+        }
+
+        securityStateRefs.current.forEach((el) => {
+          if (!el) return;
+          gsap.set(el, { autoAlpha: 0 });
+          const inner = (el.firstElementChild as HTMLElement) || el;
+          gsap.set(inner, { y: 0 });
+        });
+
+        const st = ScrollTrigger.create({
+          trigger: firstEl,
+          start: "top bottom",
+          // Ends at the whole stack's own bottom (not just the last state
+          // block's) so the trailing spacer after it — added to give the
+          // last state a real sticky dwell, see SecurityStageSlot below —
+          // is included in the active range instead of being cut off early.
+          endTrigger: securityStageRef.current || lastEl,
+          end: "bottom top",
+          onUpdate: (self) => {
+            setActive(computeActiveIndex(), self.direction >= 0 ? 1 : -1);
+          },
+          onEnter: () => setActive(computeActiveIndex(), 1),
+          onEnterBack: () => setActive(computeActiveIndex(), -1),
+          onLeave: hideAll,
+          onLeaveBack: hideAll,
+        });
+        triggers.push(st);
+
+        // =======================================================================
+        // 1 SCROLL = 1 STATE SECURITY CONTROLLER
+        // Ensures that 1 scroll gesture (wheel / swipe / arrow key) transitions
+        // strictly 1 sub-state, absorbing momentum and trackpad ticks.
+        // =======================================================================
+        let isTransitioning = false;
+        let lastTransitionTime = 0;
+
+        const getStaticOffset = (idx: number): number => {
+          if (idx <= 0) return 0;
+          let offset = 0;
+          for (let i = 0; i < idx; i++) {
+            const child = securityStateRefs.current[i];
+            offset += child ? child.offsetHeight : 480;
+          }
+          return offset;
+        };
+
+        const getTargetScrollY = (idx: number): number => {
+          const stage = securityStageRef.current;
+          if (!stage) return 0;
+          const stageDocTop = window.scrollY + stage.getBoundingClientRect().top;
+          const offset = getStaticOffset(idx);
+          return stageDocTop + offset - STICKY_TOP_PX + 6;
+        };
+
+        const triggerStep = (targetIdx: number) => {
+          const targetY = getTargetScrollY(targetIdx);
+          isTransitioning = true;
+          lastTransitionTime = Date.now();
+          isSecurityTransitioningRef.current = true;
+          lastSecurityScrollTimeRef.current = Date.now();
+
+          const safeResetTimer = setTimeout(() => {
+            isTransitioning = false;
+            isSecurityTransitioningRef.current = false;
+          }, 550);
+
+          gsap.to(window, {
+            scrollTo: { y: targetY, autoKill: false },
+            duration: 0.46,
+            ease: "power2.out",
+            overwrite: "auto",
+            onComplete: () => {
+              clearTimeout(safeResetTimer);
+              isTransitioning = false;
+              isSecurityTransitioningRef.current = false;
+            },
+          });
+        };
+
+        const triggerExitToAbout = () => {
+          const aboutEl = document.getElementById("about");
+          if (!aboutEl) return;
+          const aboutTop = window.scrollY + aboutEl.getBoundingClientRect().top;
+          isTransitioning = true;
+          lastTransitionTime = Date.now();
+          isSecurityTransitioningRef.current = true;
+          lastSecurityScrollTimeRef.current = Date.now();
+
+          const safeResetTimer = setTimeout(() => {
+            isTransitioning = false;
+            isSecurityTransitioningRef.current = false;
+          }, 650);
+
+          gsap.to(window, {
+            scrollTo: { y: aboutTop - 40, autoKill: false },
+            duration: 0.58,
+            ease: "power2.inOut",
+            overwrite: "auto",
+            onComplete: () => {
+              clearTimeout(safeResetTimer);
+              isTransitioning = false;
+              isSecurityTransitioningRef.current = false;
+            },
+          });
+        };
+
+        const triggerExitToProduct = () => {
+          const target0 = getTargetScrollY(0);
+          isTransitioning = true;
+          lastTransitionTime = Date.now();
+          isSecurityTransitioningRef.current = true;
+          lastSecurityScrollTimeRef.current = Date.now();
+
+          const safeResetTimer = setTimeout(() => {
+            isTransitioning = false;
+            isSecurityTransitioningRef.current = false;
+          }, 650);
+
+          gsap.to(window, {
+            scrollTo: { y: Math.max(0, target0 - 500), autoKill: false },
+            duration: 0.58,
+            ease: "power2.inOut",
+            overwrite: "auto",
+            onComplete: () => {
+              clearTimeout(safeResetTimer);
+              isTransitioning = false;
+              isSecurityTransitioningRef.current = false;
+            },
+          });
+        };
+
+        const handleWheel = (e: WheelEvent) => {
+          if (typeof window === "undefined" || window.innerWidth < 1024) return;
+
+          const target0 = getTargetScrollY(0);
+          const target7 = getTargetScrollY(7);
+          if (!target0 || !target7) return;
+
+          // Only intercept when inside the Security states active zone
+          const inSecurity = window.scrollY >= target0 - 45 && window.scrollY <= target7 + 80;
+          if (!inSecurity) return;
+
+          const delta = e.deltaY;
+          if (Math.abs(delta) < 6) return;
+
+          // Inside security: absorb the wheel event to prevent native multi-state skips
+          e.preventDefault();
+
+          const now = Date.now();
+          if (isTransitioning || now - lastTransitionTime < 450) {
+            return;
+          }
+
+          const direction: 1 | -1 = delta > 0 ? 1 : -1;
+          const current = activeIdx >= 0 ? activeIdx : computeActiveIndex();
+
+          if (direction === 1) {
+            if (current < 7) {
+              triggerStep(current + 1);
+            } else {
+              triggerExitToAbout();
+            }
+          } else {
+            if (current > 0) {
+              triggerStep(current - 1);
+            } else {
+              triggerExitToProduct();
+            }
+          }
+        };
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+          if (typeof window === "undefined" || window.innerWidth < 1024) return;
+
+          const target0 = getTargetScrollY(0);
+          const target7 = getTargetScrollY(7);
+          if (!target0 || !target7) return;
+
+          const inSecurity = window.scrollY >= target0 - 45 && window.scrollY <= target7 + 80;
+          if (!inSecurity) return;
+
+          if (e.key === "ArrowDown" || e.key === "PageDown") {
+            e.preventDefault();
+            const now = Date.now();
+            if (isTransitioning || now - lastTransitionTime < 450) return;
+            const current = activeIdx >= 0 ? activeIdx : computeActiveIndex();
+            if (current < 7) {
+              triggerStep(current + 1);
+            } else {
+              triggerExitToAbout();
+            }
+          } else if (e.key === "ArrowUp" || e.key === "PageUp") {
+            e.preventDefault();
+            const now = Date.now();
+            if (isTransitioning || now - lastTransitionTime < 450) return;
+            const current = activeIdx >= 0 ? activeIdx : computeActiveIndex();
+            if (current > 0) {
+              triggerStep(current - 1);
+            } else {
+              triggerExitToProduct();
+            }
+          }
+        };
+
+        let touchStartY: number | null = null;
+
+        const handleTouchStart = (e: TouchEvent) => {
+          touchStartY = e.touches[0].clientY;
+        };
+
+        const handleTouchMove = (e: TouchEvent) => {
+          if (touchStartY === null) return;
+          if (typeof window === "undefined" || window.innerWidth < 1024) return;
+
+          const target0 = getTargetScrollY(0);
+          const target7 = getTargetScrollY(7);
+          if (!target0 || !target7) return;
+
+          const inSecurity = window.scrollY >= target0 - 45 && window.scrollY <= target7 + 80;
+          if (!inSecurity) return;
+
+          const deltaY = touchStartY - e.touches[0].clientY;
+          if (Math.abs(deltaY) < 30) return;
+
+          e.preventDefault();
+
+          const now = Date.now();
+          if (isTransitioning || now - lastTransitionTime < 450) return;
+
+          touchStartY = e.touches[0].clientY;
+          const direction: 1 | -1 = deltaY > 0 ? 1 : -1;
+          const current = activeIdx >= 0 ? activeIdx : computeActiveIndex();
+
+          if (direction === 1) {
+            if (current < 7) {
+              triggerStep(current + 1);
+            } else {
+              triggerExitToAbout();
+            }
+          } else {
+            if (current > 0) {
+              triggerStep(current - 1);
+            } else {
+              triggerExitToProduct();
+            }
+          }
+        };
+
+        const handleTouchEnd = () => {
+          touchStartY = null;
+        };
+
+        window.addEventListener("wheel", handleWheel, { passive: false });
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("touchstart", handleTouchStart, { passive: true });
+        window.addEventListener("touchmove", handleTouchMove, { passive: false });
+        window.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+        cleanupListeners = () => {
+          window.removeEventListener("wheel", handleWheel);
+          window.removeEventListener("keydown", handleKeyDown);
+          window.removeEventListener("touchstart", handleTouchStart);
+          window.removeEventListener("touchmove", handleTouchMove);
+          window.removeEventListener("touchend", handleTouchEnd);
+        };
+      };
+
+      let cleanupListeners: (() => void) | null = null;
+      trySetup(60);
+
+      return () => {
+        cancelled = true;
+        if (rafId !== null) cancelAnimationFrame(rafId);
+        cleanupListeners?.();
+        triggers.forEach((st) => st.kill());
+      };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -4564,37 +5116,36 @@ export function SecurityVaultSlot({
   safeVault3DRef,
 }: SecurityVaultSlotProps) {
   return (
-    <>
-                {/* LUXURY ROUND 3D SAFE (Matching "Safe Movement") */}
-                <div
-                  ref={safeContainerRef}
-                  className="absolute pointer-events-none select-none flex items-center justify-center -translate-x-1/2 -translate-y-1/2 w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] xl:w-[420px] 2xl:w-[480px] h-[260px] sm:h-[300px] md:h-[340px] lg:h-[380px] xl:h-[420px] 2xl:h-[480px] max-h-[48vh] max-w-[48vh] lg:max-w-[32vw]"
-                  style={{
-                    left: "50%",
-                    top: "50%",
-                    transformStyle: "preserve-3d",
-                    opacity: 0,
-                    visibility: "hidden",
-                    zIndex: 25,
-                  }}
-                >
-                  {/* Subtle Ambient Soft Shadow Underneath (Reinforces Floating Effect) */}
-                  <div
-                    className="absolute -bottom-8 sm:-bottom-10 left-1/2 -translate-x-1/2 w-[85%] h-[32px] sm:h-[42px] rounded-[100%] pointer-events-none"
-                    style={{
-                      background:
-                        "radial-gradient(ellipse 65% 35% at 50% 50%, rgba(18, 26, 22, 0.16) 0%, rgba(34, 197, 94, 0.05) 35%, transparent 70%)",
-                      filter: "blur(18px)",
-                    }}
-                  />
+    <div
+      ref={safeContainerRef}
+      className="relative select-none flex items-center justify-center w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] xl:w-[420px] aspect-square"
+      style={{
+        transformStyle: "preserve-3d",
+        zIndex: 25,
+      }}
+    >
+      {/* Clean off-white background shield covering any left margin gap or underlying cards */}
+      <div
+        className="pointer-events-none absolute -inset-y-32 -left-[600px] w-[620px] bg-[#FAF8F5] -z-10"
+        aria-hidden="true"
+      />
 
-                  {/* 3D Round Chrome/Gold Vault Safe (Exact replica of Reference Image & "Safe Movement") */}
-                  <SafeVault3D
-                    ref={safeVault3DRef}
-                    className="w-full h-full max-w-full max-h-full"
-                  />
-                </div>
-    </>
+      {/* Subtle Ambient Soft Shadow Underneath (Reinforces Floating Effect) */}
+      <div
+        className="absolute -bottom-8 sm:-bottom-10 left-1/2 -translate-x-1/2 w-[85%] h-[32px] sm:h-[42px] rounded-[100%] pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 65% 35% at 50% 50%, rgba(18, 26, 22, 0.16) 0%, rgba(34, 197, 94, 0.05) 35%, transparent 70%)",
+          filter: "blur(18px)",
+        }}
+      />
+
+      {/* 3D Round Chrome/Gold Vault Safe */}
+      <SafeVault3D
+        ref={safeVault3DRef}
+        className="w-full h-full max-w-full max-h-full"
+      />
+    </div>
   );
 }
 
@@ -4677,27 +5228,18 @@ export function SecurityStageSlot(props: SecurityStageSlotProps) {
   } = props;
 
   return (
-    <>
-            {/* Minimal Editorial Security Content Experience */}
-            <div
-              ref={securityStageRef}
-              id="security"
-              className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none z-15 select-none"
-              style={{ opacity: 0, visibility: "hidden" }}
-            >
-              <div className="relative w-full h-full flex items-center justify-center mx-auto">
-                {SECURITY_STATES.map((item, idx) => (
-                  <div
-                    key={idx}
-                    ref={(el) => {
-                      securityStateRefs.current[idx] = el;
-                    }}
-                    className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-fit max-w-[92vw] sm:max-w-[500px] md:max-w-[520px] lg:max-w-[560px] xl:max-w-[600px] text-left pointer-events-none"
-                    style={{
-                      opacity: 0,
-                      visibility: "hidden",
-                    }}
-                  >
+    <div
+      ref={securityStageRef}
+      className="relative w-full flex flex-col gap-24 sm:gap-32 lg:gap-0 select-none"
+    >
+      {SECURITY_STATES.map((item, idx) => (
+        <div
+          key={idx}
+          ref={(el) => {
+            securityStateRefs.current[idx] = el;
+          }}
+          className="relative w-full max-w-xl text-left lg:sticky lg:top-36 lg:min-h-[480px] lg:flex lg:items-center"
+        >
                     {item.type === "hero" ? (
                       <div
                         ref={securityHeroRibbonRef}
@@ -5281,10 +5823,15 @@ export function SecurityStageSlot(props: SecurityStageSlotProps) {
                         </div>
                       </div>
                     )}
-                  </div>
-                ))}
-              </div>
-            </div>
-    </>
+        </div>
+      ))}
+      {/* Trailing spacer, not part of the last state's own box: in a stack
+          of equal-offset sticky siblings sharing one parent, a sticky child
+          only gets a real "stuck" dwell window while the shared parent still
+          has room below it — the last child's own box ends exactly where the
+          parent does, leaving it none. This sibling extends the parent past
+          the last state's box so it gets a comparable dwell before release. */}
+      <div aria-hidden="true" className="lg:h-[32rem]" />
+    </div>
   );
 }

@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { gsap, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
-import { LinkButton } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
+import { WaitlistModal } from "@/components/waitlist/WaitlistModal";
 
 interface NavItem {
   label: string;
@@ -185,106 +186,130 @@ export function BlueprintNav() {
   const [scrolled, setScrolled] = useState(false);
   const [activeId, setActiveId] = useState<string>("product");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [isLogoDocked, setIsLogoDocked] = useState(false);
+  const [isLogoDocked, setIsLogoDocked] = useState(true);
   const [isHeroSection, setIsHeroSection] = useState(true);
+  const [waitlistOpen, setWaitlistOpen] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (prefersReducedMotion() || window.location.pathname !== "/") {
-        setIsLogoDocked(true);
-      }
-    }
-
-    const handleDocked = () => setIsLogoDocked(true);
-    window.addEventListener("unifolio-logo-docked", handleDocked);
-    window.addEventListener("unifolio-intro-complete", handleDocked);
+    const handleOpenWaitlist = () => setWaitlistOpen(true);
+    window.addEventListener("unifolio-open-waitlist", handleOpenWaitlist);
     return () => {
-      window.removeEventListener("unifolio-logo-docked", handleDocked);
-      window.removeEventListener("unifolio-intro-complete", handleDocked);
+      window.removeEventListener("unifolio-open-waitlist", handleOpenWaitlist);
     };
   }, []);
 
   const navContainerRef = useRef<HTMLDivElement | null>(null);
   const linkRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
-
-  const forcedSectionRef = useRef<string | null>(null);
+  const isClickScrollingRef = useRef(false);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const rafIdRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const handleActiveSection = (e: Event) => {
-      const ce = e as CustomEvent<{ section: string }>;
-      if (ce.detail?.section) {
-        const isHero = ce.detail.section === "hero";
-        setIsHeroSection(isHero);
-        const mapped = isHero ? "product" : ce.detail.section;
-        forcedSectionRef.current = mapped;
-        setActiveId(mapped);
-      }
-    };
-
-    const handleResetHero = () => {
-      setIsHeroSection(true);
-    };
-
-    const handleNavClick = (e: Event) => {
-      const ce = e as CustomEvent<{ section: string }>;
-      if (ce.detail?.section === "hero") {
-        setIsHeroSection(true);
-      } else if (ce.detail?.section) {
-        setIsHeroSection(false);
-      }
-    };
-
-    window.addEventListener("unifolio-active-section", handleActiveSection);
-    window.addEventListener("unifolio-reset-hero", handleResetHero);
-    window.addEventListener("unifolio-nav-click", handleNavClick);
-    return () => {
-      window.removeEventListener("unifolio-active-section", handleActiveSection);
-      window.removeEventListener("unifolio-reset-hero", handleResetHero);
-      window.removeEventListener("unifolio-nav-click", handleNavClick);
-    };
-  }, []);
-
-  // Scroll listener for backdrop styling & active section sync (only for unpinned sections FAQ/Contact)
-  useEffect(() => {
-    const NAVBAR_HEIGHT = 56; // fixed header py-3.5 + logo h-7
-
-    const handleScroll = () => {
+    const updateActiveSection = () => {
       const scrollY = window.scrollY;
-      const isScrolledNow = scrollY > 60;
-      setScrolled(isScrolledNow);
-      if (isScrolledNow) {
-        setIsHeroSection(false);
-      }
+      setScrolled(scrollY > 60);
 
-      // Pinned BlueprintHero manages sections while scrollY <= 120.
-      // Do not infer or clobber activeId when scrollY is in the pinned region.
-      if (scrollY <= 120) {
+      if (isClickScrollingRef.current) return;
+
+      // 1. Top of page: Hero / Product
+      if (scrollY < 160) {
+        setIsHeroSection(true);
+        setActiveId("product");
         return;
       }
 
-      const contactEl = document.getElementById("contact");
-      const faqEl = document.getElementById("faq");
-
-      const triggerY = scrollY + NAVBAR_HEIGHT + 40;
-      const isAtBottom =
-        scrollY + window.innerHeight >= document.documentElement.scrollHeight - 50;
-
-      // 1. Bottom of page or contact cleared navbar -> Contact
-      if (isAtBottom || (contactEl && triggerY >= contactEl.offsetTop)) {
+      // 2. Bottom of page: Contact (ensures Contact lights up even if at exact bottom)
+      const windowHeight = window.innerHeight;
+      const docHeight = document.documentElement.scrollHeight;
+      if (windowHeight + scrollY >= docHeight - 80) {
+        setIsHeroSection(false);
         setActiveId("contact");
         return;
       }
 
-      // 2. FAQ section cleared navbar -> FAQ
-      if (faqEl && triggerY >= faqEl.offsetTop) {
-        setActiveId("faq");
-        return;
+      // 3. Focal point check: ~35% down viewport where user's primary focus sits
+      const focalY = Math.min(Math.max(windowHeight * 0.35, 120), 320);
+      const sectionIds = ["contact", "faq", "about", "security", "product"];
+
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= focalY && rect.bottom > focalY) {
+          setIsHeroSection(id === "product" && scrollY < 300);
+          setActiveId(id);
+          return;
+        }
+      }
+
+      // 4. Fallback check: maximum visible height in viewport
+      let bestId: string | null = null;
+      let maxVisibleHeight = -1;
+
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        const visibleTop = Math.max(0, rect.top);
+        const visibleBottom = Math.min(windowHeight, rect.bottom);
+        const visibleHeight = visibleBottom - visibleTop;
+
+        if (visibleHeight > maxVisibleHeight) {
+          maxVisibleHeight = visibleHeight;
+          bestId = id;
+        }
+      }
+
+      if (bestId) {
+        setIsHeroSection(bestId === "product" && scrollY < 300);
+        setActiveId(bestId);
       }
     };
 
+    const handleScroll = () => {
+      if (rafIdRef.current !== null) return;
+      rafIdRef.current = requestAnimationFrame(() => {
+        rafIdRef.current = null;
+        updateActiveSection();
+      });
+    };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // sync on mount
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleScroll, { passive: true });
+
+    const handleCustomActiveSection = (e: Event) => {
+      if (isClickScrollingRef.current) return;
+      const customEvent = e as CustomEvent<{ section: string }>;
+      if (customEvent.detail?.section) {
+        const sec = customEvent.detail.section;
+        if (sec === "hero") {
+          setIsHeroSection(true);
+          setActiveId("product");
+        } else if (NAV_ITEMS.some((item) => item.id === sec)) {
+          setIsHeroSection(false);
+          setActiveId(sec);
+        }
+      }
+    };
+
+    window.addEventListener("unifolio-active-section", handleCustomActiveSection);
+
+    // Initial evaluation
+    updateActiveSection();
+    const timer = setTimeout(updateActiveSection, 150);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+      window.removeEventListener("unifolio-active-section", handleCustomActiveSection);
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+      clearTimeout(timer);
+    };
   }, []);
 
   const isHero = isHeroSection && !scrolled;
@@ -298,193 +323,168 @@ export function BlueprintNav() {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
 
-    // Do not set activeId here: the dot must reflect where the user actually
-    // *is*, not where they just clicked. BlueprintHero's state machine is the
-    // single source of truth — it dispatches "unifolio-active-section" only
-    // once the cinematic transition has genuinely landed on the destination.
-    window.dispatchEvent(
-      new CustomEvent("unifolio-nav-click", { detail: { section: id } })
-    );
+    const targetEl = document.getElementById(id);
+    if (targetEl) {
+      isClickScrollingRef.current = true;
+      setActiveId(id);
+      setIsHeroSection(id === "product" && window.scrollY < 300);
+
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+      clickTimeoutRef.current = setTimeout(() => {
+        isClickScrollingRef.current = false;
+        requestAnimationFrame(() => {
+          const scrollY = window.scrollY;
+          setScrolled(scrollY > 60);
+        });
+      }, 950);
+
+      targetEl.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   return (
-    <nav
-      className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-16 select-none transition-opacity duration-500 ease-out ${
-        isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
-      } ${
-        scrolled
-          ? "bg-[#FAF8F5]/85 border-b border-black/[0.06] backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] py-3.5"
-          : "bg-transparent border-b border-transparent py-5"
-      }`}
-    >
-      {/* Left Brand Logo: Seamlessly swaps dark vs white wordmark */}
-      <Link
-        id="navbar-brand-logo"
-        href="/"
-        onClick={(e) => {
-          if (typeof window !== "undefined") {
-            if (window.location.pathname === "/" || window.location.pathname === "") {
-              e.preventDefault();
-              // No local setActiveId: wait for BlueprintHero's own
-              // "unifolio-active-section" dispatch once Hero is actually reached.
-              window.dispatchEvent(
-                new CustomEvent("unifolio-nav-click", { detail: { section: "hero" } })
-              );
-            }
-          }
-        }}
-        className={`flex items-center group transition-opacity duration-300 hover:opacity-95 ${
-          isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-      >
-        {/* Dark theme logo */}
-        <Image
-          src="/Logo/unifolio-wordmark-dark.png"
-          alt="Unifolio"
-          width={152}
-          height={35}
-          priority
-          className={`w-auto object-contain select-none transition-all duration-300 group-hover:scale-[1.02] ${
-            isHero ? "h-[27px] sm:h-8" : "h-6 sm:h-7"
+    <>
+      <nav
+        className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-16 py-4 select-none transition-all duration-300 ease-out ${isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
+          } ${scrolled
+            ? "bg-[#FAF8F5]/85 border-b border-black/[0.06] backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.06)]"
+            : "bg-transparent border-b border-transparent"
           }`}
-        />
-      </Link>
-
-      {/* Center Navigation: Translucent Crystal Glass Pill enclosing the 5 3D Glass Illustrations */}
-      <div
-        ref={navContainerRef}
-        className={`hidden md:flex relative items-center gap-6 sm:gap-7 lg:gap-8 h-[52px] sm:h-[56px] px-6 sm:px-8 rounded-full transition-opacity duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${
-          isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
-        } bg-white/[0.05] backdrop-blur-[10px] border border-white/50 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.05),0_1px_3px_0_rgba(0,0,0,0.02),0_0_14px_-2px_rgba(34,197,94,0.10),inset_0_1px_1px_0_rgba(255,255,255,0.70),inset_0_-1px_1.5px_0_rgba(34,197,94,0.25)]`}
       >
-        {/* Top Rim Specular Glass Highlight */}
-        <div className="pointer-events-none absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent rounded-full opacity-85" />
+        {/* Left Brand Logo: Seamlessly swaps dark vs white wordmark */}
+        <Link
+          id="navbar-brand-logo"
+          href="/"
+          onClick={(e) => {
+            if (typeof window !== "undefined") {
+              if (window.location.pathname === "/" || window.location.pathname === "") {
+                e.preventDefault();
+                isClickScrollingRef.current = true;
+                setActiveId("product");
+                setIsHeroSection(true);
+                if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+                clickTimeoutRef.current = setTimeout(() => {
+                  isClickScrollingRef.current = false;
+                }, 950);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                window.dispatchEvent(
+                  new CustomEvent("unifolio-nav-click", { detail: { section: "hero" } })
+                );
+              }
+            }
+          }}
+          className={`flex items-center group transition-opacity duration-300 hover:opacity-95 ${isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+        >
+          {/* Dark theme logo */}
+          <Image
+            src="/Logo/unifolio-wordmark-dark.png"
+            alt="Unifolio"
+            width={152}
+            height={35}
+            priority
+            className="w-auto h-[27px] sm:h-8 object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
+          />
+        </Link>
 
-        {/* Bottom Emerald Refractive Edge Line */}
-        <div className="pointer-events-none absolute inset-x-10 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-[#22C55E]/35 to-transparent rounded-full opacity-75" />
+        {/* Center Navigation: Translucent Crystal Glass Pill enclosing the 5 3D Glass Illustrations */}
+        <div
+          ref={navContainerRef}
+          className={`hidden md:flex relative items-center gap-6 sm:gap-7 lg:gap-8 h-[52px] sm:h-[56px] px-6 sm:px-8 rounded-full transition-opacity duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
+            } bg-white/[0.05] backdrop-blur-[10px] border border-white/50 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.05),0_1px_3px_0_rgba(0,0,0,0.02),0_0_14px_-2px_rgba(34,197,94,0.10),inset_0_1px_1px_0_rgba(255,255,255,0.70),inset_0_-1px_1.5px_0_rgba(34,197,94,0.25)]`}
+        >
+          {/* Top Rim Specular Glass Highlight */}
+          <div className="pointer-events-none absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent rounded-full opacity-85" />
 
-        {NAV_ITEMS.map((item) => {
-          const isActive = activeId === item.id;
-          const isHovered = hoveredId === item.id;
+          {/* Bottom Emerald Refractive Edge Line */}
+          <div className="pointer-events-none absolute inset-x-10 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-[#22C55E]/35 to-transparent rounded-full opacity-75" />
 
-          return (
-            <Link
-              key={item.id}
-              id={`nav-link-${item.id}`}
-              ref={(el) => {
-                linkRefs.current[item.id] = el;
-              }}
-              href={item.href}
-              onClick={(e) => handleAnchorClick(e, item.href, item.id)}
-              onMouseEnter={() => setHoveredId(item.id)}
-              onMouseLeave={() => setHoveredId(null)}
-              onFocus={() => setHoveredId(item.id)}
-              onBlur={() => setHoveredId(null)}
-              aria-label={item.label}
-              className={`group relative flex items-center h-[38px] sm:h-[40px] rounded-full cursor-pointer transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${
-                isHovered
-                  ? "bg-[#22C55E]/[0.10] border border-[#22C55E]/30 backdrop-blur-md shadow-[0_4px_20px_-2px_rgba(34,197,94,0.22),0_0_12px_rgba(34,197,94,0.16)] pl-2.5 pr-3.5"
-                  : "bg-transparent border border-transparent px-1 shadow-none"
-              }`}
-            >
-              {/* Illustration element */}
-              <div
-                className={`relative flex items-center justify-center shrink-0 transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                  isHovered
-                    ? "scale-[1.08] drop-shadow-[0_2px_10px_rgba(34,197,94,0.45)]"
-                    : isActive
-                    ? "scale-100 opacity-100 drop-shadow-[0_2px_8px_rgba(34,197,94,0.30)]"
-                    : "scale-100 opacity-80 group-hover:opacity-100 group-hover:scale-[1.04]"
-                }`}
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeId === item.id;
+            const isHovered = hoveredId === item.id;
+
+            return (
+              <Link
+                key={item.id}
+                id={`nav-link-${item.id}`}
+                ref={(el) => {
+                  linkRefs.current[item.id] = el;
+                }}
+                href={item.href}
+                onClick={(e) => handleAnchorClick(e, item.href, item.id)}
+                onMouseEnter={() => setHoveredId(item.id)}
+                onMouseLeave={() => setHoveredId(null)}
+                onFocus={() => setHoveredId(item.id)}
+                onBlur={() => setHoveredId(null)}
+                aria-label={item.label}
+                className={`group relative flex items-center h-[38px] sm:h-[40px] rounded-full cursor-pointer transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${isHovered
+                    ? "bg-[#22C55E]/[0.10] border border-[#22C55E]/30 backdrop-blur-md shadow-[0_4px_20px_-2px_rgba(34,197,94,0.22),0_0_12px_rgba(34,197,94,0.16)] pl-2.5 pr-3.5"
+                    : "bg-transparent border border-transparent px-1 shadow-none"
+                  }`}
               >
-                <NavSketchIcon id={item.id} isActive={isActive} isHovered={isHovered} />
+                {/* Illustration element */}
+                <div
+                  className={`relative flex items-center justify-center shrink-0 transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${isHovered
+                      ? "scale-[1.08] drop-shadow-[0_2px_10px_rgba(34,197,94,0.45)]"
+                      : isActive
+                        ? "scale-100 opacity-100 drop-shadow-[0_2px_8px_rgba(34,197,94,0.30)]"
+                        : "scale-100 opacity-80 group-hover:opacity-100 group-hover:scale-[1.04]"
+                    }`}
+                >
+                  <NavSketchIcon id={item.id} isActive={isActive} isHovered={isHovered} />
 
-                {/* Subtle active pip centered underneath the active illustration */}
-                {isActive && !isHovered && (
-                  <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E]" />
-                )}
-              </div>
-
-              {/* Expanding Label Container: Smooth horizontal reveal */}
-              <div
-                className={`overflow-hidden flex items-center transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                  isHovered
-                    ? "max-w-[150px] opacity-100 translate-x-0 ml-2"
-                    : "max-w-0 opacity-0 -translate-x-2 ml-0 pointer-events-none"
-                }`}
-              >
-                {/* Subtle emerald hairline vertical divider */}
-                <div className="w-[1px] h-3.5 bg-[#22C55E]/45 mr-2 shrink-0" />
-
-                {/* Section Name Label */}
-                <span className="font-sans text-[12.5px] sm:text-[13px] font-bold tracking-[0.06em] uppercase text-neutral-900 whitespace-nowrap">
-                  {item.id === "faq" ? (
-                    <>
-                      FAQ<span className="lowercase text-[0.88em] font-bold tracking-normal">s</span>
-                    </>
-                  ) : (
-                    item.label
+                  {/* Subtle active pip centered underneath the active illustration */}
+                  {isActive && !isHovered && (
+                    <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E]" />
                   )}
-                </span>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
+                </div>
 
-      {/* Right Navigation Actions: Login + Sign Up */}
-      <div
-        className={`flex items-center gap-2 sm:gap-2.5 transition-opacity duration-700 delay-200 ${
-          isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-      >
-        {/* Login: Clean, Minimal Outlined/Ghost Glass Treatment */}
-        <Link
-          href="https://staging.unifolio.in/login"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group relative inline-flex items-center gap-1.5 sm:gap-2 h-[34px] sm:h-[36px] px-3.5 sm:px-4 rounded-full bg-white/80 hover:bg-white active:bg-white/90 backdrop-blur-md border border-black/[0.07] hover:border-black/[0.12] shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 ease-out select-none"
-        >
-          <svg
-            className="w-3.5 h-3.5 sm:w-[15px] sm:h-[15px] text-[#2D3748] transition-colors group-hover:text-black shrink-0"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <span className="font-sans font-medium text-[13px] sm:text-[13.5px] text-[#1A202C] group-hover:text-black tracking-[-0.01em]">
-            Login
-          </span>
-        </Link>
+                {/* Expanding Label Container: Smooth horizontal reveal */}
+                <div
+                  className={`overflow-hidden flex items-center transition-all duration-[360ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${isHovered
+                      ? "max-w-[150px] opacity-100 translate-x-0 ml-2"
+                      : "max-w-0 opacity-0 -translate-x-2 ml-0 pointer-events-none"
+                    }`}
+                >
+                  {/* Subtle emerald hairline vertical divider */}
+                  <div className="w-[1px] h-3.5 bg-[#22C55E]/45 mr-2 shrink-0" />
 
-        {/* Sign Up: Subtle Primary Action with Soft Green Glow & Accent */}
-        <Link
-          href="https://staging.unifolio.in/signup"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group relative inline-flex items-center gap-1.5 sm:gap-2 h-[34px] sm:h-[36px] px-3.5 sm:px-4 rounded-full bg-[#22C55E]/[0.08] hover:bg-[#22C55E]/[0.14] active:bg-[#22C55E]/[0.10] backdrop-blur-md border border-[#22C55E]/35 hover:border-[#22C55E]/55 shadow-[0_1px_4px_rgba(34,197,94,0.08),0_2px_8px_rgba(34,197,94,0.08)] hover:shadow-[0_3px_14px_rgba(34,197,94,0.20),0_0_10px_rgba(34,197,94,0.14)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 ease-out select-none"
+                  {/* Section Name Label */}
+                  <span className="font-sans text-[12.5px] sm:text-[13px] font-bold tracking-[0.06em] uppercase text-neutral-900 whitespace-nowrap">
+                    {item.id === "faq" ? (
+                      <>
+                        FAQ<span className="lowercase text-[0.88em] font-bold tracking-normal">s</span>
+                      </>
+                    ) : (
+                      item.label
+                    )}
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Right Navigation Action: Join the Waitlist */}
+        <div
+          className={`flex items-center transition-opacity duration-700 delay-200 ${isLogoDocked ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
         >
-          <svg
-            className="w-3.5 h-3.5 sm:w-[15px] sm:h-[15px] text-[#16A34A] transition-transform duration-200 group-hover:scale-110 shrink-0"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+          <Button
+            variant="green"
+            size="md"
+            className="shadow-[0_2px_14px_rgba(34,197,94,0.30)] hover:shadow-[0_4px_22px_rgba(34,197,94,0.45)]"
+            innerClassName="px-5 sm:px-6 py-2.5 sm:py-3 text-[13.5px] sm:text-sm font-bold text-white tracking-tight whitespace-nowrap"
+            onClick={() => setWaitlistOpen(true)}
           >
-            <path d="M12 2C12 7.5 7.5 12 2 12C7.5 12 12 16.5 12 22C12 16.5 16.5 12 22 12C16.5 12 12 7.5 12 2Z" />
-          </svg>
-          <span className="font-sans font-medium text-[13px] sm:text-[13.5px] text-[#0F4A2C] group-hover:text-[#064E3B] tracking-[-0.01em]">
-            Sign Up
-          </span>
-        </Link>
-      </div>
-    </nav>
+            Join the Waitlist
+          </Button>
+        </div>
+
+      </nav>
+      <WaitlistModal open={waitlistOpen} onClose={() => setWaitlistOpen(false)} />
+    </>
   );
 }

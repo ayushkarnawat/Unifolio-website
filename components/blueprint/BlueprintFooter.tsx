@@ -365,7 +365,7 @@ export function BlueprintFooter() {
       >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-[#8E9B91]/80">
           <div>
-            © 2025 Unifolio. All rights reserved.
+            Copyright © 2026 Keystone Wealthtech Pvt. Ltd. All Rights Reserved.
           </div>
 
           <div className="flex items-center gap-2">

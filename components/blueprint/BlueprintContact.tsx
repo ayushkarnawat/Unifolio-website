@@ -10,25 +10,9 @@ import { Button } from "@/components/ui/Button";
 
 interface FormData {
   name: string;
-  organization: string;
-  focusArea: string;
-  primaryGoal: string;
   email: string;
+  description: string;
 }
-
-const FOCUS_PILLS = [
-  "CAS & CAMS Direct Import",
-  "Hidden Fee Dissection",
-  "Portfolio Sovereign Intelligence",
-  "Institutional Demo",
-];
-
-const GOAL_PILLS = [
-  "Audit Portfolio Costs",
-  "Unify Multi-Broker Accounts",
-  "Family Office Clarity",
-  "Direct Wealth Migration",
-];
 
 export function BlueprintContact() {
   const containerRef = useRef<HTMLElement | null>(null);
@@ -37,6 +21,7 @@ export function BlueprintContact() {
   const stepContainerRef = useRef<HTMLDivElement | null>(null);
   const parallaxBgRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const inputMagneticRef = useRef<HTMLDivElement | null>(null);
   const nextBtnRef = useRef<HTMLButtonElement | null>(null);
 
@@ -44,15 +29,14 @@ export function BlueprintContact() {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [inputFocused, setInputFocused] = useState<boolean>(false);
+
   const [formData, setFormData] = useState<FormData>({
     name: "",
-    organization: "",
-    focusArea: "",
-    primaryGoal: "",
     email: "",
+    description: "",
   });
 
-  const totalSteps = 5;
+  const totalSteps = 3;
 
   // Validation to conditionally reveal the next button
   const canProceed = () => {
@@ -60,13 +44,9 @@ export function BlueprintContact() {
       case 0:
         return formData.name.trim().length > 0;
       case 1:
-        return formData.organization.trim().length > 0;
-      case 2:
-        return formData.focusArea.trim().length > 0;
-      case 3:
-        return formData.primaryGoal.trim().length > 0;
-      case 4:
         return formData.email.trim().length > 0;
+      case 2:
+        return formData.description.trim().length > 0;
       default:
         return false;
     }
@@ -92,7 +72,11 @@ export function BlueprintContact() {
   useEffect(() => {
     if (mode === "interactive") {
       const timer = setTimeout(() => {
-        inputRef.current?.focus();
+        if (currentStep === 2) {
+          textareaRef.current?.focus();
+        } else {
+          inputRef.current?.focus();
+        }
       }, 350);
       return () => clearTimeout(timer);
     }
@@ -106,34 +90,34 @@ export function BlueprintContact() {
       gsap.from(".contact-hero-left", {
         scrollTrigger: {
           trigger: containerRef.current,
-          start: "top 75%",
+          start: "top 88%",
         },
-        y: 35,
+        y: 25,
         opacity: 0,
-        duration: 1.2,
+        duration: 0.9,
         ease: "power2.out",
       });
 
       gsap.from(".contact-hero-right", {
         scrollTrigger: {
           trigger: containerRef.current,
-          start: "top 75%",
+          start: "top 88%",
         },
-        y: 35,
+        y: 25,
         opacity: 0,
-        duration: 1.2,
-        delay: 0.15,
+        duration: 0.9,
+        delay: 0.1,
         ease: "power2.out",
       });
 
       gsap.from(".contact-footer-bar", {
         scrollTrigger: {
           trigger: containerRef.current,
-          start: "top 65%",
+          start: "top 80%",
         },
         opacity: 0,
-        duration: 1.2,
-        delay: 0.3,
+        duration: 0.9,
+        delay: 0.2,
         ease: "power2.out",
       });
     },
@@ -229,57 +213,57 @@ export function BlueprintContact() {
 
   // Transition from Intro to Interactive Conversational Mode
   const startConversation = useCallback(() => {
-    if (prefersReducedMotion()) {
-      setMode("interactive");
-      setCurrentStep(0);
-      return;
-    }
-
-    const tl = gsap.timeline({
-      onComplete: () => {
-        setMode("interactive");
-        setCurrentStep(0);
-      },
-    });
-
-    if (introViewRef.current) {
-      tl.to(
-        introViewRef.current,
-        {
-          opacity: 0,
-          y: -20,
-          scale: 0.98,
-          duration: 0.5,
-          ease: "power2.inOut",
-        },
-        0
-      );
-    }
+    setMode("interactive");
+    setCurrentStep(0);
   }, []);
 
   // Exit Interactive Mode back to Editorial Intro
   const closeConversation = useCallback(() => {
-    if (prefersReducedMotion()) {
+    if (prefersReducedMotion() || !interactiveViewRef.current) {
       setMode("intro");
+      setCurrentStep(0);
       return;
     }
 
-    const tl = gsap.timeline({
+    gsap.to(interactiveViewRef.current, {
+      opacity: 0,
+      y: 12,
+      duration: 0.25,
+      ease: "power2.inOut",
       onComplete: () => {
         setMode("intro");
         setCurrentStep(0);
       },
     });
-
-    if (interactiveViewRef.current) {
-      tl.to(interactiveViewRef.current, {
-        opacity: 0,
-        y: 20,
-        duration: 0.45,
-        ease: "power2.inOut",
-      });
-    }
   }, []);
+
+  // Lock body scroll and handle Escape key while in interactive or completed mode
+  useEffect(() => {
+    if (mode === "interactive" || mode === "completed") {
+      document.body.style.overflow = "hidden";
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          closeConversation();
+        }
+      };
+      window.addEventListener("keydown", handleEscape);
+      return () => {
+        document.body.style.overflow = "";
+        window.removeEventListener("keydown", handleEscape);
+      };
+    }
+  }, [mode, closeConversation]);
+
+  // Entrance animation for interactive mode
+  useEffect(() => {
+    if (mode === "interactive" && interactiveViewRef.current && !prefersReducedMotion()) {
+      gsap.fromTo(
+        interactiveViewRef.current,
+        { opacity: 0, y: 15, scale: 0.98 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "power2.out" }
+      );
+    }
+  }, [mode]);
 
   // Transition between steps
   const goToStep = useCallback(
@@ -351,38 +335,45 @@ export function BlueprintContact() {
     }
   };
 
+  useEffect(() => {
+    if (mode !== "interactive") return;
+    const handleGlobalEnter = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        if (canProceed()) {
+          e.preventDefault();
+          handleNext();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleGlobalEnter);
+    return () => window.removeEventListener("keydown", handleGlobalEnter);
+  }, [mode, currentStep, formData]);
+
   return (
-    <section
-      id="contact"
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className={`relative w-full ${
-        mode === "intro"
-          ? "min-h-screen flex flex-col justify-between"
-          : "min-h-[680px] sm:min-h-[740px] lg:min-h-[820px] py-20 sm:py-28 lg:py-32 px-6 sm:px-12 lg:px-16 xl:px-20 flex items-center justify-center"
-      } bg-[#FAF8F5] text-[#111613] select-none overflow-hidden border-t border-black/[0.08]`}
-    >
-      {/* Seamless Top Blend from FAQ */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#FAF8F5] to-transparent z-20" />
-
-      {/* Fine Subtle Micro Particle Dot Grid on Clean Light Ground */}
-      <div className="pointer-events-none absolute inset-0 w-full h-full flex items-center justify-center z-0 overflow-hidden">
-        <div ref={parallaxBgRef} className="absolute inset-0 w-full h-full will-change-transform">
-          <div className="absolute inset-0 bg-[radial-gradient(rgba(0,0,0,0.04)_1px,transparent_1px)] [background-size:48px_48px] opacity-25" />
+    <>
+      <section
+        id="contact"
+        ref={containerRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="relative w-full flex flex-col pt-12 sm:pt-16 lg:pt-20 pb-8 sm:pb-10 px-6 sm:px-12 lg:px-20 xl:px-24 bg-[#FAF8F5] text-[#111613] select-none border-t border-black/[0.08]"
+      >
+        {/* Fine Subtle Micro Particle Dot Grid on Clean Light Ground */}
+        <div className="pointer-events-none absolute inset-0 w-full h-full flex items-center justify-center z-0 overflow-hidden">
+          <div ref={parallaxBgRef} className="absolute inset-0 w-full h-full will-change-transform">
+            <div className="absolute inset-0 bg-[radial-gradient(rgba(0,0,0,0.04)_1px,transparent_1px)] [background-size:48px_48px] opacity-25" />
+          </div>
         </div>
-      </div>
 
-      {/* =========================================================================
-          STATE A: UNIFIED FULL-SCREEN CLOSING EXPERIENCE
-         ========================================================================= */}
-      {mode === "intro" && (
+        {/* =========================================================================
+            STATE A: UNIFIED FULL-SCREEN CLOSING EXPERIENCE
+           ========================================================================= */}
         <div
           ref={introViewRef}
-          className="relative z-10 w-full flex-1 flex flex-col justify-between px-6 sm:px-12 lg:px-20 xl:px-24 pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-10 max-w-[1520px] mx-auto"
+          className="relative z-10 w-full flex flex-col max-w-[1520px] mx-auto"
         >
           {/* Main Visual Center Stage */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-24 items-center my-auto py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-24 items-center pb-12 sm:pb-16 lg:pb-20">
             
             {/* Left Column: Oversized Monumental Headline & Interactive CTA */}
             <div className="contact-hero-left lg:col-span-7 space-y-9 sm:space-y-11">
@@ -405,9 +396,9 @@ export function BlueprintContact() {
                   onClick={startConversation}
                   className="shadow-[0_4px_30px_rgba(34,197,94,0.18)]"
                 >
-                  <span>Let’s connect</span>
-                  <div className="w-8 h-8 rounded-full bg-[#22C55E] text-black flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                    <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                  <span className="font-bold">Let’s connect</span>
+                  <div className="w-8 h-8 rounded-full bg-[#22C55E] text-white flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                    <ArrowRight className="w-4 h-4 stroke-[2.5] text-white" />
                   </div>
                 </Button>
               </div>
@@ -508,7 +499,7 @@ export function BlueprintContact() {
           {/* Bottom Integrated Footer Bar: Seamless Minimal Strip */}
           <div className="contact-footer-bar pt-10 border-t border-black/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 font-sans text-xs text-[#5A685D]">
             <div>
-              Copyright © 2025 Unifolio. All Rights Reserved.
+              Copyright © 2026 Keystone Wealthtech Pvt. Ltd. All Rights Reserved.
             </div>
 
             <div className="flex items-center gap-6 sm:gap-8 font-mono text-[11px] uppercase tracking-wider">
@@ -528,66 +519,75 @@ export function BlueprintContact() {
             </div>
           </div>
         </div>
-      )}
+      </section>
 
       {/* =========================================================================
           STATE B: FULL INTERACTIVE CONVERSATIONAL FLOW
          ========================================================================= */}
       {mode === "interactive" && (
         <div
-          ref={interactiveViewRef}
-          className="relative z-10 w-full max-w-4xl mx-auto flex flex-col justify-between min-h-[560px] sm:min-h-[620px] py-4 -translate-y-4 sm:-translate-y-6 md:-translate-y-8"
+          className="fixed inset-0 z-40 bg-[#FAF8F5] flex flex-col items-center justify-center pt-20 pb-6 sm:pt-24 sm:pb-8 px-4 sm:px-6 md:px-10 overflow-hidden select-none"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
         >
-          {/* Top Bar: Previous Button + Official Unifolio Wordmark Logo + Close Button */}
-          <div className="flex items-center justify-between w-full pb-8 sm:pb-10">
-            {/* Previous Button */}
-            <button
-              type="button"
-              onClick={handlePrev}
-              disabled={currentStep === 0}
-              className={`inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] transition-all duration-300 cursor-pointer ${
-                currentStep === 0
-                  ? "opacity-0 pointer-events-none"
-                  : "text-[#5A685D] hover:text-[#111613]"
-              }`}
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>PREVIOUS</span>
-            </button>
-
-            {/* Official Logo Asset */}
-            <div className="flex items-center justify-center">
-              <Image
-                src="/Logo/unifolio-wordmark-dark.png"
-                alt="Unifolio"
-                width={125}
-                height={28}
-                className="h-6 sm:h-7 w-auto object-contain select-none opacity-90 transition-opacity hover:opacity-100"
-              />
-            </div>
-
-            {/* Close Button */}
-            <button
-              type="button"
-              onClick={closeConversation}
-              className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.2em] text-[#5A685D] hover:text-[#111613] transition-colors cursor-pointer"
-            >
-              <span>CLOSE</span>
-              <X className="w-3.5 h-3.5" />
-            </button>
+          {/* Subtle Ambient Radial Glow */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
+            <div className="w-[500px] h-[500px] sm:w-[650px] sm:h-[650px] rounded-full bg-radial-vibrant opacity-35 blur-[90px] will-change-transform" />
           </div>
 
-          {/* Center Step Question & Integrated Animated Input Area */}
           <div
-            ref={stepContainerRef}
-            className="flex-1 flex flex-col items-center justify-center text-center px-4 space-y-7 sm:space-y-8 my-auto"
+            ref={interactiveViewRef}
+            className="relative z-10 w-full max-w-xl sm:max-w-2xl mx-auto flex flex-col items-center justify-center my-auto"
           >
-            {/* Minimal Premium Segmented Progress Bar */}
-            <div className="w-full max-w-[180px] sm:max-w-[220px] mx-auto flex items-center gap-1.5 pb-2">
+            {/* Top Bar: Previous Button + Official Unifolio Wordmark Logo (Dead Center) + Close Button */}
+            <div className="relative flex items-center justify-center w-full pb-6 sm:pb-7 lg:pb-8">
+              {/* Previous Button (Pinned Left) */}
+              <div className="absolute left-0 inset-y-0 flex items-center">
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  disabled={currentStep === 0}
+                  className={`inline-flex items-center gap-1.5 font-mono text-[11px] sm:text-xs uppercase tracking-[0.2em] transition-all duration-300 cursor-pointer ${
+                    currentStep === 0
+                      ? "opacity-0 pointer-events-none"
+                      : "text-[#5A685D] hover:text-[#111613]"
+                  }`}
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>PREVIOUS</span>
+                </button>
+              </div>
+
+              {/* Official Logo Asset — Exact Horizontal Center */}
+              <div className="flex items-center justify-center">
+                <Image
+                  src="/Logo/unifolio-wordmark-dark.png"
+                  alt="Unifolio"
+                  width={160}
+                  height={36}
+                  className="h-[32px] sm:h-[36px] w-auto object-contain select-none opacity-90 transition-opacity hover:opacity-100"
+                />
+              </div>
+
+              {/* Close Button (Pinned Right) */}
+              <div className="absolute right-0 inset-y-0 flex items-center">
+                <button
+                  type="button"
+                  onClick={closeConversation}
+                  className="inline-flex items-center gap-1 font-mono text-[11px] sm:text-xs uppercase tracking-[0.2em] text-[#5A685D] hover:text-[#111613] transition-colors cursor-pointer"
+                >
+                  <span>CLOSE</span>
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Minimal Premium Segmented Progress Bar — Perfectly Width-Matched and Axis-Aligned with Logo */}
+            <div className="w-[142px] sm:w-[158px] mx-auto flex items-center gap-1.5 sm:gap-2 pb-8 sm:pb-10 lg:pb-12">
               {Array.from({ length: totalSteps }).map((_, idx) => (
                 <div
                   key={idx}
-                  className="h-[2px] flex-1 rounded-full overflow-hidden bg-black/10 relative transition-all duration-500"
+                  className="h-[2.5px] flex-1 rounded-full overflow-hidden bg-black/10 relative transition-all duration-500"
                 >
                   <div
                     className={`h-full w-full rounded-full transition-all duration-500 ease-out ${
@@ -602,348 +602,226 @@ export function BlueprintContact() {
               ))}
             </div>
 
-            {/* Step 1: Name */}
-            {currentStep === 0 && (
-              <div className="space-y-6 w-full max-w-xl">
-                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] tracking-tight leading-tight">
-                  Hi, my name is
-                </h3>
-                <div
-                  ref={inputMagneticRef}
-                  onMouseMove={handleInputMouseMove}
-                  onMouseLeave={handleInputMouseLeave}
-                  className="relative w-full max-w-md mx-auto group/input will-change-transform"
-                >
-                  {/* Subtle Border Light Shimmer on Hover/Focus */}
-                  <div
-                    className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
-                      inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
-                    }`}
-                  />
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={formData.name}
-                    onFocus={() => setInputFocused(true)}
-                    onBlur={() => setInputFocused(false)}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    onKeyDown={handleKeyDown}
-                    placeholder="John Doe"
-                    className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-xl sm:text-2xl text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Step 2: Organization / Portfolio Type */}
-            {currentStep === 1 && (
-              <div className="space-y-6 w-full max-w-xl">
-                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] tracking-tight leading-tight">
-                  I represent / invest as
-                </h3>
-                <div
-                  ref={inputMagneticRef}
-                  onMouseMove={handleInputMouseMove}
-                  onMouseLeave={handleInputMouseLeave}
-                  className="relative w-full max-w-md mx-auto group/input will-change-transform"
-                >
-                  {/* Subtle Border Light Shimmer on Hover/Focus */}
-                  <div
-                    className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
-                      inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
-                    }`}
-                  />
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={formData.organization}
-                    onFocus={() => setInputFocused(true)}
-                    onBlur={() => setInputFocused(false)}
-                    onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Family Office / Fund / Private Portfolio"
-                    className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-lg sm:text-xl text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Focus Area with Refined Tactile Option Buttons */}
-            {currentStep === 2 && (
-              <div className="space-y-6 w-full max-w-2xl">
-                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] tracking-tight leading-tight">
-                  I would like to explore
-                </h3>
-                <div
-                  ref={inputMagneticRef}
-                  onMouseMove={handleInputMouseMove}
-                  onMouseLeave={handleInputMouseLeave}
-                  className="relative w-full max-w-md mx-auto group/input will-change-transform"
-                >
-                  {/* Subtle Border Light Shimmer on Hover/Focus */}
-                  <div
-                    className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
-                      inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
-                    }`}
-                  />
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={formData.focusArea}
-                    onFocus={() => setInputFocused(true)}
-                    onBlur={() => setInputFocused(false)}
-                    onChange={(e) => setFormData({ ...formData, focusArea: e.target.value })}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Choose below or type custom..."
-                    className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-base sm:text-lg text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
-                  />
-                </div>
-
-                {/* Tactile Response Option Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto pt-2">
-                  {FOCUS_PILLS.map((pill) => {
-                    const isSelected = formData.focusArea === pill;
-                    return (
-                      <button
-                        key={pill}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, focusArea: pill })}
-                        className={`group relative flex items-center gap-3.5 px-5 py-3.5 rounded-2xl border transition-all duration-300 cursor-pointer active:scale-[0.98] overflow-hidden ${
-                          isSelected
-                            ? "border-[#22C55E]/60 bg-[#22C55E]/10 text-[#0A2E14] shadow-[0_4px_24px_rgba(34,197,94,0.22)] -translate-y-0.5"
-                            : "border-black/[0.08] bg-white/60 text-[#111613]/80 hover:border-black/20 hover:bg-white/90 hover:text-[#111613] hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
-                        }`}
-                      >
-                        <div
-                          className={`pointer-events-none absolute -inset-[150%] m-auto w-[400%] h-[400%] transition-opacity duration-500 will-change-transform ${
-                            isSelected
-                              ? "bg-iridescent-conic animate-iridescent-spin opacity-45"
-                              : "bg-iridescent-subtle animate-iridescent-spin opacity-0 group-hover:opacity-35"
-                          }`}
-                        />
-                        <div
-                          className={`relative z-10 w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-300 ${
-                            isSelected
-                              ? "border-[#22C55E] bg-[#22C55E] text-black"
-                              : "border-black/20 group-hover:border-[#22C55E]/60"
-                          }`}
-                        >
-                          {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                        </div>
-                        <span className="relative z-10 font-sans text-xs sm:text-[13px] font-medium tracking-wide text-left">
-                          {pill}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Step 4: Primary Goal with Refined Tactile Option Buttons */}
-            {currentStep === 3 && (
-              <div className="space-y-6 w-full max-w-2xl">
-                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] tracking-tight leading-tight">
-                  My primary goal is
-                </h3>
-                <div
-                  ref={inputMagneticRef}
-                  onMouseMove={handleInputMouseMove}
-                  onMouseLeave={handleInputMouseLeave}
-                  className="relative w-full max-w-md mx-auto group/input will-change-transform"
-                >
-                  {/* Subtle Border Light Shimmer on Hover/Focus */}
-                  <div
-                    className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
-                      inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
-                    }`}
-                  />
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={formData.primaryGoal}
-                    onFocus={() => setInputFocused(true)}
-                    onBlur={() => setInputFocused(false)}
-                    onChange={(e) => setFormData({ ...formData, primaryGoal: e.target.value })}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Choose below or type custom..."
-                    className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-base sm:text-lg text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
-                  />
-                </div>
-
-                {/* Tactile Response Option Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto pt-2">
-                  {GOAL_PILLS.map((pill) => {
-                    const isSelected = formData.primaryGoal === pill;
-                    return (
-                      <button
-                        key={pill}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, primaryGoal: pill })}
-                        className={`group relative flex items-center gap-3.5 px-5 py-3.5 rounded-2xl border transition-all duration-300 cursor-pointer active:scale-[0.98] overflow-hidden ${
-                          isSelected
-                            ? "border-[#22C55E]/60 bg-[#22C55E]/10 text-[#0A2E14] shadow-[0_4px_24px_rgba(34,197,94,0.22)] -translate-y-0.5"
-                            : "border-black/[0.08] bg-white/60 text-[#111613]/80 hover:border-black/20 hover:bg-white/90 hover:text-[#111613] hover:-translate-y-0.5 shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
-                        }`}
-                      >
-                        <div
-                          className={`pointer-events-none absolute -inset-[150%] m-auto w-[400%] h-[400%] transition-opacity duration-500 will-change-transform ${
-                            isSelected
-                              ? "bg-iridescent-conic animate-iridescent-spin opacity-45"
-                              : "bg-iridescent-subtle animate-iridescent-spin opacity-0 group-hover:opacity-35"
-                          }`}
-                        />
-                        <div
-                          className={`relative z-10 w-4 h-4 rounded-full flex items-center justify-center border transition-all duration-300 ${
-                            isSelected
-                              ? "border-[#22C55E] bg-[#22C55E] text-black"
-                              : "border-black/20 group-hover:border-[#22C55E]/60"
-                          }`}
-                        >
-                          {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                        </div>
-                        <span className="relative z-10 font-sans text-xs sm:text-[13px] font-medium tracking-wide text-left">
-                          {pill}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Step 5: Email & Final Submission */}
-            {currentStep === 4 && (
-              <div className="space-y-6 w-full max-w-xl">
-                <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-[46px] text-[#111613] tracking-tight leading-tight">
-                  You can reach me at
-                </h3>
-                <div
-                  ref={inputMagneticRef}
-                  onMouseMove={handleInputMouseMove}
-                  onMouseLeave={handleInputMouseLeave}
-                  className="relative w-full max-w-md mx-auto group/input will-change-transform"
-                >
-                  {/* Subtle Border Light Shimmer on Hover/Focus */}
-                  <div
-                    className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
-                      inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
-                    }`}
-                  />
-                  <input
-                    ref={inputRef}
-                    type="email"
-                    value={formData.email}
-                    onFocus={() => setInputFocused(true)}
-                    onBlur={() => setInputFocused(false)}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    onKeyDown={handleKeyDown}
-                    placeholder="hello@example.com"
-                    className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-lg sm:text-xl text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Bottom Navigation Control Action (Matching Reference Circular Chevron Button) */}
-          <div className="flex flex-col items-center justify-center pt-6 sm:pt-8 min-h-[72px]">
+            {/* Center Step Question & Integrated Animated Input Area */}
             <div
-              className={`flex flex-col items-center transition-all duration-500 ease-out will-change-transform ${
-                canProceed()
-                  ? "opacity-100 translate-y-0 pointer-events-auto scale-100"
-                  : "opacity-0 translate-y-3 pointer-events-none scale-90"
-              }`}
+              ref={stepContainerRef}
+              className="w-full flex flex-col items-center justify-center text-center px-2 sm:px-4"
             >
-              {currentStep === totalSteps - 1 ? (
-                <Button
-                  ref={nextBtnRef}
-                  type="button"
-                  size="lg"
-                  variant="primary"
-                  onClick={handleNext}
-                  onMouseMove={handleBtnMouseMove}
-                  onMouseLeave={handleBtnMouseLeave}
-                  disabled={loading || !canProceed()}
-                  aria-label="Get Started"
-                  className="shadow-[0_4px_30px_rgba(34,197,94,0.3)]"
-                >
-                  <span>{loading ? "Transmitting..." : "Get Started"}</span>
-                  <div className="w-7 h-7 rounded-full bg-[#22C55E] text-black flex items-center justify-center group-hover:translate-x-1 transition-transform duration-300">
-                    <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
-                  </div>
-                </Button>
-              ) : (
-                <>
+              {/* Step 1: Name */}
+              {currentStep === 0 && (
+                <div className="space-y-6 sm:space-y-7 lg:space-y-8 w-full max-w-lg mx-auto">
+                  <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-[40px] lg:text-[44px] text-[#111613] tracking-tight leading-[1.15]">
+                    Hi, my name is
+                  </h3>
                   <div
-                    className="relative group inline-flex rounded-full p-[1.5px] overflow-hidden transition-all duration-300 will-change-transform active:scale-90 hover:-translate-y-0.5 cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
+                    ref={inputMagneticRef}
+                    onMouseMove={handleInputMouseMove}
+                    onMouseLeave={handleInputMouseLeave}
+                    className="relative w-full max-w-md sm:max-w-lg mx-auto group/input will-change-transform"
                   >
-                    <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin opacity-80 group-hover:opacity-100 will-change-transform" />
-                    <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin blur-[2.5px] opacity-50 group-hover:opacity-80 will-change-transform" />
-                    <button
-                      ref={nextBtnRef}
-                      type="button"
-                      onClick={handleNext}
-                      onMouseMove={handleBtnMouseMove}
-                      onMouseLeave={handleBtnMouseLeave}
-                      disabled={loading || !canProceed()}
-                      aria-label="Next Step"
-                      className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/80 hover:bg-white/95 backdrop-blur-xl flex items-center justify-center text-[#111613] transition-all duration-300 btn-physical-surface-light cursor-pointer"
-                    >
-                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.8] text-[#111613] group-hover:translate-x-0.5 transition-all duration-200" />
-                    </button>
+                    {/* Subtle Border Light Shimmer on Hover/Focus */}
+                    <div
+                      className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
+                        inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
+                      }`}
+                    />
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={formData.name}
+                      onFocus={() => setInputFocused(true)}
+                      onBlur={() => setInputFocused(false)}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onKeyDown={handleKeyDown}
+                      placeholder="John Doe"
+                      className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-7 py-4 text-lg sm:text-xl md:text-[22px] text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
+                    />
                   </div>
+                </div>
+              )}
 
-                  {/* Minimal Bottom Pill Indicator Under Button */}
-                  <div className="w-7 h-1 rounded-full bg-black/10 mt-3" />
-                </>
+              {/* Step 2: Email */}
+              {currentStep === 1 && (
+                <div className="space-y-6 sm:space-y-7 w-full max-w-lg mx-auto">
+                  <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-[40px] lg:text-[44px] text-[#111613] tracking-tight leading-[1.15]">
+                    You can reach me at
+                  </h3>
+                  <div
+                    ref={inputMagneticRef}
+                    onMouseMove={handleInputMouseMove}
+                    onMouseLeave={handleInputMouseLeave}
+                    className="relative w-full max-w-md sm:max-w-lg mx-auto group/input will-change-transform"
+                  >
+                    {/* Subtle Border Light Shimmer on Hover/Focus */}
+                    <div
+                      className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
+                        inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
+                      }`}
+                    />
+                    <input
+                      ref={inputRef}
+                      type="email"
+                      value={formData.email}
+                      onFocus={() => setInputFocused(true)}
+                      onBlur={() => setInputFocused(false)}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onKeyDown={handleKeyDown}
+                      placeholder="hello@example.com"
+                      className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-7 py-4 text-base sm:text-lg text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Description */}
+              {currentStep === 2 && (
+                <div className="space-y-5 sm:space-y-6 w-full max-w-lg mx-auto">
+                  <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-[38px] lg:text-[40px] text-[#111613] tracking-tight leading-[1.15]">
+                    How can we help?
+                  </h3>
+                  <div
+                    ref={inputMagneticRef}
+                    onMouseMove={handleInputMouseMove}
+                    onMouseLeave={handleInputMouseLeave}
+                    className="relative w-full max-w-md sm:max-w-lg mx-auto group/input will-change-transform"
+                  >
+                    {/* Subtle Border Light Shimmer on Hover/Focus */}
+                    <div
+                      className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
+                        inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
+                      }`}
+                    />
+                    <textarea
+                      ref={textareaRef}
+                      rows={4}
+                      value={formData.description}
+                      onFocus={() => setInputFocused(true)}
+                      onBlur={() => setInputFocused(false)}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Describe your question or requirements..."
+                      className="relative w-full text-center sm:text-left bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-sm sm:text-base text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight resize-none leading-relaxed"
+                    />
+                  </div>
+                </div>
               )}
             </div>
+
+            {/* Bottom Navigation Control Action (Matching Reference Circular Chevron Button) */}
+            <div className="flex flex-col items-center justify-center pt-7 sm:pt-9 lg:pt-10 min-h-[72px]">
+              <div
+                className={`flex flex-col items-center transition-all duration-500 ease-out will-change-transform ${
+                  canProceed()
+                    ? "opacity-100 translate-y-0 pointer-events-auto scale-100"
+                    : "opacity-0 translate-y-3 pointer-events-none scale-90"
+                }`}
+              >
+                {currentStep === totalSteps - 1 ? (
+                  <Button
+                    ref={nextBtnRef}
+                    type="button"
+                    size="lg"
+                    variant="primary"
+                    onClick={handleNext}
+                    onMouseMove={handleBtnMouseMove}
+                    onMouseLeave={handleBtnMouseLeave}
+                    disabled={loading || !canProceed()}
+                    aria-label="Send Message"
+                    className="shadow-[0_4px_30px_rgba(34,197,94,0.3)]"
+                  >
+                    <span className="font-bold">{loading ? "Transmitting..." : "Send Message"}</span>
+                    <div className="w-7 h-7 rounded-full bg-[#22C55E] text-white flex items-center justify-center group-hover:translate-x-1 transition-transform duration-300">
+                      <ArrowRight className="w-3.5 h-3.5 stroke-[2.5] text-white" />
+                    </div>
+                  </Button>
+                ) : (
+                  <>
+                    <div
+                      className="relative group inline-flex rounded-full p-[1.5px] overflow-hidden transition-all duration-300 will-change-transform active:scale-90 hover:-translate-y-0.5 cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
+                    >
+                      <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin opacity-80 group-hover:opacity-100 will-change-transform" />
+                      <div className="pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] bg-iridescent-conic animate-iridescent-spin blur-[2.5px] opacity-50 group-hover:opacity-80 will-change-transform" />
+                      <button
+                        ref={nextBtnRef}
+                        type="button"
+                        onClick={handleNext}
+                        onMouseMove={handleBtnMouseMove}
+                        onMouseLeave={handleBtnMouseLeave}
+                        disabled={loading || !canProceed()}
+                        aria-label="Next Step"
+                        className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/80 hover:bg-white/95 backdrop-blur-xl flex items-center justify-center text-[#111613] transition-all duration-300 btn-physical-surface-light cursor-pointer"
+                      >
+                        <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.8] text-[#111613] group-hover:translate-x-0.5 transition-all duration-200" />
+                      </button>
+                    </div>
+
+                    {/* Minimal Bottom Pill Indicator Under Button */}
+                    <div className="w-7 h-1 rounded-full bg-black/10 mt-3" />
+                  </>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+      </div>
+    )}
 
       {/* =========================================================================
           STATE C: REFINED CONFIRMATION & THANK YOU STATE
          ========================================================================= */}
       {mode === "completed" && (
-        <div className="relative z-10 max-w-xl mx-auto text-center space-y-6 py-12">
-          {/* Luminous Pulsing Badge */}
-          <div className="w-20 h-20 rounded-full bg-[#22C55E]/15 border border-[#22C55E] text-[#22C55E] flex items-center justify-center mx-auto shadow-[0_0_40px_rgba(34,197,94,0.35)] animate-pulse">
-            <Check className="w-10 h-10 stroke-[2.5]" />
+        <div
+          className="fixed inset-0 z-40 bg-[#FAF8F5] flex flex-col items-center justify-center pt-20 pb-6 sm:pt-24 sm:pb-8 px-4 sm:px-6 md:px-10 overflow-hidden select-none"
+        >
+          {/* Subtle Ambient Radial Glow */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
+            <div className="w-[500px] h-[500px] sm:w-[650px] sm:h-[650px] rounded-full bg-radial-vibrant opacity-35 blur-[90px] will-change-transform" />
           </div>
 
-          <div className="space-y-3">
-            <h3 className="font-sans font-light text-3xl sm:text-4xl text-[#111613] tracking-tight">
-              Brief received, {formData.name || "friend"}.
-            </h3>
-            <p className="font-sans text-sm sm:text-base text-[#5A685D] leading-relaxed max-w-md mx-auto font-light">
-              Thank you for sharing your portfolio brief. Our intelligence specialist will review your details and connect within 24 hours.
-            </p>
-          </div>
+          <div className="relative z-10 max-w-xl mx-auto text-center space-y-5 py-6">
+            {/* Luminous Pulsing Badge */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#22C55E]/15 border border-[#22C55E] text-[#22C55E] flex items-center justify-center mx-auto shadow-[0_0_40px_rgba(34,197,94,0.35)] animate-pulse">
+              <Check className="w-8 h-8 sm:w-10 sm:h-10 stroke-[2.5]" />
+            </div>
 
-          <div className="pt-4">
-            <button
-              type="button"
-              onClick={() => {
-                setMode("intro");
-                setCurrentStep(0);
-                setFormData({
-                  name: "",
-                  organization: "",
-                  focusArea: "",
-                  primaryGoal: "",
-                  email: "",
-                });
-              }}
-              className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#22C55E] hover:text-[#111613] transition-colors cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>START ANOTHER CONVERSATION</span>
-            </button>
+            <div className="space-y-2.5">
+              <h3 className="font-sans font-light text-2xl sm:text-3xl md:text-4xl text-[#111613] tracking-tight">
+                Message received, {formData.name || "friend"}.
+              </h3>
+              <p className="font-sans text-xs sm:text-sm text-[#5A685D] leading-relaxed max-w-md mx-auto font-light">
+                Thank you for reaching out. We&apos;ll review your note and get back to you shortly at {formData.email || "your email"}.
+              </p>
+            </div>
+
+            <div className="pt-2 flex items-center justify-center gap-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("interactive");
+                  setCurrentStep(0);
+                  setFormData({
+                    name: "",
+                    email: "",
+                    description: "",
+                  });
+                }}
+                className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#22C55E] hover:text-[#111613] transition-colors cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>START ANOTHER CONVERSATION</span>
+              </button>
+              <span className="text-black/20">|</span>
+              <button
+                type="button"
+                onClick={closeConversation}
+                className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.2em] text-[#5A685D] hover:text-[#111613] transition-colors cursor-pointer"
+              >
+                <span>CLOSE</span>
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       )}
-    </section>
+    </>
   );
 }

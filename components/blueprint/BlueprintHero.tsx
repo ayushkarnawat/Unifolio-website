@@ -5,6 +5,8 @@ import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
 import { getComposedViewport } from "@/lib/viewport";
 import { computeBentoGeometry } from "@/lib/dockLayout";
+import { LinkButton } from "@/components/ui/Button";
+import { ArrowRight } from "lucide-react";
 import { useSceneEngine } from "@/components/blueprint/hero-engine/useSceneEngine";
 import type { SceneAction } from "@/components/blueprint/hero-engine/types";
 import {
@@ -340,6 +342,17 @@ export function BlueprintHero() {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
+  // Task 6: dedicated real-height element whose scroll distance drives the
+  // Hero->Product crossfade's ScrollTrigger scrub. The stage itself can't be
+  // the trigger/pinned element (it hosts the entire downstream mega-stage, so
+  // GSAP's own pin/unpin lifecycle for it would conflict with the stage
+  // staying manually fixed through every later state) — see HeroScene.tsx's
+  // createHeroToProductTimeline.
+  const heroScrollTrackRef = useRef<HTMLDivElement | null>(null);
+  // Task 6: same pattern as heroScrollTrackRef, for the Product->Security
+  // crossfade — rendered immediately after it in document flow (see
+  // SecurityVaultScene.tsx's createProductToRingTimeline).
+  const productScrollTrackRef = useRef<HTMLDivElement | null>(null);
   const heroVisualRef = useRef<HTMLDivElement | null>(null);
   const heroIntroRef = useRef<HTMLDivElement | null>(null);
 
@@ -478,9 +491,9 @@ export function BlueprintHero() {
   const onProductToHeroCompletedRef = useRef<(() => void) | null>(null);
   const heroSceneRef = useRef<HeroSceneHandle>(null);
   const heroSharedRef = useRef<HeroSceneShared>({
-    dispatchActiveSection: () => {},
+    dispatchActiveSection: () => { },
     portalState: { radius: 175, x: 62.87, y: 49.12 },
-    applyPortalClip: () => {},
+    applyPortalClip: () => { },
   });
   const productSceneRef = useRef<ProductBentoSceneHandle>(null);
   const productSharedRef = useRef<ProductBentoSceneShared>({
@@ -494,7 +507,7 @@ export function BlueprintHero() {
       tileLefts: [0, 0, 0, 0, 0],
       tileTops: [0, 0, 0, 0, 0],
     }),
-    dispatchActiveSection: () => {},
+    dispatchActiveSection: () => { },
   });
   const securitySceneRef = useRef<SecurityVaultSceneHandle>(null);
   const securitySharedRef = useRef<SecurityVaultSceneShared>({
@@ -508,15 +521,15 @@ export function BlueprintHero() {
       tileLefts: [0, 0, 0, 0, 0],
       tileTops: [0, 0, 0, 0, 0],
     }),
-    dispatchActiveSection: () => {},
+    dispatchActiveSection: () => { },
     computeEnvelopeParams: () => ({ isDesk: false, isTab: false, envScale: 1, scatterSlots: [] }),
-    jumpToAboutState: () => {},
+    jumpToAboutState: () => { },
   });
   const aboutSceneRef = useRef<AboutSceneHandle>(null);
   const aboutSharedRef = useRef<AboutSceneShared>({
-    dispatchActiveSection: () => {},
-    consolidateRingToStack: () => {},
-    applyPortalClip: () => {},
+    dispatchActiveSection: () => { },
+    consolidateRingToStack: () => { },
+    applyPortalClip: () => { },
     maxRadiusPx: 2500,
   });
   const onProductToRingCompletedRef = useRef<(() => void) | null>(null);
@@ -598,23 +611,16 @@ export function BlueprintHero() {
     () => {
       if (!containerRef.current || !stageRef.current) return;
 
-      // Lock document scroll and position stage fixed during hero/product/security slide states
-      // to completely prevent trackpad/laptop micro-scrolls and momentum from fighting the layout.
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden";
-      document.documentElement.style.overscrollBehavior = "none";
-      document.body.style.overscrollBehavior = "none";
-      lockScrollYRef.current = 0;
-      window.scrollTo(0, 0);
-
-      if (stageRef.current) {
-        stageRef.current.style.position = "fixed";
-        stageRef.current.style.top = "0px";
-        stageRef.current.style.left = "0px";
-        stageRef.current.style.width = "100%";
-        stageRef.current.style.height = "100vh";
-        stageRef.current.style.zIndex = "40";
-      }
+      // Task 6: Hero's crossfade is now driven by real native scroll, scrubbed
+      // off a dedicated track element (heroScrollTrackRef) rather than a GSAP
+      // pin on the stage itself — the stage must stay manually fixed from
+      // mount exactly like every other state (see pinStage in
+      // sceneTransitions.ts), so only the scroll HOLD is released here.
+      // `lockScrollYRef.current = -1` is the existing "unlocked" sentinel (see
+      // sceneTransitions.ts's resetToHero) so handleScrollLock's
+      // product-resting-onward hijack doesn't misfire before Hero's
+      // transition has handed off control to it.
+      lockScrollYRef.current = -1;
 
       const reduced = prefersReducedMotion();
 
@@ -703,8 +709,8 @@ export function BlueprintHero() {
       gsap.set(portalRippleRef.current, { autoAlpha: 0 });
       applyPortalClip(initialRadiusPx, 62.87, 49.12);
 
-      // Hero Intro initial state
-      gsap.set(heroIntroRef.current, { opacity: 0, autoAlpha: 1, x: 0, y: 16, scale: 1 });
+      // Hero Intro initial state - immediately visible for direct landing
+      gsap.set(heroIntroRef.current, { opacity: 1, autoAlpha: 1, x: 0, y: 0, scale: 1 });
       gsap.set(heroVisualRef.current, {
         opacity: 1,
         scale: 1,
@@ -713,65 +719,26 @@ export function BlueprintHero() {
         transformOrigin: "62.87% 49.12%",
       });
 
-      // OPTION 2: Atmospheric Stretch - Product world starts compressed in singularity void
-      // Crossing through the singularity slingshots it outward into the amphitheater formation
+      // Product section resting state
       gsap.set(productWorldRef.current, {
-        scale: 0.24,
-        scaleX: 0.30,
-        scaleY: 0.20,
-        xPercent: 12.87,  // Aligns stage center with 62.87% X hole
-        yPercent: -0.88, // Aligns stage center with 49.12% Y hole
-        opacity: 0.25,
+        scale: 1,
+        scaleX: 1,
+        scaleY: 1,
+        xPercent: 0,
+        yPercent: 0,
+        opacity: 1,
       });
 
-      // Product Header & Floor Line initially hidden
       gsap.set(
-        [headerRef.current, headlineRef.current, ctaRef.current, floorLineRef.current],
-        { autoAlpha: 0, opacity: 0, visibility: "hidden" }
+        [headerRef.current, headlineRef.current, ctaRef.current],
+        { autoAlpha: 1, opacity: 1, visibility: "visible", y: 0, scale: 1 }
       );
-      if (headlineRef.current) gsap.set(headlineRef.current, { y: 20 });
-      if (ctaRef.current) gsap.set(ctaRef.current, { y: 14, scale: 0.94 });
 
-      // Cards cluster initially clustered together facing away (back face forward)
       gsap.set(cardsClusterRef.current, {
-        scaleX: 1.25,
-        scaleY: 1.4,
-      });
-
-      PRODUCT_CARDS.forEach((card, i) => {
-        const wrapper = cardWrapperRefs.current[i];
-        const flipper = cardFlipperRefs.current[i];
-        const front = cardFrontRefs.current[i];
-        const back = cardBackRefs.current[i];
-        const defaultEl = cardDefaultRefs.current[i];
-        const hoverEl = cardHoverRefs.current[i];
-
-        if (wrapper) {
-          const initialXOffset = (i - 2) * -16;
-          gsap.set(wrapper, {
-            x: initialXOffset,
-            y: card.restY,
-            z: card.restZ,
-            rotateY: card.restRotateY,
-            rotateZ: card.restRotateZ,
-            zIndex: 10 + (2 - Math.abs(i - 2)),
-          });
-        }
-
-        if (front) {
-          gsap.set(front, {
-            borderRadius: "0px",
-            borderColor: "rgba(255, 255, 255, 0.75)",
-            boxShadow:
-              "0 20px 45px -12px rgba(16, 44, 28, 0.08), 0 8px 18px -6px rgba(0, 0, 0, 0.04), 0 0 20px -4px rgba(34, 197, 94, 0.08), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95), inset 0 0.5px 0.5px 0 rgba(255, 255, 255, 0.8), inset 0 -1.5px 3px 0 rgba(34, 197, 94, 0.06)",
-          });
-        }
-        if (back) gsap.set(back, { borderRadius: "0px", borderColor: "transparent" });
-        if (flipper) gsap.set(flipper, { rotateY: 0 }); // Front face forward always — no black back-face
-        if (defaultEl) gsap.set(defaultEl, { autoAlpha: 1, scale: 1, y: 0 });
-        if (hoverEl) gsap.set(hoverEl, { autoAlpha: 0, y: 8 });
-        const illus = cardIllustrationRefs.current[i];
-        if (illus) gsap.set(illus, { opacity: 0.88, scale: 1, filter: "blur(0px)" });
+        scaleX: 1,
+        scaleY: 1,
+        x: 0,
+        y: 0,
       });
 
       const revealHeroAfterDocked = () => {
@@ -1043,6 +1010,7 @@ export function BlueprintHero() {
         aboutOrbitTweenRef,
 
         stageRef,
+        productScrollTrackRef,
         cardsStageRef,
         cardsClusterRef,
         headerRef,
@@ -1121,24 +1089,21 @@ export function BlueprintHero() {
       // timeline-killing this function used to do itself is `resetToState`'s
       // unconditional preamble, so it is not repeated here.
       // =======================================================================
-      const NAV_SECTION_TO_STATE: Record<string, SceneResetTarget> = {
-        hero: "hero",
-        product: "product",
-        security: "ring",
-        about: "about",
-        faq: "faq",
-        contact: "contact",
-      };
-
+      // DIRECT NATIVE NAVBAR NAVIGATION COORDINATOR
+      // Smoothly scrolls directly to the requested destination element.
+      // =======================================================================
       const navigateToSection = (targetSection: string) => {
-        const target = NAV_SECTION_TO_STATE[targetSection];
-        if (!target) return;
-
-        if (targetSection !== "hero") {
-          window.dispatchEvent(new CustomEvent("unifolio-logo-docked"));
+        if (targetSection === "hero") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
         }
 
-        resetToState(target, sceneCtx);
+        window.dispatchEvent(new CustomEvent("unifolio-logo-docked"));
+
+        const el = document.getElementById(targetSection);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
       };
 
       const handleShowProduct = () => navigateToSection("product");
@@ -1162,84 +1127,6 @@ export function BlueprintHero() {
       window.addEventListener("unifolio-show-security", handleShowSecurity);
       window.addEventListener("unifolio-show-faq", handleShowFaq);
       window.addEventListener("unifolio-show-contact", handleShowContact);
-
-      // useSceneEngine's handleWheel/handleTouchMove/handleKeyDown own all busy-flag
-      // gating + gesture debounce and resolve each gesture to a single SceneAction.
-      // The scene-specific functions those actions name still live in this file until
-      // Tasks 5-8 move them out, so one shared dispatcher maps each action 1:1 back to
-      // the exact original call (same function, same arguments) — no gating/routing
-      // logic is redone here. Tasks 5-8 replace this by having each scene file register
-      // its own `trigger`/`reverse` for the actions it owns.
-      const dispatchSceneAction = (action: SceneAction) => {
-        switch (action.type) {
-          // "hero" itself is no longer routed through this dispatcher: HeroScene.tsx
-          // registers "hero"'s own trigger (triggerHeroToProduct) directly with the engine.
-          case "productToHero":
-            heroSceneRef.current?.triggerProductToHero();
-            return;
-          case "productToRing":
-            securitySceneRef.current?.triggerProductToRing();
-            return;
-          case "bentoToResting":
-            productSceneRef.current?.triggerBentoToResting();
-            return;
-          case "restingToBento":
-            productSceneRef.current?.triggerRestingToBento();
-            return;
-          case "ringToProduct":
-            securitySceneRef.current?.triggerRingToProduct();
-            return;
-          case "goToSecurityState":
-            securitySceneRef.current?.goToSecurityState(action.index, action.direction);
-            return;
-          case "consolidateRingToStack":
-            securitySceneRef.current?.consolidateRingToStack();
-            return;
-          case "restoreStackToRing":
-            securitySceneRef.current?.restoreStackToRing();
-            return;
-          case "flipDocToPage":
-            aboutSceneRef.current?.flipDocToPage(action.page);
-            return;
-          case "exitAboutToFaq":
-            aboutSceneRef.current?.exitAboutToFaq();
-            return;
-          case "jumpToAboutState":
-            aboutSceneRef.current?.jumpToAboutState(action.page);
-            return;
-        }
-      };
-
-      // Per-scene gesture registration. Handlers are keyed by the scene the gesture
-      // ORIGINATES in (which is how useSceneEngine's handlers are already branched),
-      // `trigger` = forward gesture, `reverse` = backward gesture. Each receives the
-      // SceneAction the engine's own gating already resolved to, which is what lets a
-      // two-field handler shape cover `ring`'s and `about`'s conditional multi-action
-      // forward/backward steps without re-deriving any gating out here.
-      // "hero" is registered by HeroScene.tsx's own useGSAP effect (see that file) —
-      // not here, since this scene's trigger/reverse pair is no longer symmetric (see
-      // HeroSceneHandle's doc comment: the reverse gesture fires while "product-resting"
-      // is the CURRENT state, so it's registered below, not against "hero").
-      engine.registerScene("product-resting", {
-        trigger: dispatchSceneAction,
-        reverse: dispatchSceneAction,
-      });
-      engine.registerScene("product", {
-        trigger: dispatchSceneAction,
-        reverse: dispatchSceneAction,
-      });
-      engine.registerScene("ring", {
-        trigger: dispatchSceneAction,
-        reverse: dispatchSceneAction,
-      });
-      engine.registerScene("about", {
-        trigger: dispatchSceneAction,
-        reverse: dispatchSceneAction,
-        // Native scrollY drifted above the About pin — snap the page back to the
-        // canonical Security state rather than leaving a half-pinned stage.
-        onScrollDrift: () => resetToState("ring", sceneCtx),
-      });
-      engine.registerScene("faq", { reverse: dispatchSceneAction });
 
       if (typeof window !== "undefined") {
         (window as any).__biDebug = {
@@ -1351,20 +1238,17 @@ export function BlueprintHero() {
   );
 
   return (
-    <section
-      id="hero"
+    <div
       ref={containerRef}
-      className="relative w-full min-h-screen bg-[#FAF8F5] select-none overflow-hidden"
+      className="relative w-full bg-[#FAF8F5] select-none"
     >
-      {/* Anchor for Navbar #product navigation */}
-      <div id="product" className="absolute top-[80vh] pointer-events-none" />
-      {/* Anchor for Navbar #about navigation */}
-      <div id="about" className="absolute top-[200vh] pointer-events-none" />
+      <div ref={heroScrollTrackRef} className="hidden" aria-hidden="true" />
+      <div ref={productScrollTrackRef} className="hidden" aria-hidden="true" />
 
-      {/* Master Viewport Stage: Fixed/Pinned at 100vh */}
+      {/* Master Viewport Stage: in natural document flow */}
       <div
         ref={stageRef}
-        className="relative h-screen w-full overflow-hidden bg-[#FAF8F5] flex flex-col justify-center"
+        className="relative w-full bg-[#FAF8F5] flex flex-col"
       >
         {/* Renders no DOM of its own (returns null) — owns Security's
             timeline/layout logic only. Security's actual JSX is rendered by
@@ -1376,6 +1260,7 @@ export function BlueprintHero() {
           engine={engine}
           refs={{
             stageRef,
+            productScrollTrackRef,
             headerRef,
             headlineRef,
             ctaRef,
@@ -1502,129 +1387,203 @@ export function BlueprintHero() {
           }}
           shared={aboutSharedRef}
         />
-        <HeroScene
-          ref={heroSceneRef}
-          engine={engine}
-          refs={{
-            headerRef,
-            headlineRef,
-            subheadRef,
-            ctaRef,
-            floorLineRef,
-            heroVisualRef,
-            heroIntroRef,
-            irisPortalRef,
-            portalRimRef,
-            portalRippleRef,
-            productWorldRef,
-            heroToProductTlRef,
-            cardsStageRef,
-            cardsClusterRef,
-            cardWrapperRefs,
-            cardFlipperRefs,
-            cardFrontRefs,
-            cardBackRefs,
-            cardDefaultRefs,
-            cardHoverRefs,
-            cardIllustrationRefs,
-            cardGradientBgRefs,
-            cardGlassOverlayRefs,
-            bentoTileContentRefs,
-            onHeroToProductCompletedRef,
-            onProductToHeroCompletedRef,
-          }}
-          shared={heroSharedRef}
-          productWorldBeforeHeader={
-            <>
+        {/* SECTION 1: HERO */}
+        <section id="hero" className="relative w-full h-screen min-h-screen bg-[#FAF8F5] select-none overflow-hidden flex flex-col justify-center">
+          <HeroScene
+            ref={heroSceneRef}
+            engine={engine}
+            refs={{
+              heroVisualRef,
+              heroIntroRef,
+            }}
+            shared={heroSharedRef}
+          />
+        </section>
+
+        {/* SECTION 2: PRODUCT WORLD */}
+        <section
+          id="product"
+          ref={productWorldRef}
+          className="relative w-full min-h-screen bg-[#FAF8F5] flex flex-col justify-start items-center px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-16 sm:pb-20 overflow-hidden select-none"
+        >
+          {/* Product Hero Content (Headline) */}
+          <div
+            ref={headerRef}
+            className="w-full max-w-5xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mb-8 sm:mb-12 px-2 will-change-transform pt-10 sm:pt-14 md:pt-16"
+          >
+            <h2
+              ref={headlineRef}
+              className="font-sans font-black text-2xl sm:text-3xl md:text-[36px] lg:text-[42px] xl:text-[46px] tracking-[-0.035em] leading-tight sm:whitespace-nowrap text-neutral-950"
+            >
+              Don&apos;t just see your wealth.{" "}
+              <span
+                className="font-black text-[#22C55E]"
+                style={{ color: "#22C55E" }}
+              >
+                Understand it.
+              </span>
+            </h2>
+          </div>
+
+          {/* Product Bento Grid */}
+          <ProductBentoScene
+            ref={productSceneRef}
+            engine={engine}
+            refs={{
+              cardsStageRef,
+              cardsClusterRef,
+              headerRef,
+              headlineRef,
+              ctaRef,
+              floorLineRef,
+              cardWrapperRefs,
+              cardFlipperRefs,
+              cardFrontRefs,
+              cardBackRefs,
+              cardDefaultRefs,
+              cardHoverRefs,
+              cardIllustrationRefs,
+              cardGradientBgRefs,
+              cardGlassOverlayRefs,
+              bentoTileContentRefs,
+              companionCardRefs,
+              cardInkRefs,
+              companionPaperRefs,
+              companionInkRefs,
+              restingToBentoTlRef,
+            }}
+            shared={productSharedRef}
+            securityVaultSlot={null}
+            aboutEnvelopeSlot={null}
+          />
+
+          <div ref={floorLineRef} className="hidden" />
+        </section>
+
+        {/* SECTION 3: SECURITY */}
+        <section
+          id="security"
+          className="relative w-full bg-[#FAF8F5] pt-24 sm:pt-28 pb-20 sm:pb-28 px-4 sm:px-6 lg:px-12 select-none"
+        >
+          {/* Seamless edge guard ensuring no clip artifacts or dark slivers on the left margin */}
+          <div
+            className="pointer-events-none absolute inset-y-0 left-0 w-2 sm:w-2.5 bg-[#FAF8F5] z-30"
+            aria-hidden="true"
+          />
+
+          <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-between gap-12 lg:gap-16">
+            {/* Left Column: Sticky Vault */}
+            <div className="w-full lg:w-5/12 flex items-center justify-center lg:sticky lg:top-36 shrink-0 py-4">
+              <SecurityVaultSlot
+                safeContainerRef={safeContainerRef}
+                safeVault3DRef={safeVault3DRef}
+              />
+            </div>
+
+            {/* Right Column: Stacked Narrative Sub-states */}
+            <div className="w-full lg:w-7/12 flex flex-col justify-start">
+              <SecurityStageSlot
+                securityStageRef={securityStageRef}
+                securityStateRefs={securityStateRefs}
+                securityHeroRibbonRef={securityHeroRibbonRef}
+                securityHeroWordRefs={securityHeroWordRefs}
+                typoEyesRef={typoEyesRef}
+                typoLeftWordRef={typoLeftWordRef}
+                typoRightWordRef={typoRightWordRef}
+                typoPupilsRef={typoPupilsRef}
+                typoEyelidsRef={typoEyelidsRef}
+                pwdLetterRefs={pwdLetterRefs}
+                pwdMaskRefs={pwdMaskRefs}
+                lockCharRefs={lockCharRefs}
+                lockIconWrapperRef={lockIconWrapperRef}
+                lockShackleRef={lockShackleRef}
+                lockBodyRef={lockBodyRef}
+                connectionCharRefs={connectionCharRefs}
+                connectionWrapperRef={connectionWrapperRef}
+                indiaCharRefs={indiaCharRefs}
+                indiaMapWrapperRef={indiaMapWrapperRef}
+                indiaMapPathRef={indiaMapPathRef}
+                moneyCharRefs={moneyCharRefs}
+                moneyWrapperRef={moneyWrapperRef}
+                moneyBill1Ref={moneyBill1Ref}
+                moneyBill2Ref={moneyBill2Ref}
+                sellCharRefs={sellCharRefs}
+                sellShieldWrapperRef={sellShieldWrapperRef}
+                sellShieldIconRef={sellShieldIconRef}
+                closingBlackTextRef={closingBlackTextRef}
+                closingGreenTextRef={closingGreenTextRef}
+                closingBlackWordRefs={closingBlackWordRefs}
+                closingGreenWordRefs={closingGreenWordRefs}
+              />
+            </div>
+          </div>
+
+          {/* Sparse transition fragments bridging Security into About */}
+          <div className="absolute inset-x-0 bottom-2 pointer-events-none overflow-hidden select-none hidden md:block h-32">
+            <div className="max-w-6xl mx-auto h-full relative">
+              <div
+                className="absolute left-[6%] bottom-4 rounded-[6px] border border-neutral-300/40 bg-[#F5F1E8]/70 p-2 shadow-[0_1px_2px_rgba(28,36,30,0.02)] -rotate-6 scale-90 opacity-20 pointer-events-none"
+                style={{ width: "140px" }}
+              >
+                <div className="flex items-center justify-between border-b border-neutral-300/30 pb-0.5 mb-1">
+                  <span className="font-mono text-[7.5px] font-bold text-neutral-400 uppercase">REGULATOR</span>
+                  <span className="font-mono text-[7.5px] text-neutral-400">RBI // AA</span>
+                </div>
+                <p className="font-sans text-[9.5px] font-semibold text-neutral-600 truncate">Account Aggregator</p>
+                <p className="font-mono text-[7.5px] text-neutral-400 mt-0.5 truncate">Consent Verified</p>
+              </div>
+
+              <div
+                className="absolute right-[10%] bottom-8 rounded-[6px] border border-neutral-300/40 bg-[#F5F1E8]/70 p-2 shadow-[0_1px_2px_rgba(28,36,30,0.02)] rotate-4 scale-85 opacity-22 pointer-events-none"
+                style={{ width: "135px" }}
+              >
+                <div className="flex items-center justify-between border-b border-neutral-300/30 pb-0.5 mb-1">
+                  <span className="font-mono text-[7.5px] font-bold text-neutral-400 uppercase">MUTUAL FUNDS</span>
+                  <span className="font-mono text-[7.5px] text-neutral-400">CAS // CAMS</span>
+                </div>
+                <p className="font-sans text-[9.5px] font-semibold text-neutral-600 truncate">Folio Statements</p>
+                <p className="font-mono text-[7.5px] text-neutral-400 mt-0.5 truncate">Encrypted Transit</p>
+              </div>
+
+              <div
+                className="absolute left-[36%] bottom-2 rounded-[6px] border border-neutral-300/30 bg-[#F5F1E8]/60 p-2 shadow-[0_1px_2px_rgba(28,36,30,0.02)] rotate-2 scale-80 opacity-18 pointer-events-none"
+                style={{ width: "130px" }}
+              >
+                <div className="flex items-center justify-between border-b border-neutral-300/30 pb-0.5 mb-1">
+                  <span className="font-mono text-[7.5px] font-bold text-neutral-400 uppercase">EQUITY</span>
+                  <span className="font-mono text-[7.5px] text-neutral-400">CDSL // DEMAT</span>
+                </div>
+                <p className="font-sans text-[9.5px] font-semibold text-neutral-600 truncate">Holding Summary</p>
+                <p className="font-mono text-[7.5px] text-neutral-400 mt-0.5 truncate">Read-Only Link</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 4: ABOUT (Option 1: Single-Viewport In-Place Editorial Morph) */}
+        <section
+          id="about"
+          className="relative w-full bg-[#FAF8F5] h-[220vh] select-none"
+        >
+          <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between pt-8 sm:pt-10 pb-8 sm:pb-10 px-4 sm:px-6 lg:px-8">
             <AboutBackgroundSlot aboutContentRef={aboutContentRef} />
 
-            {/* 3D Perspective Cards Amphitheater Stage - Prominently in upper/middle viewport */}
-            <ProductBentoScene
-              ref={productSceneRef}
-              engine={engine}
-              refs={{
-                cardsStageRef,
-                cardsClusterRef,
-                headerRef,
-                headlineRef,
-                ctaRef,
-                floorLineRef,
-                cardWrapperRefs,
-                cardFlipperRefs,
-                cardFrontRefs,
-                cardBackRefs,
-                cardDefaultRefs,
-                cardHoverRefs,
-                cardIllustrationRefs,
-                cardGradientBgRefs,
-                cardGlassOverlayRefs,
-                bentoTileContentRefs,
-                companionCardRefs,
-                cardInkRefs,
-                companionPaperRefs,
-                companionInkRefs,
-                restingToBentoTlRef,
-              }}
-              shared={productSharedRef}
-              securityVaultSlot={
-                <SecurityVaultSlot
-                  safeContainerRef={safeContainerRef}
-                  safeVault3DRef={safeVault3DRef}
-                />
-              }
-              aboutEnvelopeSlot={
-                <AboutEnvelopeSlot
-                  unifiedEnvelopeRef={unifiedEnvelopeRef}
-                  docCavityWrapperRef={docCavityWrapperRef}
-                  philosophyDocRef={philosophyDocRef}
-                  docPaperSheetRef={docPaperSheetRef}
-                  docFlipperRef={docFlipperRef}
-                  docInkCopyRef={docInkCopyRef}
-                  envelopeTopFlapRef={envelopeTopFlapRef}
-                  envelopeSealRef={envelopeSealRef}
-                />
-              }
-            />
-            </>
-          }
-          productWorldAfterFloorLine={
-            <SecurityStageSlot
-              securityStageRef={securityStageRef}
-              securityStateRefs={securityStateRefs}
-              securityHeroRibbonRef={securityHeroRibbonRef}
-              securityHeroWordRefs={securityHeroWordRefs}
-              typoEyesRef={typoEyesRef}
-              typoLeftWordRef={typoLeftWordRef}
-              typoRightWordRef={typoRightWordRef}
-              typoPupilsRef={typoPupilsRef}
-              typoEyelidsRef={typoEyelidsRef}
-              pwdLetterRefs={pwdLetterRefs}
-              pwdMaskRefs={pwdMaskRefs}
-              lockCharRefs={lockCharRefs}
-              lockIconWrapperRef={lockIconWrapperRef}
-              lockShackleRef={lockShackleRef}
-              lockBodyRef={lockBodyRef}
-              connectionCharRefs={connectionCharRefs}
-              connectionWrapperRef={connectionWrapperRef}
-              indiaCharRefs={indiaCharRefs}
-              indiaMapWrapperRef={indiaMapWrapperRef}
-              indiaMapPathRef={indiaMapPathRef}
-              moneyCharRefs={moneyCharRefs}
-              moneyWrapperRef={moneyWrapperRef}
-              moneyBill1Ref={moneyBill1Ref}
-              moneyBill2Ref={moneyBill2Ref}
-              sellCharRefs={sellCharRefs}
-              sellShieldWrapperRef={sellShieldWrapperRef}
-              sellShieldIconRef={sellShieldIconRef}
-              closingBlackTextRef={closingBlackTextRef}
-              closingGreenTextRef={closingGreenTextRef}
-              closingBlackWordRefs={closingBlackWordRefs}
-              closingGreenWordRefs={closingGreenWordRefs}
-            />
-          }
-        />
+            <div className="relative z-10 max-w-5xl xl:max-w-6xl mx-auto w-full h-full flex flex-col justify-between">
+              <AboutEnvelopeSlot
+                unifiedEnvelopeRef={unifiedEnvelopeRef}
+                docCavityWrapperRef={docCavityWrapperRef}
+                philosophyDocRef={philosophyDocRef}
+                docPaperSheetRef={docPaperSheetRef}
+                docFlipperRef={docFlipperRef}
+                docInkCopyRef={docInkCopyRef}
+                envelopeTopFlapRef={envelopeTopFlapRef}
+                envelopeSealRef={envelopeSealRef}
+              />
+            </div>
+          </div>
+        </section>
       </div>
 
-    </section>
+    </div>
   );
 }

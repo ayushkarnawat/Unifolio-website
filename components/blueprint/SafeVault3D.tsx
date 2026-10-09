@@ -253,6 +253,12 @@ export const SafeVault3D = forwardRef<SafeVault3DRef, SafeVault3DProps>(
           className="relative w-full h-full flex items-center justify-center overflow-visible will-change-transform"
           style={{ transformStyle: "preserve-3d" }}
         >
+          {/* Subtle backing matching page background behind hinge assembly */}
+          <div
+            className="pointer-events-none absolute -left-16 top-1/2 -translate-y-1/2 w-32 h-full bg-[#FAF8F5] -z-10"
+            aria-hidden="true"
+          />
+
           {/* LAYER 1: OPEN VAULT CHAMBER SKETCH
               Chamber circle is aligned at (50%, 50%) of container.
               Door swings open to the LEFT out to the left margin. */}
