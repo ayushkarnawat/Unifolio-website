@@ -4842,13 +4842,253 @@ export const SecurityVaultScene = forwardRef<SecurityVaultSceneHandle, SecurityV
           onLeaveBack: hideAll,
         });
         triggers.push(st);
+
+        // =======================================================================
+        // 1 SCROLL = 1 STATE SECURITY CONTROLLER
+        // Ensures that 1 scroll gesture (wheel / swipe / arrow key) transitions
+        // strictly 1 sub-state, absorbing momentum and trackpad ticks.
+        // =======================================================================
+        let isTransitioning = false;
+        let lastTransitionTime = 0;
+
+        const getStaticOffset = (idx: number): number => {
+          if (idx <= 0) return 0;
+          let offset = 0;
+          for (let i = 0; i < idx; i++) {
+            const child = securityStateRefs.current[i];
+            offset += child ? child.offsetHeight : 480;
+          }
+          return offset;
+        };
+
+        const getTargetScrollY = (idx: number): number => {
+          const stage = securityStageRef.current;
+          if (!stage) return 0;
+          const stageDocTop = window.scrollY + stage.getBoundingClientRect().top;
+          const offset = getStaticOffset(idx);
+          return stageDocTop + offset - STICKY_TOP_PX + 6;
+        };
+
+        const triggerStep = (targetIdx: number) => {
+          const targetY = getTargetScrollY(targetIdx);
+          isTransitioning = true;
+          lastTransitionTime = Date.now();
+          isSecurityTransitioningRef.current = true;
+          lastSecurityScrollTimeRef.current = Date.now();
+
+          const safeResetTimer = setTimeout(() => {
+            isTransitioning = false;
+            isSecurityTransitioningRef.current = false;
+          }, 550);
+
+          gsap.to(window, {
+            scrollTo: { y: targetY, autoKill: false },
+            duration: 0.46,
+            ease: "power2.out",
+            overwrite: "auto",
+            onComplete: () => {
+              clearTimeout(safeResetTimer);
+              isTransitioning = false;
+              isSecurityTransitioningRef.current = false;
+            },
+          });
+        };
+
+        const triggerExitToAbout = () => {
+          const aboutEl = document.getElementById("about");
+          if (!aboutEl) return;
+          const aboutTop = window.scrollY + aboutEl.getBoundingClientRect().top;
+          isTransitioning = true;
+          lastTransitionTime = Date.now();
+          isSecurityTransitioningRef.current = true;
+          lastSecurityScrollTimeRef.current = Date.now();
+
+          const safeResetTimer = setTimeout(() => {
+            isTransitioning = false;
+            isSecurityTransitioningRef.current = false;
+          }, 650);
+
+          gsap.to(window, {
+            scrollTo: { y: aboutTop - 40, autoKill: false },
+            duration: 0.58,
+            ease: "power2.inOut",
+            overwrite: "auto",
+            onComplete: () => {
+              clearTimeout(safeResetTimer);
+              isTransitioning = false;
+              isSecurityTransitioningRef.current = false;
+            },
+          });
+        };
+
+        const triggerExitToProduct = () => {
+          const target0 = getTargetScrollY(0);
+          isTransitioning = true;
+          lastTransitionTime = Date.now();
+          isSecurityTransitioningRef.current = true;
+          lastSecurityScrollTimeRef.current = Date.now();
+
+          const safeResetTimer = setTimeout(() => {
+            isTransitioning = false;
+            isSecurityTransitioningRef.current = false;
+          }, 650);
+
+          gsap.to(window, {
+            scrollTo: { y: Math.max(0, target0 - 500), autoKill: false },
+            duration: 0.58,
+            ease: "power2.inOut",
+            overwrite: "auto",
+            onComplete: () => {
+              clearTimeout(safeResetTimer);
+              isTransitioning = false;
+              isSecurityTransitioningRef.current = false;
+            },
+          });
+        };
+
+        const handleWheel = (e: WheelEvent) => {
+          if (typeof window === "undefined" || window.innerWidth < 1024) return;
+
+          const target0 = getTargetScrollY(0);
+          const target7 = getTargetScrollY(7);
+          if (!target0 || !target7) return;
+
+          // Only intercept when inside the Security states active zone
+          const inSecurity = window.scrollY >= target0 - 45 && window.scrollY <= target7 + 80;
+          if (!inSecurity) return;
+
+          const delta = e.deltaY;
+          if (Math.abs(delta) < 6) return;
+
+          // Inside security: absorb the wheel event to prevent native multi-state skips
+          e.preventDefault();
+
+          const now = Date.now();
+          if (isTransitioning || now - lastTransitionTime < 450) {
+            return;
+          }
+
+          const direction: 1 | -1 = delta > 0 ? 1 : -1;
+          const current = activeIdx >= 0 ? activeIdx : computeActiveIndex();
+
+          if (direction === 1) {
+            if (current < 7) {
+              triggerStep(current + 1);
+            } else {
+              triggerExitToAbout();
+            }
+          } else {
+            if (current > 0) {
+              triggerStep(current - 1);
+            } else {
+              triggerExitToProduct();
+            }
+          }
+        };
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+          if (typeof window === "undefined" || window.innerWidth < 1024) return;
+
+          const target0 = getTargetScrollY(0);
+          const target7 = getTargetScrollY(7);
+          if (!target0 || !target7) return;
+
+          const inSecurity = window.scrollY >= target0 - 45 && window.scrollY <= target7 + 80;
+          if (!inSecurity) return;
+
+          if (e.key === "ArrowDown" || e.key === "PageDown") {
+            e.preventDefault();
+            const now = Date.now();
+            if (isTransitioning || now - lastTransitionTime < 450) return;
+            const current = activeIdx >= 0 ? activeIdx : computeActiveIndex();
+            if (current < 7) {
+              triggerStep(current + 1);
+            } else {
+              triggerExitToAbout();
+            }
+          } else if (e.key === "ArrowUp" || e.key === "PageUp") {
+            e.preventDefault();
+            const now = Date.now();
+            if (isTransitioning || now - lastTransitionTime < 450) return;
+            const current = activeIdx >= 0 ? activeIdx : computeActiveIndex();
+            if (current > 0) {
+              triggerStep(current - 1);
+            } else {
+              triggerExitToProduct();
+            }
+          }
+        };
+
+        let touchStartY: number | null = null;
+
+        const handleTouchStart = (e: TouchEvent) => {
+          touchStartY = e.touches[0].clientY;
+        };
+
+        const handleTouchMove = (e: TouchEvent) => {
+          if (touchStartY === null) return;
+          if (typeof window === "undefined" || window.innerWidth < 1024) return;
+
+          const target0 = getTargetScrollY(0);
+          const target7 = getTargetScrollY(7);
+          if (!target0 || !target7) return;
+
+          const inSecurity = window.scrollY >= target0 - 45 && window.scrollY <= target7 + 80;
+          if (!inSecurity) return;
+
+          const deltaY = touchStartY - e.touches[0].clientY;
+          if (Math.abs(deltaY) < 30) return;
+
+          e.preventDefault();
+
+          const now = Date.now();
+          if (isTransitioning || now - lastTransitionTime < 450) return;
+
+          touchStartY = e.touches[0].clientY;
+          const direction: 1 | -1 = deltaY > 0 ? 1 : -1;
+          const current = activeIdx >= 0 ? activeIdx : computeActiveIndex();
+
+          if (direction === 1) {
+            if (current < 7) {
+              triggerStep(current + 1);
+            } else {
+              triggerExitToAbout();
+            }
+          } else {
+            if (current > 0) {
+              triggerStep(current - 1);
+            } else {
+              triggerExitToProduct();
+            }
+          }
+        };
+
+        const handleTouchEnd = () => {
+          touchStartY = null;
+        };
+
+        window.addEventListener("wheel", handleWheel, { passive: false });
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("touchstart", handleTouchStart, { passive: true });
+        window.addEventListener("touchmove", handleTouchMove, { passive: false });
+        window.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+        cleanupListeners = () => {
+          window.removeEventListener("wheel", handleWheel);
+          window.removeEventListener("keydown", handleKeyDown);
+          window.removeEventListener("touchstart", handleTouchStart);
+          window.removeEventListener("touchmove", handleTouchMove);
+          window.removeEventListener("touchend", handleTouchEnd);
+        };
       };
 
+      let cleanupListeners: (() => void) | null = null;
       trySetup(60);
 
       return () => {
         cancelled = true;
         if (rafId !== null) cancelAnimationFrame(rafId);
+        cleanupListeners?.();
         triggers.forEach((st) => st.kill());
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
