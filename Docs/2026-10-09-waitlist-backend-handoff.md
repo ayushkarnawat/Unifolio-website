@@ -48,7 +48,66 @@ Lambda "waitlist-signup"  (Node 22)
 
 Failures and spam complaints email an alerts inbox through SNS.
 
-## 3. Status: what's already done
+## 3. Which repo, Terraform, and what this changes
+
+### Run it in the website repo
+
+Run everything in **`Unifolio-website`**
+(`https://github.com/ayushkarnawat/Unifolio-website`), the Next.js marketing
+site, from its root folder:
+
+```bash
+git clone https://github.com/ayushkarnawat/Unifolio-website.git   # or: cd <existing clone> && git pull
+cd Unifolio-website
+git checkout redesign      # the branch this work is on, until it's merged to main
+git pull
+ls scripts/waitlist-api-setup.sh services/waitlist-api/   # must exist before you start
+```
+
+**Not** in the web app repo (login/OTP app), and **not** in the Terraform
+infra repo (`infra/envs/marketing` etc.). Neither of those is changed, and
+nothing needs to be pulled or run there.
+
+### Terraform: not used for this, and nothing in Terraform changes
+
+- **We're not writing or running any Terraform.** No `.tf` files are added,
+  no `terraform plan/apply` is needed, and the infra repo and its state
+  files are untouched.
+- **Why:** this backend is small (seven pieces), and Ayush chose to keep the
+  whole feature in the website repo and on one script. The AWS CLI script
+  checks before it creates and is safe to re-run, which gives most of what
+  Terraform would.
+- **How it sits next to the existing Terraform:** `infra/envs/marketing`
+  manages unifolio.in's S3 bucket, CloudFront distribution, its certificate
+  and a few Route 53 records in the `unifolio.in` zone. Terraform only tracks
+  the resources it created. It ignores records it doesn't own. So the script adding
+  `api.unifolio.in` (plus one certificate validation CNAME) to the same zone
+  won't show up as drift and won't be deleted by a future `terraform apply`.
+  The one thing to avoid: never create a Terraform resource for
+  `api.unifolio.in` while this script's record exists, or the two would fight.
+- **If the team later wants this in Terraform:** create
+  `infra/envs/waitlist/` and use `terraform import` for each resource in
+  section 5 (names are fixed and listed there). Nothing has to be rebuilt.
+
+### What it changes in the website repo and the live site
+
+- **New files only.** Phase 2 adds `services/waitlist-api/` (Lambda code +
+  tests), `scripts/waitlist-api-setup.sh`, and docs in `Docs/`. No existing
+  website file is edited by this phase.
+- **The website build and deploy don't change.** `services/` is plain
+  `.mjs`, outside what Next.js builds, type-checks (tsconfig only covers
+  `.ts/.tsx`) or lints (`next lint` covers `app/`, `components/`, `lib/`).
+  `scripts/deploy.sh` only uploads `./out`, so the Lambda code never ends up
+  on S3. `npm run build`, `npm test` and `scripts/deploy.sh` behave exactly as before.
+- **The live site doesn't change yet.** The waitlist pop-up keeps posting to
+  the Google Sheet directly until Phase 4 (the form update) is deployed.
+  Creating the backend has **no visible effect on unifolio.in**. It only adds
+  `api.unifolio.in`, which nothing calls until then.
+- **The Lambda code is deployed by the script, not by the website deploy.**
+  Its source of truth is `services/waitlist-api/` in this repo. After editing
+  it, run `./scripts/waitlist-api-setup.sh deploy`; a website deploy won't update it.
+
+## 4. Status: what's already done
 
 | Phase | What | Status |
 |---|---|---|
@@ -62,7 +121,7 @@ Phase 2 can run before Phase 3 exists. Signups will save and reach the
 sheet, but emails fail until the template is uploaded. The script warns about
 this, and that's expected.
 
-## 4. What the script creates
+## 5. What the script creates
 
 All in `ap-south-1`, all tagged `project=waitlist-email`, all **new**. It
 doesn't modify any existing resource.
@@ -79,11 +138,10 @@ doesn't modify any existing resource.
 
 **Cost:** under $2/month even at 10k signups. Most of it is SES at $0.10 per 1,000 emails.
 
-**Not Terraform:** these are created with the AWS CLI on purpose, so the
-work stays in this repo. The `infra/envs/marketing` Terraform only manages its
-own records in the `unifolio.in` zone, so the extra records won't conflict.
+**Not Terraform:** created with the AWS CLI on purpose; see section 3 for why
+and how it coexists with the existing Terraform.
 
-## 5. Files in this repo
+## 6. Files in this repo
 
 | File | What it is |
 |---|---|
@@ -95,7 +153,7 @@ own records in the `unifolio.in` zone, so the extra records won't conflict.
 | `Docs/2026-10-08-waitlist-ses-phase1-console-guide.md` | How Phase 1 was done (reference) |
 | `scripts/ses-marketing-setup.sh` | CLI version of Phase 1 (not needed; Phase 1 is done) |
 
-## 6. Before you start: what you need
+## 7. Before you start: what you need
 
 **From Ayush** (or whoever owns these):
 
@@ -112,7 +170,7 @@ own records in the `unifolio.in` zone, so the extra records won't conflict.
 
 **On the laptop:**
 
-- [ ] The latest version of this repo (`git pull`); the files in section 5 must exist.
+- [ ] The website repo `Unifolio-website`, on branch `redesign`, pulled (section 3); the files in section 6 must exist.
 - [ ] `bash` (macOS / Linux / WSL; on Windows use WSL or Git Bash), `python3`, `curl`, AWS CLI v2.
 - [ ] AWS CLI signed in to account **811364789032** with permissions for IAM
       (create role, put role policy), Lambda, API Gateway, ACM, Route 53,
@@ -120,9 +178,9 @@ own records in the `unifolio.in` zone, so the extra records won't conflict.
       An admin profile is simplest. If you use a named profile, `export AWS_PROFILE=<name>` first.
 - [ ] Optional sanity check: `node --test services/waitlist-api/` (needs Node 18+; should show 11 passing).
 
-## 7. Steps
+## 8. Steps
 
-Run from the repo root.
+Run from the root of the `Unifolio-website` repo (section 3).
 
 ```bash
 # 0. Confirm the right account (must print 811364789032)
@@ -163,7 +221,7 @@ REPLY_TO='founders@unifolio.in' \
 # change the sheet URL or reply-to: re-run step 2 with new values
 ```
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 | Message | Meaning / fix |
 |---|---|
@@ -180,7 +238,7 @@ REPLY_TO='founders@unifolio.in' \
 
 Re-running `setup` is always safe. It updates what exists and creates what's missing.
 
-## 9. Undo (only if asked to remove everything)
+## 10. Undo (only if asked to remove everything)
 
 Nothing here touches existing resources, so removal is self-contained. In this order:
 
@@ -203,7 +261,7 @@ aws ssm delete-parameter --region $R --name /unifolio/waitlist/turnstile-secret
 #   aws dynamodb delete-table --region $R --table-name unifolio-waitlist
 ```
 
-## 10. Rules for the agent
+## 11. Rules for the agent
 
 - **Never modify, delete or "fix" anything that existed before this work.**
   That includes the OTP sender identity, any other SES identity or
@@ -218,14 +276,14 @@ aws ssm delete-parameter --region $R --name /unifolio/waitlist/turnstile-secret
   tests, only use `@simulator.amazonses.com` addresses.
 - **Don't print, log or commit secrets:** the Turnstile secret, the Sheet URL,
   AWS keys. Don't write a `.env` with them into the repo.
-- If a run fails, read the error, check section 8, and propose a fix. Only
+- If a run fails, read the error, check section 9, and propose a fix. Only
   edit `scripts/waitlist-api-setup.sh` or `services/waitlist-api/*` with the
   person's agreement; after editing, run `bash -n scripts/waitlist-api-setup.sh`
   and `node --test services/waitlist-api/`, and tell Ayush what changed.
 - When done, summarise for Ayush: what was created, the `status` output, any
   warnings, and anything skipped.
 
-## 11. What happens after this
+## 12. What happens after this
 
 1. Antigravity finishes the email template (Phase 3). Someone uploads it with
    `scripts/ses-upload-template.sh` (same laptop, same AWS access).
