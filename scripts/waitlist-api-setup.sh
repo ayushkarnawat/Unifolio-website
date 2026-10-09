@@ -8,7 +8,7 @@
 #
 # Commands (all in ap-south-1, account 811364789032):
 #   ./scripts/waitlist-api-setup.sh secret            Store the Turnstile secret key in SSM (prompts, hidden input)
-#   SHEET_WEBHOOK_URL=... REPLY_TO=... [APPROVE_DNS=yes] \
+#   [SHEET_WEBHOOK_URL=...] REPLY_TO=... [APPROVE_DNS=yes] \
 #   ./scripts/waitlist-api-setup.sh setup             Create or update everything (APPROVE_DNS=yes skips the DNS y/N prompt)
 #   ./scripts/waitlist-api-setup.sh deploy            Upload new Lambda code only (after editing services/waitlist-api/)
 #   ./scripts/waitlist-api-setup.sh seed-counter N    Start spot numbers after N (run once, before launch)
@@ -211,8 +211,11 @@ PY
 }
 
 write_env_file() {
-  : "${SHEET_WEBHOOK_URL:?Set SHEET_WEBHOOK_URL to the Google Apps Script web app URL}"
   : "${REPLY_TO:?Set REPLY_TO to the reply-to address someone reads}"
+  SHEET_WEBHOOK_URL="${SHEET_WEBHOOK_URL:-}"
+  if [[ -z "${SHEET_WEBHOOK_URL}" ]]; then
+    warn "SHEET_WEBHOOK_URL not set: signups are saved and emailed but not sent to a Google Sheet (marked sheetStatus=skipped). Re-run setup with it once the sheet exists."
+  fi
   json "{'Variables': {
     'TABLE_NAME': '${TABLE}', 'FROM_ADDRESS': '''${FROM_ADDRESS}''', 'REPLY_TO': '''${REPLY_TO}''',
     'CONFIG_SET': '${CONFIG_SET}', 'CONTACT_LIST': '${CONTACT_LIST}', 'CONTACT_TOPIC': '${CONTACT_TOPIC}',

@@ -117,8 +117,10 @@ async function verifyTurnstile(token, ip) {
   return data.success === true;
 }
 
+// Resolves "skipped" until SHEET_WEBHOOK_URL is set; those signups can be
+// backfilled later by querying sheetStatus = "skipped".
 async function postToSheet(row) {
-  if (!env.SHEET_WEBHOOK_URL) return;
+  if (!env.SHEET_WEBHOOK_URL) return "skipped";
   // Same payload and content type the website used to send directly.
   // Apps Script answers 302 -> 200 after running doPost.
   const res = await fetch(env.SHEET_WEBHOOK_URL, {
@@ -129,6 +131,7 @@ async function postToSheet(row) {
     signal: AbortSignal.timeout(4000),
   });
   if (!res.ok) throw new Error(`Sheet webhook answered ${res.status}`);
+  return "sent";
 }
 
 export const handler = createHandler({

@@ -32,6 +32,7 @@ function setup(overrides = {}) {
     async postToSheet(row) {
       calls.sheet.push(row);
       if (overrides.sheetFails) throw new Error("timeout");
+      return overrides.sheetSkipped ? "skipped" : "sent";
     },
     config: { siteUrl: "https://unifolio.in" },
     now: () => new Date("2026-10-08T10:42:00Z"),
@@ -130,6 +131,14 @@ test("sheet failure still returns joined and records the failure", async () => {
   assert.equal(res.body.status, "joined");
   assert.equal(calls.updates.at(-1).fields.sheetStatus, "failed");
   assert.equal(calls.updates.at(-1).fields.emailStatus, "sent");
+});
+
+test("no sheet URL yet records sheetStatus skipped and still emails", async () => {
+  const { handler, calls } = setup({ sheetSkipped: true });
+  const res = parse(await handler(post(validBody)));
+
+  assert.equal(res.body.status, "joined");
+  assert.deepEqual(calls.updates.at(-1).fields, { emailStatus: "sent", sheetStatus: "skipped", sesMessageId: "msg-123" });
 });
 
 test("validate strips markup, drops bad refs and optional phone", () => {

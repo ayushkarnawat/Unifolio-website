@@ -112,7 +112,7 @@ Built and tested; the user runs the script. Everything lives in this repo:
 - `services/waitlist-api/index.mjs`: Lambda entry point; wires in DynamoDB, SES,
   SSM, Turnstile and the Google Sheet.
 - `services/waitlist-api/handler.test.mjs`: `node --test services/waitlist-api/`
-  (11 tests: new signup, duplicate, honeypot, captcha, validation, SES failure,
+  (12 tests: new signup, duplicate, honeypot, captcha, validation, SES failure,
   sheet failure, referral codes).
 - `scripts/waitlist-api-setup.sh`: creates or updates every AWS piece; safe to re-run.
 
