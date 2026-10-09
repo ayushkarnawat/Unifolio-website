@@ -3,40 +3,16 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, ArrowRight, ArrowLeft, X, Check, Sparkles, ChevronRight, ChevronDown } from "lucide-react";
+import { Mail, ArrowRight, ArrowLeft, X, Check, Sparkles, ChevronRight } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { gsap, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
 import { Button } from "@/components/ui/Button";
 
 interface FormData {
   name: string;
-  organization: string;
-  focusArea: string;
-  primaryGoal: string;
-  phone: string;
   email: string;
-  query: string;
+  description: string;
 }
-
-const ORGANIZATION_OPTIONS = [
-  "Family Office",
-  "Fund",
-  "Private Portfolio",
-];
-
-const FOCUS_PILLS = [
-  "CAS & CAMS Direct Import",
-  "Hidden Fee Dissection",
-  "Portfolio Sovereign Intelligence",
-  "Institutional Demo",
-];
-
-const GOAL_PILLS = [
-  "Audit Portfolio Costs",
-  "Unify Multi-Broker Accounts",
-  "Family Office Clarity",
-  "Direct Wealth Migration",
-];
 
 export function BlueprintContact() {
   const containerRef = useRef<HTMLElement | null>(null);
@@ -53,33 +29,14 @@ export function BlueprintContact() {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [inputFocused, setInputFocused] = useState<boolean>(false);
-  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    setDropdownOpen(false);
-  }, [currentStep]);
   const [formData, setFormData] = useState<FormData>({
     name: "",
-    organization: "",
-    focusArea: "",
-    primaryGoal: "",
-    phone: "",
     email: "",
-    query: "",
+    description: "",
   });
 
-  const totalSteps = 7;
+  const totalSteps = 3;
 
   // Validation to conditionally reveal the next button
   const canProceed = () => {
@@ -87,17 +44,9 @@ export function BlueprintContact() {
       case 0:
         return formData.name.trim().length > 0;
       case 1:
-        return formData.organization.trim().length > 0;
-      case 2:
-        return formData.focusArea.trim().length > 0;
-      case 3:
-        return formData.primaryGoal.trim().length > 0;
-      case 4:
-        return formData.phone.trim().length > 0;
-      case 5:
         return formData.email.trim().length > 0;
-      case 6:
-        return formData.query.trim().length > 0;
+      case 2:
+        return formData.description.trim().length > 0;
       default:
         return false;
     }
@@ -123,7 +72,7 @@ export function BlueprintContact() {
   useEffect(() => {
     if (mode === "interactive") {
       const timer = setTimeout(() => {
-        if (currentStep === 6) {
+        if (currentStep === 2) {
           textareaRef.current?.focus();
         } else {
           inputRef.current?.focus();
@@ -691,246 +640,8 @@ export function BlueprintContact() {
                 </div>
               )}
 
-              {/* Step 2: Organization / Portfolio Type (Custom Premium Dropdown) */}
+              {/* Step 2: Email */}
               {currentStep === 1 && (
-                <div className="space-y-6 sm:space-y-7 w-full max-w-lg mx-auto">
-                  <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-[40px] lg:text-[44px] text-[#111613] tracking-tight leading-[1.15]">
-                    I represent / invest as
-                  </h3>
-                  <div
-                    ref={dropdownRef}
-                    className="relative w-full max-w-md sm:max-w-lg mx-auto will-change-transform z-30"
-                  >
-                    {/* Subtle Border Light Shimmer on Hover/Focus/Open */}
-                    <div
-                      className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent transition-opacity duration-500 pointer-events-none ${
-                        dropdownOpen ? "opacity-100 animate-pulse" : "opacity-0 hover:opacity-60"
-                      }`}
-                    />
-
-                    {/* Premium Trigger Capsule */}
-                    <button
-                      type="button"
-                      onClick={() => setDropdownOpen((prev) => !prev)}
-                      className={`relative w-full flex items-center justify-between rounded-2xl px-7 py-4 text-base sm:text-lg text-[#111613] transition-all duration-300 font-sans tracking-tight cursor-pointer ${
-                        dropdownOpen
-                          ? "bg-[#FAF8F5] border border-[#22C55E] shadow-[0_0_35px_rgba(34,197,94,0.22)]"
-                          : "bg-black/[0.03] border border-black/15 hover:border-black/30 hover:bg-black/[0.05]"
-                      }`}
-                    >
-                      <span className="flex-1 text-center font-normal">
-                        {formData.organization ? (
-                          <span className="text-[#111613] font-medium">{formData.organization}</span>
-                        ) : (
-                          <span className="text-black/35 font-light">Select representation...</span>
-                        )}
-                      </span>
-                      <ChevronDown
-                        className={`w-5 h-5 text-neutral-500 shrink-0 transition-transform duration-300 ${
-                          dropdownOpen ? "rotate-180 text-[#22C55E]" : ""
-                        }`}
-                      />
-                    </button>
-
-                    {/* Premium Frosted Floating Menu */}
-                    {dropdownOpen && (
-                      <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 rounded-2xl border border-black/[0.08] bg-[#FAF8F5]/95 backdrop-blur-2xl p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.12),0_4px_16px_rgba(34,197,94,0.08)] flex flex-col gap-1.5 animate-in fade-in-0 zoom-in-95 duration-200">
-                        {ORGANIZATION_OPTIONS.map((opt) => {
-                          const isSelected = formData.organization === opt;
-                          return (
-                            <button
-                              key={opt}
-                              type="button"
-                              onClick={() => {
-                                setFormData({ ...formData, organization: opt });
-                                setDropdownOpen(false);
-                              }}
-                              className={`w-full flex items-center justify-between px-4.5 py-3.5 rounded-xl text-base sm:text-lg cursor-pointer ${
-                                isSelected
-                                  ? "bg-[#22C55E]/12 text-[#0A2E14] font-semibold border border-[#22C55E]/30"
-                                  : "text-[#111613]/80 hover:bg-black/[0.05] hover:text-[#111613] font-normal"
-                              }`}
-                            >
-                              <span>{opt}</span>
-                              {isSelected && (
-                                <div className="w-5 h-5 rounded-full bg-[#22C55E] text-white flex items-center justify-center shrink-0">
-                                  <Check className="w-3 h-3 stroke-[3]" />
-                                </div>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Step 3: Focus Area with Clean Static Option Buttons */}
-              {currentStep === 2 && (
-                <div className="space-y-4 sm:space-y-5 w-full max-w-xl mx-auto">
-                  <h3 className="font-sans font-light text-2xl sm:text-3xl md:text-[36px] lg:text-[38px] text-[#111613] tracking-tight leading-[1.15]">
-                    I would like to explore
-                  </h3>
-                  <div
-                    ref={inputMagneticRef}
-                    onMouseMove={handleInputMouseMove}
-                    onMouseLeave={handleInputMouseLeave}
-                    className="relative w-full max-w-md sm:max-w-lg mx-auto group/input will-change-transform"
-                  >
-                    {/* Subtle Border Light Shimmer on Hover/Focus */}
-                    <div
-                      className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
-                        inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
-                      }`}
-                    />
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={formData.focusArea}
-                      onFocus={() => setInputFocused(true)}
-                      onBlur={() => setInputFocused(false)}
-                      onChange={(e) => setFormData({ ...formData, focusArea: e.target.value })}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Choose below or type custom..."
-                      className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-3.5 text-sm sm:text-base text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
-                    />
-                  </div>
-
-                  {/* Clean Static Response Option Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 max-w-lg mx-auto pt-2.5 sm:pt-3">
-                    {FOCUS_PILLS.map((pill) => {
-                      const isSelected = formData.focusArea === pill;
-                      return (
-                        <button
-                          key={pill}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, focusArea: pill })}
-                          className={`relative flex items-center gap-3 px-4.5 py-3 rounded-xl border cursor-pointer select-none ${
-                            isSelected
-                              ? "border-[#22C55E] bg-[#22C55E]/10 text-[#0A2E14] font-medium"
-                              : "border-black/[0.08] bg-white text-[#111613]/80 hover:border-black/20 hover:text-[#111613]"
-                          }`}
-                        >
-                          <div
-                            className={`w-4 h-4 rounded-full flex items-center justify-center border ${
-                              isSelected
-                                ? "border-[#22C55E] bg-[#22C55E] text-black"
-                                : "border-black/25"
-                            }`}
-                          >
-                            {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                          </div>
-                          <span className="font-sans text-xs sm:text-[13px] tracking-wide text-left">
-                            {pill}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Step 4: Primary Goal with Clean Static Option Buttons */}
-              {currentStep === 3 && (
-                <div className="space-y-4 sm:space-y-5 w-full max-w-xl mx-auto">
-                  <h3 className="font-sans font-light text-2xl sm:text-3xl md:text-[36px] lg:text-[38px] text-[#111613] tracking-tight leading-[1.15]">
-                    My primary goal is
-                  </h3>
-                  <div
-                    ref={inputMagneticRef}
-                    onMouseMove={handleInputMouseMove}
-                    onMouseLeave={handleInputMouseLeave}
-                    className="relative w-full max-w-md sm:max-w-lg mx-auto group/input will-change-transform"
-                  >
-                    {/* Subtle Border Light Shimmer on Hover/Focus */}
-                    <div
-                      className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
-                        inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
-                      }`}
-                    />
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={formData.primaryGoal}
-                      onFocus={() => setInputFocused(true)}
-                      onBlur={() => setInputFocused(false)}
-                      onChange={(e) => setFormData({ ...formData, primaryGoal: e.target.value })}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Choose below or type custom..."
-                      className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-3.5 text-sm sm:text-base text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
-                    />
-                  </div>
-
-                  {/* Clean Static Response Option Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 max-w-lg mx-auto pt-2.5 sm:pt-3">
-                    {GOAL_PILLS.map((pill) => {
-                      const isSelected = formData.primaryGoal === pill;
-                      return (
-                        <button
-                          key={pill}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, primaryGoal: pill })}
-                          className={`relative flex items-center gap-3 px-4.5 py-3 rounded-xl border cursor-pointer select-none ${
-                            isSelected
-                              ? "border-[#22C55E] bg-[#22C55E]/10 text-[#0A2E14] font-medium"
-                              : "border-black/[0.08] bg-white text-[#111613]/80 hover:border-black/20 hover:text-[#111613]"
-                          }`}
-                        >
-                          <div
-                            className={`w-4 h-4 rounded-full flex items-center justify-center border ${
-                              isSelected
-                                ? "border-[#22C55E] bg-[#22C55E] text-black"
-                                : "border-black/25"
-                            }`}
-                          >
-                            {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                          </div>
-                          <span className="font-sans text-xs sm:text-[13px] tracking-wide text-left">
-                            {pill}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Step 5: Phone Number */}
-              {currentStep === 4 && (
-                <div className="space-y-6 sm:space-y-7 w-full max-w-lg mx-auto">
-                  <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-[40px] lg:text-[44px] text-[#111613] tracking-tight leading-[1.15]">
-                    You can call me at
-                  </h3>
-                  <div
-                    ref={inputMagneticRef}
-                    onMouseMove={handleInputMouseMove}
-                    onMouseLeave={handleInputMouseLeave}
-                    className="relative w-full max-w-md sm:max-w-lg mx-auto group/input will-change-transform"
-                  >
-                    {/* Subtle Border Light Shimmer on Hover/Focus */}
-                    <div
-                      className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-transparent via-[#22C55E]/40 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none ${
-                        inputFocused ? "opacity-100 animate-pulse" : "group-hover/input:opacity-70"
-                      }`}
-                    />
-                    <input
-                      ref={inputRef}
-                      type="tel"
-                      value={formData.phone}
-                      onFocus={() => setInputFocused(true)}
-                      onBlur={() => setInputFocused(false)}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      onKeyDown={handleKeyDown}
-                      placeholder="+91 98765 43210"
-                      className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-7 py-4 text-base sm:text-lg text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Step 6: Email */}
-              {currentStep === 5 && (
                 <div className="space-y-6 sm:space-y-7 w-full max-w-lg mx-auto">
                   <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-[40px] lg:text-[44px] text-[#111613] tracking-tight leading-[1.15]">
                     You can reach me at
@@ -962,11 +673,11 @@ export function BlueprintContact() {
                 </div>
               )}
 
-              {/* Step 7: Query (Description) */}
-              {currentStep === 6 && (
+              {/* Step 3: Description */}
+              {currentStep === 2 && (
                 <div className="space-y-5 sm:space-y-6 w-full max-w-lg mx-auto">
                   <h3 className="font-sans font-light text-3xl sm:text-4xl md:text-[38px] lg:text-[40px] text-[#111613] tracking-tight leading-[1.15]">
-                    My query is
+                    How can we help?
                   </h3>
                   <div
                     ref={inputMagneticRef}
@@ -982,13 +693,13 @@ export function BlueprintContact() {
                     />
                     <textarea
                       ref={textareaRef}
-                      rows={3}
-                      value={formData.query}
+                      rows={4}
+                      value={formData.description}
                       onFocus={() => setInputFocused(true)}
                       onBlur={() => setInputFocused(false)}
-                      onChange={(e) => setFormData({ ...formData, query: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       onKeyDown={handleKeyDown}
-                      placeholder="Describe your question or portfolio requirements..."
+                      placeholder="Describe your question or requirements..."
                       className="relative w-full text-center sm:text-left bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-6 py-4 text-sm sm:text-base text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight resize-none leading-relaxed"
                     />
                   </div>
@@ -1015,10 +726,10 @@ export function BlueprintContact() {
                     onMouseMove={handleBtnMouseMove}
                     onMouseLeave={handleBtnMouseLeave}
                     disabled={loading || !canProceed()}
-                    aria-label="Get Started"
+                    aria-label="Send Message"
                     className="shadow-[0_4px_30px_rgba(34,197,94,0.3)]"
                   >
-                    <span className="font-bold">{loading ? "Transmitting..." : "Get Started"}</span>
+                    <span className="font-bold">{loading ? "Transmitting..." : "Send Message"}</span>
                     <div className="w-7 h-7 rounded-full bg-[#22C55E] text-white flex items-center justify-center group-hover:translate-x-1 transition-transform duration-300">
                       <ArrowRight className="w-3.5 h-3.5 stroke-[2.5] text-white" />
                     </div>
@@ -1074,10 +785,10 @@ export function BlueprintContact() {
 
             <div className="space-y-2.5">
               <h3 className="font-sans font-light text-2xl sm:text-3xl md:text-4xl text-[#111613] tracking-tight">
-                Brief received, {formData.name || "friend"}.
+                Message received, {formData.name || "friend"}.
               </h3>
               <p className="font-sans text-xs sm:text-sm text-[#5A685D] leading-relaxed max-w-md mx-auto font-light">
-                Thank you for sharing your portfolio brief. Our intelligence specialist will review your details and connect within 24 hours.
+                Thank you for reaching out. We&apos;ll review your note and get back to you shortly at {formData.email || "your email"}.
               </p>
             </div>
 
@@ -1089,12 +800,8 @@ export function BlueprintContact() {
                   setCurrentStep(0);
                   setFormData({
                     name: "",
-                    organization: "",
-                    focusArea: "",
-                    primaryGoal: "",
-                    phone: "",
                     email: "",
-                    query: "",
+                    description: "",
                   });
                 }}
                 className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#22C55E] hover:text-[#111613] transition-colors cursor-pointer"

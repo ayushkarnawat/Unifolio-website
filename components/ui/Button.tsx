@@ -47,40 +47,42 @@ function PhysicalButtonInner({
 
   return (
     <>
-      {/* 1. Dimensional Outer Track Base Border */}
+      {/* 1. Dimensional Outer Track Base Border (Crisp, refined green border for resting state) */}
       <div
-        className={`pointer-events-none absolute inset-0 rounded-full border transition-colors duration-300 ${
-          isGreen ? "border-green-600/30" : "border-black/[0.08]"
+        className={`pointer-events-none absolute inset-0 rounded-full border transition-all duration-300 ${
+          isGreen ? "border-[#15803D]/40" : "border-black/[0.08]"
         }`}
       />
 
-      {/* 2. Delicate Iridescent Light Beams Orbiting the Perimeter (From Reference Video) */}
+      {/* 2. Delicate Iridescent Light Beams Orbiting the Perimeter (Active on Hover) */}
       <div
         className={`pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] [animation-play-state:paused] group-hover:[animation-play-state:running] group-focus-visible:[animation-play-state:running] transition-opacity duration-500 ${
           isGreen || isPrimary
-            ? "bg-iridescent-conic animate-iridescent-spin opacity-85 group-hover:opacity-100"
+            ? "bg-iridescent-conic animate-iridescent-spin opacity-0 group-hover:opacity-100"
             : isSecondary
-            ? "bg-iridescent-subtle animate-iridescent-spin opacity-60 group-hover:opacity-85"
-            : "bg-iridescent-subtle animate-iridescent-spin opacity-45 group-hover:opacity-75"
+            ? "bg-iridescent-subtle animate-iridescent-spin opacity-0 group-hover:opacity-85"
+            : "bg-iridescent-subtle animate-iridescent-spin opacity-0 group-hover:opacity-75"
         }`}
       />
 
-      {/* 3. Soft Prismatic Diffusion Glow Layer (Corners catch rainbow chromatic dispersion) */}
+      {/* 3. Soft Prismatic Diffusion Glow Layer (Corners catch rainbow chromatic dispersion - Active on Hover) */}
       <div
         className={`pointer-events-none absolute -inset-[180%] m-auto w-[460%] h-[460%] blur-[2.5px] [animation-play-state:paused] group-hover:[animation-play-state:running] group-focus-visible:[animation-play-state:running] transition-opacity duration-500 ${
           isGreen || isPrimary
-            ? "bg-iridescent-conic animate-iridescent-spin opacity-50 group-hover:opacity-80"
-            : "bg-iridescent-subtle animate-iridescent-spin opacity-35 group-hover:opacity-60"
+            ? "bg-iridescent-conic animate-iridescent-spin opacity-0 group-hover:opacity-80"
+            : isSecondary
+            ? "bg-iridescent-subtle animate-iridescent-spin opacity-0 group-hover:opacity-60"
+            : "bg-iridescent-subtle animate-iridescent-spin opacity-0 group-hover:opacity-40"
         }`}
       />
 
-      {/* 4. Clean Minimal Glass Interior (No heavy fills, satin translucent finish) */}
+      {/* 4. Clean Minimal Interior Surface (EXACTLY #22C55E resting background) */}
       <div
         className={`relative z-10 w-full h-full rounded-full flex items-center justify-center font-sans select-none transition-all duration-300 overflow-hidden ${
           sizeInnerClasses[size]
         } ${
           isGreen
-            ? "bg-[#22C55E] hover:bg-[#16A34A] text-white font-bold shadow-[0_4px_14px_rgba(34,197,94,0.35)] btn-physical-surface-green"
+            ? "bg-[#22C55E] hover:bg-[#16A34A] text-white font-bold btn-physical-surface-green"
             : isPrimary
             ? "bg-white/80 hover:bg-white/92 text-[#111613] backdrop-blur-xl btn-physical-surface-light"
             : isSecondary
@@ -88,21 +90,21 @@ function PhysicalButtonInner({
             : "bg-white/70 hover:bg-white/85 text-[#111613]/85 backdrop-blur-lg"
         } ${innerClassName}`}
       >
-        {/* Fine Specular Top Horizon Highlight */}
+        {/* Subtle inner top-edge highlight for depth */}
         <div
           className={`pointer-events-none absolute inset-x-3 top-0 h-[1px] ${
             isGreen
-              ? "bg-gradient-to-r from-transparent via-white/45 to-transparent"
+              ? "bg-gradient-to-r from-transparent via-white/35 to-transparent"
               : "bg-gradient-to-r from-transparent via-white/90 to-transparent"
           }`}
         />
 
         {/* Subtle Ambient Sheen */}
         <div
-          className={`pointer-events-none absolute inset-0 rounded-full ${
+          className={`pointer-events-none absolute inset-0 rounded-full transition-opacity duration-300 ${
             isGreen
-              ? "bg-gradient-to-b from-white/[0.22] to-transparent opacity-70 group-hover:opacity-100 transition-opacity"
-              : "bg-gradient-to-b from-white/[0.12] to-transparent opacity-70 group-hover:opacity-100 transition-opacity"
+              ? "bg-gradient-to-b from-white/[0.08] to-transparent opacity-0 group-hover:opacity-100"
+              : "bg-gradient-to-b from-white/[0.12] to-transparent opacity-70 group-hover:opacity-100"
           }`}
         />
 
