@@ -64,15 +64,35 @@ git pull
 ls scripts/waitlist-api-setup.sh services/waitlist-api/   # must exist before you start
 ```
 
-**Not** in the web app repo (login/OTP app), and **not** in the Terraform
-infra repo (`infra/envs/marketing` etc.). Neither of those is changed, and
-nothing needs to be pulled or run there.
+**Not** in the web app repo (the login/OTP app, which also holds the
+Terraform under `infra/`, including `infra/envs/marketing` for the website
+hosting). Nothing is run, edited or committed there, and no `terraform`
+command is run anywhere.
+
+The AWS CLI login on this laptop was set up for the web app, but it belongs
+to the laptop, not to that repo. The script uses it from the website repo
+folder and only needs it to point at account `811364789032`.
+
+**One read-only check in the web app repo before running `setup`** (search
+only, change nothing). Its Terraform also manages this AWS account, so
+confirm it doesn't already define anything this script creates. If it did, a
+later `terraform apply` there could overwrite or delete it:
+
+```bash
+cd <web app repo>
+grep -rnE 'api\.unifolio\.in|unifolio-waitlist|waitlist-signup|updates\.unifolio\.in|unifolio-marketing|aws_sesv2_contact_list|aws_ses_receipt|turnstile' --include='*.tf' .
+```
+
+- **No output:** good. Continue.
+- **Any match:** stop and send the matches to Ayush before running anything.
+  (`aws_sesv2_contact_list` matters because SES allows only one contact
+  list per region, and Phase 1 already created `unifolio-marketing`.)
 
 ### Terraform: not used for this, and nothing in Terraform changes
 
 - **We're not writing or running any Terraform.** No `.tf` files are added,
-  no `terraform plan/apply` is needed, and the infra repo and its state
-  files are untouched.
+  no `terraform plan/apply` is needed, and the web app repo's `infra/`
+  folder and its Terraform state are untouched.
 - **Why:** this backend is small (seven pieces), and Ayush chose to keep the
   whole feature in the website repo and on one script. The AWS CLI script
   checks before it creates and is safe to re-run, which gives most of what
@@ -86,7 +106,7 @@ nothing needs to be pulled or run there.
   The one thing to avoid: never create a Terraform resource for
   `api.unifolio.in` while this script's record exists, or the two would fight.
 - **If the team later wants this in Terraform:** create
-  `infra/envs/waitlist/` and use `terraform import` for each resource in
+  `infra/envs/waitlist/` in the web app repo and use `terraform import` for each resource in
   section 5 (names are fixed and listed there). Nothing has to be rebuilt.
 
 ### What it changes in the website repo and the live site
@@ -187,6 +207,8 @@ Run from the root of the `Unifolio-website` repo (section 3).
 aws sts get-caller-identity --query Account --output text
 
 # 1. Store the Turnstile secret (prompts; input hidden; never in shell history)
+#    A PERSON runs this in their own terminal, not an agent, so the secret never
+#    passes through the agent's chat.
 ./scripts/waitlist-api-setup.sh secret
 
 # 2. Create everything (quote the URL; it contains special characters)
@@ -197,6 +219,10 @@ REPLY_TO='founders@unifolio.in' \
 #    - Warns "email template waitlist-welcome-v1 not uploaded yet". This is expected.
 #    - Waits for the HTTPS certificate (usually 2–10 minutes).
 #    - Asks "Apply this DNS change?" for api.unifolio.in → answer y.
+#      (Non-interactive shells, e.g. a Claude agent: the prompt can't be answered there.
+#       Once the person approves, add APPROVE_DNS=yes to the command instead.)
+#    - The certificate wait can take up to ~30 min: agents should run this in the
+#      background or with a long timeout, not a short foreground call.
 
 # 3. Wait ~5 minutes for DNS, then check the live API (sends no email)
 ./scripts/waitlist-api-setup.sh smoke-test
@@ -270,8 +296,10 @@ aws ssm delete-parameter --region $R --name /unifolio/waitlist/turnstile-secret
   require that, stop and ask.
 - **Region is always `ap-south-1`.** Account must be `811364789032`.
 - **Get the person's explicit OK before:** running `setup` (it creates billed
-  resources), answering `y` to the DNS prompt, `seed-counter`, any undo
-  command, and any AWS command not in this doc.
+  resources), approving the DNS change (`y` or `APPROVE_DNS=yes`),
+  `seed-counter`, any undo command, and any AWS command not in this doc. One
+  combined approval up front for setup + DNS + seed is fine (see
+  `Docs/2026-10-09-waitlist-backend-agent-prompt.md`).
 - **Don't send real emails** while testing. `smoke-test` sends none. For SES
   tests, only use `@simulator.amazonses.com` addresses.
 - **Don't print, log or commit secrets:** the Turnstile secret, the Sheet URL,

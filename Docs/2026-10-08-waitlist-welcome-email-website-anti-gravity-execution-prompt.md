@@ -16,7 +16,7 @@ concept "B · Waitlist pass" on https://claude.ai/artifact/JMcTm6zTuNREbT3ZLK3PB
 - `scripts/waitlist-api-setup.sh`: creates the AWS backend.
 - `scripts/ses-marketing-setup.sh`, `Docs/2026-10-08-waitlist-ses-phase1-console-guide.md`: Phase 1.
 
-The web app repo (login OTPs) and the Terraform infra repo are not involved.
+The web app repo (login OTPs, and the Terraform under its `infra/` folder) is not involved.
 
 **Already done in AWS, don't redo:** Phase 1 SES/DNS setup. Treat SES
 identity `updates.unifolio.in`, configuration set `unifolio-marketing`,

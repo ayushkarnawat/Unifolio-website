@@ -8,8 +8,8 @@
 #
 # Commands (all in ap-south-1, account 811364789032):
 #   ./scripts/waitlist-api-setup.sh secret            Store the Turnstile secret key in SSM (prompts, hidden input)
-#   SHEET_WEBHOOK_URL=... REPLY_TO=... \
-#   ./scripts/waitlist-api-setup.sh setup             Create or update everything
+#   SHEET_WEBHOOK_URL=... REPLY_TO=... [APPROVE_DNS=yes] \
+#   ./scripts/waitlist-api-setup.sh setup             Create or update everything (APPROVE_DNS=yes skips the DNS y/N prompt)
 #   ./scripts/waitlist-api-setup.sh deploy            Upload new Lambda code only (after editing services/waitlist-api/)
 #   ./scripts/waitlist-api-setup.sh seed-counter N    Start spot numbers after N (run once, before launch)
 #   ./scripts/waitlist-api-setup.sh status            Show what exists and its state
@@ -107,8 +107,15 @@ zone_id() {
   echo "${id#/hostedzone/}"
 }
 
+# APPROVE_DNS=yes pre-approves the api.unifolio.in DNS change for non-interactive
+# runs (e.g. an agent's shell, where the y/N prompt can't be answered).
 confirm() {
-  read -r -p "    $1 [y/N] " answer
+  if [[ "${APPROVE_DNS:-}" == "yes" ]]; then
+    echo "    $1 yes (APPROVE_DNS=yes)"
+    return 0
+  fi
+  local answer=""
+  read -r -p "    $1 [y/N] " answer || true
   [[ "${answer}" == "y" || "${answer}" == "Y" ]]
 }
 

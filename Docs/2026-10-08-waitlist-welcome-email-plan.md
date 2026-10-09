@@ -47,11 +47,11 @@ deliverability. Signups keep flowing into the existing Google Sheet.
 - `WaitlistForm` is used only by `WaitlistModal`, which `BlueprintNav.tsx`
   (and the hero CTAs through it) opens. `NewsletterBand.tsx` and
   `ContactForm.tsx` have their own webhooks and are **out of scope**.
-- Three separate repos: this **website** repo, the **web app** repo (sends
-  login OTPs through SES, untouched by this work), and the **Terraform infra**
-  repo (contains `infra/envs/marketing`, S3 state backend; Route 53 hosts
-  `unifolio.in`). All of this project lives in the website repo; the other
-  two are not touched.
+- Two repos: this **website** repo, and the **web app** repo, which sends
+  login OTPs through SES and also holds the AWS Terraform in `infra/`
+  (including `infra/envs/marketing` for the website hosting; S3 state
+  backend; Route 53 hosts `unifolio.in`). All of this project lives in the
+  website repo; the web app repo is not touched.
 
 ## Architecture
 
@@ -171,7 +171,7 @@ Resources it creates (all `ap-south-1`, tagged `project=waitlist-email`):
    - `waitlist-signup-throttles`: Lambda `Throttles`.
 
 Not in Terraform. If the team later wants it there, these resources can be
-imported into a new environment in the infra repo.
+imported into a new environment under the web app repo's `infra/` folder.
 
 ### Lambda behaviour
 
