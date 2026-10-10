@@ -168,7 +168,7 @@ and how it coexists with the existing Terraform.
 | `scripts/waitlist-api-setup.sh` | **The script to run.** Re-runnable; checks before it creates. |
 | `services/waitlist-api/handler.mjs` | Signup logic (validation, bot check, save once, spot number, email + sheet) |
 | `services/waitlist-api/index.mjs` | Lambda entry point wiring in DynamoDB / SES / SSM |
-| `services/waitlist-api/handler.test.mjs` | 11 unit tests: `node --test services/waitlist-api/` |
+| `services/waitlist-api/handler.test.mjs` | 12 unit tests: `node --test services/waitlist-api/` |
 | `Docs/2026-10-08-waitlist-welcome-email-plan.md` | Full plan and decisions |
 | `Docs/2026-10-08-waitlist-ses-phase1-console-guide.md` | How Phase 1 was done (reference) |
 | `scripts/ses-marketing-setup.sh` | CLI version of Phase 1 (not needed; Phase 1 is done) |
@@ -177,8 +177,10 @@ and how it coexists with the existing Terraform.
 
 **From Ayush** (or whoever owns these):
 
-- [ ] **Google Sheet Apps Script web app URL**: the current value of
-      `NEXT_PUBLIC_WAITLIST_WEBHOOK_URL` (it's in the website's env file on the deploying machine).
+- [ ] **Google Sheet Apps Script web app URL** (optional): **not created yet
+      (as of 9 Oct).** Run setup without `SHEET_WEBHOOK_URL`. Signups are
+      still saved and emailed, just marked `sheetStatus=skipped`. When the sheet
+      exists, re-run step 2 with the URL; nothing else changes.
 - [ ] **Reply-to address**: a real inbox someone reads (e.g. `founders@unifolio.in`).
 - [ ] **Cloudflare Turnstile secret key**: create a free widget at
       dash.cloudflare.com → Turnstile → Add widget → hostname `unifolio.in`
@@ -186,7 +188,8 @@ and how it coexists with the existing Terraform.
       *site key* (public, for the website) and a *secret key* (for this script).
       If the widget doesn't exist yet, use Cloudflare's always-pass **test**
       secret `1x0000000000000000000000000000000AA` for now and swap it later with the same command.
-- [ ] **Number of signups already in the Google Sheet**: so new spot numbers continue after them.
+- [ ] **Number of signups already in the Google Sheet**: so new spot numbers
+      continue after them. No sheet yet means no earlier signups: use `0`, so the first signup is #1.
 
 **On the laptop:**
 
@@ -196,7 +199,7 @@ and how it coexists with the existing Terraform.
       (create role, put role policy), Lambda, API Gateway, ACM, Route 53,
       DynamoDB, SSM, CloudWatch Logs/Alarms, plus read access to SES and SNS.
       An admin profile is simplest. If you use a named profile, `export AWS_PROFILE=<name>` first.
-- [ ] Optional sanity check: `node --test services/waitlist-api/` (needs Node 18+; should show 11 passing).
+- [ ] Optional sanity check: `node --test services/waitlist-api/` (needs Node 18+; should show 12 passing).
 
 ## 8. Steps
 
@@ -212,7 +215,7 @@ aws sts get-caller-identity --query Account --output text
 ./scripts/waitlist-api-setup.sh secret
 
 # 2. Create everything (quote the URL; it contains special characters)
-SHEET_WEBHOOK_URL='https://script.google.com/macros/s/XXXX/exec' \
+SHEET_WEBHOOK_URL='https://script.google.com/macros/s/XXXX/exec' \   # optional; leave this line out until the sheet exists
 REPLY_TO='founders@unifolio.in' \
 ./scripts/waitlist-api-setup.sh setup
 #    - Checks Phase 1 exists and is verified; stops with a clear message if not.

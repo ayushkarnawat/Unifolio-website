@@ -16,7 +16,8 @@ const PHONE_PATTERN = /^[+0-9 ()-]{6,20}$/;
  *   insertSignup resolves null when the email is new, or the existing item when it was already there.
  * @param {{ sendWelcome(args): Promise<string> }} deps.mailer  resolves the SES message id
  * @param {(token: string, ip?: string) => Promise<boolean>} deps.verifyTurnstile
- * @param {(row: {name: string, email: string, phone: string}) => Promise<void>} deps.postToSheet
+ * @param {(row: {name: string, email: string, phone: string}) => Promise<"sent" | "skipped">} deps.postToSheet
+ *   resolves "skipped" when no sheet URL is configured yet.
  * @param {{ siteUrl: string }} deps.config
  * @param {() => Date} [deps.now]
  * @param {Pick<Console, "info" | "warn" | "error">} [deps.log]
@@ -72,7 +73,7 @@ export function createHandler({ store, mailer, verifyTurnstile, postToSheet, con
 
       const outcome = {
         emailStatus: mail.status === "fulfilled" ? "sent" : "failed",
-        sheetStatus: sheet.status === "fulfilled" ? "sent" : "failed",
+        sheetStatus: sheet.status === "fulfilled" ? sheet.value : "failed",
         ...(mail.status === "fulfilled" && mail.value && { sesMessageId: mail.value }),
       };
       if (mail.status === "rejected") log.error({ msg: "email_failed", email: maskEmail(email), spot, error: describe(mail.reason) });

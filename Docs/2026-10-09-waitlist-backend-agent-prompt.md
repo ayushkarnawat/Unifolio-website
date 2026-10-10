@@ -28,7 +28,7 @@ alone, and batch your questions.
 **Then do these checks yourself (no need to ask me)**
 - `aws sts get-caller-identity` shows account `811364789032`. If not, find a
   profile that does (`aws configure list-profiles`) and use `AWS_PROFILE`.
-- Tools present: bash, python3, curl, AWS CLI v2. `node --test services/waitlist-api/` passes (11 tests) if Node 18+ is available.
+- Tools present: bash, python3, curl, AWS CLI v2. `node --test services/waitlist-api/` passes (12 tests) if Node 18+ is available.
 - Phase 1 is in place in `ap-south-1`: SES identity `updates.unifolio.in`
   verified, configuration set and contact list `unifolio-marketing`, SNS
   topic `unifolio-marketing-ses-alerts`. Read-only `aws ... get/list` calls only.
@@ -38,7 +38,7 @@ alone, and batch your questions.
   (`aws ssm get-parameter --name /unifolio/waitlist/turnstile-secret --region ap-south-1 --query Parameter.Name`).
 
 **Then ask me, in one message, only what's still missing:**
-- The Google Sheet Apps Script web app URL (`SHEET_WEBHOOK_URL`).
+- The Google Sheet Apps Script web app URL (`SHEET_WEBHOOK_URL`). Optional: if it doesn't exist yet, run setup without it.
 - The reply-to email address (`REPLY_TO`).
 - The number of signups already in the Google Sheet (for `seed-counter`).
 - If the Turnstile secret isn't in SSM yet: ask me to run

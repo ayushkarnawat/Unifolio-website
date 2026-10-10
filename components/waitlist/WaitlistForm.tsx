@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Check, AlertCircle, ArrowRight } from "lucide-react";
+import { Check, AlertCircle } from "lucide-react";
 
 export function WaitlistForm({ onSuccess }: { onSuccess?: () => void }) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -89,10 +89,9 @@ export function WaitlistForm({ onSuccess }: { onSuccess?: () => void }) {
       <button
         type="submit"
         disabled={status === "loading"}
-        className="inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-gradient-to-b from-[#26D467] via-[#22C55E] to-[#16A34A] hover:from-[#22C55E] hover:to-[#15803D] px-6 py-3.5 sm:py-4 font-sans text-[15.5px] sm:text-base font-bold text-white shadow-[0_4px_18px_rgba(34,197,94,0.38),inset_0_1px_1px_rgba(255,255,255,0.45)] drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.18)] transition-all active:scale-[0.98] disabled:opacity-60 cursor-pointer"
+        className="w-full rounded-full border-[2.5px] border-[#22C55E] bg-white hover:bg-[#22C55E] px-6 py-3.5 sm:py-4 font-sans text-[17px] sm:text-lg font-bold text-[#22C55E] hover:text-white transition-all duration-200 active:scale-[0.99] disabled:opacity-60 disabled:pointer-events-none cursor-pointer flex items-center justify-center text-center"
       >
         <span>{status === "loading" ? "Joining…" : "Join the waitlist"}</span>
-        <ArrowRight className="h-4.5 w-4.5 stroke-[2.6] text-white" />
       </button>
       {status === "error" && (
         <p className="flex items-center gap-1 font-mono text-xs text-red-500">
