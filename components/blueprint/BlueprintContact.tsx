@@ -306,17 +306,35 @@ export function BlueprintContact() {
     [currentStep]
   );
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!canProceed()) return;
 
     if (currentStep < totalSteps - 1) {
       goToStep(currentStep + 1);
     } else {
       setLoading(true);
-      setTimeout(() => {
+      const webhookUrl = process.env.NEXT_PUBLIC_CONTACT_WEBHOOK_URL;
+      try {
+        if (webhookUrl) {
+          await fetch(webhookUrl, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain" },
+            body: JSON.stringify({
+              name: formData.name,
+              email: formData.email,
+              description: formData.description,
+              formType: "contact",
+              formSource: "Homepage Flow",
+            }),
+          });
+        }
+      } catch (err) {
+        console.error("Submission error:", err);
+      } finally {
         setLoading(false);
         setMode("completed");
-      }, 800);
+      }
     }
   };
 

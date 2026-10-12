@@ -184,7 +184,7 @@ function NavSketchIcon({
 
 export function BlueprintNav() {
   const [scrolled, setScrolled] = useState(false);
-  const [activeId, setActiveId] = useState<string>("product");
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isLogoDocked, setIsLogoDocked] = useState(true);
   const [isHeroSection, setIsHeroSection] = useState(true);
@@ -211,15 +211,25 @@ export function BlueprintNav() {
 
       if (isClickScrollingRef.current) return;
 
-      // 1. Top of page: Hero / Product
-      if (scrollY < 160) {
+      const windowHeight = window.innerHeight;
+      const focalY = Math.min(Math.max(windowHeight * 0.35, 120), 320);
+
+      // 1. Top of page / Hero section: nothing should light up on navbar
+      const heroEl = document.getElementById("hero");
+      if (heroEl) {
+        const heroRect = heroEl.getBoundingClientRect();
+        if (heroRect.bottom > focalY) {
+          setIsHeroSection(true);
+          setActiveId(null);
+          return;
+        }
+      } else if (scrollY < 160) {
         setIsHeroSection(true);
-        setActiveId("product");
+        setActiveId(null);
         return;
       }
 
       // 2. Bottom of page: Contact (ensures Contact lights up even if at exact bottom)
-      const windowHeight = window.innerHeight;
       const docHeight = document.documentElement.scrollHeight;
       if (windowHeight + scrollY >= docHeight - 80) {
         setIsHeroSection(false);
@@ -228,7 +238,6 @@ export function BlueprintNav() {
       }
 
       // 3. Focal point check: ~35% down viewport where user's primary focus sits
-      const focalY = Math.min(Math.max(windowHeight * 0.35, 120), 320);
       const sectionIds = ["contact", "faq", "about", "security", "product"];
 
       for (const id of sectionIds) {
@@ -236,7 +245,7 @@ export function BlueprintNav() {
         if (!el) continue;
         const rect = el.getBoundingClientRect();
         if (rect.top <= focalY && rect.bottom > focalY) {
-          setIsHeroSection(id === "product" && scrollY < 300);
+          setIsHeroSection(false);
           setActiveId(id);
           return;
         }
@@ -245,6 +254,12 @@ export function BlueprintNav() {
       // 4. Fallback check: maximum visible height in viewport
       let bestId: string | null = null;
       let maxVisibleHeight = -1;
+
+      let heroVisibleHeight = -1;
+      if (heroEl) {
+        const heroRect = heroEl.getBoundingClientRect();
+        heroVisibleHeight = Math.max(0, Math.min(windowHeight, heroRect.bottom) - Math.max(0, heroRect.top));
+      }
 
       for (const id of sectionIds) {
         const el = document.getElementById(id);
@@ -260,8 +275,14 @@ export function BlueprintNav() {
         }
       }
 
+      if (heroVisibleHeight > maxVisibleHeight) {
+        setIsHeroSection(true);
+        setActiveId(null);
+        return;
+      }
+
       if (bestId) {
-        setIsHeroSection(bestId === "product" && scrollY < 300);
+        setIsHeroSection(false);
         setActiveId(bestId);
       }
     };
@@ -284,7 +305,7 @@ export function BlueprintNav() {
         const sec = customEvent.detail.section;
         if (sec === "hero") {
           setIsHeroSection(true);
-          setActiveId("product");
+          setActiveId(null);
         } else if (NAV_ITEMS.some((item) => item.id === sec)) {
           setIsHeroSection(false);
           setActiveId(sec);
@@ -362,7 +383,7 @@ export function BlueprintNav() {
               if (window.location.pathname === "/" || window.location.pathname === "") {
                 e.preventDefault();
                 isClickScrollingRef.current = true;
-                setActiveId("product");
+                setActiveId(null);
                 setIsHeroSection(true);
                 if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
                 clickTimeoutRef.current = setTimeout(() => {

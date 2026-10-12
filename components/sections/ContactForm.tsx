@@ -22,7 +22,7 @@ export function ContactForm() {
           method: "POST",
           mode: "no-cors",
           headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify(data),
+          body: JSON.stringify({ ...data, formType: "contact", formSource: "Contact Page" }),
         });
       }
 
@@ -49,6 +49,16 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Bot Honeypot (hidden from real users) */}
+      <input
+        type="text"
+        name="company"
+        tabIndex={-1}
+        autoComplete="off"
+        className="hidden"
+        style={{ display: "none" }}
+        aria-hidden="true"
+      />
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="name" className="block font-mono text-xs uppercase tracking-wider text-ink-faint">
