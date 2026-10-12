@@ -1,16 +1,35 @@
-# Unifolio
+# Unifolio — Track & Understand Your Family's Investments
 
-Unifolio is a free mutual fund portfolio tracker for India. It imports a user's
-CAS (Consolidated Account Statement) from CAMS or KFintech and shows holdings,
-XIRR, gains, and cost transparency (fees and commissions) in one dashboard —
-positioned as a free alternative to Mprofit.
+> Unifolio unifies mutual funds, stocks, fixed deposits, loans, and credit cards across your entire family in one place. It shows what you really own, what it costs you in hidden fees, and where you are overexposed or at risk.
 
-Unifolio is a tracking and analytics product. It is not a conversational AI
-assistant or chatbot.
+Website: https://unifolio.in  
+Publisher: Keystone Wealthtech Pvt. Ltd.  
+Headquarters: Pune, Maharashtra, India  
+Pricing: Free forever for individual and family investors  
 
-Core pages:
-- https://unifolio.in/ — product overview and core pitch
-- https://unifolio.in/features — Import, See, Understand, Track
-- https://unifolio.in/pricing — free-forever pricing
-- https://unifolio.in/about — company background
-- https://unifolio.in/get-started — signup / demo funnel
+## What Unifolio Does
+
+1. **Family Portfolio Tracking (Multi-PAN):**
+   Aggregates portfolios across spouses, parents, and children under one clear dashboard without sharing login passwords.
+2. **CAS Statement Import:**
+   Imports Consolidated Account Statements (CAS) from CAMS or KFintech with one file upload. No brokerage credentials or third-party bank screen scraping required.
+3. **Fee & Commission Dissection:**
+   Calculates exact hidden distribution fees and commissions quietly deducted by Regular mutual fund plans, with one-click Direct plan migration analysis.
+4. **Portfolio Overlap & Risk Intelligence:**
+   Detects whether "diversified" mutual funds secretly hold identical underlying stocks, uncovering hidden concentration risk.
+5. **Holistic Wealth Overview:**
+   Combines mutual funds, direct equities, fixed deposits, real estate, personal/home loans, and credit cards into an accurate consolidated net worth.
+
+## Key Pages
+
+- Home: https://unifolio.in/
+- Features: https://unifolio.in/features
+- Pricing: https://unifolio.in/pricing
+- About: https://unifolio.in/about
+- Contact & Inquiries: https://unifolio.in/contact
+
+## Privacy & Security
+
+- Zero Credential Storage: CAS statement imports require no brokerage or demat passwords.
+- Bank-grade 256-bit AES encryption at rest and TLS 1.3 in transit.
+- No selling of user financial data to third-party lenders or brokers.
