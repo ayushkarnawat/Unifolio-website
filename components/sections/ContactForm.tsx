@@ -3,6 +3,9 @@
 import { useState, type FormEvent } from "react";
 import { ArrowRight, CheckCircle2, AlertCircle, Send } from "lucide-react";
 
+const DEFAULT_CONTACT_WEBHOOK_URL =
+  "https://script.google.com/macros/s/AKfycbx04xf3wztBc96JAeRMSJh7Yr74AP1mjPXuVBIUNwWk6Qk7oZS3wMaZ2cpKCUKi970s/exec";
+
 export function ContactForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
@@ -12,19 +15,17 @@ export function ContactForm() {
 
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form).entries());
-    const webhookUrl = process.env.NEXT_PUBLIC_CONTACT_WEBHOOK_URL;
+    const webhookUrl = process.env.NEXT_PUBLIC_CONTACT_WEBHOOK_URL || DEFAULT_CONTACT_WEBHOOK_URL;
 
     try {
-      if (webhookUrl) {
-        // Google Sheets Apps Script Web App — no-cors POST since Apps Script's
-        // response isn't readable cross-origin, so success is assumed on no throw.
-        await fetch(webhookUrl, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({ ...data, formType: "contact", formSource: "Contact Page" }),
-        });
-      }
+      // Google Sheets Apps Script Web App — no-cors POST since Apps Script's
+      // response isn't readable cross-origin, so success is assumed on no throw.
+      await fetch(webhookUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ ...data, formType: "contact", formSource: "Contact Page" }),
+      });
 
       setStatus("success");
       form.reset();

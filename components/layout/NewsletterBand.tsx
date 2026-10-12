@@ -4,6 +4,9 @@ import { useState, type FormEvent } from "react";
 import { HandDrawnSparkle, HandDrawnUnderline } from "@/components/illustrations/HandDrawnAnnotations";
 import { ArrowRight, CheckCircle2, AlertCircle, Mail } from "lucide-react";
 
+const DEFAULT_NEWSLETTER_WEBHOOK_URL =
+  "https://script.google.com/macros/s/AKfycbx04xf3wztBc96JAeRMSJh7Yr74AP1mjPXuVBIUNwWk6Qk7oZS3wMaZ2cpKCUKi970s/exec";
+
 export function NewsletterBand() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [email, setEmail] = useState("");
@@ -12,19 +15,17 @@ export function NewsletterBand() {
     event.preventDefault();
     setStatus("loading");
 
-    const webhookUrl = process.env.NEXT_PUBLIC_NEWSLETTER_WEBHOOK_URL;
+    const webhookUrl = process.env.NEXT_PUBLIC_NEWSLETTER_WEBHOOK_URL || DEFAULT_NEWSLETTER_WEBHOOK_URL;
 
     try {
-      if (webhookUrl) {
-        // Google Sheets Apps Script Web App — no-cors POST since Apps Script's
-        // response isn't readable cross-origin, so success is assumed on no throw.
-        await fetch(webhookUrl, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({ email }),
-        });
-      }
+      // Google Sheets Apps Script Web App — no-cors POST since Apps Script's
+      // response isn't readable cross-origin, so success is assumed on no throw.
+      await fetch(webhookUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ email, formType: "waitlist", formSource: "Newsletter Band" }),
+      });
 
       setStatus("success");
       setEmail("");
