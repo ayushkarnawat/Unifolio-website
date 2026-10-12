@@ -4,16 +4,17 @@ import { BlueprintHero } from "@/components/blueprint/BlueprintHero";
 import { BlueprintAboutMetrics } from "@/components/blueprint/BlueprintAboutMetrics";
 import { BlueprintFaq } from "@/components/blueprint/BlueprintFaq";
 import { BlueprintContact } from "@/components/blueprint/BlueprintContact";
-import { buildSoftwareApplicationSchema } from "@/lib/schema";
+import { buildSoftwareApplicationSchema, buildFaqSchema } from "@/lib/schema";
 
 export const metadata: Metadata = {
-  title: "Unifolio — Financial Clarity",
+  title: "Unifolio | Track & Understand Your Family's Investments",
   description:
-    "An independent portfolio intelligence engine specializing in Mutual Fund Analytics, Fee Dissection, Multi-PAN Wealth, and Direct Migration.",
+    "Track mutual funds, stocks, FDs, loans and cards for your whole family in one app. See what you really own, what it costs you and where you're at risk.",
 };
 
 export default function HomePage() {
   const softwareSchema = buildSoftwareApplicationSchema();
+  const faqSchema = buildFaqSchema();
 
   return (
     <main className="relative bg-[#FAF8F5]">
@@ -21,6 +22,11 @@ export default function HomePage() {
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
       {/* Floating Pill Navigation Bar */}
