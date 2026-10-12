@@ -1,0 +1,11 @@
+# agents.txt for Unifolio (https://unifolio.in)
+User-agent: *
+Allow: /
+
+# Resources for AI Agents & Search Engines
+Site: https://unifolio.in
+Sitemap: https://unifolio.in/sitemap.xml
+LLMs-Txt: https://unifolio.in/llms.txt
+Contact: support@unifolio.in
+Company: Keystone Wealthtech Pvt. Ltd.
+Location: Pune, Maharashtra, India

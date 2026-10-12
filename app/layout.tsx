@@ -25,31 +25,73 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} — All your investments. Finally, together.`,
-    template: `%s — ${siteConfig.name}`,
+    default: "Unifolio | Track & Understand Your Family's Investments",
+    template: "%s | Unifolio",
   },
-  description: "Unifolio unifies every part of your financial life so you can see the big picture and make smarter decisions.",
+  description: siteConfig.description,
+  keywords: [
+    "family portfolio tracker",
+    "mutual fund analytics",
+    "track family investments",
+    "CAS statement tracker",
+    "CAS fee analyzer",
+    "direct mutual fund migration",
+    "mutual fund overlap checker",
+    "hidden commission calculator India",
+    "multi-PAN wealth tracker",
+    "Pune fintech",
+    "Indian mutual funds portfolio",
+  ],
+  authors: [{ name: "Keystone Wealthtech Pvt. Ltd.", url: siteConfig.url }],
+  creator: "Keystone Wealthtech Pvt. Ltd.",
+  publisher: "Unifolio",
   alternates: {
     canonical: "/",
     languages: { "en-IN": "/" },
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
-    title: siteConfig.name,
+    title: "Unifolio | Track & Understand Your Family's Investments",
     description: siteConfig.description,
     url: siteConfig.url,
-    siteName: siteConfig.name,
+    siteName: "Unifolio",
     locale: "en_IN",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Unifolio — Track & Understand Your Family's Investments",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: siteConfig.name,
+    title: "Unifolio | Track & Understand Your Family's Investments",
     description: siteConfig.description,
+    images: ["/og-image.png"],
+    creator: "@unifolioin",
   },
   icons: {
-    icon: "/Logo/unifolio-ring-transparent.png",
-    shortcut: "/Logo/unifolio-ring-transparent.png",
-    apple: "/Logo/unifolio-ring-transparent.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180" },
+    ],
   },
 };
 
@@ -63,6 +105,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`light ${manrope.variable} ${dmSans.variable}`}
     >
       <head>
+        <meta name="geo.region" content="IN-MH" />
+        <meta name="geo.placename" content="Pune" />
+        <meta name="geo.position" content="18.5204;73.8567" />
+        <meta name="ICBM" content="18.5204, 73.8567" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function() {

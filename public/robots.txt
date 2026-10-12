@@ -1,0 +1,24 @@
+# robots.txt for Unifolio (https://unifolio.in)
+User-agent: *
+Allow: /
+
+# Explicitly permit AI and LLM search agents
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+Sitemap: https://unifolio.in/sitemap.xml

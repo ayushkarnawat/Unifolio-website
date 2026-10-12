@@ -1,13 +1,20 @@
 export const siteConfig = {
   name: "Unifolio",
-  tagline: "One import. Every fund you own, in one place.",
+  tagline: "Track & Understand Your Family's Investments",
+  title: "Unifolio | Track & Understand Your Family's Investments",
   description:
-    "Unifolio is a free mutual fund portfolio tracker for India. Import one CAS statement and see every holding, gain, and fee in one place — no spreadsheet, no paid gatekeeper.",
+    "Track mutual funds, stocks, FDs, loans and cards for your whole family in one app. See what you really own, what it costs you and where you're at risk.",
   url: "https://unifolio.in",
   webAppUrl: "https://app.unifolio.in",
   appStoreUrl: "https://apps.apple.com/app/unifolio/[PLACEHOLDER]",
   playStoreUrl: "https://play.google.com/store/apps/details?id=in.unifolio.app.[PLACEHOLDER]",
   contactEmail: "support@unifolio.in",
+  location: {
+    city: "Pune",
+    state: "Maharashtra",
+    country: "India",
+    countryCode: "IN",
+  },
   social: {
     instagram: "https://www.instagram.com/unifolio.in/",
     facebook: "https://www.facebook.com/profile.php?id=61594380512651",
