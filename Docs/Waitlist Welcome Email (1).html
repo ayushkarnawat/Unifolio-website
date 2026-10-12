@@ -1,0 +1,805 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Waitlist Welcome Email</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column (~760px) with wide breakouts for the email preview and the flow strip. Unifolio's own palette and faces. */
+:root {
+  --bg: #FAF8F5;
+  --surface: #FFFFFF;
+  --wash: #EDF7EF;
+  --ink: #1C241E;
+  --ink-soft: #525E55;
+  --ink-faint: #7F8C82;
+  --line: rgba(28, 36, 30, 0.10);
+  --line-strong: rgba(28, 36, 30, 0.22);
+  --accent: #16A34A;
+  --accent-fill: #22C55E;
+  --accent-ink: #FFFFFF;
+  --warn: #B45309;
+  --warn-wash: #FEF3E2;
+  --code-bg: #F2F0EB;
+
+  /* Email mock palette: fixed, emails are designed light-first */
+  --m-bg: #F4F2EE;
+  --m-paper: #FFFFFF;
+  --m-ink: #1C241E;
+  --m-soft: #5B665E;
+  --m-green: #22C55E;
+  --m-green-deep: #15803D;
+  --m-wash: #EDF7EF;
+  --m-rule: #E4E1DA;
+
+  --f-display: "Manrope", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "DM Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111613; --surface: #18201B; --wash: #16271C; --ink: #E9EEE9; --ink-soft: #AAB5AD; --ink-faint: #7E8A82;
+    --line: rgba(233, 238, 233, 0.10); --line-strong: rgba(233, 238, 233, 0.22);
+    --accent: #4ADE80; --accent-fill: #22C55E; --accent-ink: #0B140E; --warn: #F5B26B; --warn-wash: #2A2116; --code-bg: #0D120F;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111613; --surface: #18201B; --wash: #16271C; --ink: #E9EEE9; --ink-soft: #AAB5AD; --ink-faint: #7E8A82;
+  --line: rgba(233, 238, 233, 0.10); --line-strong: rgba(233, 238, 233, 0.22);
+  --accent: #4ADE80; --accent-fill: #22C55E; --accent-ink: #0B140E; --warn: #F5B26B; --warn-wash: #2A2116; --code-bg: #0D120F;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+.page { max-width: 1080px; margin: 0 auto; padding: 0 20px; padding-block: 48px 96px; }
+.col { max-width: 760px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; color: var(--ink); margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.08; font-weight: 800; letter-spacing: -0.025em; }
+h2 { font-size: 1.6rem; line-height: 1.2; font-weight: 800; letter-spacing: -0.015em; }
+h3 { font-size: 1.08rem; font-weight: 700; }
+p { margin: 0; }
+a { color: var(--accent); }
+code, .mono { font-family: var(--f-mono); font-size: 0.88em; }
+code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.eyebrow { font-family: var(--f-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
+.lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 62ch; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.section { display: flex; flex-direction: column; gap: 20px; padding-top: 64px; }
+.section > .col { display: flex; flex-direction: column; gap: 14px; }
+.section-head { display: flex; flex-direction: column; gap: 8px; }
+.muted { color: var(--ink-soft); }
+
+header.top { display: flex; flex-direction: column; gap: 18px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+
+/* Recommendation block */
+.rec { background: var(--wash); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); border-radius: 14px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; margin-top: 32px; max-width: 760px; }
+.rec ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; }
+.rec strong { color: var(--ink); }
+
+/* Flow strip */
+.flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line-strong); border-radius: 14px; overflow: hidden; background: var(--surface); }
+.flow-step { padding: 18px 16px; display: flex; flex-direction: column; gap: 6px; position: relative; min-width: 0; }
+.flow-step + .flow-step { border-left: 1px solid var(--line); }
+.flow-step .n { font-family: var(--f-mono); font-size: 0.72rem; color: var(--accent); letter-spacing: 0.06em; }
+.flow-step .t { font-family: var(--f-display); font-weight: 700; font-size: 0.98rem; line-height: 1.25; }
+.flow-step .d { font-size: 0.86rem; color: var(--ink-soft); line-height: 1.45; }
+.flow-step .svc { margin-top: auto; padding-top: 6px; font-family: var(--f-mono); font-size: 0.72rem; color: var(--ink-faint); }
+.flow-step.new { background: color-mix(in srgb, var(--accent-fill) 7%, var(--surface)); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.82rem; color: var(--ink-soft); }
+.swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; border: 1px solid var(--line-strong); }
+.swatch.new { background: color-mix(in srgb, var(--accent-fill) 20%, var(--surface)); }
+.swatch.old { background: var(--surface); }
+@media (max-width: 860px) {
+  .flow { grid-template-columns: 1fr; }
+  .flow-step + .flow-step { border-left: 0; border-top: 1px solid var(--line); }
+}
+
+/* Findings */
+.findings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.finding { border-top: 2px solid var(--ink); padding-top: 12px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.finding p { font-size: 0.93rem; color: var(--ink-soft); }
+.finding .file { font-family: var(--f-mono); font-size: 0.74rem; color: var(--ink-faint); word-break: break-all; }
+@media (max-width: 760px) { .findings { grid-template-columns: 1fr; } }
+
+/* Tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; min-width: 620px; }
+th, td { text-align: left; padding: 12px 14px; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { font-family: var(--f-mono); font-weight: 500; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); background: color-mix(in srgb, var(--ink) 3%, var(--surface)); }
+tr:last-child td { border-bottom: 0; }
+td .pill { white-space: nowrap; }
+.pill { display: inline-block; font-family: var(--f-mono); font-size: 0.7rem; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--line-strong); color: var(--ink-soft); }
+.pill.go { background: var(--accent-fill); border-color: var(--accent-fill); color: #0B140E; }
+.pill.no { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 50%, transparent); }
+
+/* Email preview */
+.preview { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 16px; overflow: hidden; }
+.preview-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tab { font: 500 0.88rem var(--f-body); color: var(--ink-soft); background: transparent; border: 1px solid var(--line-strong); border-radius: 99px; padding: 6px 14px; cursor: pointer; }
+.tab:hover { color: var(--ink); border-color: var(--ink-faint); }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 99px; overflow: hidden; }
+.seg button { font: 500 0.8rem var(--f-mono); color: var(--ink-soft); background: transparent; border: 0; padding: 6px 12px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--wash); color: var(--ink); }
+.preview-body { display: grid; grid-template-columns: minmax(0, 1fr) 280px; }
+.stage { background: var(--m-bg); padding: 24px 16px; display: flex; flex-direction: column; align-items: center; gap: 14px; min-width: 0; }
+.notes { border-left: 1px solid var(--line); padding: 20px; display: flex; flex-direction: column; gap: 16px; font-size: 0.9rem; min-width: 0; }
+.notes h3 { font-size: 1rem; }
+.notes ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; color: var(--ink-soft); }
+.notes .kv { display: flex; flex-direction: column; gap: 2px; }
+.notes .kv span:first-child { font-family: var(--f-mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
+@media (max-width: 900px) {
+  .preview-body { grid-template-columns: 1fr; }
+  .notes { border-left: 0; border-top: 1px solid var(--line); }
+}
+
+/* Inbox row */
+.inbox { width: 100%; max-width: 600px; background: var(--m-paper); border: 1px solid var(--m-rule); border-radius: 10px; padding: 10px 14px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; font-family: Arial, sans-serif; color: var(--m-ink); font-size: 13px; }
+.inbox .av { width: 32px; height: 32px; border-radius: 50%; background: var(--m-ink); display: grid; place-items: center; grid-row: span 2; }
+.inbox .from { font-weight: 700; }
+.inbox .time { color: var(--m-soft); font-size: 12px; }
+.inbox .line { grid-column: 2 / 4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inbox .line b { font-weight: 700; }
+.inbox .line span { color: var(--m-soft); }
+
+/* Email canvas */
+.mail { width: 100%; max-width: 600px; transition: max-width 0.25s ease; font-family: Arial, "Helvetica Neue", sans-serif; color: var(--m-ink); }
+.stage.mobile .mail, .stage.mobile .inbox { max-width: 375px; }
+.mail-card { background: var(--m-paper); border-radius: 12px; overflow: hidden; border: 1px solid var(--m-rule); }
+.mail-pad { padding: 32px 36px; }
+.stage.mobile .mail-pad { padding: 24px 20px; }
+.m-logo { display: flex; align-items: center; gap: 8px; font-family: var(--f-display); font-weight: 800; font-size: 19px; letter-spacing: -0.02em; color: var(--m-ink); }
+.m-h { font-family: var(--f-display); font-weight: 800; font-size: 30px; line-height: 1.12; letter-spacing: -0.02em; margin: 22px 0 12px; color: var(--m-ink); }
+.stage.mobile .m-h { font-size: 25px; }
+.m-p { font-size: 15px; line-height: 1.6; color: var(--m-soft); margin: 0 0 14px; }
+.m-p b { color: var(--m-ink); }
+.m-btn { display: inline-block; background: var(--m-green); color: #FFFFFF; font-weight: 700; font-size: 15px; padding: 13px 24px; border-radius: 99px; text-decoration: none; }
+.m-foot { padding: 20px 36px 28px; font-size: 11.5px; line-height: 1.6; color: #8A938C; text-align: center; }
+.m-foot u { color: #6B756D; }
+.m-sign { font-size: 15px; color: var(--m-ink); margin-top: 18px; line-height: 1.5; }
+
+/* Concept: statement */
+.stmt { border: 1.5px solid var(--m-ink); border-radius: 8px; overflow: hidden; margin: 18px 0 20px; }
+.stmt-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--m-ink); color: #FFFFFF; font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+.stmt-head span:last-child { color: #86EFAC; }
+.stmt table { min-width: 0; font-family: var(--f-mono); font-size: 12px; color: var(--m-ink); }
+.stmt th { background: var(--m-wash); color: var(--m-soft); font-size: 10px; padding: 8px 10px; border-bottom: 1px solid var(--m-rule); }
+.stmt td { padding: 9px 10px; border-bottom: 1px dashed var(--m-rule); }
+.stmt td:last-child, .stmt th:last-child { text-align: right; }
+.stmt .total td { border-bottom: 0; background: var(--m-wash); font-weight: 500; }
+.stmt .pos { color: var(--m-green-deep); }
+.stage.mobile .stmt .hide-sm { display: none; }
+
+/* Concept: pass */
+.pass { margin: 18px 0 22px; border-radius: 14px; background: var(--m-ink); color: #FFFFFF; overflow: hidden; }
+.pass-top { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.pass-top .lbl { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: #86EFAC; }
+.pass-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 0 20px 18px; }
+.pass-grid div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pass-grid span:first-child { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #9AA59D; }
+.pass-grid span:last-child { font-family: var(--f-display); font-weight: 800; font-size: 17px; }
+.pass-spot { font-family: var(--f-display); font-weight: 800; font-size: 44px; letter-spacing: -0.03em; color: var(--m-green); line-height: 1; }
+.perf { height: 0; border-top: 2px dashed #3A453D; margin: 0 14px; }
+.pass-bottom { padding: 14px 20px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.bars { display: flex; gap: 2px; height: 30px; align-items: stretch; }
+.bars i { display: block; background: #E9EEE9; }
+.pass-bottom small { font-family: var(--f-mono); font-size: 10px; color: #9AA59D; text-align: right; }
+.next-list { display: flex; flex-direction: column; gap: 12px; margin: 6px 0 22px; }
+.next-list div { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; font-size: 14.5px; line-height: 1.5; color: var(--m-soft); }
+.next-list b { color: var(--m-ink); }
+.dot { width: 28px; height: 28px; border-radius: 50%; background: var(--m-wash); color: var(--m-green-deep); font-weight: 700; font-size: 13px; display: grid; place-items: center; font-family: var(--f-mono); }
+
+/* Concept: note */
+.note { font-family: Georgia, "Times New Roman", serif; }
+.note .m-p { font-family: Arial, sans-serif; color: #2E3830; font-size: 15.5px; }
+.note .ps { border-top: 1px solid var(--m-rule); padding-top: 14px; margin-top: 18px; font-size: 14px; color: var(--m-soft); font-family: Arial, sans-serif; }
+
+/* Subject lines */
+.subjects { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.subject { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.subject b { font-weight: 700; font-size: 0.95rem; }
+.subject span { font-size: 0.85rem; color: var(--ink-soft); }
+@media (max-width: 640px) { .subjects { grid-template-columns: 1fr; } }
+
+/* Ideas */
+.ideas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--line); }
+.idea { padding: 14px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; }
+.ideas .idea:nth-child(odd) { padding-right: 20px; }
+.ideas .idea:nth-child(even) { padding-left: 20px; border-left: 1px solid var(--line); }
+.idea p { grid-column: 1 / -1; font-size: 0.9rem; color: var(--ink-soft); }
+@media (max-width: 700px) {
+  .ideas { grid-template-columns: 1fr; }
+  .ideas .idea:nth-child(odd), .ideas .idea:nth-child(even) { padding-left: 0; padding-right: 0; border-left: 0; }
+}
+
+/* Callout */
+.callout { border-left: 3px solid var(--warn); background: var(--warn-wash); padding: 14px 18px; border-radius: 0 10px 10px 0; font-size: 0.95rem; }
+.callout b { color: var(--ink); }
+
+/* Steps */
+.phases { display: flex; flex-direction: column; gap: 28px; }
+.phase { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 20px; }
+.phase-label { display: flex; flex-direction: column; gap: 4px; }
+.phase-label .who { font-size: 0.82rem; color: var(--ink-soft); }
+.steps { margin: 0; padding: 0; list-style: none; counter-reset: step var(--start, 0); display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.steps li { counter-increment: step; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 0.94rem; }
+.steps li::before { content: counter(step, decimal-leading-zero); font-family: var(--f-mono); font-size: 0.78rem; color: var(--accent); padding-top: 3px; }
+.steps li b { color: var(--ink); }
+.steps li span.d { color: var(--ink-soft); display: block; margin-top: 2px; }
+@media (max-width: 700px) { .phase { grid-template-columns: 1fr; gap: 10px; } }
+
+pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; overflow-x: auto; font-family: var(--f-mono); font-size: 0.8rem; line-height: 1.65; margin: 0; color: var(--ink); }
+pre .c { color: var(--ink-faint); }
+pre .k { color: var(--accent); }
+
+/* Checklist */
+.checklist { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.checklist label { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.checklist input { width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--accent-fill); }
+.checklist .q { font-weight: 500; }
+.checklist .h { display: block; font-size: 0.86rem; color: var(--ink-soft); font-weight: 400; margin-top: 2px; }
+.checklist input:checked + .q { color: var(--ink-faint); text-decoration: line-through; text-decoration-color: var(--ink-faint); }
+.check-count { font-family: var(--f-mono); font-size: 0.8rem; color: var(--ink-soft); }
+
+/* Decisions */
+.decisions { display: flex; flex-direction: column; gap: 12px; }
+.decision { border: 1px solid var(--line-strong); border-radius: 12px; padding: 16px 18px; background: var(--surface); display: flex; flex-direction: column; gap: 6px; }
+.decision .my { font-size: 0.9rem; color: var(--ink-soft); }
+.decision .my b { color: var(--accent); font-weight: 700; }
+
+/* Cost */
+.costs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.cost { display: flex; flex-direction: column; gap: 4px; }
+.cost .v { font-family: var(--f-display); font-weight: 800; font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+.cost .l { font-size: 0.85rem; color: var(--ink-soft); }
+@media (max-width: 700px) { .costs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.end { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--line-strong); display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+@media (prefers-reduced-motion: reduce) { .mail { transition: none; } }
+</style>
+
+<div class="page">
+
+<header class="top col">
+  <div class="eyebrow">Unifolio · Brainstorm · 8 Oct 2026</div>
+  <h1>A welcome email for everyone who joins the waitlist</h1>
+  <p class="lede">When someone fills the "Join the waitlist" pop-up, they should get a fun, on-brand email from us within seconds, sent through the same Amazon SES account that already sends the app's login OTPs. This page covers how it works, what it looks like, what could go wrong, and what we need from you before writing the plan.</p>
+  <div class="meta">
+    <span class="pill">Brainstorm, not final</span>
+    <span class="pill">Next step: plan, then Antigravity execution prompt</span>
+  </div>
+</header>
+
+<div class="rec">
+  <div class="eyebrow">My recommendation in one breath</div>
+  <ul>
+    <li><strong>Add a small backend:</strong> API Gateway and one Lambda function. The site is a static export, so it can't send email by itself, and the AWS keys must never sit in the browser.</li>
+    <li><strong>Keep marketing apart from OTPs:</strong> a separate SES configuration set, sender address and (ideally) subdomain, so a spam complaint on a marketing email can never slow down someone's login code.</li>
+    <li><strong>Use SES's built-in contact list</strong> so every email gets a working one-click unsubscribe, which Gmail and Yahoo now require.</li>
+    <li><strong>Welcome email: the "Waitlist pass" design (chosen 8 Oct).</strong> Keep the "Founder note" style for later updates.</li>
+    <li><strong>Add bot protection</strong> (Cloudflare Turnstile plus rate limits) before going live, or strangers can use our form to spam other people's inboxes.</li>
+  </ul>
+</div>
+
+<!-- FLOW -->
+<section class="section" id="flow">
+  <div class="col section-head">
+    <div class="eyebrow">How it works</div>
+    <h2>From "Join the waitlist" to their inbox</h2>
+    <p class="muted">Five hops, all inside AWS except the browser. The whole thing should take under two seconds.</p>
+  </div>
+  <div class="flow">
+    <div class="flow-step">
+      <span class="n">01 · BROWSER</span>
+      <span class="t">User submits the pop-up</span>
+      <span class="d">Name, email, phone and a Turnstile token are POSTed as JSON.</span>
+      <span class="svc">WaitlistForm.tsx</span>
+    </div>
+    <div class="flow-step new">
+      <span class="n">02 · EDGE</span>
+      <span class="t">API Gateway receives it</span>
+      <span class="d">CORS limited to unifolio.in. Throttled so one IP can't hammer it.</span>
+      <span class="svc">HTTP API · POST /waitlist</span>
+    </div>
+    <div class="flow-step new">
+      <span class="n">03 · LOGIC</span>
+      <span class="t">Lambda checks and saves</span>
+      <span class="d">Verifies the captcha, validates input, saves the signup once. A repeat email is not re-sent.</span>
+      <span class="svc">Lambda (Node 22) · DynamoDB</span>
+    </div>
+    <div class="flow-step new">
+      <span class="n">04 · SEND</span>
+      <span class="t">SES sends the welcome</span>
+      <span class="d">Stored template, personalised with their name and waitlist number. Unsubscribe link added automatically.</span>
+      <span class="svc">SESv2 SendEmail · contact list</span>
+    </div>
+    <div class="flow-step new">
+      <span class="n">05 · AFTER</span>
+      <span class="t">We watch what happens</span>
+      <span class="d">Bounces and complaints are logged and the address is suppressed so we never email it again.</span>
+      <span class="svc">Config set → SNS / CloudWatch</span>
+    </div>
+  </div>
+  <div class="legend"><span><i class="swatch old"></i>Exists today</span><span><i class="swatch new"></i>New pieces we'd build</span></div>
+</section>
+
+<!-- FINDINGS -->
+<section class="section" id="today">
+  <div class="col section-head">
+    <div class="eyebrow">What I found in the code</div>
+    <h2>Where the waitlist stands today</h2>
+  </div>
+  <div class="findings">
+    <div class="finding">
+      <h3>The site ships as static files</h3>
+      <p><code>output: "export"</code> is commented out only for dev, so production is plain HTML on AWS. Next.js API routes won't exist in production, which is why the sending logic has to live in a Lambda.</p>
+      <span class="file">next.config.mjs</span>
+    </div>
+    <div class="finding">
+      <h3>The form can't tell if it failed</h3>
+      <p>It posts to <code>NEXT_PUBLIC_WAITLIST_WEBHOOK_URL</code> with <code>mode: "no-cors"</code>, so the browser never sees the response and always shows "You're on the list", even when nothing was saved.</p>
+      <span class="file">components/waitlist/WaitlistForm.tsx:14</span>
+    </div>
+    <div class="finding">
+      <h3>Phone is optional, email is required</h3>
+      <p>Good for us: the email is always there to send to. We'll store the phone for later (WhatsApp updates, maybe) but won't use it in this project.</p>
+      <span class="file">components/waitlist/WaitlistForm.tsx:55</span>
+    </div>
+  </div>
+</section>
+
+<!-- OPTIONS -->
+<section class="section" id="options">
+  <div class="col section-head">
+    <div class="eyebrow">Architecture</div>
+    <h2>Where the "send email" code can live</h2>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Option</th><th>How it works</th><th>Good</th><th>Not so good</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td><b>API Gateway + Lambda</b></td><td>Form calls our own endpoint; Lambda saves and sends via SES.</td><td>Throttling, CORS, logs and WAF built in. Keys stay server-side. Pennies per month.</td><td>Two AWS resources to set up instead of one.</td><td><span class="pill go">Recommended</span></td></tr>
+        <tr><td><b>Lambda Function URL</b></td><td>Same Lambda, called directly through its own URL.</td><td>Simplest setup.</td><td>No built-in rate limiting, so bot protection depends entirely on our own code.</td><td><span class="pill">OK fallback</span></td></tr>
+        <tr><td><b>Next.js API route</b></td><td><code>app/api/waitlist/route.ts</code></td><td>Code sits in this repo.</td><td>Doesn't run in a static export. We'd have to move the site to a server host.</td><td><span class="pill no">Not possible</span></td></tr>
+        <tr><td><b>Reuse the app's OTP backend</b></td><td>Add a waitlist endpoint to the web app's auth service.</td><td>Infrastructure already exists.</td><td>Couples marketing to login. A bug or a spam burst here could affect sign-ins.</td><td><span class="pill no">Avoid</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- EMAILS -->
+<section class="section" id="emails">
+  <div class="col section-head">
+    <div class="eyebrow">What they'll see</div>
+    <h2>The welcome email: Waitlist pass</h2>
+    <p class="muted"><b style="color:var(--ink)">Decided:</b> we're going with B, the Waitlist pass. A and C stay here for reference. All three use Unifolio's green, paper and Manrope voice. Each is a mock: the real build uses email-safe tables and inline styles, and Manrope falls back to Arial in Outlook and Gmail's app. Switch to mobile to see the 375px layout.</p>
+  </div>
+
+  <div class="preview">
+    <div class="preview-bar">
+      <div class="tabs" role="tablist" aria-label="Email concept">
+        <button class="tab" role="tab" id="tab-stmt" aria-selected="false" data-c="stmt">A · First statement</button>
+        <button class="tab" role="tab" id="tab-pass" aria-selected="true" data-c="pass">B · Waitlist pass ✓ Chosen</button>
+        <button class="tab" role="tab" id="tab-note" aria-selected="false" data-c="note">C · Founder note</button>
+      </div>
+      <div class="seg" aria-label="Preview width">
+        <button id="w-desk" aria-pressed="true" data-w="desk">Desktop</button>
+        <button id="w-mob" aria-pressed="false" data-w="mob">Mobile</button>
+      </div>
+    </div>
+    <div class="preview-body">
+      <div class="stage" id="stage">
+
+        <!-- Concept A: statement -->
+        <div class="concept" data-concept="stmt" hidden>
+          <div class="stack" style="align-items:center;width:100%">
+            <div class="inbox">
+              <div class="av"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="#22C55E" stroke-width="4" stroke-dasharray="38 12"/></svg></div>
+              <span class="from">Unifolio</span><span class="time">10:42</span>
+              <div class="line"><b>Your Unifolio statement is ready (it's a short one)</b> <span>· Closing balance: 1 waitlist spot. Hidden fees: ₹0.</span></div>
+            </div>
+            <div class="mail">
+              <div class="mail-card">
+                <div class="mail-pad">
+                  <div class="m-logo"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="#22C55E" stroke-width="4" stroke-dasharray="38 12"/></svg>unifolio</div>
+                  <div class="m-h">Welcome aboard, Siddharth. Here's your very first statement.</div>
+                  <p class="m-p">Most fund statements are 14 pages of fine print. Ours is four lines. You're welcome.</p>
+                  <div class="stmt">
+                    <div class="stmt-head"><span>Statement · Folio UF-01284</span><span>As on 08 Oct 2026</span></div>
+                    <table>
+                      <thead><tr><th class="hide-sm">Date</th><th>Transaction</th><th>Units</th><th>Value</th></tr></thead>
+                      <tbody>
+                        <tr><td class="hide-sm">08 Oct</td><td>Joined the waitlist</td><td>1.000</td><td class="pos">Priceless</td></tr>
+                        <tr><td class="hide-sm">08 Oct</td><td>Hidden commissions</td><td>0.000</td><td>₹0.00</td></tr>
+                        <tr><td class="hide-sm">08 Oct</td><td>Spreadsheets you'll stop maintaining</td><td>all</td><td class="pos">+∞</td></tr>
+                        <tr class="total"><td class="hide-sm"></td><td>Closing balance</td><td></td><td class="pos">Spot #1,284</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="m-p"><b>Coming soon to this statement:</b> every mutual fund you own in one place, your real XIRR, and exactly how much each fund quietly charges you. All from one CAS upload. Free, forever.</p>
+                  <p class="m-p">We'll write when there's something worth opening. No daily "market update" spam, promise.</p>
+                  <a class="m-btn" href="#emails" onclick="return false">See what we're building →</a>
+                  <div class="m-sign">Talk soon,<br>Team Unifolio</div>
+                </div>
+              </div>
+              <div class="m-foot">You're getting this because you joined the Unifolio waitlist at unifolio.in.<br>Unifolio · [registered address], India · <u>Unsubscribe</u></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Concept B: pass -->
+        <div class="concept" data-concept="pass">
+          <div class="stack" style="align-items:center;width:100%">
+            <div class="inbox">
+              <div class="av"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="#22C55E" stroke-width="4" stroke-dasharray="38 12"/></svg></div>
+              <span class="from">Unifolio</span><span class="time">10:42</span>
+              <div class="line"><b>You're in. Spot #1,284 is yours 🎟️</b> <span>· Your mutual funds have no idea what's coming.</span></div>
+            </div>
+            <div class="mail">
+              <div class="mail-card">
+                <div class="mail-pad">
+                  <div class="m-logo"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="#22C55E" stroke-width="4" stroke-dasharray="38 12"/></svg>unifolio</div>
+                  <div class="m-h">You're on the list, Siddharth.</div>
+                  <p class="m-p">Your early-access pass is below. Keep it safe. (It's an email. It's very safe.)</p>
+                  <div class="pass">
+                    <div class="pass-top">
+                      <div style="display:flex;flex-direction:column;gap:6px"><span class="lbl">Early access pass</span><span class="pass-spot">#1,284</span></div>
+                      <svg width="44" height="44" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="#22C55E" stroke-width="3.2" stroke-dasharray="38 12"/></svg>
+                    </div>
+                    <div class="pass-grid">
+                      <div><span>Passenger</span><span>Siddharth</span></div>
+                      <div><span>Boarding</span><span>Launch day</span></div>
+                      <div><span>Gate</span><span>Your inbox</span></div>
+                    </div>
+                    <div class="perf"></div>
+                    <div class="pass-bottom">
+                      <div class="bars" id="bars"></div>
+                      <small>Fees on board: ₹0<br>Class: Free forever</small>
+                    </div>
+                  </div>
+                  <div class="next-list">
+                    <div><span class="dot">1</span><span><b>Sneak peeks first.</b> You'll see screens before anyone on Twitter does.</span></div>
+                    <div><span class="dot">2</span><span><b>Early door.</b> Waitlist members get in before the public launch.</span></div>
+                    <div><span class="dot">3</span><span><b>Light homework.</b> Find your CAS statement from CAMS or KFintech. That one file is all Unifolio needs.</span></div>
+                  </div>
+                  <a class="m-btn" href="#emails" onclick="return false">Bring a friend along →</a>
+                  <div class="m-sign">See you at the gate,<br>Team Unifolio</div>
+                </div>
+              </div>
+              <div class="m-foot">You're getting this because you joined the Unifolio waitlist at unifolio.in.<br>Unifolio · [registered address], India · <u>Unsubscribe</u></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Concept C: founder note -->
+        <div class="concept" data-concept="note" hidden>
+          <div class="stack" style="align-items:center;width:100%">
+            <div class="inbox">
+              <div class="av" style="background:#22C55E;color:#fff;font-weight:700;font-size:13px">A</div>
+              <span class="from">Ayush from Unifolio</span><span class="time">10:42</span>
+              <div class="line"><b>thanks for joining, Siddharth</b> <span>· and one quick question for you</span></div>
+            </div>
+            <div class="mail note">
+              <div class="mail-card">
+                <div class="mail-pad">
+                  <p class="m-p">Hi Siddharth,</p>
+                  <p class="m-p">I'm Ayush, one of the people building Unifolio. You just joined our waitlist, so I wanted to say thanks myself rather than send you a template with a robot's name on it.</p>
+                  <p class="m-p">We started Unifolio because tracking mutual funds in India is weirdly hard. Five apps, three spreadsheets, and nobody tells you what your funds actually cost you. We're fixing that: upload one CAS file, see everything.</p>
+                  <p class="m-p"><b>One question:</b> what's the most annoying part of keeping track of your investments right now? Just hit reply. I read every answer, and the best ones end up shaping what we build.</p>
+                  <p class="m-p">Ayush<br><span style="color:#5B665E">Co-founder, Unifolio</span></p>
+                  <p class="ps">P.S. We'll only email when there's something real to show you. Probably every couple of weeks.</p>
+                </div>
+              </div>
+              <div class="m-foot">You're getting this because you joined the Unifolio waitlist at unifolio.in.<br>Unifolio · [registered address], India · <u>Unsubscribe</u></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="notes" id="notes">
+        <div class="note-set" data-concept="stmt" hidden>
+          <div class="stack">
+            <h3>A · First statement</h3>
+            <p class="muted">Parodies the CAS statement your users already know, then flips it into our pitch: no hidden fees.</p>
+            <div class="kv"><span>Why it works</span><span>Instantly on-brand for a portfolio tracker. Funny without trying too hard. The joke is the product.</span></div>
+            <div class="kv"><span>Personalised with</span><span>First name, waitlist number, join date</span></div>
+            <div class="kv"><span>Build effort</span><span>Medium. One table, one button, one image-free layout that survives image blocking.</span></div>
+            <div class="kv"><span>Pick this if</span><span>You want the welcome email itself to show off what Unifolio does.</span></div>
+          </div>
+        </div>
+        <div class="note-set" data-concept="pass">
+          <div class="stack">
+            <h3>B · Waitlist pass <span class="pill go">Chosen</span></h3>
+            <p class="muted">A boarding pass with their spot number. Feels like a ticket to something exclusive.</p>
+            <div class="kv"><span>Why it works</span><span>Screenshot-friendly, so people share it. The "bring a friend" button sets up a referral program later.</span></div>
+            <div class="kv"><span>Personalised with</span><span>First name, waitlist number</span></div>
+            <div class="kv"><span>Build effort</span><span>Medium-high. The dark pass card needs care in Gmail dark mode and Outlook.</span></div>
+            <div class="kv"><span>What choosing it means</span><span>The spot number is now required, so the DynamoDB counter is in v1. The dark pass card gets a dark-mode render check in Gmail and Outlook. The "Bring a friend" button needs a destination (see decisions).</span></div>
+          </div>
+        </div>
+        <div class="note-set" data-concept="note" hidden>
+          <div class="stack">
+            <h3>C · Founder note</h3>
+            <p class="muted">Looks like a personal email. No logo, no button, one question that invites a reply.</p>
+            <div class="kv"><span>Why it works</span><span>Most likely to land in Gmail's Primary tab. Replies boost sender reputation and give you free user research.</span></div>
+            <div class="kv"><span>Personalised with</span><span>First name</span></div>
+            <div class="kv"><span>Build effort</span><span>Low.</span></div>
+            <div class="kv"><span>Pick this if</span><span>Someone will actually read and answer the replies. Best as a day-2 follow-up after A or B.</span></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="col stack" style="margin-top:12px">
+    <h3>Subject line ideas</h3>
+    <p class="muted" style="font-size:0.93rem">Subject plus preview text (the grey line after it in Gmail). We can A/B test two of these with a simple 50/50 split in the Lambda.</p>
+  </div>
+  <div class="subjects">
+    <div class="subject"><b>Your Unifolio statement is ready (it's a short one)</b><span>Closing balance: 1 waitlist spot. Hidden fees: ₹0.</span></div>
+    <div class="subject" style="border-color:var(--accent)"><b>You're in. Spot #1,284 is yours 🎟️</b><span>Your mutual funds have no idea what's coming.</span></div>
+    <div class="subject"><b>Siddharth, your folios are about to get organised</b><span>One CAS upload. Every fund. Every fee.</span></div>
+    <div class="subject"><b>Welcome to the calmest corner of your finances</b><span>No tips, no hype, just clarity. Coming soon.</span></div>
+  </div>
+
+  <div class="col stack" style="margin-top:20px">
+    <h3>More ideas to make it fun</h3>
+  </div>
+  <div class="ideas">
+    <div class="idea"><b>Waitlist number</b><span class="pill go">Easy</span><p>An atomic counter in DynamoDB gives everyone a real spot number. Feels exclusive and costs nothing.</p></div>
+    <div class="idea"><b>Refer to skip the line</b><span class="pill">Later</span><p>Unique link per person; each friend who joins moves them up. Needs a referral code field and a second email.</p></div>
+    <div class="idea"><b>"Fun fact" footer that changes</b><span class="pill go">Easy</span><p>Rotate lines like "A 1% fee difference over 20 years can cost you lakhs." Picked at random per send.</p></div>
+    <div class="idea"><b>The sketch illustrations</b><span class="pill">Medium</span><p>Reuse the hand-drawn product-card sketches in <code>public/product-cards/</code> as hosted images. Must have alt text, since many clients block images.</p></div>
+    <div class="idea"><b>Reply-with-a-question</b><span class="pill go">Easy</span><p>Concept C's question as a P.S. on A or B. Replies are the best deliverability signal there is.</p></div>
+    <div class="idea"><b>Short follow-up series</b><span class="pill">Later</span><p>Day 0 welcome, day 3 founder note, launch day invite. Needs EventBridge Scheduler or a small scheduled Lambda.</p></div>
+  </div>
+</section>
+
+<!-- DELIVERABILITY -->
+<section class="section" id="safety">
+  <div class="col section-head">
+    <div class="eyebrow">Protecting the OTPs</div>
+    <h2>Marketing and login emails must not share a reputation</h2>
+    <p class="muted">Gmail and Outlook judge senders by domain and by how people react. Marketing emails get ignored and reported as spam far more than OTPs do. If both go out under the same identity, a bad week of marketing can push login codes into spam, and users can't sign in.</p>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Piece</th><th>OTP emails (today)</th><th>Waitlist / marketing (new)</th></tr></thead>
+      <tbody>
+        <tr><td>Sender address</td><td>e.g. <code>no-reply@unifolio.in</code></td><td><code>hello@updates.unifolio.in</code> or <code>hello@unifolio.in</code> (decision below)</td></tr>
+        <tr><td>SES configuration set</td><td>Existing, or none</td><td>New <code>unifolio-marketing</code> with its own bounce/complaint tracking</td></tr>
+        <tr><td>Unsubscribe</td><td>Not needed (transactional)</td><td>Required. SES contact list <code>unifolio-marketing</code> adds the link and List-Unsubscribe headers</td></tr>
+        <tr><td>DNS records</td><td>Already verified: DKIM, probably SPF</td><td>DKIM for the new subdomain, custom MAIL FROM, and a DMARC record on the root domain</td></tr>
+        <tr><td>Reply-to</td><td>None</td><td>A real inbox someone reads, e.g. <code>founders@unifolio.in</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col stack">
+    <div class="callout"><b>Gmail and Yahoo bulk-sender rules (since 2024):</b> SPF and DKIM, a DMARC record, a one-click unsubscribe header, and a spam complaint rate under 0.3%. Our volume is small, but following them from day one keeps us out of spam.</div>
+    <div class="callout"><b>India's DPDP Act:</b> we should collect clear consent. A line under the button such as "We'll email you about Unifolio's launch. Unsubscribe anytime." plus a link to the privacy policy does the job.</div>
+  </div>
+</section>
+
+<!-- ABUSE -->
+<section class="section" id="abuse">
+  <div class="col section-head">
+    <div class="eyebrow">Abuse</div>
+    <h2>Stopping strangers from using our form to spam people</h2>
+    <p class="muted">Any form that sends an email to whatever address is typed in can be abused: a bot submits thousands of addresses that aren't theirs, those people mark us as spam, and SES pauses our whole account, OTPs included. Four layers keep that from happening.</p>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Layer</th><th>What it stops</th><th>Where</th></tr></thead>
+      <tbody>
+        <tr><td><b>Cloudflare Turnstile</b></td><td>Bots. Invisible for real users, free, no image puzzles.</td><td>Widget in the pop-up, token checked in Lambda</td></tr>
+        <tr><td><b>Honeypot field</b></td><td>Simple bots that fill every input.</td><td>Hidden input in the form</td></tr>
+        <tr><td><b>API Gateway throttling</b></td><td>Floods. For example 5 requests/second overall, a burst of 10.</td><td>API Gateway stage settings</td></tr>
+        <tr><td><b>Send once per address</b></td><td>Repeat sends to the same inbox.</td><td>DynamoDB conditional write; repeats get "You're already on the list"</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- STEPS -->
+<section class="section" id="steps">
+  <div class="col section-head">
+    <div class="eyebrow">End to end</div>
+    <h2>Setup, step by step</h2>
+    <p class="muted">The order matters: DNS changes can take a few hours, so they go first. Antigravity can write all the code; the AWS console and DNS steps need someone with access.</p>
+  </div>
+  <div class="phases">
+    <div class="phase">
+      <div class="phase-label"><h3>Phase 1 · SES and DNS</h3><span class="who">You, by running <code>scripts/ses-marketing-setup.sh</code> with the AWS CLI · about 10 minutes plus DNS wait</span></div>
+      <ol class="steps" style="--start:0">
+        <li><div><b>Confirm the SES region and production status.</b><span class="d">Use the same region the OTPs are sent from; it's already out of the sandbox there.</span></div></li>
+        <li><div><b>Create the sending identity</b> (<code>updates.unifolio.in</code> or reuse <code>unifolio.in</code>).<span class="d">SES gives three DKIM CNAME records to add in DNS.</span></div></li>
+        <li><div><b>Set a custom MAIL FROM domain</b>, e.g. <code>bounce.updates.unifolio.in</code>.<span class="d">One MX and one SPF TXT record. Makes SPF align for DMARC.</span></div></li>
+        <li><div><b>Add DMARC on the root domain</b> if missing: <code>_dmarc.unifolio.in TXT "v=DMARC1; p=none; rua=mailto:dmarc@unifolio.in"</code>.<span class="d">Start with <code>p=none</code> to observe, tighten later.</span></div></li>
+        <li><div><b>Create configuration set</b> <code>unifolio-marketing</code> with event destinations for bounce, complaint, delivery, open and click.<span class="d">Send to CloudWatch for dashboards and an SNS topic for alerts.</span></div></li>
+        <li><div><b>Create contact list</b> <code>unifolio-marketing</code> with topic <code>product-updates</code> (default: opted in).<span class="d">This powers the unsubscribe link and page. SES allows one contact list per region, so it's named for all marketing, not just the waitlist.</span></div></li>
+      </ol>
+    </div>
+    <div class="phase">
+      <div class="phase-label"><h3>Phase 2 · Backend</h3><span class="who">Antigravity writes it, you deploy · about half a day</span></div>
+      <ol class="steps" style="--start:6">
+        <li><div><b>DynamoDB table</b> <code>unifolio-waitlist</code>, partition key <code>email</code>, plus one counter item for spot numbers.<span class="d">On-demand billing. Stores name, phone, source page, timestamps, spot number.</span></div></li>
+        <li><div><b>IAM role for the Lambda</b>, scoped tightly.<span class="d"><code>ses:SendEmail</code> on the marketing identity and config set only, <code>ses:CreateContact</code> on the list, <code>dynamodb:PutItem / UpdateItem</code> on the one table.</span></div></li>
+        <li><div><b>Lambda function</b> <code>waitlist-signup</code> (Node 22, AWS SDK v3).<span class="d">Validate → verify Turnstile → conditional write → create SES contact → send templated email. Turnstile secret lives in SSM Parameter Store.</span></div></li>
+        <li><div><b>API Gateway HTTP API</b> with <code>POST /waitlist</code>.<span class="d">CORS allows only <code>https://unifolio.in</code> and <code>www</code>. Throttling on the stage.</span></div></li>
+        <li><div><b>Bounce/complaint alerting.</b><span class="d">SNS topic emails the team if complaints spike. SES's account-level suppression list already blocks known-bad addresses.</span></div></li>
+        <li><div><b>Infrastructure as code (recommended).</b><span class="d">A small AWS SAM or CDK template so the setup is repeatable and reviewable instead of hand-clicked.</span></div></li>
+      </ol>
+    </div>
+    <div class="phase">
+      <div class="phase-label"><h3>Phase 3 · The email</h3><span class="who">Antigravity builds, you approve copy · about a day</span></div>
+      <ol class="steps" style="--start:12">
+        <li><div><b>Write the template in MJML</b>, compile to table-based HTML with inline styles.<span class="d">Kept in the repo, e.g. <code>emails/waitlist-welcome.mjml</code>.</span></div></li>
+        <li><div><b>Write a plain-text version</b> too.<span class="d">Better deliverability, and some people read email that way.</span></div></li>
+        <li><div><b>Host images on CloudFront</b> with absolute https URLs.<span class="d">Logo PNG at 2× size. Every image gets alt text.</span></div></li>
+        <li><div><b>Upload as an SES template</b> <code>waitlist-welcome-v1</code> with <code>{{name}}</code>, <code>{{spot}}</code>, <code>{{amazonSESUnsubscribeUrl}}</code>.<span class="d">A small script in <code>scripts/</code> creates or updates it.</span></div></li>
+      </ol>
+    </div>
+    <div class="phase">
+      <div class="phase-label"><h3>Phase 4 · Website</h3><span class="who">Antigravity · a couple of hours</span></div>
+      <ol class="steps" style="--start:16">
+        <li><div><b>Point the form at the new API</b> via <code>NEXT_PUBLIC_WAITLIST_API_URL</code>, with real CORS instead of <code>no-cors</code>.<span class="d">Now the pop-up can show real errors and an "already on the list" state.</span></div></li>
+        <li><div><b>Add the Turnstile widget, honeypot and consent line</b> to <code>WaitlistForm.tsx</code>.</div></li>
+        <li><div><b>Show the spot number</b> in the success state: "You're #1,284. Check your inbox."</div></li>
+      </ol>
+    </div>
+    <div class="phase">
+      <div class="phase-label"><h3>Phase 5 · Test and launch</h3><span class="who">Together</span></div>
+      <ol class="steps" style="--start:19">
+        <li><div><b>SES mailbox simulator.</b><span class="d"><code>success@</code>, <code>bounce@</code> and <code>complaint@simulator.amazonses.com</code> confirm the event pipeline without hurting reputation.</span></div></li>
+        <li><div><b>Render check</b> in Gmail (web, Android, iOS), Apple Mail, Outlook, light and dark mode.</div></li>
+        <li><div><b>Score check</b> with mail-tester.com, aim for 9/10 or better.</div></li>
+        <li><div><b>Register in Google Postmaster Tools</b> to watch domain reputation after launch.</div></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="col stack" style="margin-top:12px">
+    <h3>The heart of the Lambda, roughly</h3>
+  </div>
+  <pre><span class="c">// after validation, Turnstile check and the "send once" DynamoDB write</span>
+<span class="k">await</span> ses.send(<span class="k">new</span> CreateContactCommand({
+  ContactListName: <span class="k">"unifolio-marketing"</span>,
+  EmailAddress: email,
+  TopicPreferences: [{ TopicName: <span class="k">"product-updates"</span>, SubscriptionStatus: <span class="k">"OPT_IN"</span> }],
+}));
+
+<span class="k">await</span> ses.send(<span class="k">new</span> SendEmailCommand({
+  FromEmailAddress: <span class="k">"Unifolio &lt;hello@updates.unifolio.in&gt;"</span>,
+  ReplyToAddresses: [<span class="k">"founders@unifolio.in"</span>],
+  Destination: { ToAddresses: [email] },
+  ConfigurationSetName: <span class="k">"unifolio-marketing"</span>,
+  ListManagementOptions: { ContactListName: <span class="k">"unifolio-marketing"</span>, TopicName: <span class="k">"product-updates"</span> },
+  Content: { Template: {
+    TemplateName: <span class="k">"waitlist-welcome-v1"</span>,
+    TemplateData: JSON.stringify({ name: firstName, spot: spot.toLocaleString(<span class="k">"en-IN"</span>) }),
+  }},
+}));</pre>
+</section>
+
+<!-- NEEDS -->
+<section class="section" id="needs">
+  <div class="col section-head">
+    <div class="eyebrow">Your part</div>
+    <h2>What we need from you</h2>
+    <p class="muted">Tick these off as you gather them. Your ticks are saved in this browser only.</p>
+  </div>
+  <div class="col stack">
+    <div class="check-count" id="check-count">0 of 12 ready</div>
+    <div class="checklist" id="checklist">
+      <label for="n1"><input type="checkbox" id="n1"><span class="q">AWS access and the SES region<span class="h">Where the OTP emails send from, and someone who can create SES, Lambda, API Gateway, DynamoDB and IAM resources.</span></span></label>
+      <label for="n2"><input type="checkbox" id="n2"><span class="q">How the OTP emails are set up today<span class="h">Sender address, verified identity, and whether a configuration set is used. So we don't touch them.</span></span></label>
+      <label for="n3"><input type="checkbox" id="n3"><span class="q">DNS access for unifolio.in<span class="h">Route 53, Cloudflare, GoDaddy or wherever it's hosted. We add about 6 records.</span></span></label>
+      <label for="n4"><input type="checkbox" id="n4"><span class="q">Sender name and address<span class="h">e.g. "Unifolio" or "Ayush from Unifolio", and hello@ on the root or a subdomain.</span></span></label>
+      <label for="n5"><input type="checkbox" id="n5"><span class="q">A reply-to inbox someone reads<span class="h">Replies are a good sign to Gmail, and a great source of feedback.</span></span></label>
+      <label for="n6"><input type="checkbox" id="n6" checked><span class="q">Which email concept: B, Waitlist pass (decided)<span class="h">Still open: whether the signature names a founder.</span></span></label>
+      <label for="n7"><input type="checkbox" id="n7"><span class="q">Copy approval<span class="h">Especially the jokes. Anything about returns or fees must stay clearly non-advisory.</span></span></label>
+      <label for="n8"><input type="checkbox" id="n8"><span class="q">Registered business address for the footer<span class="h">Expected in marketing email and builds trust.</span></span></label>
+      <label for="n9"><input type="checkbox" id="n9"><span class="q">Privacy policy URL<span class="h">Linked from the consent line in the pop-up and the email footer.</span></span></label>
+      <label for="n10"><input type="checkbox" id="n10"><span class="q">What happens to the current webhook<span class="h">Is it a Google Sheet or similar? Keep feeding it, migrate old signups to DynamoDB, or both?</span></span></label>
+      <label for="n11"><input type="checkbox" id="n11"><span class="q">A Cloudflare account for Turnstile<span class="h">Free. We need the site key (public) and secret key (goes in AWS SSM).</span></span></label>
+      <label for="n12"><input type="checkbox" id="n12"><span class="q">Where the static site is hosted<span class="h">S3 + CloudFront or Amplify? Needed for image hosting and the exact CORS origin.</span></span></label>
+    </div>
+  </div>
+</section>
+
+<!-- DECISIONS -->
+<section class="section" id="decisions">
+  <div class="col section-head">
+    <div class="eyebrow">Before the plan</div>
+    <h2>Decisions to make together</h2>
+  </div>
+  <div class="col decisions">
+    <div class="decision"><h3>Subdomain or root domain for marketing?</h3><p class="my"><b>My pick: subdomain</b> (<code>updates.unifolio.in</code>). A bit more DNS work now, much better protection for OTP deliverability later. Users still see "Unifolio" as the sender name.</p></div>
+    <div class="decision"><h3>Single or double opt-in?</h3><p class="my"><b>My pick: single opt-in</b> with Turnstile and send-once. Double opt-in ("confirm your email") is cleaner for list quality but loses 20–30% of signups, which hurts a waitlist.</p></div>
+    <div class="decision"><h3>Waitlist number: decided, yes</h3><p class="my"><b>Settled by choosing the pass.</b> Open point: start the counter at 1 or import existing webhook signups first so earlier joiners keep lower numbers. My pick: import first.</p></div>
+    <div class="decision"><h3>Where does "Bring a friend" go in v1?</h3><p class="my"><b>My pick: a share link to unifolio.in with a <code>?ref=</code> code stored on the signup</b>, so referrals are counted from day one even before "skip the line" exists. Simpler alternative: link to the homepage, or replace the button with "Follow us on Instagram".</p></div>
+    <div class="decision"><h3>Just the welcome, or a short series?</h3><p class="my"><b>My pick: welcome only for v1</b>, with the contact list in place so launch announcements can go out later. Add the day-3 founder note in v2.</p></div>
+    <div class="decision"><h3>Where should signups live?</h3><p class="my"><b>My pick: DynamoDB as the source of truth</b>, optionally still forwarding to the current webhook so whoever watches that sheet isn't surprised.</p></div>
+  </div>
+</section>
+
+<!-- COST -->
+<section class="section" id="cost">
+  <div class="col section-head">
+    <div class="eyebrow">Cost</div>
+    <h2>Practically free at waitlist scale</h2>
+    <p class="muted">Estimates for 10,000 signups a month.</p>
+  </div>
+  <div class="costs">
+    <div class="cost"><span class="v">$1.00</span><span class="l">SES at $0.10 per 1,000 emails</span></div>
+    <div class="cost"><span class="v">$0.01</span><span class="l">API Gateway HTTP API</span></div>
+    <div class="cost"><span class="v">$0.00</span><span class="l">Lambda, inside the free tier</span></div>
+    <div class="cost"><span class="v">~$0.03</span><span class="l">DynamoDB on-demand</span></div>
+  </div>
+</section>
+
+<div class="end">
+  <div class="eyebrow">Settled on 8 Oct</div>
+  <p>Mumbai region (ap-south-1) · API at <code>api.unifolio.in</code> · Waitlist pass email · Google Sheet kept, fed by the Lambda · "Bring a friend" goes to the homepage with a hidden referral code, so a referral program can be added later. Full plan: <code>Docs/2026-10-08-waitlist-welcome-email-plan.md</code>.</p>
+
+  <div class="eyebrow">What happens next</div>
+  <p>Once you've picked a concept and answered the decisions above, I'll write the implementation plan in <code>Docs/</code> along with an Antigravity execution prompt, matching how the other plans in this repo are set up. The AWS console and DNS steps will be a checklist for you; everything else becomes code.</p>
+</div>
+
+</div>
+
+<script>
+(function () {
+  var tabs = document.querySelectorAll('.tab');
+  function show(c) {
+    tabs.forEach(function (t) { t.setAttribute('aria-selected', String(t.dataset.c === c)); });
+    document.querySelectorAll('.concept, .note-set').forEach(function (el) { el.hidden = el.dataset.concept !== c; });
+  }
+  tabs.forEach(function (t) { t.addEventListener('click', function () { show(t.dataset.c); }); });
+
+  var stage = document.getElementById('stage');
+  document.querySelectorAll('.seg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.seg button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      stage.classList.toggle('mobile', b.dataset.w === 'mob');
+    });
+  });
+
+  // barcode on the pass
+  var bars = document.getElementById('bars');
+  var widths = [2,1,3,1,1,2,4,1,2,1,3,2,1,1,3,1,2,4,1,2,1,1,3,1,2];
+  widths.forEach(function (w, i) {
+    var el = document.createElement('i');
+    el.style.width = w + 'px';
+    el.style.marginRight = (i % 3 === 0 ? 2 : 1) + 'px';
+    bars.appendChild(el);
+  });
+
+  // checklist (per-viewer only)
+  var KEY = 'uf-waitlist-needs';
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { saved = {}; }
+  var boxes = document.querySelectorAll('#checklist input');
+  var count = document.getElementById('check-count');
+  function update() {
+    var n = 0; boxes.forEach(function (b) { if (b.checked) n++; });
+    count.textContent = n + ' of ' + boxes.length + ' ready';
+  }
+  boxes.forEach(function (b) {
+    if (saved[b.id]) b.checked = true;
+    b.addEventListener('change', function () {
+      saved[b.id] = b.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {}
+      update();
+    });
+  });
+  update();
+})();
+</script>
+
+</body></html>
