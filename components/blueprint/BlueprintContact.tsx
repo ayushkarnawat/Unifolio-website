@@ -312,23 +312,22 @@ export function BlueprintContact() {
     if (currentStep < totalSteps - 1) {
       goToStep(currentStep + 1);
     } else {
-      setLoading(true);
-      const webhookUrl = process.env.NEXT_PUBLIC_CONTACT_WEBHOOK_URL;
+      const DEFAULT_CONTACT_WEBHOOK_URL =
+        "https://script.google.com/macros/s/AKfycbx04xf3wztBc96JAeRMSJh7Yr74AP1mjPXuVBIUNwWk6Qk7oZS3wMaZ2cpKCUKi970s/exec";
+      const webhookUrl = process.env.NEXT_PUBLIC_CONTACT_WEBHOOK_URL || DEFAULT_CONTACT_WEBHOOK_URL;
       try {
-        if (webhookUrl) {
-          await fetch(webhookUrl, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify({
-              name: formData.name,
-              email: formData.email,
-              description: formData.description,
-              formType: "contact",
-              formSource: "Homepage Flow",
-            }),
-          });
-        }
+        await fetch(webhookUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            description: formData.description,
+            formType: "contact",
+            formSource: "Homepage Flow",
+          }),
+        });
       } catch (err) {
         console.error("Submission error:", err);
       } finally {

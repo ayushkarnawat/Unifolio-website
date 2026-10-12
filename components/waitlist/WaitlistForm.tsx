@@ -3,6 +3,9 @@
 import { useState, type FormEvent } from "react";
 import { Check, AlertCircle } from "lucide-react";
 
+const DEFAULT_WAITLIST_WEBHOOK_URL =
+  "https://script.google.com/macros/s/AKfycbx04xf3wztBc96JAeRMSJh7Yr74AP1mjPXuVBIUNwWk6Qk7oZS3wMaZ2cpKCUKi970s/exec";
+
 export function WaitlistForm({ onSuccess }: { onSuccess?: () => void }) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
@@ -11,17 +14,15 @@ export function WaitlistForm({ onSuccess }: { onSuccess?: () => void }) {
     setStatus("loading");
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form).entries());
-    const webhookUrl = process.env.NEXT_PUBLIC_WAITLIST_WEBHOOK_URL;
+    const webhookUrl = process.env.NEXT_PUBLIC_WAITLIST_WEBHOOK_URL || DEFAULT_WAITLIST_WEBHOOK_URL;
 
     try {
-      if (webhookUrl) {
-        await fetch(webhookUrl, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({ ...data, formType: "waitlist" }),
-        });
-      }
+      await fetch(webhookUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ ...data, formType: "waitlist" }),
+      });
       setStatus("success");
       form.reset();
       onSuccess?.();
