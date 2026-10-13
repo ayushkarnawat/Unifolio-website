@@ -35,6 +35,7 @@ import {
   type AboutSceneHandle,
   type AboutSceneShared,
 } from "@/components/blueprint/scenes/AboutScene";
+import { MobileSecuritySection } from "@/components/blueprint/MobileSecuritySection";
 
 interface ProductCardData {
   id: string;
@@ -1409,7 +1410,7 @@ export function BlueprintHero() {
           {/* Product Hero Content (Headline) */}
           <div
             ref={headerRef}
-            className="w-full max-w-5xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mb-8 sm:mb-12 px-2 will-change-transform pt-10 sm:pt-14 md:pt-16"
+            className="w-full max-w-5xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mb-3 sm:mb-12 px-2 will-change-transform pt-16 sm:pt-14 md:pt-16"
           >
             <h2
               ref={headlineRef}
@@ -1463,7 +1464,7 @@ export function BlueprintHero() {
         {/* SECTION 3: SECURITY */}
         <section
           id="security"
-          className="relative w-full bg-[#FAF8F5] pt-24 sm:pt-28 pb-20 sm:pb-28 px-4 sm:px-6 lg:px-12 select-none"
+          className="relative w-full bg-[#FAF8F5] pt-8 sm:pt-12 lg:pt-28 pb-4 sm:pb-6 lg:pb-28 px-4 sm:px-6 lg:px-12 select-none"
         >
           {/* Seamless edge guard ensuring no clip artifacts or dark slivers on the left margin */}
           <div
@@ -1471,7 +1472,8 @@ export function BlueprintHero() {
             aria-hidden="true"
           />
 
-          <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-between gap-12 lg:gap-16">
+          {/* DESKTOP SECURITY VIEW (>= 1024px): 100% UNTOUCHED ORIGINAL LAYOUT & TIMELINES */}
+          <div className="hidden lg:flex max-w-6xl mx-auto flex-col lg:flex-row items-center lg:items-start justify-between gap-12 lg:gap-16">
             {/* Left Column: Sticky Vault */}
             <div className="w-full lg:w-5/12 flex items-center justify-center lg:sticky lg:top-36 shrink-0 py-4">
               <SecurityVaultSlot
@@ -1516,6 +1518,11 @@ export function BlueprintHero() {
                 closingGreenWordRefs={closingGreenWordRefs}
               />
             </div>
+          </div>
+
+          {/* MOBILE SECURITY VIEW (< 1024px): VAULT ON TOP, SEQUENTIAL STORIES WITH ARROWS */}
+          <div className="block lg:hidden w-full">
+            <MobileSecuritySection />
           </div>
 
           {/* Sparse transition fragments bridging Security into About */}
@@ -1563,9 +1570,9 @@ export function BlueprintHero() {
         {/* SECTION 4: ABOUT (Option 1: Single-Viewport In-Place Editorial Morph) */}
         <section
           id="about"
-          className="relative w-full bg-[#FAF8F5] h-[220vh] select-none"
+          className="relative w-full bg-[#FAF8F5] h-[150vh] sm:h-[175vh] lg:h-[220vh] select-none"
         >
-          <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between pt-8 sm:pt-10 pb-8 sm:pb-10 px-4 sm:px-6 lg:px-8">
+          <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between pt-4 sm:pt-6 lg:pt-10 pb-4 sm:pb-6 lg:pb-10 px-4 sm:px-6 lg:px-8">
             <AboutBackgroundSlot aboutContentRef={aboutContentRef} />
 
             <div className="relative z-10 max-w-5xl xl:max-w-6xl mx-auto w-full h-full flex flex-col justify-between">

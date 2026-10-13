@@ -373,7 +373,7 @@ export function BlueprintContact() {
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="relative w-full flex flex-col pt-12 sm:pt-16 lg:pt-20 pb-8 sm:pb-10 px-6 sm:px-12 lg:px-20 xl:px-24 bg-[#FAF8F5] text-[#111613] select-none border-t border-black/[0.08]"
+        className="relative w-full flex flex-col pt-8 sm:pt-10 lg:pt-20 pb-8 sm:pb-10 px-6 sm:px-12 lg:px-20 xl:px-24 bg-[#FAF8F5] text-[#111613] select-none border-t border-black/[0.08]"
       >
         {/* Fine Subtle Micro Particle Dot Grid on Clean Light Ground */}
         <div className="pointer-events-none absolute inset-0 w-full h-full flex items-center justify-center z-0 overflow-hidden">
