@@ -73,7 +73,7 @@ export function MobileProductCarousel() {
     return () => observer.disconnect();
   }, [scrollToCard]);
 
-  // Continuous auto-advance loop every 4.5 seconds (only when visible in viewport, paused on touch/drag)
+  // Continuous auto-advance loop every 5 seconds (only when visible in viewport, paused on touch/drag)
   useEffect(() => {
     const interval = setInterval(() => {
       if (isInteractingRef.current || !isVisibleRef.current) return;
@@ -82,7 +82,7 @@ export function MobileProductCarousel() {
         scrollToCard(next);
         return next;
       });
-    }, 4500);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [scrollToCard]);

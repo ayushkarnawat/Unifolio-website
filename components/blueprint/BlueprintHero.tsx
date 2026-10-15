@@ -1525,8 +1525,8 @@ export function BlueprintHero() {
             <MobileSecuritySection />
           </div>
 
-          {/* Sparse transition fragments bridging Security into About */}
-          <div className="absolute inset-x-0 bottom-2 pointer-events-none overflow-hidden select-none hidden md:block h-32">
+          {/* Sparse transition fragments bridging Security into About (Desktop only) */}
+          <div className="absolute inset-x-0 bottom-2 pointer-events-none overflow-hidden select-none hidden lg:block h-32">
             <div className="max-w-6xl mx-auto h-full relative">
               <div
                 className="absolute left-[6%] bottom-4 rounded-[6px] border border-neutral-300/40 bg-[#F5F1E8]/70 p-2 shadow-[0_1px_2px_rgba(28,36,30,0.02)] -rotate-6 scale-90 opacity-20 pointer-events-none"

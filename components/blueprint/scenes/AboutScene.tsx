@@ -195,7 +195,7 @@ export function AboutBackgroundSlot({ aboutContentRef }: AboutBackgroundSlotProp
   return (
     <div
       ref={aboutContentRef}
-      className="absolute inset-0 pointer-events-none overflow-hidden select-none"
+      className="absolute inset-x-0 top-16 sm:top-20 md:top-0 bottom-0 pointer-events-none overflow-hidden select-none"
       style={{ opacity: 1, visibility: "visible", zIndex: 0 }}
     >
       {/* Quiet Monochrome Collage — 26 Desaturated Editorial Fragments that align on morph */}
@@ -204,27 +204,26 @@ export function AboutBackgroundSlot({ aboutContentRef }: AboutBackgroundSlotProp
           <div
             key={item.id}
             data-initial-rot={item.rotZ}
-            className="about-collage-card absolute pointer-events-none select-none hidden md:block rounded-[6px] border border-neutral-300/50 bg-[#F5F1E8]/85 p-2 sm:p-2.5 shadow-[0_1px_3px_rgba(28,36,30,0.02)] transition-opacity"
+            className="about-collage-card absolute pointer-events-none select-none rounded-[6px] border border-neutral-300/50 bg-[#F5F1E8]/85 p-1.5 sm:p-2 md:p-2.5 shadow-[0_1px_3px_rgba(28,36,30,0.02)] transition-opacity w-[114px] min-[390px]:w-[124px] sm:w-[136px] md:w-[148px] scale-[0.72] min-[390px]:scale-[0.78] sm:scale-[0.88] md:scale-100 origin-center"
             style={{
               left: `${item.xPct}%`,
               top: `${item.yPct}%`,
               transform: `translate(-50%, -50%) rotate(${item.rotZ}deg) scale(${item.scale})`,
               opacity: item.opacity,
-              width: "148px",
             }}
           >
-            <div className="flex items-center justify-between gap-1.5 border-b border-neutral-300/40 pb-1 mb-1">
-              <span className="font-mono text-[8px] font-bold tracking-wider text-neutral-400 uppercase truncate">
+            <div className="flex items-center justify-between gap-1 border-b border-neutral-300/40 pb-0.5 sm:pb-1 mb-0.5 sm:mb-1">
+              <span className="font-mono text-[7px] sm:text-[8px] font-bold tracking-wider text-neutral-400 uppercase truncate">
                 {item.category}
               </span>
-              <span className="font-mono text-[8px] text-neutral-400 shrink-0">
+              <span className="font-mono text-[7px] sm:text-[8px] text-neutral-400 shrink-0">
                 {item.code}
               </span>
             </div>
-            <p className="font-sans text-[10px] font-bold text-neutral-700 leading-tight truncate">
+            <p className="font-sans text-[8.5px] sm:text-[10px] font-bold text-neutral-700 leading-tight truncate">
               {item.primary}
             </p>
-            <p className="font-mono text-[8px] text-neutral-400 mt-0.5 leading-tight truncate">
+            <p className="font-mono text-[7px] sm:text-[8px] text-neutral-400 mt-0.5 leading-tight truncate">
               {item.meta}
             </p>
           </div>
