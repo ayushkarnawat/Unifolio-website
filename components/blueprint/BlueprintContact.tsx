@@ -515,7 +515,7 @@ export function BlueprintContact() {
 
           {/* Bottom Integrated Footer Bar: Seamless Minimal Strip */}
           <div className="contact-footer-bar pt-10 border-t border-black/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 font-sans text-xs text-[#5A685D]">
-            <div>
+            <div className="whitespace-nowrap text-[10px] min-[360px]:text-[11px] sm:text-xs text-center sm:text-left">
               Copyright © 2026 Keystone Wealthtech Pvt. Ltd. All Rights Reserved.
             </div>
 

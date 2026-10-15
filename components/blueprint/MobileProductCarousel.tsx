@@ -157,18 +157,18 @@ export function MobileProductCarousel() {
         <div className="w-[84vw] sm:w-[68vw] md:w-[56vw] max-w-[390px] shrink-0 snap-center rounded-[24px] p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between bg-[rgba(232,243,236,0.88)] backdrop-blur-xl border border-white/80 shadow-[0_16px_36px_-12px_rgba(16,44,28,0.08),inset_0_1.5px_1px_0_rgba(255,255,255,0.9)] min-h-[460px] sm:min-h-[490px]">
           <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/90 to-transparent pointer-events-none" />
           <div>
-            <h3 className="font-sans font-black text-xl sm:text-2xl tracking-[-0.03em] text-neutral-950 leading-tight mb-2.5">
+            <h3 className="font-sans font-black text-[22px] min-[390px]:text-[24px] sm:text-2xl tracking-[-0.03em] text-neutral-950 leading-tight mb-2.5">
               Skip the dashboards. <span className="text-[#22C55E]">Just ask.</span>
             </h3>
-            <p className="font-sans text-neutral-700 text-xs sm:text-sm leading-relaxed font-medium">
+            <p className="font-sans text-neutral-700 text-[13.5px] min-[390px]:text-[14.5px] sm:text-sm leading-relaxed font-medium">
               The fastest way to understand your money isn&apos;t a chart, it&apos;s a question. Ask what&apos;s dragging your returns, whether you&apos;re overexposed, or if a decision makes sense, and get an answer based on your portfolio.
             </p>
           </div>
-          <div className="mt-2 sm:mt-3 flex justify-center -translate-y-3 sm:-translate-y-4">
+          <div className="mt-2 sm:mt-3 flex justify-center -translate-y-1 sm:-translate-y-2">
             <img
               src="/product-cards/card-2d-1.png"
               alt="Skip the dashboards. Just ask."
-              className="max-h-[185px] sm:max-h-[210px] w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.07)]"
+              className="max-h-[170px] sm:max-h-[195px] w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.07)]"
               draggable={false}
             />
           </div>
@@ -178,18 +178,18 @@ export function MobileProductCarousel() {
         <div className="w-[84vw] sm:w-[68vw] md:w-[56vw] max-w-[390px] shrink-0 snap-center rounded-[24px] p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between bg-[rgba(232,243,236,0.88)] backdrop-blur-xl border border-white/80 shadow-[0_16px_36px_-12px_rgba(16,44,28,0.08),inset_0_1.5px_1px_0_rgba(255,255,255,0.9)] min-h-[460px] sm:min-h-[490px]">
           <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/90 to-transparent pointer-events-none" />
           <div>
-            <h3 className="font-sans font-black text-xl sm:text-2xl tracking-[-0.03em] text-neutral-950 leading-tight mb-2.5">
+            <h3 className="font-sans font-black text-[22px] min-[390px]:text-[24px] sm:text-2xl tracking-[-0.03em] text-neutral-950 leading-tight mb-2.5">
               <span className="text-[#22C55E]">See</span> Everything
             </h3>
-            <p className="font-sans text-neutral-700 text-xs sm:text-sm leading-relaxed font-medium">
+            <p className="font-sans text-neutral-700 text-[13.5px] min-[390px]:text-[14.5px] sm:text-sm leading-relaxed font-medium">
               From mutual funds and stocks to bank accounts, loans, credit cards, and real estate, every asset and liability you and your family hold, aggregated into a number that&apos;s actually accurate.
             </p>
           </div>
-          <div className="mt-2 sm:mt-3 flex justify-center -translate-y-3 sm:-translate-y-4">
+          <div className="mt-2 sm:mt-3 flex justify-center -translate-y-1 sm:-translate-y-2">
             <img
               src="/product-cards/card-2d-2.png"
               alt="See Everything"
-              className="max-h-[180px] sm:max-h-[205px] w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.07)]"
+              className="max-h-[168px] sm:max-h-[192px] w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.07)]"
               draggable={false}
             />
           </div>
@@ -244,42 +244,42 @@ export function MobileProductCarousel() {
         <div className="w-[84vw] sm:w-[68vw] md:w-[56vw] max-w-[390px] shrink-0 snap-center rounded-[24px] p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between bg-[rgba(232,243,236,0.88)] backdrop-blur-xl border border-white/80 shadow-[0_16px_36px_-12px_rgba(16,44,28,0.08),inset_0_1.5px_1px_0_rgba(255,255,255,0.9)] min-h-[460px] sm:min-h-[490px]">
           <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/90 to-transparent pointer-events-none" />
           <div>
-            <h3 className="font-sans font-black text-xl sm:text-2xl tracking-[-0.03em] text-neutral-950 leading-tight mb-3">
+            <h3 className="font-sans font-black text-[22px] min-[390px]:text-[24px] sm:text-2xl tracking-[-0.03em] text-neutral-950 leading-tight mb-2.5">
               <span className="text-[#22C55E]">Know</span> Your Risk
             </h3>
 
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-2">
               <div className="flex items-start gap-2">
                 <img src="/bento-icons/pulse-line.png" alt="Family Runway" className="w-[16px] h-[16px] shrink-0 mt-0.5 object-contain" />
-                <p className="text-neutral-700 text-xs font-medium leading-snug">
+                <p className="text-neutral-700 text-[13px] min-[390px]:text-[13.5px] sm:text-sm font-medium leading-snug">
                   <strong className="font-bold text-neutral-950">Family Runway.</strong> How long your family&apos;s savings would last.
                 </p>
               </div>
               <div className="flex items-start gap-2">
                 <img src="/bento-icons/shield.png" alt="Real Safety Cushion" className="w-[16px] h-[16px] shrink-0 mt-0.5 object-contain" />
-                <p className="text-neutral-700 text-xs font-medium leading-snug">
+                <p className="text-neutral-700 text-[13px] min-[390px]:text-[13.5px] sm:text-sm font-medium leading-snug">
                   <strong className="font-bold text-neutral-950">Real Safety Cushion.</strong> Built from real numbers, not rules.
                 </p>
               </div>
               <div className="flex items-start gap-2">
                 <img src="/bento-icons/stacked-coins.png" alt="Sleeping Money" className="w-[16px] h-[16px] shrink-0 mt-0.5 object-contain" />
-                <p className="text-neutral-700 text-xs font-medium leading-snug">
+                <p className="text-neutral-700 text-[13px] min-[390px]:text-[13.5px] sm:text-sm font-medium leading-snug">
                   <strong className="font-bold text-neutral-950">Sleeping Money.</strong> Surplus cash sitting idle.
                 </p>
               </div>
               <div className="flex items-start gap-2">
                 <img src="/bento-icons/people-group-alt.png" alt="Family Risk Map" className="w-[16px] h-[16px] shrink-0 mt-0.5 object-contain" />
-                <p className="text-neutral-700 text-xs font-medium leading-snug">
+                <p className="text-neutral-700 text-[13px] min-[390px]:text-[13.5px] sm:text-sm font-medium leading-snug">
                   <strong className="font-bold text-neutral-950">Family Risk Map.</strong> Where your family is financially exposed.
                 </p>
               </div>
             </div>
           </div>
-          <div className="mt-1 sm:mt-2 flex justify-center -translate-y-3.5 sm:-translate-y-4.5">
+          <div className="mt-1 sm:mt-2 flex justify-center -translate-y-1 sm:-translate-y-2">
             <img
               src="/product-cards/card-2d-4.png"
               alt="Know Your Risk"
-              className="max-h-[160px] sm:max-h-[185px] w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.07)]"
+              className="max-h-[150px] sm:max-h-[175px] w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.07)]"
               draggable={false}
             />
           </div>
@@ -289,42 +289,42 @@ export function MobileProductCarousel() {
         <div className="w-[84vw] sm:w-[68vw] md:w-[56vw] max-w-[390px] shrink-0 snap-center rounded-[24px] p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between bg-[rgba(232,243,236,0.88)] backdrop-blur-xl border border-white/80 shadow-[0_16px_36px_-12px_rgba(16,44,28,0.08),inset_0_1.5px_1px_0_rgba(255,255,255,0.9)] min-h-[460px] sm:min-h-[490px]">
           <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/90 to-transparent pointer-events-none" />
           <div>
-            <h3 className="font-sans font-black text-xl sm:text-2xl tracking-[-0.03em] text-neutral-950 leading-tight mb-3">
+            <h3 className="font-sans font-black text-[22px] min-[390px]:text-[24px] sm:text-2xl tracking-[-0.03em] text-neutral-950 leading-tight mb-2.5">
               <span className="text-[#22C55E]">Plan</span> Ahead
             </h3>
 
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-2">
               <div className="flex items-start gap-2">
                 <img src="/bento-icons/rising-graph.png" alt="Financial Snapshot" className="w-[16px] h-[16px] shrink-0 mt-0.5 object-contain" />
-                <p className="text-neutral-700 text-xs font-medium leading-snug">
+                <p className="text-neutral-700 text-[13px] min-[390px]:text-[13.5px] sm:text-sm font-medium leading-snug">
                   <strong className="font-bold text-neutral-950">Financial Snapshot.</strong> Always know where you stand.
                 </p>
               </div>
               <div className="flex items-start gap-2">
                 <img src="/bento-icons/target.png" alt="Stress Test" className="w-[16px] h-[16px] shrink-0 mt-0.5 object-contain" />
-                <p className="text-neutral-700 text-xs font-medium leading-snug">
+                <p className="text-neutral-700 text-[13px] min-[390px]:text-[13.5px] sm:text-sm font-medium leading-snug">
                   <strong className="font-bold text-neutral-950">Stress Test.</strong> How your portfolio holds against a crash.
                 </p>
               </div>
               <div className="flex items-start gap-2">
                 <img src="/bento-icons/question-bubble.png" alt="What if I..." className="w-[16px] h-[16px] shrink-0 mt-0.5 object-contain" />
-                <p className="text-neutral-700 text-xs font-medium leading-snug">
+                <p className="text-neutral-700 text-[13px] min-[390px]:text-[13.5px] sm:text-sm font-medium leading-snug">
                   <strong className="font-bold text-neutral-950">&quot;What if I...&quot;.</strong> Model a job change, loan, or exit.
                 </p>
               </div>
               <div className="flex items-start gap-2">
                 <img src="/bento-icons/stacked-sheets.png" alt="Goal Readiness" className="w-[16px] h-[16px] shrink-0 mt-0.5 object-contain" />
-                <p className="text-neutral-700 text-xs font-medium leading-snug">
+                <p className="text-neutral-700 text-[13px] min-[390px]:text-[13.5px] sm:text-sm font-medium leading-snug">
                   <strong className="font-bold text-neutral-950">Goal Readiness.</strong> Retirement, house, education tracked together.
                 </p>
               </div>
             </div>
           </div>
-          <div className="mt-1 sm:mt-2 flex justify-center -translate-y-3.5 sm:-translate-y-4.5">
+          <div className="mt-1 sm:mt-2 flex justify-center -translate-y-1 sm:-translate-y-2">
             <img
               src="/product-cards/card-2d-5.png"
               alt="Plan Ahead"
-              className="max-h-[160px] sm:max-h-[185px] w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.07)]"
+              className="max-h-[150px] sm:max-h-[175px] w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.07)]"
               draggable={false}
             />
           </div>

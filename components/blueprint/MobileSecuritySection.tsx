@@ -540,7 +540,7 @@ export function MobileSecuritySection() {
         onPointerCancel={handleHoldEnd}
         onPointerLeave={handleHoldEnd}
         style={{ touchAction: "manipulation" }}
-        className="w-full rounded-[22px] p-5 sm:p-5.5 relative overflow-hidden flex flex-col justify-start bg-[rgba(232,243,236,0.88)] backdrop-blur-xl border border-white/80 shadow-[0_16px_36px_-12px_rgba(16,44,28,0.08),inset_0_1.5px_1px_0_rgba(255,255,255,0.9)] h-[248px] min-[390px]:h-[258px] sm:h-[268px] cursor-pointer"
+        className="w-full rounded-[22px] p-5 sm:p-5.5 relative overflow-hidden flex flex-col justify-start bg-[rgba(232,243,236,0.88)] backdrop-blur-xl border border-white/80 shadow-[0_16px_36px_-12px_rgba(16,44,28,0.08),inset_0_1.5px_1px_0_rgba(255,255,255,0.9)] h-[268px] min-[390px]:h-[278px] sm:h-[288px] cursor-pointer"
       >
         {/* Top Edge Ambient Highlight */}
         <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/90 to-transparent pointer-events-none" />
@@ -574,7 +574,7 @@ export function MobileSecuritySection() {
         <div ref={contentWrapperRef} className="flex-1 flex flex-col justify-start pt-2">
           {currentState.type === "hero" ? (
             <div>
-              <h3 className="font-sans font-black text-[21px] min-[390px]:text-[23px] sm:text-[25px] tracking-[-0.035em] text-neutral-950 leading-[1.22] mb-1.5">
+              <h3 className="font-sans font-black text-[23px] min-[390px]:text-[25px] sm:text-[27px] tracking-[-0.035em] text-neutral-950 leading-[1.2] mb-1.5">
                 <span>We take your data as </span>
                 <span className="text-[#22C55E]">seriously </span>
                 <span>as you take your&nbsp;</span>
@@ -618,15 +618,15 @@ export function MobileSecuritySection() {
                 </span>
                 .
               </h3>
-              <p className="font-sans text-[13.5px] min-[390px]:text-[14.5px] sm:text-[15.5px] text-neutral-700 font-medium leading-[1.45] mt-1">
+              <p className="font-sans text-[14.5px] min-[390px]:text-[15.5px] sm:text-[16px] text-neutral-700 font-medium leading-[1.45] mt-1.5">
                 Your family&apos;s financial information deserves bank-grade protection from the ground up.
               </p>
             </div>
           ) : currentState.type === "principle" ? (
-            <div className={activeIndex === 4 ? "pt-6 min-[390px]:pt-7 sm:pt-8" : activeIndex >= 5 && activeIndex <= 6 ? "pt-3 sm:pt-4" : ""}>
+            <div className={activeIndex === 4 ? "pt-5 min-[390px]:pt-6 sm:pt-7" : activeIndex >= 5 && activeIndex <= 6 ? "pt-2.5 sm:pt-3.5" : ""}>
               {activeIndex === 1 ? (
                 // State 2: "Read-only, always" with Living Eyes Easter Egg
-                <h3 className="font-sans font-black text-[21px] min-[390px]:text-[23px] sm:text-[25px] tracking-[-0.035em] text-neutral-950 leading-[1.22] mb-1.5 relative inline-flex items-baseline">
+                <h3 className="font-sans font-black text-[23px] min-[390px]:text-[25px] sm:text-[27px] tracking-[-0.035em] text-neutral-950 leading-[1.2] mb-1.5 relative inline-flex items-baseline">
                   <span ref={typoLeftWordRef} className="inline-block">Read-only,</span>
                   <span className="relative inline-flex items-center justify-center w-[0.2em] overflow-visible align-baseline">
                     <span
@@ -654,7 +654,7 @@ export function MobileSecuritySection() {
                 </h3>
               ) : activeIndex === 2 ? (
                 // State 3: "We never save your passwords" with password asterisks
-                <h3 className="font-sans font-black text-[21px] min-[390px]:text-[23px] sm:text-[25px] tracking-[-0.035em] text-neutral-950 leading-[1.22] mb-1.5">
+                <h3 className="font-sans font-black text-[23px] min-[390px]:text-[25px] sm:text-[27px] tracking-[-0.035em] text-neutral-950 leading-[1.2] mb-1.5">
                   <span>We never save your </span>
                   <span className="text-[#22C55E] inline-flex items-baseline">
                     {PASSWORD_LETTERS.map((char, cIdx) => (
@@ -667,7 +667,7 @@ export function MobileSecuritySection() {
                 </h3>
               ) : activeIndex === 3 ? (
                 // State 4: "Locked down, everywhere" with lock morph
-                <h3 className="font-sans font-black text-[21px] min-[390px]:text-[23px] sm:text-[25px] tracking-[-0.035em] text-neutral-950 leading-[1.22] mb-1.5">
+                <h3 className="font-sans font-black text-[23px] min-[390px]:text-[25px] sm:text-[27px] tracking-[-0.035em] text-neutral-950 leading-[1.2] mb-1.5">
                   <span className="relative inline-flex items-center justify-center align-baseline">
                     <span className="inline-flex items-baseline">
                       {LOCKED_LETTERS.map((char, cIdx) => (
@@ -688,7 +688,7 @@ export function MobileSecuritySection() {
                 </h3>
               ) : activeIndex === 4 ? (
                 // State 5: "You control the connection" with connection SVG
-                <h3 className="font-sans font-black text-[18.5px] min-[360px]:text-[19.5px] min-[390px]:text-[21.5px] sm:text-[23.5px] tracking-[-0.035em] text-neutral-950 leading-tight whitespace-nowrap mb-2.5 sm:mb-3">
+                <h3 className="font-sans font-black text-[19px] min-[360px]:text-[20px] min-[390px]:text-[22px] sm:text-[24px] tracking-[-0.035em] text-neutral-950 leading-tight whitespace-nowrap mb-2.5 sm:mb-3">
                   <span className="text-neutral-950 font-black">You control the&nbsp;</span>
                   <span className="relative inline-flex items-center justify-center align-baseline">
                     <span className="inline-flex items-baseline text-[#22C55E] font-black">
@@ -697,13 +697,13 @@ export function MobileSecuritySection() {
                       ))}
                     </span>
                     <span ref={connectionWrapperRef} className="absolute inset-0 flex items-center justify-center pointer-events-none z-10" style={{ opacity: 0, transform: "scale(0.35)" }}>
-                      <img src="/connection.svg" alt="" className="w-[3.0em] h-[3.0em] min-[390px]:w-[3.4em] min-[390px]:h-[3.4em] object-contain drop-shadow-[0_6px_20px_rgba(34,197,94,0.45)]" />
+                      <img src="/connection.svg" alt="" className="w-[3.0em] h-[3.0em] min-[390px]:w-[3.3em] min-[390px]:h-[3.3em] object-contain drop-shadow-[0_6px_20px_rgba(34,197,94,0.45)]" />
                     </span>
                   </span>
                 </h3>
               ) : activeIndex === 5 ? (
                 // State 6: "Stored in India" with glowing India map outline
-                <h3 className="font-sans font-black text-[19px] min-[390px]:text-[21px] sm:text-[23px] tracking-[-0.035em] text-neutral-950 leading-tight mb-2.5 sm:mb-3">
+                <h3 className="font-sans font-black text-[22px] min-[390px]:text-[24px] sm:text-[26px] tracking-[-0.035em] text-neutral-950 leading-tight mb-2.5 sm:mb-3">
                   <span className="inline-block text-neutral-950">Stored in&nbsp;</span>
                   <span className="relative inline-flex items-center justify-center align-middle h-[1.35em]">
                     <span className="inline-flex items-baseline text-[#22C55E]">
@@ -720,7 +720,7 @@ export function MobileSecuritySection() {
                 </h3>
               ) : activeIndex === 6 ? (
                 // State 7: "We don't sell your data" with protective shield badge
-                <h3 className="font-sans font-black text-[18px] min-[360px]:text-[19px] min-[390px]:text-[21px] sm:text-[23px] tracking-[-0.035em] text-neutral-950 leading-tight whitespace-nowrap mb-2.5 sm:mb-3">
+                <h3 className="font-sans font-black text-[19px] min-[360px]:text-[20px] min-[390px]:text-[22px] sm:text-[24px] tracking-[-0.035em] text-neutral-950 leading-tight whitespace-nowrap mb-2.5 sm:mb-3">
                   <span className="text-neutral-950">We don&apos;t&nbsp;</span>
                   <span className="relative inline-flex items-center justify-center align-middle h-[1.35em]">
                     <span className="inline-flex items-baseline text-[#22C55E]">
@@ -739,24 +739,24 @@ export function MobileSecuritySection() {
                   <span className="text-neutral-950">&nbsp;your data</span>
                 </h3>
               ) : (
-                <h3 className="font-sans font-black text-[21px] min-[390px]:text-[23px] sm:text-[25px] tracking-[-0.035em] text-neutral-950 leading-[1.22] mb-1.5">
+                <h3 className="font-sans font-black text-[23px] min-[390px]:text-[25px] sm:text-[27px] tracking-[-0.035em] text-neutral-950 leading-[1.2] mb-1.5">
                   {currentState.headline}
                 </h3>
               )}
-              <div className="font-sans text-[13px] min-[390px]:text-[13.5px] sm:text-[14.5px] text-neutral-700 font-medium leading-[1.42] mt-0.5">
+              <div className="font-sans text-[14px] min-[390px]:text-[14.5px] sm:text-[15.5px] text-neutral-700 font-medium leading-[1.44] mt-1">
                 {currentState.body}
               </div>
             </div>
           ) : (
             // State 8: Closing baseline statement
             <div>
-              <h3 className="font-sans font-black text-[21px] min-[390px]:text-[23px] sm:text-[25px] tracking-[-0.035em] text-neutral-950 leading-[1.22] mb-1">
+              <h3 className="font-sans font-black text-[23px] min-[390px]:text-[25px] sm:text-[27px] tracking-[-0.035em] text-neutral-950 leading-[1.2] mb-1">
                 {CLOSING_BLACK_WORDS.join(" ")}
               </h3>
-              <h3 className="font-sans font-black text-[21px] min-[390px]:text-[23px] sm:text-[25px] tracking-[-0.035em] text-[#22C55E] leading-[1.22]">
+              <h3 className="font-sans font-black text-[23px] min-[390px]:text-[25px] sm:text-[27px] tracking-[-0.035em] text-[#22C55E] leading-[1.2]">
                 {CLOSING_GREEN_WORDS.join(" ")}
               </h3>
-              <p className="font-sans text-[13.5px] min-[390px]:text-[14.5px] sm:text-[15.5px] text-neutral-700 font-medium leading-[1.45] mt-1.5">
+              <p className="font-sans text-[14.5px] min-[390px]:text-[15.5px] sm:text-[16px] text-neutral-700 font-medium leading-[1.45] mt-1.5">
                 Everything we design begins and ends with protecting your household wealth.
               </p>
             </div>
