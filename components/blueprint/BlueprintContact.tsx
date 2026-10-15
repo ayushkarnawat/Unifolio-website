@@ -794,6 +794,19 @@ export function BlueprintContact() {
             <div className="w-[500px] h-[500px] sm:w-[650px] sm:h-[650px] rounded-full bg-radial-vibrant opacity-35 blur-[90px] will-change-transform" />
           </div>
 
+          {/* Top-Left Close Button (Accessible and clear of floating navbar) */}
+          <div className="absolute top-20 sm:top-24 left-5 sm:left-8 md:left-12 z-20">
+            <button
+              type="button"
+              onClick={closeConversation}
+              aria-label="Close conversation"
+              className="inline-flex items-center gap-1.5 font-mono text-[11px] sm:text-xs uppercase tracking-[0.2em] text-[#5A685D] hover:text-[#111613] transition-colors cursor-pointer group"
+            >
+              <X className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-200" />
+              <span>CLOSE</span>
+            </button>
+          </div>
+
           <div className="relative z-10 max-w-xl mx-auto text-center space-y-5 py-6">
             {/* Luminous Pulsing Badge */}
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#22C55E]/15 border border-[#22C55E] text-[#22C55E] flex items-center justify-center mx-auto shadow-[0_0_40px_rgba(34,197,94,0.35)] animate-pulse">
@@ -809,7 +822,8 @@ export function BlueprintContact() {
               </p>
             </div>
 
-            <div className="pt-2 flex items-center justify-center gap-4">
+            {/* Centered Action Button: START ANOTHER CONVERSATION */}
+            <div className="pt-3 flex items-center justify-center">
               <button
                 type="button"
                 onClick={() => {
@@ -821,19 +835,10 @@ export function BlueprintContact() {
                     description: "",
                   });
                 }}
-                className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#22C55E] hover:text-[#111613] transition-colors cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#22C55E] hover:text-[#111613] transition-colors cursor-pointer"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>START ANOTHER CONVERSATION</span>
-              </button>
-              <span className="text-black/20">|</span>
-              <button
-                type="button"
-                onClick={closeConversation}
-                className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.2em] text-[#5A685D] hover:text-[#111613] transition-colors cursor-pointer"
-              >
-                <span>CLOSE</span>
-                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
