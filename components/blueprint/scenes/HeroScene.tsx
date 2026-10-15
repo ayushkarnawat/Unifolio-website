@@ -2,7 +2,7 @@
 
 import { forwardRef, useImperativeHandle, type MutableRefObject, type ReactNode } from "react";
 import { gsap } from "@/lib/gsap";
-import { HeroApertureVisual } from "@/components/hero/HeroApertureVisual";
+import { HeroStoryboardVisual } from "@/components/hero/HeroStoryboardVisual";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight } from "lucide-react";
 import type { SceneEngine } from "../hero-engine/useSceneEngine";
@@ -83,7 +83,7 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
           transformOrigin: "62.87% 49.12%",
         }}
       >
-        <HeroApertureVisual isPaused={isAperturePaused} />
+        <HeroStoryboardVisual isPaused={isAperturePaused} />
       </div>
 
       {/* LAYER 1B (z-10): HERO HEADLINE & SUBTEXT */}
