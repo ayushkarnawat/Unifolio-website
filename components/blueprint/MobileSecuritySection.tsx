@@ -91,7 +91,7 @@ const SECURITY_STATES: SecurityStateItem[] = [
   },
 ];
 
-const DURATION_MS = 4600;
+const DURATION_MS = 3500;
 const STATES_COUNT = SECURITY_STATES.length;
 
 

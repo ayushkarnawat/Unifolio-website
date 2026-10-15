@@ -7,7 +7,7 @@ const CARDS_COUNT = 5;
 
 export function MobileProductCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const DURATION_MS = 5000;
+  const DURATION_MS = 3000;
   const containerRef = useRef<HTMLDivElement | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const isVisibleRef = useRef(false);
