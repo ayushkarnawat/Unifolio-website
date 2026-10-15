@@ -787,23 +787,35 @@ export function BlueprintContact() {
          ========================================================================= */}
       {mode === "completed" && (
         <div
-          className="fixed inset-0 z-40 bg-[#FAF8F5] flex flex-col items-center justify-center pt-20 pb-6 sm:pt-24 sm:pb-8 px-4 sm:px-6 md:px-10 overflow-hidden select-none"
+          className="fixed inset-0 z-[60] bg-[#FAF8F5] flex flex-col items-center justify-center pt-20 pb-6 sm:pt-24 sm:pb-8 px-4 sm:px-6 md:px-10 overflow-hidden select-none"
         >
           {/* Subtle Ambient Radial Glow */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
             <div className="w-[500px] h-[500px] sm:w-[650px] sm:h-[650px] rounded-full bg-radial-vibrant opacity-35 blur-[90px] will-change-transform" />
           </div>
 
-          {/* Top-Left Close Button (Accessible and clear of floating navbar) */}
-          <div className="absolute top-20 sm:top-24 left-5 sm:left-8 md:left-12 z-20">
+          {/* Top-Left Brand Logo (Aligned with navbar level) */}
+          <div className="absolute top-4 sm:top-5 left-6 sm:left-10 lg:left-16 z-20 flex items-center">
+            <Image
+              src="/Logo/unifolio-wordmark-dark.png"
+              alt="Unifolio"
+              width={152}
+              height={35}
+              priority
+              className="w-auto h-[27px] sm:h-8 object-contain select-none"
+            />
+          </div>
+
+          {/* Top-Right Close Button (Header level, vertically aligned with logo line) */}
+          <div className="absolute top-4 sm:top-5 right-6 sm:right-10 lg:right-16 z-20 flex items-center h-[27px] sm:h-8">
             <button
               type="button"
               onClick={closeConversation}
               aria-label="Close conversation"
               className="inline-flex items-center gap-1.5 font-mono text-[11px] sm:text-xs uppercase tracking-[0.2em] text-[#5A685D] hover:text-[#111613] transition-colors cursor-pointer group"
             >
-              <X className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-200" />
               <span>CLOSE</span>
+              <X className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-200" />
             </button>
           </div>
 
