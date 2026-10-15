@@ -385,8 +385,10 @@ export function MobileSecuritySection() {
   }, []);
 
   const progressRef = useRef(0);
+  const isHoldingRef = useRef(false);
 
   const goToState = useCallback((targetIdx: number) => {
+    isHoldingRef.current = false;
     setActiveIndex(targetIdx);
     setProgress(0);
     progressRef.current = 0;
@@ -407,18 +409,25 @@ export function MobileSecuritySection() {
     goToState(prev);
   }, [activeIndex, goToState]);
 
-  const pauseAutoAdvance = () => {
-    isInteractingRef.current = true;
-    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-  };
+  // Instagram stories-like Tap-and-Hold to Pause / Release to Resume immediately
+  const handleHoldStart = useCallback(() => {
+    isHoldingRef.current = true;
+    // Pause any currently playing GSAP micro-animation
+    if (activeTlRef.current && activeTlRef.current.isActive()) {
+      activeTlRef.current.pause();
+    }
+  }, []);
 
-  const resumeAutoAdvanceWithDelay = () => {
-    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-    resumeTimerRef.current = setTimeout(() => {
-      isInteractingRef.current = false;
-      startTimeRef.current = Date.now() - progressRef.current * DURATION_MS;
-    }, 4600);
-  };
+  const handleHoldEnd = useCallback(() => {
+    if (!isHoldingRef.current) return;
+    isHoldingRef.current = false;
+    // Resume elapsed time seamlessly from exact current progress percentage
+    startTimeRef.current = Date.now() - progressRef.current * DURATION_MS;
+    // Resume GSAP micro-animation
+    if (activeTlRef.current && activeTlRef.current.paused()) {
+      activeTlRef.current.resume();
+    }
+  }, []);
 
   // IntersectionObserver: Only start auto-advancing when user reaches the Security section
   useEffect(() => {
@@ -470,7 +479,7 @@ export function MobileSecuritySection() {
   // Auto-advance continuous requestAnimationFrame loop (only runs when section is visible in viewport)
   useEffect(() => {
     const loop = () => {
-      if (isVisibleRef.current && !isInteractingRef.current) {
+      if (isVisibleRef.current && !isHoldingRef.current) {
         const elapsed = Date.now() - startTimeRef.current;
         const p = Math.min(1, elapsed / DURATION_MS);
         setProgress(p);
@@ -504,10 +513,9 @@ export function MobileSecuritySection() {
     <div
       ref={sectionRef}
       className="w-full max-w-lg mx-auto flex flex-col items-center select-none py-1"
-      onMouseEnter={pauseAutoAdvance}
-      onMouseLeave={resumeAutoAdvanceWithDelay}
-      onTouchStart={pauseAutoAdvance}
-      onTouchEnd={resumeAutoAdvanceWithDelay}
+      onPointerDown={handleHoldStart}
+      onPointerUp={handleHoldEnd}
+      onPointerCancel={handleHoldEnd}
     >
       {/* 1. TOP: Ambient Floating 3D Chrome/Gold Safe Vault */}
       <div className="relative w-[275px] min-[390px]:w-[295px] sm:w-[330px] aspect-square flex items-center justify-center -mt-3 sm:-mt-5 mb-2.5 shrink-0">
@@ -526,7 +534,14 @@ export function MobileSecuritySection() {
       </div>
 
       {/* 2. Glassmorphic Interactive Narrative Card (Standard Stable Size) */}
-      <div className="w-full rounded-[22px] p-5 sm:p-5.5 relative overflow-hidden flex flex-col justify-start bg-[rgba(232,243,236,0.88)] backdrop-blur-xl border border-white/80 shadow-[0_16px_36px_-12px_rgba(16,44,28,0.08),inset_0_1.5px_1px_0_rgba(255,255,255,0.9)] h-[248px] min-[390px]:h-[258px] sm:h-[268px]">
+      <div
+        onPointerDown={handleHoldStart}
+        onPointerUp={handleHoldEnd}
+        onPointerCancel={handleHoldEnd}
+        onPointerLeave={handleHoldEnd}
+        style={{ touchAction: "manipulation" }}
+        className="w-full rounded-[22px] p-5 sm:p-5.5 relative overflow-hidden flex flex-col justify-start bg-[rgba(232,243,236,0.88)] backdrop-blur-xl border border-white/80 shadow-[0_16px_36px_-12px_rgba(16,44,28,0.08),inset_0_1.5px_1px_0_rgba(255,255,255,0.9)] h-[248px] min-[390px]:h-[258px] sm:h-[268px] cursor-pointer"
+      >
         {/* Top Edge Ambient Highlight */}
         <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/90 to-transparent pointer-events-none" />
 
@@ -539,11 +554,7 @@ export function MobileSecuritySection() {
               <button
                 key={sIdx}
                 type="button"
-                onClick={() => {
-                  pauseAutoAdvance();
-                  goToState(sIdx);
-                  resumeAutoAdvanceWithDelay();
-                }}
+                onClick={() => goToState(sIdx)}
                 aria-label={`Jump to security state ${sIdx + 1}`}
                 className="flex-1 h-[3.5px] rounded-full overflow-hidden bg-black/[0.08] relative transition-all"
               >
@@ -758,11 +769,7 @@ export function MobileSecuritySection() {
         {/* Previous Arrow Button */}
         <button
           type="button"
-          onClick={() => {
-            pauseAutoAdvance();
-            prevState();
-            resumeAutoAdvanceWithDelay();
-          }}
+          onClick={prevState}
           aria-label="Previous security state"
           className="w-8 h-8 rounded-full bg-white/80 border border-black/[0.08] flex items-center justify-center text-neutral-700 shadow-sm hover:bg-white active:scale-95 transition-all"
         >
@@ -783,11 +790,7 @@ export function MobileSecuritySection() {
         {/* Next Arrow Button */}
         <button
           type="button"
-          onClick={() => {
-            pauseAutoAdvance();
-            nextState();
-            resumeAutoAdvanceWithDelay();
-          }}
+          onClick={nextState}
           aria-label="Next security state"
           className="w-8 h-8 rounded-full bg-white/80 border border-black/[0.08] flex items-center justify-center text-neutral-700 shadow-sm hover:bg-white active:scale-95 transition-all"
         >

@@ -7,12 +7,15 @@ const CARDS_COUNT = 5;
 
 export function MobileProductCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const DURATION_MS = 5000;
   const containerRef = useRef<HTMLDivElement | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
-  const isInteractingRef = useRef(false);
   const isVisibleRef = useRef(false);
   const hasStartedRef = useRef(false);
-  const resumeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isHoldingRef = useRef(false);
+  const startTimeRef = useRef(Date.now());
+  const pausedElapsedRef = useRef(0);
+  const rafRef = useRef<number | null>(null);
 
   const scrollToCard = useCallback((index: number) => {
     const el = carouselRef.current;
@@ -25,7 +28,21 @@ export function MobileProductCarousel() {
     }
   }, []);
 
+  // Jump to specific card and reset timer
+  const goToCard = useCallback((index: number) => {
+    isHoldingRef.current = false;
+    startTimeRef.current = Date.now();
+    pausedElapsedRef.current = 0;
+    setActiveIndex(index);
+    scrollToCard(index);
+  }, [scrollToCard]);
+
+  // Handle manual user scrolling / swiping
   const handleScroll = useCallback(() => {
+    // Reset timer on manual scroll so user gets full duration on the new card
+    startTimeRef.current = Date.now();
+    pausedElapsedRef.current = 0;
+
     const el = carouselRef.current;
     if (!el) return;
     const scrollLeft = el.scrollLeft;
@@ -47,6 +64,19 @@ export function MobileProductCarousel() {
     setActiveIndex(closestIdx);
   }, []);
 
+  // Instagram stories-like Tap-and-Hold to Pause / Release to Resume
+  const handleHoldStart = useCallback(() => {
+    isHoldingRef.current = true;
+    pausedElapsedRef.current = Date.now() - startTimeRef.current;
+  }, []);
+
+  const handleHoldEnd = useCallback(() => {
+    if (!isHoldingRef.current) return;
+    isHoldingRef.current = false;
+    // Resume elapsed time seamlessly from exact paused moment
+    startTimeRef.current = Date.now() - pausedElapsedRef.current;
+  }, []);
+
   // IntersectionObserver: Only start auto-scroll when user reaches the Product section
   useEffect(() => {
     const el = containerRef.current;
@@ -61,6 +91,8 @@ export function MobileProductCarousel() {
             hasStartedRef.current = true;
             setActiveIndex(0);
             scrollToCard(0);
+            startTimeRef.current = Date.now();
+            pausedElapsedRef.current = 0;
           }
         } else {
           isVisibleRef.current = false;
@@ -73,45 +105,47 @@ export function MobileProductCarousel() {
     return () => observer.disconnect();
   }, [scrollToCard]);
 
-  // Continuous auto-advance loop every 5 seconds (only when visible in viewport, paused on touch/drag)
+  // Continuous auto-advance loop every 5 seconds (pauses on tap-and-hold, resumes immediately on release)
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (isInteractingRef.current || !isVisibleRef.current) return;
-      setActiveIndex((prev) => {
-        const next = (prev + 1) % CARDS_COUNT;
-        scrollToCard(next);
-        return next;
-      });
-    }, 5000);
+    const loop = () => {
+      if (isVisibleRef.current && !isHoldingRef.current) {
+        const elapsed = Date.now() - startTimeRef.current;
+        if (elapsed >= DURATION_MS) {
+          startTimeRef.current = Date.now();
+          pausedElapsedRef.current = 0;
+          setActiveIndex((prev) => {
+            const next = (prev + 1) % CARDS_COUNT;
+            scrollToCard(next);
+            return next;
+          });
+        }
+      }
+      rafRef.current = requestAnimationFrame(loop);
+    };
 
-    return () => clearInterval(interval);
+    rafRef.current = requestAnimationFrame(loop);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
   }, [scrollToCard]);
-
-  const pauseAutoAdvance = () => {
-    isInteractingRef.current = true;
-    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-  };
-
-  const resumeAutoAdvanceWithDelay = () => {
-    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-    resumeTimerRef.current = setTimeout(() => {
-      isInteractingRef.current = false;
-    }, 5000);
-  };
 
   return (
     <div
       ref={containerRef}
       className="block lg:hidden w-full mx-auto mt-2 select-none"
-      onMouseEnter={pauseAutoAdvance}
-      onMouseLeave={resumeAutoAdvanceWithDelay}
-      onTouchStart={pauseAutoAdvance}
-      onTouchEnd={resumeAutoAdvanceWithDelay}
+      onPointerDown={handleHoldStart}
+      onPointerUp={handleHoldEnd}
+      onPointerCancel={handleHoldEnd}
+      onPointerLeave={handleHoldEnd}
     >
       {/* Horizontal Carousel Track */}
       <div
         ref={carouselRef}
         onScroll={handleScroll}
+        onPointerDown={handleHoldStart}
+        onPointerUp={handleHoldEnd}
+        onPointerCancel={handleHoldEnd}
+        onPointerLeave={handleHoldEnd}
         className="flex items-stretch gap-4 overflow-x-auto snap-x snap-mandatory px-5 py-4 scroll-smooth"
         style={{
           scrollbarWidth: "none",
@@ -123,12 +157,6 @@ export function MobileProductCarousel() {
         <div className="w-[84vw] sm:w-[68vw] md:w-[56vw] max-w-[390px] shrink-0 snap-center rounded-[24px] p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between bg-[rgba(232,243,236,0.88)] backdrop-blur-xl border border-white/80 shadow-[0_16px_36px_-12px_rgba(16,44,28,0.08),inset_0_1.5px_1px_0_rgba(255,255,255,0.9)] min-h-[460px] sm:min-h-[490px]">
           <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/90 to-transparent pointer-events-none" />
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-[#22C55E] uppercase">
-                01 // ASK
-              </span>
-              <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E]" />
-            </div>
             <h3 className="font-sans font-black text-xl sm:text-2xl tracking-[-0.03em] text-neutral-950 leading-tight mb-2.5">
               Skip the dashboards. <span className="text-[#22C55E]">Just ask.</span>
             </h3>
@@ -136,11 +164,11 @@ export function MobileProductCarousel() {
               The fastest way to understand your money isn&apos;t a chart, it&apos;s a question. Ask what&apos;s dragging your returns, whether you&apos;re overexposed, or if a decision makes sense, and get an answer based on your portfolio.
             </p>
           </div>
-          <div className="mt-4 flex justify-center">
+          <div className="mt-2 sm:mt-3 flex justify-center -translate-y-3 sm:-translate-y-4">
             <img
               src="/product-cards/card-2d-1.png"
               alt="Skip the dashboards. Just ask."
-              className="max-h-[160px] sm:max-h-[185px] w-auto object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
+              className="max-h-[185px] sm:max-h-[210px] w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.07)]"
               draggable={false}
             />
           </div>
@@ -150,12 +178,6 @@ export function MobileProductCarousel() {
         <div className="w-[84vw] sm:w-[68vw] md:w-[56vw] max-w-[390px] shrink-0 snap-center rounded-[24px] p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between bg-[rgba(232,243,236,0.88)] backdrop-blur-xl border border-white/80 shadow-[0_16px_36px_-12px_rgba(16,44,28,0.08),inset_0_1.5px_1px_0_rgba(255,255,255,0.9)] min-h-[460px] sm:min-h-[490px]">
           <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/90 to-transparent pointer-events-none" />
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-[#22C55E] uppercase">
-                02 // ALL ASSETS
-              </span>
-              <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E]" />
-            </div>
             <h3 className="font-sans font-black text-xl sm:text-2xl tracking-[-0.03em] text-neutral-950 leading-tight mb-2.5">
               <span className="text-[#22C55E]">See</span> Everything
             </h3>
@@ -163,11 +185,11 @@ export function MobileProductCarousel() {
               From mutual funds and stocks to bank accounts, loans, credit cards, and real estate, every asset and liability you and your family hold, aggregated into a number that&apos;s actually accurate.
             </p>
           </div>
-          <div className="mt-4 flex justify-center">
+          <div className="mt-2 sm:mt-3 flex justify-center -translate-y-3 sm:-translate-y-4">
             <img
               src="/product-cards/card-2d-2.png"
               alt="See Everything"
-              className="max-h-[155px] sm:max-h-[175px] w-auto object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
+              className="max-h-[180px] sm:max-h-[205px] w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.07)]"
               draggable={false}
             />
           </div>
@@ -177,12 +199,6 @@ export function MobileProductCarousel() {
         <div className="w-[84vw] sm:w-[68vw] md:w-[56vw] max-w-[390px] shrink-0 snap-center rounded-[24px] p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between bg-[rgba(232,243,236,0.88)] backdrop-blur-xl border border-white/80 shadow-[0_16px_36px_-12px_rgba(16,44,28,0.08),inset_0_1.5px_1px_0_rgba(255,255,255,0.9)] min-h-[460px] sm:min-h-[490px]">
           <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/90 to-transparent pointer-events-none" />
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-[#22C55E] uppercase">
-                03 // INSIGHTS
-              </span>
-              <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E]" />
-            </div>
             <h3 className="font-sans font-black text-xl sm:text-2xl tracking-[-0.03em] text-neutral-950 leading-tight mb-3">
               <span className="text-[#22C55E]">Understand</span> what you own
             </h3>
@@ -214,11 +230,11 @@ export function MobileProductCarousel() {
               </div>
             </div>
           </div>
-          <div className="mt-3 flex justify-center">
+          <div className="mt-1 sm:mt-2 flex justify-center -translate-y-3.5 sm:-translate-y-4.5">
             <img
               src="/product-cards/card-2d-3.png"
               alt="Understand What You Own"
-              className="max-h-[135px] sm:max-h-[155px] w-auto object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
+              className="max-h-[160px] sm:max-h-[185px] w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.07)]"
               draggable={false}
             />
           </div>
@@ -228,12 +244,6 @@ export function MobileProductCarousel() {
         <div className="w-[84vw] sm:w-[68vw] md:w-[56vw] max-w-[390px] shrink-0 snap-center rounded-[24px] p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between bg-[rgba(232,243,236,0.88)] backdrop-blur-xl border border-white/80 shadow-[0_16px_36px_-12px_rgba(16,44,28,0.08),inset_0_1.5px_1px_0_rgba(255,255,255,0.9)] min-h-[460px] sm:min-h-[490px]">
           <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/90 to-transparent pointer-events-none" />
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-[#22C55E] uppercase">
-                04 // RISK
-              </span>
-              <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E]" />
-            </div>
             <h3 className="font-sans font-black text-xl sm:text-2xl tracking-[-0.03em] text-neutral-950 leading-tight mb-3">
               <span className="text-[#22C55E]">Know</span> Your Risk
             </h3>
@@ -265,11 +275,11 @@ export function MobileProductCarousel() {
               </div>
             </div>
           </div>
-          <div className="mt-3 flex justify-center">
+          <div className="mt-1 sm:mt-2 flex justify-center -translate-y-3.5 sm:-translate-y-4.5">
             <img
               src="/product-cards/card-2d-4.png"
               alt="Know Your Risk"
-              className="max-h-[135px] sm:max-h-[155px] w-auto object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
+              className="max-h-[160px] sm:max-h-[185px] w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.07)]"
               draggable={false}
             />
           </div>
@@ -279,12 +289,6 @@ export function MobileProductCarousel() {
         <div className="w-[84vw] sm:w-[68vw] md:w-[56vw] max-w-[390px] shrink-0 snap-center rounded-[24px] p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between bg-[rgba(232,243,236,0.88)] backdrop-blur-xl border border-white/80 shadow-[0_16px_36px_-12px_rgba(16,44,28,0.08),inset_0_1.5px_1px_0_rgba(255,255,255,0.9)] min-h-[460px] sm:min-h-[490px]">
           <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/90 to-transparent pointer-events-none" />
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-[#22C55E] uppercase">
-                05 // FUTURE
-              </span>
-              <span className="w-2 h-2 rounded-full bg-[#22C55E] shadow-[0_0_8px_#22C55E]" />
-            </div>
             <h3 className="font-sans font-black text-xl sm:text-2xl tracking-[-0.03em] text-neutral-950 leading-tight mb-3">
               <span className="text-[#22C55E]">Plan</span> Ahead
             </h3>
@@ -316,11 +320,11 @@ export function MobileProductCarousel() {
               </div>
             </div>
           </div>
-          <div className="mt-3 flex justify-center">
+          <div className="mt-1 sm:mt-2 flex justify-center -translate-y-3.5 sm:-translate-y-4.5">
             <img
               src="/product-cards/card-2d-5.png"
               alt="Plan Ahead"
-              className="max-h-[135px] sm:max-h-[155px] w-auto object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
+              className="max-h-[160px] sm:max-h-[185px] w-auto object-contain drop-shadow-[0_6px_20px_rgba(0,0,0,0.07)]"
               draggable={false}
             />
           </div>
@@ -332,10 +336,8 @@ export function MobileProductCarousel() {
         <button
           type="button"
           onClick={() => {
-            pauseAutoAdvance();
             const prev = (activeIndex - 1 + CARDS_COUNT) % CARDS_COUNT;
-            scrollToCard(prev);
-            resumeAutoAdvanceWithDelay();
+            goToCard(prev);
           }}
           aria-label="Previous card"
           className="w-8 h-8 rounded-full bg-white/80 border border-black/[0.08] flex items-center justify-center text-neutral-700 shadow-sm hover:bg-white active:scale-95 transition-all"
@@ -351,11 +353,7 @@ export function MobileProductCarousel() {
               <button
                 key={idx}
                 type="button"
-                onClick={() => {
-                  pauseAutoAdvance();
-                  scrollToCard(idx);
-                  resumeAutoAdvanceWithDelay();
-                }}
+                onClick={() => goToCard(idx)}
                 aria-label={`Go to card ${idx + 1}`}
                 className={`h-2 rounded-full transition-all duration-300 ${
                   isActive
@@ -370,10 +368,8 @@ export function MobileProductCarousel() {
         <button
           type="button"
           onClick={() => {
-            pauseAutoAdvance();
             const next = (activeIndex + 1) % CARDS_COUNT;
-            scrollToCard(next);
-            resumeAutoAdvanceWithDelay();
+            goToCard(next);
           }}
           aria-label="Next card"
           className="w-8 h-8 rounded-full bg-white/80 border border-black/[0.08] flex items-center justify-center text-neutral-700 shadow-sm hover:bg-white active:scale-95 transition-all"
