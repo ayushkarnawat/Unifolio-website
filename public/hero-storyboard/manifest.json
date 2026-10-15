@@ -1,0 +1,177 @@
+{
+  "version": 1,
+  "source": "cut from the approved storyboard mockup (see README.md)",
+  "width": 904,
+  "height": 412,
+  "ringCenter": [
+    413,
+    229
+  ],
+  "ringRadiusOuter": 113,
+  "feather": {
+    "x": 44,
+    "y": 36
+  },
+  "plate": "plate.webp",
+  "poster": "poster.webp",
+  "drawOrder": [
+    "ring",
+    "mf",
+    "ins",
+    "dmr",
+    "cc",
+    "epf",
+    "dml",
+    "t1",
+    "t2",
+    "t3",
+    "t4",
+    "s1",
+    "s2"
+  ],
+  "layers": [
+    {
+      "id": "ring",
+      "name": "ring",
+      "file": "ring.webp",
+      "kind": "ring",
+      "group": "ring-group",
+      "x": 289,
+      "y": 100,
+      "w": 249,
+      "h": 259
+    },
+    {
+      "id": "mf",
+      "name": "card-mutual-funds",
+      "file": "card-mutual-funds.webp",
+      "kind": "card",
+      "group": null,
+      "x": 107,
+      "y": 95,
+      "w": 152,
+      "h": 112
+    },
+    {
+      "id": "ins",
+      "name": "card-insurance",
+      "file": "card-insurance.webp",
+      "kind": "card",
+      "group": null,
+      "x": 469,
+      "y": 0,
+      "w": 145,
+      "h": 116
+    },
+    {
+      "id": "dmr",
+      "name": "card-demat-right",
+      "file": "card-demat-right.webp",
+      "kind": "card",
+      "group": null,
+      "x": 581,
+      "y": 125,
+      "w": 141,
+      "h": 128
+    },
+    {
+      "id": "cc",
+      "name": "card-credit-cards",
+      "file": "card-credit-cards.webp",
+      "kind": "card",
+      "group": null,
+      "x": 666,
+      "y": 225,
+      "w": 143,
+      "h": 125
+    },
+    {
+      "id": "epf",
+      "name": "card-epf",
+      "file": "card-epf.webp",
+      "kind": "card",
+      "group": "ring-group",
+      "x": 503,
+      "y": 277,
+      "w": 152,
+      "h": 117
+    },
+    {
+      "id": "dml",
+      "name": "card-demat-left",
+      "file": "card-demat-left.webp",
+      "kind": "card",
+      "group": "ring-group",
+      "x": 184,
+      "y": 237,
+      "w": 160,
+      "h": 121
+    },
+    {
+      "id": "t1",
+      "name": "tile-1",
+      "file": "tile-1.webp",
+      "kind": "item",
+      "group": null,
+      "x": 251,
+      "y": 22,
+      "w": 87,
+      "h": 87
+    },
+    {
+      "id": "t2",
+      "name": "tile-2",
+      "file": "tile-2.webp",
+      "kind": "item",
+      "group": null,
+      "x": 366,
+      "y": 0,
+      "w": 65,
+      "h": 51
+    },
+    {
+      "id": "t3",
+      "name": "tile-3",
+      "file": "tile-3.webp",
+      "kind": "item",
+      "group": null,
+      "x": 708,
+      "y": 83,
+      "w": 77,
+      "h": 77
+    },
+    {
+      "id": "t4",
+      "name": "tile-4",
+      "file": "tile-4.webp",
+      "kind": "item",
+      "group": null,
+      "x": 78,
+      "y": 225,
+      "w": 81,
+      "h": 81
+    },
+    {
+      "id": "s1",
+      "name": "sphere-1",
+      "file": "sphere-1.webp",
+      "kind": "item",
+      "group": null,
+      "x": 0,
+      "y": 212,
+      "w": 43,
+      "h": 47
+    },
+    {
+      "id": "s2",
+      "name": "sphere-2",
+      "file": "sphere-2.webp",
+      "kind": "item",
+      "group": null,
+      "x": 720,
+      "y": 172,
+      "w": 41,
+      "h": 41
+    }
+  ]
+}

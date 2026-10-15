@@ -7,6 +7,7 @@ import { Mail, ArrowRight, ArrowLeft, X, Check, Sparkles, ChevronRight } from "l
 import { useGSAP } from "@gsap/react";
 import { gsap, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
 import { Button } from "@/components/ui/Button";
+import { ContactOrbits } from "@/components/blueprint/ContactOrbits";
 
 interface FormData {
   name: string;
@@ -373,7 +374,7 @@ export function BlueprintContact() {
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="relative w-full flex flex-col pt-12 sm:pt-16 lg:pt-20 pb-8 sm:pb-10 px-6 sm:px-12 lg:px-20 xl:px-24 bg-[#FAF8F5] text-[#111613] select-none border-t border-black/[0.08]"
+        className="relative w-full flex flex-col pt-8 sm:pt-10 lg:pt-20 pb-8 sm:pb-10 px-6 sm:px-12 lg:px-20 xl:px-24 bg-[#FAF8F5] text-[#111613] select-none border-t border-black/[0.08]"
       >
         {/* Fine Subtle Micro Particle Dot Grid on Clean Light Ground */}
         <div className="pointer-events-none absolute inset-0 w-full h-full flex items-center justify-center z-0 overflow-hidden">
@@ -381,6 +382,8 @@ export function BlueprintContact() {
             <div className="absolute inset-0 bg-[radial-gradient(rgba(0,0,0,0.04)_1px,transparent_1px)] [background-size:48px_48px] opacity-25" />
           </div>
         </div>
+
+        <ContactOrbits />
 
         {/* =========================================================================
             STATE A: UNIFIED FULL-SCREEN CLOSING EXPERIENCE
@@ -515,7 +518,7 @@ export function BlueprintContact() {
 
           {/* Bottom Integrated Footer Bar: Seamless Minimal Strip */}
           <div className="contact-footer-bar pt-10 border-t border-black/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 font-sans text-xs text-[#5A685D]">
-            <div>
+            <div className="whitespace-nowrap text-[10px] min-[360px]:text-[11px] sm:text-xs text-center sm:text-left">
               Copyright © 2026 Keystone Wealthtech Pvt. Ltd. All Rights Reserved.
             </div>
 
@@ -787,11 +790,36 @@ export function BlueprintContact() {
          ========================================================================= */}
       {mode === "completed" && (
         <div
-          className="fixed inset-0 z-40 bg-[#FAF8F5] flex flex-col items-center justify-center pt-20 pb-6 sm:pt-24 sm:pb-8 px-4 sm:px-6 md:px-10 overflow-hidden select-none"
+          className="fixed inset-0 z-[60] bg-[#FAF8F5] flex flex-col items-center justify-center pt-20 pb-6 sm:pt-24 sm:pb-8 px-4 sm:px-6 md:px-10 overflow-hidden select-none"
         >
           {/* Subtle Ambient Radial Glow */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
             <div className="w-[500px] h-[500px] sm:w-[650px] sm:h-[650px] rounded-full bg-radial-vibrant opacity-35 blur-[90px] will-change-transform" />
+          </div>
+
+          {/* Top-Left Brand Logo (Aligned with navbar level) */}
+          <div className="absolute top-4 sm:top-5 left-6 sm:left-10 lg:left-16 z-20 flex items-center">
+            <Image
+              src="/Logo/unifolio-wordmark-dark.png"
+              alt="Unifolio"
+              width={152}
+              height={35}
+              priority
+              className="w-auto h-[27px] sm:h-8 object-contain select-none"
+            />
+          </div>
+
+          {/* Top-Right Close Button (Header level, vertically aligned with logo line) */}
+          <div className="absolute top-4 sm:top-5 right-6 sm:right-10 lg:right-16 z-20 flex items-center h-[27px] sm:h-8">
+            <button
+              type="button"
+              onClick={closeConversation}
+              aria-label="Close conversation"
+              className="inline-flex items-center gap-1.5 font-mono text-[11px] sm:text-xs uppercase tracking-[0.2em] text-[#5A685D] hover:text-[#111613] transition-colors cursor-pointer group"
+            >
+              <span>CLOSE</span>
+              <X className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-200" />
+            </button>
           </div>
 
           <div className="relative z-10 max-w-xl mx-auto text-center space-y-5 py-6">
@@ -809,7 +837,8 @@ export function BlueprintContact() {
               </p>
             </div>
 
-            <div className="pt-2 flex items-center justify-center gap-4">
+            {/* Centered Action Button: START ANOTHER CONVERSATION */}
+            <div className="pt-3 flex items-center justify-center">
               <button
                 type="button"
                 onClick={() => {
@@ -821,19 +850,10 @@ export function BlueprintContact() {
                     description: "",
                   });
                 }}
-                className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#22C55E] hover:text-[#111613] transition-colors cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#22C55E] hover:text-[#111613] transition-colors cursor-pointer"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>START ANOTHER CONVERSATION</span>
-              </button>
-              <span className="text-black/20">|</span>
-              <button
-                type="button"
-                onClick={closeConversation}
-                className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.2em] text-[#5A685D] hover:text-[#111613] transition-colors cursor-pointer"
-              >
-                <span>CLOSE</span>
-                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>

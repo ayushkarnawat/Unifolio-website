@@ -1,0 +1,62 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Contact orbits, reference</title>
+<!--
+  Reference for the Contact Us orbits background (approved in the prototype artifact).
+  Pure SVG + CSS, no JavaScript. Port this into components/blueprint/ContactOrbits.tsx.
+  Open this file in a browser to see it. The container below imitates the contact section.
+  All numbers are derived from R = 500 / 1.85 = 270.27 (viewBox units) and the ring multipliers 0.45, 0.7, 0.95, 1.2, 1.5, 1.85.
+-->
+<style>
+  body{margin:0;background:#FAF8F5;font-family:system-ui,sans-serif;color:#111613}
+  .section{position:relative;width:100%;min-height:600px;background:#FAF8F5;overflow:hidden}
+  .orbits-clip{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  /* DESKTOP (>= 1024px): centre of the rings at 80% across, 50% down. Diameter = 192% of the section height, capped at 111vw. */
+  .orbits{position:absolute;left:80%;top:50%;height:192%;max-height:111vw;aspect-ratio:1/1;transform:translate(-50%,-50%)}
+  /* MOBILE / TABLET (< 1024px): centre of the rings at the bottom right corner (86%, 86%). Diameter = 214% of the section width, capped at 1400px. */
+  @media (max-width:1023px){.orbits{left:86%;top:86%;height:auto;max-height:none;width:214%;max-width:1400px}}
+  .orbits svg{display:block;width:100%;height:100%;overflow:visible}
+  .orb{transform-box:view-box;transform-origin:500px 500px;animation:orbit-spin linear infinite}
+  .orb.ccw{animation-direction:reverse}
+  @keyframes orbit-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.orb{animation:none}}
+  .content{position:relative;z-index:10;padding:96px 64px}
+  h1{font-weight:300;font-size:72px;margin:0}
+</style>
+<div class="section">
+  <div class="orbits-clip" aria-hidden="true">
+    <div class="orbits">
+      <svg viewBox="0 0 1000 1000" focusable="false">
+        <defs>
+          <radialGradient id="orbit-glow" cx="500" cy="500" r="459.5" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#12B047" stop-opacity="0.10"/>
+            <stop offset="1" stop-color="#12B047" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="500" cy="500" r="459.5" fill="url(#orbit-glow)"/>
+        <!-- six faint rings: stroke is 1px on screen whatever the scale -->
+        <g fill="none" stroke="#111613" stroke-opacity="0.07" stroke-width="1" vector-effect="non-scaling-stroke">
+          <circle cx="500" cy="500" r="121.6" vector-effect="non-scaling-stroke"/>
+          <circle cx="500" cy="500" r="189.2" vector-effect="non-scaling-stroke"/>
+          <circle cx="500" cy="500" r="256.8" vector-effect="non-scaling-stroke"/>
+          <circle cx="500" cy="500" r="324.3" vector-effect="non-scaling-stroke"/>
+          <circle cx="500" cy="500" r="405.4" vector-effect="non-scaling-stroke"/>
+          <circle cx="500" cy="500" r="500" vector-effect="non-scaling-stroke"/>
+        </g>
+        <!-- tick marks around the 1.2R ring: 140 short ticks, every 10th one longer. Rotates once every 314 s. -->
+        <g class="orb" style="animation-duration:314s">
+          <circle cx="500" cy="500" r="326.3" fill="none" stroke="#5A685D" stroke-opacity="0.28" stroke-width="4" stroke-dasharray="1.2 13.445"/>
+          <circle cx="500" cy="500" r="328.8" fill="none" stroke="#5A685D" stroke-opacity="0.28" stroke-width="9" stroke-dasharray="1.2 146.3"/>
+        </g>
+        <!-- six small dots, one per ring. duration = 2*PI / angular speed. start angle = index * 1.9 rad (negative delay places it). -->
+        <g class="orb"      style="animation-duration:20.9s;animation-delay:0s">    <circle cx="621.6"  cy="500" r="2.7" fill="#12B047" fill-opacity="0.75"/></g>
+        <g class="orb ccw"  style="animation-duration:31.4s;animation-delay:-21.9s"><circle cx="689.2"  cy="500" r="2.7" fill="#111613" fill-opacity="0.75"/></g>
+        <g class="orb"      style="animation-duration:44.9s;animation-delay:-27.1s"><circle cx="756.8"  cy="500" r="2.7" fill="#12B047" fill-opacity="0.75"/></g>
+        <g class="orb ccw"  style="animation-duration:69.8s;animation-delay:-6.5s"> <circle cx="824.3"  cy="500" r="2.7" fill="#111613" fill-opacity="0.75"/></g>
+        <g class="orb"      style="animation-duration:104.7s;animation-delay:-21.9s"><circle cx="905.4" cy="500" r="2.7" fill="#12B047" fill-opacity="0.75"/></g>
+        <g class="orb ccw"  style="animation-duration:125.7s;animation-delay:-61.3s"><circle cx="1000"   cy="500" r="2.7" fill="#111613" fill-opacity="0.75"/></g>
+      </svg>
+    </div>
+  </div>
+  <div class="content"><h1>Ask us anything.</h1><p>Placeholder content, sits above the orbits.</p></div>
+</div>

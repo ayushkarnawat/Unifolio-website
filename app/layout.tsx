@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Manrope, DM_Sans } from "next/font/google";
+import { Manrope, DM_Sans, Caveat } from "next/font/google";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { siteConfig } from "@/content/site";
@@ -19,6 +19,14 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-dm-sans",
+  display: "swap",
+});
+
+// Handwriting font, used only inside the hero storyboard canvas (insight numbers).
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-caveat",
   display: "swap",
 });
 
@@ -102,7 +110,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en-IN"
       suppressHydrationWarning
-      className={`light ${manrope.variable} ${dmSans.variable}`}
+      className={`light ${manrope.variable} ${dmSans.variable} ${caveat.variable}`}
     >
       <head>
         <meta name="geo.region" content="IN-MH" />

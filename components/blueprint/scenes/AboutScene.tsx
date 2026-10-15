@@ -88,6 +88,25 @@ export const ABOUT_COLLAGE_FRAGMENTS: CollageSnippet[] = [
   { id: "c26", category: "CLARITY", code: "UNIFOLIO // 01", primary: "Family Wealth Summary", meta: "One Unified Picture", xPct: 50, yPct: 97, rotZ: 0, scale: 0.95, opacity: 0.36 },
 ];
 
+export const ABOUT_COLLAGE_FRAGMENTS_MOBILE: CollageSnippet[] = [
+  // Upper-lateral zone (starting safely at yPct: 18% - zero bleed into security section)
+  { id: "mc1", category: "MUTUAL FUNDS", code: "CAS // CAMS", primary: "Consolidated Folio", meta: "14 Folios Verified", xPct: 8, yPct: 18, rotZ: -5, scale: 0.88, opacity: 0.35 },
+  { id: "mc2", category: "REGULATOR", code: "RBI // AA", primary: "Account Aggregator", meta: "Consent ID: #7741", xPct: 92, yPct: 20, rotZ: 5, scale: 0.88, opacity: 0.35 },
+
+  // Mid-lateral gutters (clear of central text block)
+  { id: "mc3", category: "DEPOSITS", code: "HDFC // FD", primary: "Fixed Deposit Receipt", meta: "7.40% Compounded", xPct: 6, yPct: 40, rotZ: 6, scale: 0.88, opacity: 0.35 },
+  { id: "mc4", category: "RETURNS", code: "PERF // XIRR", primary: "Portfolio Realized Rate", meta: "Aggregated: 15.4% p.a.", xPct: 93, yPct: 42, rotZ: -5, scale: 0.88, opacity: 0.36 },
+
+  // Lower-lateral gutters
+  { id: "mc5", category: "EQUITY", code: "CDSL // CAS", primary: "Demat Pool Allocation", meta: "Total Scrips: 28", xPct: 7, yPct: 64, rotZ: -5, scale: 0.88, opacity: 0.35 },
+  { id: "mc6", category: "TAX", code: "SEC // 80C", primary: "Deductions Certificate", meta: "Cap ₹1,50,000 Met", xPct: 92, yPct: 66, rotZ: 4, scale: 0.88, opacity: 0.35 },
+
+  // Bottom baseline zone (framing bottom below text)
+  { id: "mc7", category: "PENSION", code: "EPFO // UAN", primary: "Provident Fund Passbook", meta: "Monthly Accrual Active", xPct: 12, yPct: 86, rotZ: 5, scale: 0.88, opacity: 0.35 },
+  { id: "mc8", category: "CLARITY", code: "UNIFOLIO", primary: "Family Wealth Summary", meta: "One Unified Picture", xPct: 50, yPct: 95, rotZ: 0, scale: 0.90, opacity: 0.38 },
+  { id: "mc9", category: "AUDIT", code: "SEC // 256", primary: "Read-Only Encryption", meta: "Zero Secrets Held", xPct: 88, yPct: 88, rotZ: -4, scale: 0.88, opacity: 0.35 },
+];
+
 /**
  * Every DOM/value/timeline ref this scene's own logic touches, still
  * declared (and owned) in BlueprintHero.tsx.
@@ -198,13 +217,13 @@ export function AboutBackgroundSlot({ aboutContentRef }: AboutBackgroundSlotProp
       className="absolute inset-0 pointer-events-none overflow-hidden select-none"
       style={{ opacity: 1, visibility: "visible", zIndex: 0 }}
     >
-      {/* Quiet Monochrome Collage — 26 Desaturated Editorial Fragments that align on morph */}
-      <div className="absolute inset-0 pointer-events-none">
+      {/* DESKTOP COLLAGE (hidden md:block) — Exact 26 Desaturated Editorial Fragments */}
+      <div className="hidden md:block absolute inset-0 pointer-events-none">
         {ABOUT_COLLAGE_FRAGMENTS.map((item) => (
           <div
             key={item.id}
             data-initial-rot={item.rotZ}
-            className="about-collage-card absolute pointer-events-none select-none hidden md:block rounded-[6px] border border-neutral-300/50 bg-[#F5F1E8]/85 p-2 sm:p-2.5 shadow-[0_1px_3px_rgba(28,36,30,0.02)] transition-opacity"
+            className="about-collage-card absolute pointer-events-none select-none rounded-[6px] border border-neutral-300/50 bg-[#F5F1E8]/85 p-2 sm:p-2.5 shadow-[0_1px_3px_rgba(28,36,30,0.02)] transition-opacity"
             style={{
               left: `${item.xPct}%`,
               top: `${item.yPct}%`,
@@ -225,6 +244,39 @@ export function AboutBackgroundSlot({ aboutContentRef }: AboutBackgroundSlotProp
               {item.primary}
             </p>
             <p className="font-mono text-[8px] text-neutral-400 mt-0.5 leading-tight truncate">
+              {item.meta}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* MOBILE COLLAGE (block md:hidden) — 9 Curated Peripheral Fragments starting safely below Security section */}
+      <div className="block md:hidden absolute inset-0 pointer-events-none overflow-hidden">
+        {ABOUT_COLLAGE_FRAGMENTS_MOBILE.map((item) => (
+          <div
+            key={item.id}
+            data-initial-rot={item.rotZ}
+            className="about-collage-card absolute pointer-events-none select-none rounded-[5px] border border-neutral-300/50 bg-[#F5F1E8]/85 p-1.5 shadow-[0_1px_3px_rgba(28,36,30,0.02)] transition-opacity"
+            style={{
+              left: `${item.xPct}%`,
+              top: `${item.yPct}%`,
+              transform: `translate(-50%, -50%) rotate(${item.rotZ}deg) scale(${item.scale})`,
+              opacity: item.opacity,
+              width: "112px",
+            }}
+          >
+            <div className="flex items-center justify-between gap-1 border-b border-neutral-300/40 pb-0.5 mb-0.5">
+              <span className="font-mono text-[7px] font-bold tracking-wider text-neutral-400 uppercase truncate">
+                {item.category}
+              </span>
+              <span className="font-mono text-[6.5px] text-neutral-400 shrink-0">
+                {item.code}
+              </span>
+            </div>
+            <p className="font-sans text-[8.5px] font-bold text-neutral-700 leading-tight truncate">
+              {item.primary}
+            </p>
+            <p className="font-mono text-[7px] text-neutral-400 mt-0.5 leading-tight truncate">
               {item.meta}
             </p>
           </div>

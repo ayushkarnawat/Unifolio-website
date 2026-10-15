@@ -15,7 +15,7 @@ export function BlueprintFaq() {
   return (
     <section
       id="faq"
-      className="relative w-full bg-[#FAF8F5] px-6 sm:px-10 lg:px-16 xl:px-20 pt-20 sm:pt-28 lg:pt-32 pb-12 sm:pb-16 lg:pb-16 text-[#111613] select-none border-t border-black/[0.06]"
+      className="relative w-full bg-[#FAF8F5] px-6 sm:px-10 lg:px-16 xl:px-20 pt-8 sm:pt-12 lg:pt-32 pb-8 sm:pb-10 lg:pb-16 text-[#111613] select-none border-t border-black/[0.06]"
     >
       <div className="relative z-10 max-w-7xl mx-auto w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-20 items-start">
