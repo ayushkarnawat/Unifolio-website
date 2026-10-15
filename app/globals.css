@@ -349,3 +349,57 @@
   }
 }
 
+
+/* Contact Us orbits background (components/blueprint/ContactOrbits.tsx) */
+.contact-orbits {
+  position: absolute;
+  left: 80%;
+  top: 50%;
+  height: 192%;
+  max-height: 111vw;
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 1023px) {
+  .contact-orbits {
+    left: 86%;
+    top: 86%;
+    height: auto;
+    max-height: none;
+    width: 214%;
+    max-width: 1400px;
+  }
+}
+
+.contact-orbits svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.contact-orbit {
+  transform-box: view-box;
+  transform-origin: 500px 500px;
+  animation: contact-orbit-spin linear infinite;
+}
+
+.contact-orbit-ccw {
+  animation-direction: reverse;
+}
+
+@keyframes contact-orbit-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-orbit {
+    animation: none;
+  }
+}

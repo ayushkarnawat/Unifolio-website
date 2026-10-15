@@ -7,6 +7,7 @@ import { Mail, ArrowRight, ArrowLeft, X, Check, Sparkles, ChevronRight } from "l
 import { useGSAP } from "@gsap/react";
 import { gsap, prefersReducedMotion, smoothScrollTo } from "@/lib/gsap";
 import { Button } from "@/components/ui/Button";
+import { ContactOrbits } from "@/components/blueprint/ContactOrbits";
 
 interface FormData {
   name: string;
@@ -381,6 +382,8 @@ export function BlueprintContact() {
             <div className="absolute inset-0 bg-[radial-gradient(rgba(0,0,0,0.04)_1px,transparent_1px)] [background-size:48px_48px] opacity-25" />
           </div>
         </div>
+
+        <ContactOrbits />
 
         {/* =========================================================================
             STATE A: UNIFIED FULL-SCREEN CLOSING EXPERIENCE
