@@ -89,10 +89,10 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
       {/* LAYER 1B (z-10): HERO HEADLINE & SUBTEXT */}
       <div
         ref={heroIntroRef}
-        className="absolute inset-0 z-10 flex flex-col justify-center px-6 sm:px-10 lg:px-16 xl:px-20 pt-20 pb-8 max-w-7xl mx-auto w-full pointer-events-none will-change-transform"
+        className="absolute inset-0 z-10 flex flex-col justify-end lg:justify-center items-center lg:items-start px-6 sm:px-10 lg:px-16 xl:px-20 pt-20 pb-10 sm:pb-14 lg:pb-8 max-w-7xl mx-auto w-full pointer-events-none will-change-transform"
       >
-        <div className="flex-1 flex flex-col justify-center max-w-lg sm:max-w-xl lg:max-w-[490px] xl:max-w-[530px] -translate-x-6 sm:-translate-x-10 md:-translate-x-14 lg:-translate-x-20 xl:-translate-x-24 -translate-y-4 sm:-translate-y-6 lg:-translate-y-8 pointer-events-auto">
-          <h1 className="font-sans font-black text-[26px] sm:text-[33px] md:text-[38px] lg:text-[42px] xl:text-[47px] text-neutral-950 tracking-[-0.035em] leading-[1.15] select-none flex flex-col gap-2.5 sm:gap-3 lg:gap-3.5">
+        <div className="flex-initial lg:flex-1 flex flex-col justify-center items-center lg:items-start text-center lg:text-left max-w-lg sm:max-w-xl lg:max-w-[490px] xl:max-w-[530px] translate-x-0 lg:-translate-x-20 xl:-translate-x-24 translate-y-0 lg:-translate-y-8 pointer-events-auto">
+          <h1 className="font-sans font-black text-[25px] sm:text-[33px] md:text-[38px] lg:text-[42px] xl:text-[47px] text-neutral-950 tracking-[-0.035em] leading-[1.15] select-none flex flex-col items-center lg:items-start gap-2 sm:gap-3 lg:gap-3.5">
             <span className="whitespace-nowrap">
               See everything you <span className="text-[#22C55E]" style={{ color: "#22C55E" }}>own.</span>
             </span>
@@ -100,10 +100,10 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
               Understand what it <span className="text-[#22C55E]" style={{ color: "#22C55E" }}>means.</span>
             </span>
           </h1>
-          <p className="mt-4 sm:mt-5 text-sm sm:text-base md:text-lg lg:text-[19px] text-[#5A685D] font-medium tracking-tight leading-relaxed select-none">
+          <p className="mt-3.5 sm:mt-5 text-sm sm:text-base md:text-lg lg:text-[19px] text-[#5A685D] font-medium tracking-tight leading-relaxed select-none text-center lg:text-left">
             Track. Understand. Act with confidence.
           </p>
-          <div className="mt-7 sm:mt-8 flex items-center">
+          <div className="mt-6 sm:mt-8 flex items-center justify-center lg:justify-start w-full">
             <Button
               type="button"
               size="md"
