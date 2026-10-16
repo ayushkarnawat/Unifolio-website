@@ -90,7 +90,7 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
       {/* LAYER 1B (z-10): HERO HEADLINE & SUBTEXT */}
       <div
         ref={heroIntroRef}
-        className="absolute inset-0 max-sm:relative max-sm:inset-auto z-10 flex flex-col justify-end max-sm:justify-start lg:justify-center items-center lg:items-start px-6 sm:px-10 lg:px-16 xl:px-20 pt-20 max-sm:pt-[calc(92px+49.2vw)] pb-10 max-sm:pb-8 sm:pb-14 lg:pb-8 max-w-7xl mx-auto w-full pointer-events-none will-change-transform"
+        className="absolute inset-0 max-sm:relative max-sm:inset-auto z-10 flex flex-col justify-end max-sm:justify-start lg:justify-center items-center lg:items-start px-6 sm:px-10 lg:px-16 xl:px-20 pt-20 max-sm:pt-[calc(124px+49.2vw)] pb-10 max-sm:pb-8 sm:pb-14 lg:pb-8 max-w-7xl mx-auto w-full pointer-events-none will-change-transform"
       >
         <div className="flex-initial lg:flex-1 flex flex-col justify-center items-center lg:items-start text-center lg:text-left max-w-lg sm:max-w-xl lg:max-w-[490px] xl:max-w-[530px] translate-x-0 lg:-translate-x-20 xl:-translate-x-24 translate-y-0 sm:-translate-y-1 lg:-translate-y-6 pointer-events-auto">
           <h1 className="font-sans font-black text-[25px] sm:text-[33px] md:text-[38px] lg:text-[42px] xl:text-[47px] text-neutral-950 tracking-[-0.035em] leading-[1.15] select-none flex flex-col items-center lg:items-start gap-2 sm:gap-3 lg:gap-3.5">
