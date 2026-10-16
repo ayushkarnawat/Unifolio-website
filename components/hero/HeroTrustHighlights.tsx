@@ -63,7 +63,7 @@ function TransitVisual() {
   return (
     <div className="flex items-center gap-2">
       <span className="h-5 w-3.5 flex-none rounded border-[1.6px] border-[#111613] opacity-80" />
-      <span className="relative h-0.5 w-[150px] flex-none bg-[rgba(17,22,19,0.14)]">
+      <span className="relative h-0.5 w-[150px] lg:w-[200px] flex-none bg-[rgba(17,22,19,0.14)]">
         <i className="trust-packet absolute -top-[3px] left-0 h-2 w-2 rounded-[2px] bg-[#22C55E]" />
         <i
           className="trust-packet absolute -top-[3px] left-0 h-2 w-2 rounded-[2px] bg-[#22C55E]"

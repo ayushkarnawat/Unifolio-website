@@ -1387,7 +1387,7 @@ export function BlueprintHero() {
           shared={aboutSharedRef}
         />
         {/* SECTION 1: HERO */}
-        <section id="hero" className="relative w-full h-screen min-h-screen bg-[#FAF8F5] select-none overflow-hidden flex flex-col justify-center">
+        <section id="hero" className="relative w-full h-screen min-h-screen max-sm:h-auto max-sm:min-h-0 bg-[#FAF8F5] select-none overflow-hidden flex flex-col justify-center">
           <HeroScene
             ref={heroSceneRef}
             engine={engine}
@@ -1403,12 +1403,12 @@ export function BlueprintHero() {
         <section
           id="product"
           ref={productWorldRef}
-          className="relative w-full min-h-screen bg-[#FAF8F5] flex flex-col justify-start items-center px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-16 sm:pb-20 overflow-hidden select-none"
+          className="relative w-full min-h-screen bg-[#FAF8F5] flex flex-col justify-start items-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-28 pb-16 sm:pb-20 overflow-hidden select-none"
         >
           {/* Product Hero Content (Headline) */}
           <div
             ref={headerRef}
-            className="w-full max-w-5xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mb-3 sm:mb-12 px-2 will-change-transform pt-16 sm:pt-14 md:pt-16"
+            className="w-full max-w-5xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mb-3 sm:mb-12 px-2 will-change-transform pt-4 sm:pt-14 md:pt-16"
           >
             <h2
               ref={headlineRef}

@@ -75,7 +75,7 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
   );
 
   return (
-    <div className="relative w-full h-screen min-h-screen bg-[#FAF8F5] select-none overflow-hidden flex flex-col justify-center">
+    <div className="relative w-full h-screen min-h-screen max-sm:h-auto max-sm:min-h-0 bg-[#FAF8F5] select-none overflow-hidden flex flex-col justify-center">
       {/* LAYER 1 (z-10): MASTER HERO VISUAL (Aperture Video Ring) */}
       <div
         ref={heroVisualRef}
@@ -90,7 +90,7 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
       {/* LAYER 1B (z-10): HERO HEADLINE & SUBTEXT */}
       <div
         ref={heroIntroRef}
-        className="absolute inset-0 z-10 flex flex-col justify-end lg:justify-center items-center lg:items-start px-6 sm:px-10 lg:px-16 xl:px-20 pt-20 pb-10 sm:pb-14 lg:pb-8 max-w-7xl mx-auto w-full pointer-events-none will-change-transform"
+        className="absolute inset-0 max-sm:relative max-sm:inset-auto z-10 flex flex-col justify-end max-sm:justify-start lg:justify-center items-center lg:items-start px-6 sm:px-10 lg:px-16 xl:px-20 pt-20 max-sm:pt-[calc(92px+49.2vw)] pb-10 max-sm:pb-8 sm:pb-14 lg:pb-8 max-w-7xl mx-auto w-full pointer-events-none will-change-transform"
       >
         <div className="flex-initial lg:flex-1 flex flex-col justify-center items-center lg:items-start text-center lg:text-left max-w-lg sm:max-w-xl lg:max-w-[490px] xl:max-w-[530px] translate-x-0 lg:-translate-x-20 xl:-translate-x-24 translate-y-0 sm:-translate-y-1 lg:-translate-y-6 pointer-events-auto">
           <h1 className="font-sans font-black text-[25px] sm:text-[33px] md:text-[38px] lg:text-[42px] xl:text-[47px] text-neutral-950 tracking-[-0.035em] leading-[1.15] select-none flex flex-col items-center lg:items-start gap-2 sm:gap-3 lg:gap-3.5">
@@ -120,7 +120,7 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
             </Button>
           </div>
           {/* The highlight stays in the layout (so the headline, sub line and CTA sit where they did), and is only moved down visually from lg up, so the new parts sit lower while the text does not move */}
-          <div className="w-full lg:translate-y-16">
+          <div className="w-full lg:w-[calc(100%+96px)] lg:max-w-none lg:translate-y-16">
             <HeroTrustHighlights isPaused={isAperturePaused} />
           </div>
         </div>

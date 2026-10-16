@@ -51,7 +51,7 @@ export const STACKED_MAX_SCALE = 0.95;
 export const STACKED_HEIGHT_FRACTION = 0.42; // cap: artwork height as a fraction of the container height
 export const STACKED_CENTER_Y = 0.4; // artwork vertical centre as a fraction of the container height
 export const PHONE_MAX_WIDTH = 640; // below this the artwork sits higher, so the taller text block (with the trust highlight) does not overlap it
-export const PHONE_CENTER_Y = 0.3;
+export const PHONE_TOP_PX = 108; // phones: artwork top edge, just under the nav bar (the hero is as tall as its content, so this cannot depend on the height)
 
 export type Placement = {
   wide: boolean;
@@ -97,7 +97,7 @@ export function computePlacement(w: number, h: number): Placement {
       (H * STACKED_HEIGHT_FRACTION) / ART_H
     );
     x0 = (W - CONTENT_W * sc) / 2;
-    y0 = H * (W < PHONE_MAX_WIDTH ? PHONE_CENTER_Y : STACKED_CENTER_Y) - (ART_H / 2) * sc;
+    y0 = W < PHONE_MAX_WIDTH ? PHONE_TOP_PX : H * STACKED_CENTER_Y - (ART_H / 2) * sc;
   }
   const ringX = x0 + RING_CENTER[0] * sc;
   const ringY = y0 + RING_CENTER[1] * sc;
