@@ -120,7 +120,7 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
             </Button>
           </div>
           {/* The highlight stays in the layout (so the headline, sub line and CTA sit where they did), and is only moved down visually from lg up, so the new parts sit lower while the text does not move */}
-          <div className="w-full lg:w-[calc(100%+96px)] lg:max-w-none lg:translate-y-16">
+          <div className="w-full max-sm:mt-4 lg:w-[calc(100%+96px)] lg:max-w-none lg:translate-y-16">
             <HeroTrustHighlights isPaused={isAperturePaused} />
           </div>
         </div>
