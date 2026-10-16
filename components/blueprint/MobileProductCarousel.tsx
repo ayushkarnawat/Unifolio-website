@@ -182,7 +182,7 @@ export function MobileProductCarousel() {
               <span className="text-[#22C55E]">See</span> Everything
             </h3>
             <p className="font-sans text-neutral-700 text-[13.5px] min-[390px]:text-[14.5px] sm:text-sm leading-relaxed font-medium">
-              From mutual funds and stocks to bank accounts, loans, credit cards, and real estate, every asset and liability you and your family hold, aggregated into a number that&apos;s actually accurate.
+              From mutual funds and stocks to bank accounts and real estate, every asset you and your family hold, aggregated into a number that&apos;s actually accurate.
             </p>
           </div>
           <div className="mt-2 sm:mt-3 flex justify-center -translate-y-1 sm:-translate-y-2">

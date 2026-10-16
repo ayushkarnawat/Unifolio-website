@@ -76,7 +76,7 @@ export const PRODUCT_CARDS: ProductCardData[] = [
     illustration: "/product-cards/card-2d-2.png",
     hoverType: "paragraph",
     hoverParagraph:
-      "From mutual funds and stocks to bank accounts, loans, credit cards, and real estate, every asset and liability you and your family hold, aggregated into a number that's actually accurate.",
+      "From mutual funds and stocks to bank accounts and real estate, every asset you and your family hold, aggregated into a number that's actually accurate.",
     accent: "#34d399",
     restRotateY: 5,
     restRotateZ: -1.0,
@@ -220,9 +220,7 @@ export const SECURITY_STATES: SecurityStateItem[] = [
     headline: "We never save your passwords",
     body: (
       <>
-        Your bank login stays with your bank. <br />
-        <span className="sm:whitespace-nowrap">We connect through India&apos;s RBI-regulated Account Aggregator framework,</span> <br />
-        so your credentials never reach us.
+        <span className="sm:whitespace-nowrap">Your bank login stays with your bank, so your credentials never reach us.</span>
       </>
     ),
   },

@@ -39,9 +39,7 @@ const SECURITY_STATES: SecurityStateItem[] = [
     headline: "We never save your passwords",
     body: (
       <>
-        Your bank login stays with your bank. <br className="hidden sm:inline" />{" "}
-        We connect through India&apos;s RBI-regulated Account Aggregator framework,{" "}
-        so your credentials never reach us.
+        Your bank login stays with your bank, so your credentials never reach us.
       </>
     ),
   },
