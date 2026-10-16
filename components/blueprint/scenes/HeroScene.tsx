@@ -3,6 +3,7 @@
 import { forwardRef, useImperativeHandle, type MutableRefObject, type ReactNode } from "react";
 import { gsap } from "@/lib/gsap";
 import { HeroStoryboardVisual } from "@/components/hero/HeroStoryboardVisual";
+import { HeroTrustHighlights } from "@/components/hero/HeroTrustHighlights";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight } from "lucide-react";
 import type { SceneEngine } from "../hero-engine/useSceneEngine";
@@ -91,7 +92,7 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
         ref={heroIntroRef}
         className="absolute inset-0 z-10 flex flex-col justify-end lg:justify-center items-center lg:items-start px-6 sm:px-10 lg:px-16 xl:px-20 pt-20 pb-10 sm:pb-14 lg:pb-8 max-w-7xl mx-auto w-full pointer-events-none will-change-transform"
       >
-        <div className="flex-initial lg:flex-1 flex flex-col justify-center items-center lg:items-start text-center lg:text-left max-w-lg sm:max-w-xl lg:max-w-[490px] xl:max-w-[530px] translate-x-0 lg:-translate-x-20 xl:-translate-x-24 translate-y-0 lg:-translate-y-8 pointer-events-auto">
+        <div className="flex-initial lg:flex-1 flex flex-col justify-center items-center lg:items-start text-center lg:text-left max-w-lg sm:max-w-xl lg:max-w-[490px] xl:max-w-[530px] translate-x-0 lg:-translate-x-20 xl:-translate-x-24 translate-y-0 sm:-translate-y-1 lg:-translate-y-6 pointer-events-auto">
           <h1 className="font-sans font-black text-[25px] sm:text-[33px] md:text-[38px] lg:text-[42px] xl:text-[47px] text-neutral-950 tracking-[-0.035em] leading-[1.15] select-none flex flex-col items-center lg:items-start gap-2 sm:gap-3 lg:gap-3.5">
             <span className="whitespace-nowrap">
               See everything you <span className="text-[#22C55E]" style={{ color: "#22C55E" }}>own.</span>
@@ -117,6 +118,10 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
               <span className="font-extrabold text-sm sm:text-base tracking-tight text-white">Join the waitlist</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 text-white stroke-[2.8]" />
             </Button>
+          </div>
+          {/* The highlight stays in the layout (so the headline, sub line and CTA sit where they did), and is only moved down visually from lg up, so the new parts sit lower while the text does not move */}
+          <div className="w-full lg:translate-y-16">
+            <HeroTrustHighlights isPaused={isAperturePaused} />
           </div>
         </div>
       </div>
