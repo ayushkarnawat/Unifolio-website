@@ -4,8 +4,9 @@
  * Ported from Docs/reference/about-section-prototype.html (the approved design).
  * No DOM access here, so everything in this file is unit tested in lib/aboutIllustration.test.ts.
  *
- * All geometry is in picture coordinates of the user's sketch (1536x1024), the same numbers as
- * public/about-illustration/manifest.json. The canvas shows the VIEW box of that picture.
+ * All geometry is in picture coordinates of the user's sketch (1671x941), the same numbers as
+ * public/about-illustration/manifest.json (version 2). The canvas shows the VIEW box of that picture
+ * (the whole picture). The picture already holds its own dashed connector arcs; only the dots travel.
  */
 
 export type Pt = [number, number];
@@ -13,69 +14,79 @@ export type Pt = [number, number];
 export type Cubic = [Pt, Pt, Pt, Pt];
 export type Rect = { x: number; y: number; w: number; h: number };
 
-export type LayerId = "p1" | "p2" | "p3" | "p4" | "c";
+export type LayerId = "plate" | "p1" | "p2" | "p3" | "p4" | "c" | "pie";
 export type Layer = Rect & { id: LayerId; file: string };
 
 export const ASSET_BASE = "/about-illustration/";
 
 /** The part of the picture the canvas shows. */
-export const VIEW: Rect = { x: 100, y: 120, w: 1330, h: 800 };
+export const VIEW: Rect = { x: 0, y: 0, w: 1671, h: 941 };
 /** Canvas aspect ratio (width / height). */
 export const VIEW_ASPECT = VIEW.w / VIEW.h;
 
 export const COLORS = {
   green: "#22C55E",
-  /** Dashed data-flow curves. */
-  flow: "#1F4D33",
   ink: "#111613",
   bg: "#FAF8F5",
 } as const;
 
-/** The four family members and the shared dashboard (positions from manifest.json). */
+/**
+ * The plate (everything outside the other layers, full picture size), the four family members, the shared
+ * dashboard and the small pie tile (positions from manifest.json).
+ */
 export const LAYERS: Record<LayerId, Layer> = {
-  p1: { id: "p1", file: "person-p1.webp", x: 158, y: 128, w: 368, h: 296 },
-  p2: { id: "p2", file: "person-p2.webp", x: 972, y: 148, w: 446, h: 280 },
-  p3: { id: "p3", file: "person-p3.webp", x: 108, y: 592, w: 514, h: 312 },
-  p4: { id: "p4", file: "person-p4.webp", x: 984, y: 648, w: 414, h: 264 },
-  c: { id: "c", file: "dashboard.webp", x: 572, y: 284, w: 432, h: 406 },
+  plate: { id: "plate", file: "plate.webp", x: 0, y: 0, w: 1671, h: 941 },
+  p1: { id: "p1", file: "person-p1.webp", x: 44, y: 84, w: 668, h: 388 },
+  p2: { id: "p2", file: "person-p2.webp", x: 949, y: 89, w: 713, h: 423 },
+  p3: { id: "p3", file: "person-p3.webp", x: 24, y: 494, w: 658, h: 388 },
+  p4: { id: "p4", file: "person-p4.webp", x: 1074, y: 509, w: 588, h: 398 },
+  c: { id: "c", file: "dashboard.webp", x: 599, y: 254, w: 518, h: 423 },
+  pie: { id: "pie", file: "pie.webp", x: 839, y: 657, w: 158, h: 120 },
 };
 
-/** Draw order and intro order: the dashboard first, then the people. */
-export const ORDER: LayerId[] = ["c", "p1", "p2", "p3", "p4"];
+/** Draw order and intro order: the plate, the dashboard, the four people, then the pie. */
+export const ORDER: LayerId[] = ["plate", "c", "p1", "p2", "p3", "p4", "pie"];
+/** Intro index of a layer (its place in ORDER). */
+export const introIndex = (id: LayerId) => ORDER.indexOf(id);
 
-/** Float and tilt per layer: amplitude (px), speed, phase, rotation amplitude (rad). */
+/** Float and tilt per layer: amplitude (px), speed, phase, rotation amplitude (rad). The plate stays still. */
 export const MOT: Record<LayerId, { a: number; s: number; ph: number; r: number }> = {
+  plate: { a: 0, s: 0, ph: 0, r: 0 },
   p1: { a: 4, s: 0.8, ph: 0, r: 0.006 },
   p2: { a: 3.4, s: 0.7, ph: 1.6, r: 0.006 },
   p3: { a: 4, s: 0.75, ph: 2.8, r: 0.005 },
   p4: { a: 3.6, s: 0.85, ph: 4.1, r: 0.006 },
   c: { a: 1.6, s: 0.6, ph: 0, r: 0 },
+  pie: { a: 3, s: 0.9, ph: 5.2, r: 0.006 },
 };
 
-/** Data flows between each person (p1..p4) and the dashboard; the 4th starts at the dashboard edge, as in the prototype. */
+/**
+ * Paths of the travelling dots between each person (p1..p4) and the dashboard, following the dashed arcs
+ * drawn in the picture; the 4th starts at the dashboard edge and runs outward toward person 4.
+ */
 export const STR: Cubic[] = [
-  [[528, 283], [585, 283], [622, 318], [650, 376]],
-  [[1015, 297], [955, 302], [925, 325], [896, 380]],
-  [[527, 705], [595, 705], [630, 662], [648, 612]],
-  [[955, 570], [1020, 572], [1058, 598], [1096, 646]],
+  [[543, 293], [590, 285], [650, 300], [685, 350]],
+  [[1080, 297], [1020, 288], [975, 305], [955, 330]],
+  [[660, 733], [715, 725], [745, 700], [760, 660]],
+  [[1115, 542], [1160, 545], [1190, 565], [1205, 590]],
 ];
 
-/** Each person's device (where the small ping expands). */
+/** Each person's device (where the small ping expands): phone, laptop, bank building, goals checklist. */
 export const DEV: Pt[] = [
-  [482, 262],
-  [1105, 274],
-  [472, 772],
-  [1050, 736],
+  [395, 270],
+  [1160, 290],
+  [350, 730],
+  [1240, 700],
 ];
 
 /** Centre of the dashboard (glow and arrival ring). */
-export const CEN: Pt = [790, 497];
+export const CEN: Pt = [850, 500];
 /** Breathing glow: radial gradient radii and the box it fills. */
-export const GLOW = { r0: 40, r1: 330, box: { x: 380, y: 150, w: 820, h: 700 } } as const;
+export const GLOW = { r0: 50, r1: 360, box: { x: 560, y: 220, w: 600, h: 520 } } as const;
 /** Donut on the dashboard (centre and radius of the circling highlight). */
-export const DONUT = { x: 722, y: 492, r: 47 } as const;
+export const DONUT = { x: 770, y: 490, r: 54 } as const;
 /** Arrival ring (ellipse radii at full pulse; it grows as the pulse fades). */
-export const RING = { rx: 162, ry: 132, grow: { rx: 26, ry: 22 } } as const;
+export const RING = { rx: 270, ry: 140, grow: { rx: 26, ry: 22 } } as const;
 
 /** Settled frame drawn for prefers-reduced-motion (intro long finished). */
 export const SETTLED_T = 6;
@@ -103,8 +114,12 @@ export function intro(t: number, i: number, reduced = false): number {
   return reduced ? 1 : ease(clamp((t - 0.1 - i * 0.16) / 0.9));
 }
 
-/** Float offset and tilt of a layer at time t, given its intro progress e (rises 18 px into place). */
+/**
+ * Float offset and tilt of a layer at time t, given its intro progress e (rises 18 px into place).
+ * The plate does not move at all: it only fades in.
+ */
 export function layerMotion(id: LayerId, t: number, e: number): { dx: number; dy: number; rot: number } {
+  if (id === "plate") return { dx: 0, dy: 0, rot: 0 };
   const M = MOT[id];
   return {
     dx: M.a * 0.5 * Math.cos(t * M.s * 0.8 + M.ph),

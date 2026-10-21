@@ -1,59 +1,77 @@
 {
-  "version": 1,
-  "source": "cut from the sketch the user supplied (1536x1024); pieces are multiplied onto the page cream, edges feathered",
-  "sourceWidth": 1536,
-  "sourceHeight": 1024,
+  "version": 2,
+  "source": "cut from the second sketch the user supplied (1671x941). Pieces are multiplied onto the page cream; polygons are disjoint with 5px feathered edges so plate + layers re-compose the original.",
+  "sourceWidth": 1671,
+  "sourceHeight": 941,
   "viewBox": {
-    "x": 100,
-    "y": 120,
-    "w": 1330,
-    "h": 800
+    "x": 0,
+    "y": 0,
+    "w": 1671,
+    "h": 941
   },
   "layers": [
     {
       "id": "p1",
-      "label": "man with phone (investments)",
       "file": "person-p1.webp",
-      "x": 158,
-      "y": 128,
-      "w": 368,
-      "h": 296
+      "x": 44,
+      "y": 84,
+      "w": 668,
+      "h": 388,
+      "label": "man with phone and Mutual Funds chip"
     },
     {
       "id": "p2",
-      "label": "woman with laptop (bank accounts)",
       "file": "person-p2.webp",
-      "x": 972,
-      "y": 148,
-      "w": 446,
-      "h": 280
+      "x": 949,
+      "y": 89,
+      "w": 713,
+      "h": 423,
+      "label": "woman with laptop and Real Estate chip"
     },
     {
       "id": "p3",
-      "label": "man with house (real estate)",
       "file": "person-p3.webp",
-      "x": 108,
-      "y": 592,
-      "w": 514,
-      "h": 312
+      "x": 24,
+      "y": 494,
+      "w": 658,
+      "h": 388,
+      "label": "man with bank and Bank Accounts chip"
     },
     {
       "id": "p4",
-      "label": "woman with goals checklist",
       "file": "person-p4.webp",
-      "x": 984,
-      "y": 648,
-      "w": 414,
-      "h": 264
+      "x": 1074,
+      "y": 509,
+      "w": 588,
+      "h": 398,
+      "label": "woman with Financial Goals checklist"
     },
     {
       "id": "c",
-      "label": "shared dashboard (centre)",
       "file": "dashboard.webp",
-      "x": 572,
-      "y": 284,
-      "w": 432,
-      "h": 406
+      "x": 599,
+      "y": 254,
+      "w": 518,
+      "h": 423,
+      "label": "shared Unifolio dashboard (centre, with its green ring)"
+    },
+    {
+      "id": "pie",
+      "file": "pie.webp",
+      "x": 839,
+      "y": 657,
+      "w": 158,
+      "h": 120,
+      "label": "small pie tile under the dashboard"
+    },
+    {
+      "id": "plate",
+      "file": "plate.webp",
+      "x": 0,
+      "y": 0,
+      "w": 1671,
+      "h": 941,
+      "label": "everything outside the layer areas (a few loose dashed connectors); full-image size"
     }
   ]
 }

@@ -21,21 +21,26 @@ import {
   devicePingU,
   glowAlpha,
   intro,
+  introIndex,
   layerMotion,
   streamDotAlpha,
   streamDotU,
   viewTransform,
   type Layer,
+  type LayerId,
 } from "@/lib/aboutIllustration";
 import { ABOUT_VISUAL_LABEL } from "@/lib/aboutCopy";
 
 /**
  * About section illustration: four family members (cut from the user's sketch) connected to one shared
- * dashboard, drawn on a canvas. Ported from Docs/reference/about-section-prototype.html (the approved design).
+ * dashboard, drawn on a canvas. The dashed connector arcs are part of the picture; only the dots travel. Ported from Docs/reference/about-section-prototype.html (the approved design).
  * Pure geometry and timing live in lib/aboutIllustration.ts.
  */
 
 type LoadedLayer = Layer & { img: HTMLImageElement };
+
+/** The four people, in flow / device order. */
+const PEOPLE: LayerId[] = ["p1", "p2", "p3", "p4"];
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -53,30 +58,25 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 /** One frame in picture coordinates (the caller has applied viewTransform). */
 function drawScene(ctx: CanvasRenderingContext2D, layers: LoadedLayer[], t: number, reduced: boolean) {
   const io = (i: number) => intro(t, i, reduced);
+  // Paint the page cream first: the pieces are multiplied onto it, so their off-white paper turns into the
+  // page colour (on a transparent canvas the multiply leaves it white, which shows as a box).
+  ctx.save();
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = COLORS.bg;
+  ctx.fillRect(-50, -50, 4000, 4000);
+  ctx.restore();
+  const person = (i: number) => io(introIndex(PEOPLE[i]));
 
   // breathing glow behind the dashboard
   const g = ctx.createRadialGradient(CEN[0], CEN[1], GLOW.r0, CEN[0], CEN[1], GLOW.r1);
-  g.addColorStop(0, `rgba(34,197,94,${glowAlpha(t) * io(0)})`);
+  g.addColorStop(0, `rgba(34,197,94,${glowAlpha(t) * io(introIndex("c"))})`);
   g.addColorStop(1, "rgba(34,197,94,0)");
   ctx.fillStyle = g;
   ctx.fillRect(GLOW.box.x, GLOW.box.y, GLOW.box.w, GLOW.box.h);
 
-  // dashed flows from each person to the dashboard, each with a travelling dot
+  // a travelling dot along each dashed arc of the picture (the arcs themselves are in the art)
   STR.forEach((p, i) => {
-    const a = io(i + 1) * 0.85;
-    ctx.save();
-    ctx.globalAlpha = a * 0.7;
-    ctx.strokeStyle = COLORS.flow;
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.setLineDash([6, 10]);
-    ctx.lineDashOffset = -t * 20;
-    ctx.beginPath();
-    ctx.moveTo(p[0][0], p[0][1]);
-    ctx.bezierCurveTo(p[1][0], p[1][1], p[2][0], p[2][1], p[3][0], p[3][1]);
-    ctx.stroke();
-    ctx.restore();
-
+    const a = person(i) * 0.85;
     const u = streamDotU(t, i);
     const q = bezierPoint(p, u);
     ctx.globalAlpha = a * streamDotAlpha(u);
@@ -97,7 +97,7 @@ function drawScene(ctx: CanvasRenderingContext2D, layers: LoadedLayer[], t: numb
   // arrivals in the middle trigger a soft ring
   const pulse = arrivalPulse(t);
 
-  // the layers: dashboard first, then the people; multiplied so the paper white melts into the page
+  // the layers: plate, dashboard, the people, then the pie; multiplied so the paper white melts into the page
   layers.forEach((L, i) => {
     const e = io(i);
     if (e <= 0) return;
@@ -111,19 +111,13 @@ function drawScene(ctx: CanvasRenderingContext2D, layers: LoadedLayer[], t: numb
     ctx.rotate(rot);
     ctx.scale(zs, zs);
     ctx.globalCompositeOperation = "multiply";
-    // depth: a soft ground shadow under each piece, and darker, bolder ink
-    const sh = ctx.createRadialGradient(0, L.h * 0.36, 4, 0, L.h * 0.36, L.w * 0.42);
-    sh.addColorStop(0, L.id === "c" ? "rgba(21,128,61,0.2)" : "rgba(17,22,19,0.2)");
-    sh.addColorStop(1, "rgba(17,22,19,0)");
-    ctx.save();
-    ctx.translate(0, L.h * 0.36);
-    ctx.scale(1, L.id === "c" ? 0.2 : 0.16);
-    ctx.translate(0, -L.h * 0.36);
-    ctx.fillStyle = sh;
-    ctx.fillRect(-L.w * 0.5, L.h * 0.36 - L.w * 0.5, L.w, L.w);
-    ctx.restore();
-    ctx.filter = "contrast(1.35) brightness(0.95)";
+    // bolder ink (no shadow)
+    ctx.filter = "contrast(1.75)";
     ctx.drawImage(L.img, -L.w / 2, -L.h / 2, L.w, L.h);
+    // second pass, a hair off, thickens the pencil lines (this also works where ctx.filter is unsupported)
+    ctx.globalAlpha = e * 0.55;
+    ctx.drawImage(L.img, -L.w / 2 + 0.7, -L.h / 2 + 0.7, L.w, L.h);
+    ctx.globalAlpha = e;
     ctx.filter = "none";
     ctx.globalCompositeOperation = "source-over";
     ctx.restore();
@@ -171,7 +165,7 @@ function drawScene(ctx: CanvasRenderingContext2D, layers: LoadedLayer[], t: numb
   DEV.forEach((d, i) => {
     const u = devicePingU(t, i);
     ctx.save();
-    ctx.globalAlpha = (1 - u) * 0.65 * io(i + 1);
+    ctx.globalAlpha = (1 - u) * 0.65 * person(i);
     ctx.strokeStyle = COLORS.green;
     ctx.lineWidth = 2.4;
     ctx.beginPath();
@@ -297,7 +291,7 @@ export function AboutIllustration({ className = "" }: { className?: string }) {
   }, []);
 
   return (
-    <div ref={wrapRef} className={`relative aspect-[1330/800] ${className}`}>
+    <div ref={wrapRef} className={`relative aspect-[1671/941] ${className}`}>
       <canvas
         ref={canvasRef}
         role="img"

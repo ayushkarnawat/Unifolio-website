@@ -3,11 +3,15 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   ASSET_BASE,
+  CEN,
   DEV,
+  DONUT,
+  GLOW,
   LAYERS,
   MAX_DPR,
   MOT,
   ORDER,
+  RING,
   SETTLED_T,
   STR,
   VIEW,
@@ -22,6 +26,7 @@ import {
   fitFontSize,
   glowAlpha,
   intro,
+  introIndex,
   layerMotion,
   streamDotAlpha,
   streamDotU,
@@ -37,7 +42,9 @@ describe("geometry", () => {
   const manifest = JSON.parse(readFileSync(join(PUBLIC_DIR, "about-illustration", "manifest.json"), "utf8"));
 
   it("matches public/about-illustration/manifest.json", () => {
+    expect(manifest.version).toBe(2);
     expect(VIEW).toEqual(manifest.viewBox);
+    expect(VIEW).toEqual({ x: 0, y: 0, w: manifest.sourceWidth, h: manifest.sourceHeight });
     expect(manifest.layers).toHaveLength(ORDER.length);
     for (const m of manifest.layers) {
       const L = LAYERS[m.id as keyof typeof LAYERS];
@@ -46,15 +53,52 @@ describe("geometry", () => {
     }
   });
 
-  it("every layer file exists under the asset base", () => {
+  it("every layer file exists under the asset base (plate included)", () => {
+    expect(ORDER).toContain("plate");
     for (const id of ORDER) {
       expect(existsSync(join(PUBLIC_DIR, ASSET_BASE, LAYERS[id].file)), LAYERS[id].file).toBe(true);
     }
   });
 
-  it("draws the dashboard first, then the four people, each once", () => {
-    expect(ORDER[0]).toBe("c");
-    expect([...ORDER].sort()).toEqual(["c", "p1", "p2", "p3", "p4"]);
+  it("draws the plate, the dashboard, the four people, then the pie, each once", () => {
+    expect(ORDER).toEqual(["plate", "c", "p1", "p2", "p3", "p4", "pie"]);
+    expect(new Set(ORDER).size).toBe(ORDER.length);
+    ORDER.forEach((id, i) => expect(introIndex(id)).toBe(i));
+  });
+
+  it("the plate covers the whole picture and stays still", () => {
+    expect({ x: LAYERS.plate.x, y: LAYERS.plate.y, w: LAYERS.plate.w, h: LAYERS.plate.h }).toEqual(VIEW);
+    expect(MOT.plate).toEqual({ a: 0, s: 0, ph: 0, r: 0 });
+    for (let t = 0; t < 10; t += 0.7) {
+      expect(layerMotion("plate", t, 0)).toEqual({ dx: 0, dy: 0, rot: 0 });
+    }
+    expect(MOT.pie.a).toBe(3);
+  });
+
+  it("puts the glow, donut and ring on the dashboard and the pings inside the picture", () => {
+    expect(CEN).toEqual([850, 500]);
+    expect(DONUT).toEqual({ x: 770, y: 490, r: 54 });
+    expect(GLOW).toEqual({ r0: 50, r1: 360, box: { x: 560, y: 220, w: 600, h: 520 } });
+    expect(RING).toEqual({ rx: 270, ry: 140, grow: { rx: 26, ry: 22 } });
+    const c = LAYERS.c;
+    expect(CEN[0]).toBeGreaterThan(c.x);
+    expect(CEN[0]).toBeLessThan(c.x + c.w);
+    expect(CEN[1]).toBeGreaterThan(c.y);
+    expect(CEN[1]).toBeLessThan(c.y + c.h);
+    expect(DONUT.x - DONUT.r).toBeGreaterThan(c.x);
+    expect(DONUT.y - DONUT.r).toBeGreaterThan(c.y);
+    expect(DEV).toEqual([
+      [395, 270],
+      [1160, 290],
+      [350, 730],
+      [1240, 700],
+    ]);
+    for (const [x, y] of DEV) {
+      expect(x).toBeGreaterThan(VIEW.x);
+      expect(x).toBeLessThan(VIEW.x + VIEW.w);
+      expect(y).toBeGreaterThan(VIEW.y);
+      expect(y).toBeLessThan(VIEW.y + VIEW.h);
+    }
   });
 
   it("has one flow and one device per person, each flow touching the dashboard", () => {
@@ -63,13 +107,21 @@ describe("geometry", () => {
     const c = LAYERS.c;
     const inDashboard = ([x, y]: [number, number]) => x >= c.x && x <= c.x + c.w && y >= c.y && y <= c.y + c.h;
     for (const p of STR) {
-      // flows 0-2 end on the dashboard; flow 3 starts on it (same curves as the prototype)
+      // flows 0-2 end on the dashboard; flow 3 starts on it and runs outward toward person 4
       expect(inDashboard(p[0]) || inDashboard(p[3])).toBe(true);
     }
+    expect(inDashboard(STR[3][0])).toBe(true);
+    expect(inDashboard(STR[3][3])).toBe(false);
+    expect(STR).toEqual([
+      [[543, 293], [590, 285], [650, 300], [685, 350]],
+      [[1080, 297], [1020, 288], [975, 305], [955, 330]],
+      [[660, 733], [715, 725], [745, 700], [760, 660]],
+      [[1115, 542], [1160, 545], [1190, 565], [1205, 590]],
+    ]);
   });
 
   it("keeps the aspect ratio of the view box", () => {
-    close(VIEW_ASPECT, 1330 / 800);
+    close(VIEW_ASPECT, 1671 / 941);
   });
 });
 
@@ -161,14 +213,14 @@ describe("maths", () => {
   });
 
   it("viewTransform maps the view box onto the canvas, centred", () => {
-    const [a, , , d, e, f] = viewTransform(1330, 800);
+    const [a, , , d, e, f] = viewTransform(1671, 941);
     expect(a).toBe(1);
     expect(d).toBe(1);
-    expect(e).toBe(-VIEW.x);
-    expect(f).toBe(-VIEW.y);
+    close(e, -VIEW.x);
+    close(f, -VIEW.y);
     // wider canvas: scaled by height, centred horizontally
     const [s, , , , ex, fy] = viewTransform(2000, 400);
-    close(s, 0.5);
+    close(s, 400 / VIEW.h);
     close(ex + VIEW.x * s, (2000 - VIEW.w * s) / 2);
     close(fy + VIEW.y * s, 0);
   });
