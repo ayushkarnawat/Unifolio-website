@@ -83,7 +83,7 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
       {/* LAYER 1 (z-10): MASTER HERO VISUAL (Aperture Video Ring) */}
       <div
         ref={heroVisualRef}
-        className="absolute inset-0 w-full h-full z-10 flex items-center justify-center pointer-events-none will-change-transform max-sm:relative max-sm:inset-auto max-sm:order-4 max-sm:h-[300px] max-sm:shrink-0 max-sm:-mt-[26px] max-sm:-mb-[34px]"
+        className="absolute inset-0 w-full h-full z-10 flex items-center justify-center pointer-events-none will-change-transform max-sm:relative max-sm:inset-auto max-sm:order-3 max-sm:h-[300px] max-sm:shrink-0 max-sm:-mt-[26px] max-sm:-mb-[34px]"
         style={{
           transformOrigin: "62.87% 49.12%",
         }}
@@ -103,10 +103,10 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
               {HERO_HEADLINE[1]}
             </span>
           </h1>
-          <p className="mt-3.5 sm:mt-5 max-w-[34ch] lg:max-w-[30ch] text-base sm:text-lg md:text-xl lg:text-[21px] text-[#26332B] font-extrabold tracking-[-0.015em] leading-[1.35] select-none text-center lg:text-left max-sm:order-2 max-sm:mt-2.5 max-sm:px-6 max-sm:max-w-none">
+          <p className="mt-3.5 sm:mt-5 max-w-[34ch] lg:max-w-[30ch] text-base sm:text-lg md:text-xl lg:text-[21px] text-[#26332B] font-extrabold tracking-[-0.015em] leading-[1.35] select-none text-center lg:text-left max-sm:order-2 max-sm:relative max-sm:z-20 max-sm:mt-2.5 max-sm:px-6 max-sm:max-w-none">
             {HERO_LINE}
           </p>
-          <div className="mt-6 sm:mt-8 flex items-center justify-center lg:justify-start w-full max-sm:order-3 max-sm:mt-4 max-sm:relative max-sm:z-20">
+          <div className="mt-6 sm:mt-8 flex items-center justify-center lg:justify-start w-full max-sm:order-4 max-sm:mt-2 max-sm:relative max-sm:z-20">
             <Button
               type="button"
               size="md"
@@ -122,7 +122,7 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
             </Button>
           </div>
           {/* The highlight stays in the layout (so the headline, sub line and CTA sit where they did), and is only moved down visually from lg up, so the new parts sit lower while the text does not move. Phone: centred about 6px below the sketch (-22px here + the block's own 28px top margin) */}
-          <div className="w-full lg:w-[calc(100%+96px)] lg:max-w-none lg:translate-y-16 max-sm:order-5 max-sm:-mt-[22px] max-sm:px-5 max-sm:flex max-sm:justify-center max-sm:relative max-sm:z-20">
+          <div className="w-full lg:w-[calc(100%+96px)] lg:max-w-none lg:translate-y-16 max-sm:order-5 max-sm:mt-[10px] max-sm:px-5 max-sm:flex max-sm:justify-center max-sm:relative max-sm:z-20">
             <HeroHighlights isPaused={isAperturePaused} />
           </div>
         </div>
