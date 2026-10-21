@@ -763,10 +763,10 @@
   }
 }
 
-/* 5: a highlighter hops along five holdings (6.4 s) */
+/* 5: a highlighter hops along five holdings (2.9 s, fits inside the 3 s the state stays) */
 .hero-hl-scan {
   opacity: 0;
-  animation: hero-hl-scan 6.4s linear infinite;
+  animation: hero-hl-scan 2.9s linear infinite;
 }
 
 @keyframes hero-hl-scan {
@@ -820,21 +820,21 @@
   }
 }
 
-/* 6: a marker hops along stepping stones to a flag (6.4 s) */
+/* 6: a marker hops along stepping stones to a flag (2.9 s, fits inside the 3 s the state stays) */
 .hero-hl-stone-1 {
-  animation: hero-hl-stone-1 6.4s ease infinite;
+  animation: hero-hl-stone-1 2.9s ease infinite;
 }
 
 .hero-hl-stone-2 {
-  animation: hero-hl-stone-2 6.4s ease infinite;
+  animation: hero-hl-stone-2 2.9s ease infinite;
 }
 
 .hero-hl-stone-3 {
-  animation: hero-hl-stone-3 6.4s ease infinite;
+  animation: hero-hl-stone-3 2.9s ease infinite;
 }
 
 .hero-hl-stone-4 {
-  animation: hero-hl-stone-4 6.4s ease infinite;
+  animation: hero-hl-stone-4 2.9s ease infinite;
 }
 
 @keyframes hero-hl-stone-1 {
@@ -898,7 +898,7 @@
 }
 
 .hero-hl-hop-x {
-  animation: hero-hl-hop-x 6.4s linear infinite;
+  animation: hero-hl-hop-x 2.9s linear infinite;
 }
 
 @keyframes hero-hl-hop-x {
@@ -952,7 +952,7 @@
 }
 
 .hero-hl-hop-y {
-  animation: hero-hl-hop-y 6.4s ease-out infinite;
+  animation: hero-hl-hop-y 2.9s ease-out infinite;
 }
 
 @keyframes hero-hl-hop-y {
@@ -988,7 +988,7 @@
 .hero-hl-flag {
   opacity: 0;
   transform-origin: left bottom;
-  animation: hero-hl-flag 6.4s ease infinite;
+  animation: hero-hl-flag 2.9s ease infinite;
 }
 
 @keyframes hero-hl-flag {
@@ -1016,7 +1016,7 @@
 
 .hero-hl-flag-ring {
   opacity: 0;
-  animation: hero-hl-flag-ring 6.4s ease-out infinite;
+  animation: hero-hl-flag-ring 2.9s ease-out infinite;
 }
 
 @keyframes hero-hl-flag-ring {
