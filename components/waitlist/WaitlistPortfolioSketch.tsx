@@ -63,11 +63,7 @@ export function WaitlistPortfolioSketch() {
         <path d="M60 238h110M110 244h150M250 240h100" />
       </g>
 
-      {/* orbit lines and dots, as in the hero */}
-      <g fill="none" stroke={GREEN} strokeWidth={1.2} strokeDasharray="3 5" strokeLinecap="round" opacity={0.85}>
-        <path d="M14 150C40 60 150 10 230 30S400 90 396 150" />
-        <path d="M30 214C120 250 300 250 392 190" />
-      </g>
+      {/* dots, as in the hero (the dashed orbit lines were removed) */}
       <g fill={GREEN}>
         <circle cx={38} cy={96} r={3} />
         <circle cx={318} cy={22} r={3} />

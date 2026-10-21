@@ -101,7 +101,7 @@ export function WaitlistModal({ open, onClose }: { open: boolean; onClose: () =>
             >
               {WAITLIST_FORM.title}
             </h2>
-            <p className="mt-2.5 font-sans text-base font-normal text-neutral-600 text-center leading-relaxed max-w-sm mx-auto">
+            <p className="mt-2.5 font-sans text-[length:clamp(12.5px,4vw,16px)] font-normal text-neutral-600 text-center leading-relaxed whitespace-nowrap mx-auto">
               {WAITLIST_FORM.compactSubtitle}
             </p>
             <div className="mt-6">
