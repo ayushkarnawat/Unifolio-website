@@ -122,7 +122,7 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
             </Button>
           </div>
           {/* The highlight stays in the layout (so the headline, sub line and CTA sit where they did), and is only moved down visually from lg up, so the new parts sit lower while the text does not move. Phone: centred about 6px below the sketch (-22px here + the block's own 28px top margin) */}
-          <div className="w-full lg:w-[calc(100%+96px)] lg:max-w-none lg:translate-y-16 max-sm:order-5 max-sm:mt-[10px] max-sm:px-5 max-sm:flex max-sm:justify-center max-sm:relative max-sm:z-20">
+          <div className="w-full lg:w-[calc(100%+96px)] lg:max-w-none lg:translate-y-16 max-sm:order-5 max-sm:mt-[16px] max-sm:px-5 max-sm:flex max-sm:justify-center max-sm:relative max-sm:z-20">
             <HeroHighlights isPaused={isAperturePaused} />
           </div>
         </div>
