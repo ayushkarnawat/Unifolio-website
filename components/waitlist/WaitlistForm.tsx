@@ -3,6 +3,8 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Check, AlertCircle } from "lucide-react";
 import { WAITLIST_FORM, WAITLIST_SUCCESS } from "@/lib/waitlistCopy";
+import { isValidEmail } from "@/lib/emailValidation";
+import { isValidPhone } from "@/lib/phoneValidation";
 import { ArrowIcon, MailIcon, PhoneIcon, UserIcon } from "./WaitlistIcons";
 import { WAITLIST_BUTTON_CLASS } from "./waitlistStyles";
 
@@ -12,7 +14,7 @@ export type WaitlistFormVariant = "panel" | "compact";
 const FIELDS = [
   { key: "name", id: "wl-name", type: "text", autoComplete: "name", required: true, Icon: UserIcon },
   { key: "email", id: "wl-email", type: "email", autoComplete: "email", required: true, Icon: MailIcon },
-  { key: "phone", id: "wl-phone", type: "tel", autoComplete: "tel", required: false, Icon: PhoneIcon },
+  { key: "phone", id: "wl-phone", type: "tel", autoComplete: "tel", required: true, Icon: PhoneIcon },
 ] as const;
 
 const COMPACT_INPUT_CLASS =
@@ -38,12 +40,27 @@ export function WaitlistForm({
   variant?: WaitlistFormVariant;
 }) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [invalid, setInvalid] = useState<"name" | "email" | "phone" | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus("loading");
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form).entries());
+    // every field is compulsory, and the email and phone must look real
+    const bad = !String(data.name ?? "").trim()
+      ? "name"
+      : !isValidEmail(String(data.email ?? ""))
+        ? "email"
+        : !isValidPhone(String(data.phone ?? ""))
+          ? "phone"
+          : null;
+    if (bad) {
+      setInvalid(bad);
+      form.querySelector<HTMLInputElement>(`[name="${bad}"]`)?.focus();
+      return;
+    }
+    setInvalid(null);
+    setStatus("loading");
     const webhookUrl = process.env.NEXT_PUBLIC_WAITLIST_WEBHOOK_URL || DEFAULT_WAITLIST_WEBHOOK_URL;
 
     try {
@@ -81,7 +98,7 @@ export function WaitlistForm({
   const compact = variant === "compact";
 
   return (
-    <form onSubmit={handleSubmit} className={compact ? "space-y-4" : "flex flex-col gap-3.5"}>
+    <form onSubmit={handleSubmit} noValidate className={compact ? "space-y-4" : "flex flex-col gap-3.5"}>
       {/* Bot Honeypot (hidden from real users) */}
       <input
         type="text"
@@ -107,7 +124,9 @@ export function WaitlistForm({
                 required={required}
                 autoComplete={autoComplete}
                 placeholder={copy.compactPlaceholder}
-                className={COMPACT_INPUT_CLASS}
+                aria-invalid={invalid === key}
+                onInput={() => invalid === key && setInvalid(null)}
+                className={`${COMPACT_INPUT_CLASS}${invalid === key ? " !border-red-400" : ""}`}
               />
             </div>
           );
@@ -122,6 +141,8 @@ export function WaitlistForm({
               autoComplete={autoComplete}
               placeholder={copy.placeholder}
               aria-label={copy.placeholder}
+              aria-invalid={invalid === key}
+              onInput={() => invalid === key && setInvalid(null)}
               className="min-w-0 flex-1 border-0 bg-transparent py-3.5 font-sans text-[14.5px] font-medium text-[#111613] outline-none placeholder:text-[#8A9690] focus:outline-none"
             />
           </PanelField>
@@ -131,6 +152,12 @@ export function WaitlistForm({
         <span>{status === "loading" ? WAITLIST_FORM.submitting : WAITLIST_FORM.submit}</span>
         {!compact && status !== "loading" && <ArrowIcon className="h-[18px] w-[18px]" />}
       </button>
+      {invalid && (
+        <p role="alert" className="flex items-center gap-1 font-sans text-[13px] text-red-500">
+          <AlertCircle className="h-3.5 w-3.5 flex-none" />
+          <span>{WAITLIST_FORM.invalid[invalid]}</span>
+        </p>
+      )}
       {status === "error" && (
         <p role="alert" className="flex items-center gap-1 font-mono text-xs text-red-500">
           <AlertCircle className="h-3.5 w-3.5" />

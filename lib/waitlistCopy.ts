@@ -32,6 +32,11 @@ export const WAITLIST_FORM = {
   submit: "Join the waitlist",
   submitting: "Joining…",
   error: "Something went wrong — please try again.",
+  invalid: {
+    name: "Please enter your full name.",
+    email: "Please enter a valid email address.",
+    phone: "Please enter a valid phone number.",
+  },
   close: "Close",
   privacy: "Your information stays private. No spam.",
   fields: {
@@ -39,7 +44,7 @@ export const WAITLIST_FORM = {
     email: { label: "Email address", placeholder: "Email address", compactPlaceholder: "name@domain.com" },
     phone: {
       label: "Phone number",
-      placeholder: "Phone number (optional)",
+      placeholder: "Phone number",
       compactPlaceholder: "+91 98765 43210",
     },
   },

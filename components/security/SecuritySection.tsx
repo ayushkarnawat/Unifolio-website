@@ -1,5 +1,6 @@
 "use client";
 
+import { PrincipleGlyph } from "./PrincipleIcons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ConsentVisual, TrustHighlights, RestVisual, TransitVisual } from "@/components/hero/TrustHighlights";
 import { MoneyWord } from "@/components/security/MoneyWord";
@@ -47,20 +48,7 @@ const REDUCED_VISUAL = { figure: maskFigure(SAMPLE_FIGURE, 1), badgeOn: true, to
 function PrincipleIcon({ principle, className }: { principle: SecurityPrinciple; className: string }) {
   return (
     <div aria-hidden="true" className={`relative flex-none ${className}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={principle.icon.src}
-        width={principle.icon.width}
-        height={principle.icon.height}
-        alt=""
-        loading="lazy"
-        decoding="async"
-        draggable={false}
-        className={`relative block h-full w-full mix-blend-multiply security-icon security-icon-${principle.id}`}
-      />
-      {principle.id === "sell" && (
-        <span className="security-icon-ring pointer-events-none absolute inset-[6%] rounded-full border-[1.5px] border-[#22C55E]" />
-      )}
+      <PrincipleGlyph id={principle.id} />
     </div>
   );
 }
@@ -315,7 +303,7 @@ export function SecuritySection() {
               key={p.id}
               className="flex items-start gap-[clamp(10px,1.4vw,16px)] border-b border-[rgba(17,22,19,0.08)] py-[clamp(14px,1.9vw,22px)] pr-[clamp(8px,1.3vw,16px)] even:border-l even:pl-[clamp(10px,1.8vw,22px)] even:pr-0"
             >
-              <PrincipleIcon principle={p} className="h-[clamp(40px,4.6vw,52px)] w-[clamp(40px,4.6vw,52px)]" />
+              <PrincipleIcon principle={p} className="h-[clamp(32px,3.7vw,42px)] w-[clamp(32px,3.7vw,42px)]" />
               <div className="min-w-0">
                 <h3 className="font-heading text-[length:clamp(14.5px,1.35vw_+_5px,17px)] font-extrabold leading-[1.2] tracking-[-0.02em] text-[#111613]">
                   {p.title}
@@ -367,7 +355,7 @@ export function SecuritySection() {
                 >
                   {slide.kind === "principle" ? (
                     <>
-                      <PrincipleIcon principle={slide.principle} className="-mt-0.5 h-[60px] w-[60px]" />
+                      <PrincipleIcon principle={slide.principle} className="-mt-0.5 h-[48px] w-[48px]" />
                       <h3 className="mt-3 font-heading text-[23px] font-extrabold leading-[1.1] tracking-[-0.035em] text-[#111613]">
                         {slide.principle.title}
                       </h3>
