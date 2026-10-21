@@ -538,3 +538,51 @@
     background-size: 100% 3px;
   }
 }
+
+/* Product section: the three card illustrations drift gently (components/product/ProductSection.tsx) */
+.product-ill-float-a {
+  animation: product-ill-float-a 6s ease-in-out infinite;
+}
+
+.product-ill-float-b {
+  animation: product-ill-float-b 5.2s ease-in-out infinite;
+}
+
+.product-ill-float-c {
+  animation: product-ill-float-c 6.6s ease-in-out infinite;
+}
+
+@keyframes product-ill-float-a {
+  0%, 100% {
+    transform: translateY(0) rotate(-1.2deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(1deg);
+  }
+}
+
+@keyframes product-ill-float-b {
+  0%, 100% {
+    transform: translateY(0) rotate(0.8deg);
+  }
+  50% {
+    transform: translateY(-7px) rotate(-0.8deg);
+  }
+}
+
+@keyframes product-ill-float-c {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(1.2deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-ill-float-a,
+  .product-ill-float-b,
+  .product-ill-float-c {
+    animation: none;
+  }
+}

@@ -18,7 +18,6 @@ import type { BentoGeometry } from "@/lib/dockLayout";
 import { Sparkles } from "lucide-react";
 import type { SceneEngine } from "../hero-engine/useSceneEngine";
 import { CINEMATIC_TIMESCALE, PRODUCT_CARDS } from "../BlueprintHero";
-import { MobileProductCarousel } from "../MobileProductCarousel";
 
 /** Count of "duplicated trail cards" rendered for Security's paper -> ink
  * choreography — verbatim value from BlueprintHero.tsx's own `COMPANION_COUNT`
@@ -1194,8 +1193,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
               </div>
             </div>
 
-            {/* Continuous scrolling horizontal product carousel (mobile & tablet isolated, < 1024px) */}
-            <MobileProductCarousel />
+            {/* The phone carousel now lives in components/product/ProductSection.tsx (product redesign 2026-10-21). */}
       </>
     );
   }

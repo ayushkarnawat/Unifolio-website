@@ -21,6 +21,7 @@ import {
   type ProductBentoSceneHandle,
   type ProductBentoSceneShared,
 } from "@/components/blueprint/scenes/ProductBentoScene";
+import { PRODUCT_HEADING_ID, ProductSection } from "@/components/product/ProductSection";
 import {
   SecurityVaultScene,
   SecurityVaultSlot,
@@ -1399,62 +1400,54 @@ export function BlueprintHero() {
           />
         </section>
 
-        {/* SECTION 2: PRODUCT WORLD */}
+        {/* SECTION 2: PRODUCT (redesign 2026-10-21, see Docs/2026-10-21-product-section-redesign-plan.md) */}
         <section
           id="product"
           ref={productWorldRef}
-          className="relative w-full min-h-screen bg-[#FAF8F5] flex flex-col justify-start items-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-28 pb-16 sm:pb-20 overflow-hidden select-none"
+          aria-labelledby={PRODUCT_HEADING_ID}
+          className="relative w-full bg-[#FAF8F5] flex flex-col items-center px-[clamp(16px,4vw,56px)] pt-[clamp(16px,2.5vw,32px)] scroll-mt-20 sm:scroll-mt-[88px] pb-[clamp(30px,5vw,56px)] max-sm:px-0 overflow-hidden select-none"
         >
-          {/* Product Hero Content (Headline) */}
-          <div
-            ref={headerRef}
-            className="w-full max-w-5xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mb-3 sm:mb-12 px-2 will-change-transform pt-4 sm:pt-14 md:pt-16"
-          >
-            <h2
-              ref={headlineRef}
-              className="font-sans font-black text-2xl sm:text-3xl md:text-[36px] lg:text-[42px] xl:text-[46px] tracking-[-0.035em] leading-tight sm:whitespace-nowrap text-neutral-950"
-            >
-              Don&apos;t just see your wealth.{" "}
-              <span
-                className="font-black text-[#22C55E]"
-                style={{ color: "#22C55E" }}
-              >
-                Understand it.
-              </span>
-            </h2>
-          </div>
+          <ProductSection />
 
-          {/* Product Bento Grid */}
-          <ProductBentoScene
-            ref={productSceneRef}
-            engine={engine}
-            refs={{
-              cardsStageRef,
-              cardsClusterRef,
-              headerRef,
-              headlineRef,
-              ctaRef,
-              floorLineRef,
-              cardWrapperRefs,
-              cardFlipperRefs,
-              cardFrontRefs,
-              cardBackRefs,
-              cardDefaultRefs,
-              cardHoverRefs,
-              cardIllustrationRefs,
-              cardGradientBgRefs,
-              cardGlassOverlayRefs,
-              bentoTileContentRefs,
-              companionCardRefs,
-              cardInkRefs,
-              companionPaperRefs,
-              companionInkRefs,
-              restingToBentoTlRef,
-            }}
-            shared={productSharedRef}
-            securityVaultSlot={null}
-            aboutEnvelopeSlot={null}
-          />
+          {/* The old bento is no longer shown, but stays mounted (display:none) because the Security/About
+              scene code and BlueprintHero's own setup still read its refs (cardsClusterRef, cardWrapperRefs,
+              companion cards, ...). headerRef/headlineRef point at empty placeholders here so no leftover
+              timeline can hide the new headline. */}
+          <div className="hidden" aria-hidden="true">
+            <div ref={headerRef}>
+              <h2 ref={headlineRef} />
+            </div>
+            <ProductBentoScene
+              ref={productSceneRef}
+              engine={engine}
+              refs={{
+                cardsStageRef,
+                cardsClusterRef,
+                headerRef,
+                headlineRef,
+                ctaRef,
+                floorLineRef,
+                cardWrapperRefs,
+                cardFlipperRefs,
+                cardFrontRefs,
+                cardBackRefs,
+                cardDefaultRefs,
+                cardHoverRefs,
+                cardIllustrationRefs,
+                cardGradientBgRefs,
+                cardGlassOverlayRefs,
+                bentoTileContentRefs,
+                companionCardRefs,
+                cardInkRefs,
+                companionPaperRefs,
+                companionInkRefs,
+                restingToBentoTlRef,
+              }}
+              shared={productSharedRef}
+              securityVaultSlot={null}
+              aboutEnvelopeSlot={null}
+            />
+          </div>
 
           <div ref={floorLineRef} className="hidden" />
         </section>
