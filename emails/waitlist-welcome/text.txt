@@ -1,0 +1,32 @@
+UNIFOLIO - EARLY ACCESS
+
+Thank you for joining the Unifolio waitlist.
+Your early access pass is below. Keep it safe.
+
+--------------------------------------------------
+UNIFOLIO EARLY ACCESS PASS
+#{{spot}}
+
+NAME: {{firstName}}
+PRIORITY: Early Access
+UPDATES: By email
+STATUS: Confirmed
+--------------------------------------------------
+
+WHAT HAPPENS NEXT?
+
+* Early access
+  We'll let you know when Unifolio is ready to try.
+
+* Product updates
+  Hear about new features and what's taking shape.
+
+* A clearer view of your wealth
+  Stay in the loop as we build smarter ways to understand your family's finances.
+
+Invite a friend: {{referralUrl}}
+
+We'll be in touch soon.
+Team Unifolio
+
+Unsubscribe: {{amazonSESUnsubscribeUrl}}
