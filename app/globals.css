@@ -483,3 +483,58 @@
     background-size: 100% 3px;
   }
 }
+
+/* ---------- Join the waitlist pop-up ---------- */
+.waitlist-dialog-in {
+  animation: waitlist-dialog-in 450ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes waitlist-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.waitlist-tick-pop {
+  animation: waitlist-tick-pop 500ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+@keyframes waitlist-tick-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.waitlist-underline {
+  background: linear-gradient(#22C55E, #22C55E) no-repeat 0 100% / 0% 3px;
+  padding-bottom: 2px;
+  animation: waitlist-underline-draw 800ms cubic-bezier(0.3, 0.7, 0.2, 1) 450ms forwards;
+}
+
+@keyframes waitlist-underline-draw {
+  to {
+    background-size: 100% 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waitlist-dialog-in,
+  .waitlist-tick-pop {
+    animation: none;
+  }
+
+  .waitlist-underline {
+    animation: none;
+    background-size: 100% 3px;
+  }
+}

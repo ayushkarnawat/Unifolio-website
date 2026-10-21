@@ -1,13 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
-import { X, Check } from "lucide-react";
+import { SUCCESS_AUTOCLOSE_MS, WAITLIST_FORM, WAITLIST_PANEL } from "@/lib/waitlistCopy";
 import { WaitlistForm } from "./WaitlistForm";
+import { WaitlistBenefits } from "./WaitlistBenefits";
+import { WaitlistPortfolioSketch } from "./WaitlistPortfolioSketch";
+import { WaitlistSuccess } from "./WaitlistSuccess";
+import { CloseIcon } from "./WaitlistIcons";
+import { WAITLIST_CLOSE_CLASS } from "./waitlistStyles";
+
+/** Above this width the pop-up uses the two-panel layout; below it, today's phone card. */
+const WIDE_QUERY = "(min-width: 640px)";
+const TITLE_ID = "waitlist-title";
+const SUCCESS_TITLE_ID = "waitlist-success-title";
+
+function useIsWide() {
+  const [wide, setWide] = useState(() =>
+    typeof window === "undefined" ? true : window.matchMedia(WIDE_QUERY).matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(WIDE_QUERY);
+    const sync = () => setWide(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  return wide;
+}
 
 export function WaitlistModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [mounted, setMounted] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const wide = useIsWide();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  // The parent passes a new onClose on every render; keep the latest in a ref so
+  // timers and listeners are not restarted by unrelated re-renders.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     setMounted(true);
@@ -18,74 +49,137 @@ export function WaitlistModal({ open, onClose }: { open: boolean; onClose: () =>
       setIsSuccess(false);
       return;
     }
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onCloseRef.current();
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      previouslyFocused?.focus?.({ preventScroll: true });
     };
-  }, [open, onClose]);
+  }, [open]);
+
+  // Move focus into the dialog when it opens and when the success card replaces the form.
+  useEffect(() => {
+    if (open && mounted) dialogRef.current?.focus({ preventScroll: true });
+  }, [open, mounted, isSuccess]);
+
+  // The success card closes itself after 5 seconds (cleared on any earlier close or unmount).
+  useEffect(() => {
+    if (!open || !isSuccess) return;
+    const timer = window.setTimeout(() => onCloseRef.current(), SUCCESS_AUTOCLOSE_MS);
+    return () => window.clearTimeout(timer);
+  }, [open, isSuccess]);
 
   if (!open || !mounted) return null;
 
-  return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-[#111613]/40 backdrop-blur-sm"
-        onClick={onClose}
-        aria-hidden
-      />
-      <div className="relative w-full max-w-md rounded-3xl border border-black/[0.08] bg-paper p-6 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.18)]">
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute right-4 top-4 rounded-full p-1.5 text-ink-faint hover:bg-black/[0.05] hover:text-ink transition-colors cursor-pointer z-10"
-        >
-          <X className="h-4 w-4" />
-        </button>
+  const close = () => onCloseRef.current();
+  const onBackdrop = (e: MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) close();
+  };
 
+  const closeButton = (
+    <button type="button" onClick={close} aria-label={WAITLIST_FORM.close} className={WAITLIST_CLOSE_CLASS}>
+      <CloseIcon className="h-4 w-4" />
+    </button>
+  );
+
+  let card;
+  if (!wide) {
+    // Phone: today's cream card, with the benefits row and privacy line added.
+    card = (
+      <div className="relative w-full max-w-md rounded-3xl border border-black/[0.08] bg-paper p-6 shadow-[0_20px_60px_rgba(0,0,0,0.18)]">
+        {closeButton}
         {isSuccess ? (
-          <div className="py-8 sm:py-10 flex flex-col items-center justify-center text-center">
-            {/* Clean Emerald Tick Indicator */}
-            <div className="relative flex items-center justify-center mb-1">
-              <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-emerald-50 border border-emerald-500/25 shadow-[0_4px_16px_rgba(34,197,94,0.20)]">
-                <div className="flex h-11 w-11 sm:h-13 sm:w-13 items-center justify-center rounded-full bg-[#22C55E] text-white shadow-[0_2px_10px_rgba(34,197,94,0.35)]">
-                  <Check className="h-6 w-6 sm:h-7 sm:w-7 stroke-[3] text-white" />
-                </div>
-              </div>
-            </div>
-
-            {/* Confirmation statement */}
-            <h3 className="mt-6 font-sans text-xl sm:text-[22px] font-bold text-neutral-900 tracking-[-0.025em] text-center leading-snug px-2">
-              You&apos;re on the list, we&apos;ll be in touch.
-            </h3>
-          </div>
+          <WaitlistSuccess titleId={SUCCESS_TITLE_ID} compact onClose={close} />
         ) : (
           <>
-            {/* Heading */}
-            <h2 className="font-sans text-[28px] sm:text-[32px] font-extrabold text-neutral-950 text-center tracking-[-0.03em] leading-tight">
-              Join the waitlist
+            <h2
+              id={TITLE_ID}
+              className="font-sans text-[28px] font-extrabold text-neutral-950 text-center tracking-[-0.03em] leading-tight"
+            >
+              {WAITLIST_FORM.title}
             </h2>
-
-            {/* Proportionate Centered Subtext (First Sentence Only) */}
-            <p className="mt-2.5 font-sans text-base sm:text-[17px] text-neutral-600 font-normal text-center leading-relaxed max-w-sm mx-auto">
-              Be first in line when Unifolio opens up.
+            <p className="mt-2.5 font-sans text-base font-normal text-neutral-600 text-center leading-relaxed max-w-sm mx-auto">
+              {WAITLIST_FORM.compactSubtitle}
             </p>
-
-            {/* Form */}
             <div className="mt-6">
-              <WaitlistForm
-                onSuccess={() => {
-                  setIsSuccess(true);
-                  setTimeout(() => {
-                    onClose();
-                  }, 3200);
-                }}
-              />
+              <WaitlistForm variant="compact" onSuccess={() => setIsSuccess(true)} />
             </div>
+            <WaitlistBenefits compact />
           </>
         )}
+      </div>
+    );
+  } else if (isSuccess) {
+    card = (
+      <div className="relative w-full max-w-[470px] overflow-hidden rounded-[24px] bg-white shadow-[0_40px_90px_-30px_rgba(0,0,0,0.5)]">
+        {closeButton}
+        <WaitlistSuccess titleId={SUCCESS_TITLE_ID} compact={false} onClose={close} />
+      </div>
+    );
+  } else {
+    // Desktop and tablet: welcome panel on the left, form on the right.
+    card = (
+      <div className="relative grid w-full max-w-[700px] grid-cols-[minmax(0,1.04fr)_minmax(0,1fr)] overflow-hidden rounded-[24px] bg-white shadow-[0_40px_90px_-30px_rgba(0,0,0,0.5)] lg:max-w-[880px]">
+        <div className="relative flex min-w-0 flex-col gap-3.5 overflow-hidden bg-[linear-gradient(165deg,#E4F7EB_0%,#F2FBF6_55%,#F8FDFA_100%)] px-6 pb-6 pt-7 lg:px-8 lg:pb-[30px] lg:pt-[34px]">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-[130px] -right-[120px] h-[340px] w-[340px] rounded-full bg-[radial-gradient(closest-side,rgba(34,197,94,0.20),transparent)]"
+          />
+          <Image
+            src="/Logo/unifolio-wordmark-hero-ring.png"
+            alt={WAITLIST_PANEL.logoAlt}
+            width={2041}
+            height={463}
+            className="relative block h-[27px] w-auto self-start"
+          />
+          <p className="relative text-balance font-heading text-[25px] font-extrabold leading-[1.12] tracking-[-0.035em] text-[#111613] lg:text-[33px]">
+            {WAITLIST_PANEL.headlineLead}
+            <span className="waitlist-underline text-[#22C55E]">{WAITLIST_PANEL.headlineEmphasis}</span>
+          </p>
+          <p className="relative max-w-[36ch] font-sans text-sm leading-normal text-[#3F4C43] lg:text-[15px]">
+            {WAITLIST_PANEL.subtext}
+          </p>
+          <div className="relative mt-auto pt-2">
+            <WaitlistPortfolioSketch />
+          </div>
+        </div>
+
+        <div className="relative flex min-w-0 flex-col gap-3.5 bg-white px-6 pb-5 pt-[26px] lg:px-8 lg:pb-[22px] lg:pt-[30px]">
+          {closeButton}
+          <div>
+            <h2
+              id={TITLE_ID}
+              className="pr-[30px] font-heading text-[24px] font-extrabold leading-[1.1] tracking-[-0.03em] text-[#111613] lg:text-[29px]"
+            >
+              {WAITLIST_FORM.title}
+            </h2>
+            <p className="mt-1.5 font-sans text-sm text-[#5A685D]">{WAITLIST_FORM.subtitle}</p>
+          </div>
+          <WaitlistForm variant="panel" onSuccess={() => setIsSuccess(true)} />
+          <WaitlistBenefits />
+        </div>
+      </div>
+    );
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] overflow-y-auto">
+      <div className="fixed inset-0 bg-[#111613]/40 backdrop-blur-sm" aria-hidden />
+      <div className="relative flex min-h-full items-center justify-center p-4" onClick={onBackdrop}>
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={isSuccess ? SUCCESS_TITLE_ID : TITLE_ID}
+          tabIndex={-1}
+          className="waitlist-dialog-in flex w-full justify-center outline-none"
+          onClick={onBackdrop}
+        >
+          {card}
+        </div>
       </div>
     </div>,
     document.body
