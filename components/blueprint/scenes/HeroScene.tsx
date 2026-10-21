@@ -3,7 +3,8 @@
 import { forwardRef, useImperativeHandle, type MutableRefObject, type ReactNode } from "react";
 import { gsap } from "@/lib/gsap";
 import { HeroStoryboardVisual } from "@/components/hero/HeroStoryboardVisual";
-import { HeroTrustHighlights } from "@/components/hero/HeroTrustHighlights";
+import { HeroHighlights } from "@/components/hero/HeroHighlights";
+import { HERO_HEADLINE, HERO_LINE } from "@/lib/heroHighlights";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight } from "lucide-react";
 import type { SceneEngine } from "../hero-engine/useSceneEngine";
@@ -94,15 +95,13 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
       >
         <div className="flex-initial lg:flex-1 flex flex-col justify-center items-center lg:items-start text-center lg:text-left max-w-lg sm:max-w-xl lg:max-w-[490px] xl:max-w-[530px] translate-x-0 lg:-translate-x-20 xl:-translate-x-24 translate-y-0 sm:-translate-y-1 lg:-translate-y-6 pointer-events-auto">
           <h1 className="font-sans font-black text-[25px] sm:text-[33px] md:text-[38px] lg:text-[42px] xl:text-[47px] text-neutral-950 tracking-[-0.035em] leading-[1.15] select-none flex flex-col items-center lg:items-start gap-2 sm:gap-3 lg:gap-3.5">
-            <span className="whitespace-nowrap">
-              See everything you <span className="text-[#22C55E]" style={{ color: "#22C55E" }}>own.</span>
-            </span>
-            <span className="whitespace-nowrap">
-              Understand what it <span className="text-[#22C55E]" style={{ color: "#22C55E" }}>means.</span>
+            <span className="whitespace-nowrap">{HERO_HEADLINE[0]}</span>
+            <span className="whitespace-nowrap text-[#22C55E]" style={{ color: "#22C55E" }}>
+              {HERO_HEADLINE[1]}
             </span>
           </h1>
-          <p className="mt-3.5 sm:mt-5 text-sm sm:text-base md:text-lg lg:text-[19px] text-[#5A685D] font-medium tracking-tight leading-relaxed select-none text-center lg:text-left">
-            Track. Understand. Act with confidence.
+          <p className="mt-3.5 sm:mt-5 max-w-[34ch] lg:max-w-[30ch] text-base sm:text-lg md:text-xl lg:text-[21px] text-[#26332B] font-extrabold tracking-[-0.015em] leading-[1.35] select-none text-center lg:text-left">
+            {HERO_LINE}
           </p>
           <div className="mt-6 sm:mt-8 flex items-center justify-center lg:justify-start w-full">
             <Button
@@ -121,7 +120,7 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
           </div>
           {/* The highlight stays in the layout (so the headline, sub line and CTA sit where they did), and is only moved down visually from lg up, so the new parts sit lower while the text does not move */}
           <div className="w-full max-sm:mt-4 lg:w-[calc(100%+96px)] lg:max-w-none lg:translate-y-16">
-            <HeroTrustHighlights isPaused={isAperturePaused} />
+            <HeroHighlights isPaused={isAperturePaused} />
           </div>
         </div>
       </div>

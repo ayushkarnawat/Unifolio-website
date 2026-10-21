@@ -1,5 +1,5 @@
 /**
- * Content and timing for the hero "trust highlight" (HeroTrustHighlights).
+ * Content and timing for the hero "trust highlight" (TrustHighlights).
  * Pure module: no DOM, no React, so it can be unit tested.
  */
 

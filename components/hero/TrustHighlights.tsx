@@ -107,7 +107,7 @@ export function ConsentVisual({ off }: { off: boolean }) {
  * always centred, no top margin, and the subtext stays on one line from 640px up.
  * The default (`"hero"`) is the hero's original look, unchanged.
  */
-export function HeroTrustHighlights({
+export function TrustHighlights({
   isPaused = false,
   align = "hero",
 }: {

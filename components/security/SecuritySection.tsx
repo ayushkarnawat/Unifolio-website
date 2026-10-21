@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ConsentVisual, HeroTrustHighlights, RestVisual, TransitVisual } from "@/components/hero/HeroTrustHighlights";
+import { ConsentVisual, TrustHighlights, RestVisual, TransitVisual } from "@/components/hero/TrustHighlights";
 import { MoneyWord } from "@/components/security/MoneyWord";
 import { SecurityVaultVisual } from "@/components/security/SecurityVaultVisual";
 import { SECURITY_HEADLINE, SECURITY_PRINCIPLES, type SecurityPrinciple } from "@/lib/securityCopy";
@@ -332,7 +332,7 @@ export function SecuritySection() {
       {/* Trust block: the hero's, centred, floating on the page (no card) */}
       <div className="mt-[clamp(18px,3vw,34px)] flex justify-center overflow-hidden px-4 pt-[clamp(10px,2vw,20px)] max-sm:mt-2 min-[640px]:pb-8">
         <div className="min-h-[118px] w-full origin-top max-sm:hidden min-[640px]:scale-[1.12]">
-          <HeroTrustHighlights align="center" />
+          <TrustHighlights align="center" />
         </div>
 
         {/* Phone: one centred block sliding through the four principles and the three locks */}

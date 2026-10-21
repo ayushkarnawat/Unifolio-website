@@ -405,7 +405,7 @@
 }
 
 /* =========================================================================
-   HERO TRUST HIGHLIGHT (components/hero/HeroTrustHighlights.tsx)
+   HERO TRUST HIGHLIGHT (components/hero/TrustHighlights.tsx)
    ========================================================================= */
 .trust-slide-in {
   animation: trust-slide-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -479,6 +479,589 @@
   }
 
   .trust-kw {
+    animation: none;
+    background-size: 100% 3px;
+  }
+}
+
+/* =========================================================================
+   HERO HIGHLIGHTS: six states (components/hero/HeroHighlights.tsx)
+   Slide in/out reuse .trust-slide-in / .trust-slide-out above.
+   Approved design: Docs/reference/hero-section-prototype.html
+   ========================================================================= */
+.hero-hl-kw {
+  color: #22C55E;
+  font-weight: 800;
+  -webkit-text-stroke: 0.4px #22C55E;
+  padding-bottom: 2px;
+  background: linear-gradient(#22C55E, #22C55E) no-repeat 0 100% / 0% 3px;
+  /* animation-delay is set per key word: 500 + i x 650 ms */
+  animation: hero-hl-kw-draw 700ms cubic-bezier(0.3, 0.7, 0.2, 1) 500ms forwards;
+}
+
+@keyframes hero-hl-kw-draw {
+  to {
+    background-size: 100% 3px;
+  }
+}
+
+.hero-hl-paused,
+.hero-hl-paused * {
+  animation-play-state: paused !important;
+}
+
+/* 1: account chips curve into one ring (4.2 s) */
+.hero-hl-chip {
+  animation: hero-hl-chip 4.2s cubic-bezier(0.55, 0.05, 0.35, 1) infinite;
+}
+
+@keyframes hero-hl-chip {
+  0%, 8% {
+    transform: translate(0, 0) rotate(0);
+    opacity: 0.95;
+  }
+  22% {
+    transform: translate(30px, calc(var(--hero-hl-dy, 0px) * -0.5 - 7px)) rotate(-6deg);
+  }
+  40% {
+    transform: translate(104px, calc(var(--hero-hl-dy, 0px) * 0.9)) rotate(3deg);
+    opacity: 1;
+  }
+  48% {
+    transform: translate(118px, var(--hero-hl-dy, 0px)) scale(0.55);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(118px, var(--hero-hl-dy, 0px)) scale(0.55);
+    opacity: 0;
+  }
+}
+
+.hero-hl-ring {
+  animation: hero-hl-ring 4.2s ease-in-out infinite;
+}
+
+@keyframes hero-hl-ring {
+  0%, 52% {
+    transform: scale(1);
+  }
+  58% {
+    transform: scale(1.1);
+  }
+  68%, 100% {
+    transform: scale(1);
+  }
+}
+
+.hero-hl-ring-arc {
+  stroke-dasharray: 22 100;
+  animation: hero-hl-ring-arc 4.2s ease-in-out infinite;
+}
+
+@keyframes hero-hl-ring-arc {
+  0%, 30% {
+    stroke-dasharray: 22 100;
+  }
+  38% {
+    stroke-dasharray: 44 100;
+  }
+  46% {
+    stroke-dasharray: 66 100;
+  }
+  56%, 86% {
+    stroke-dasharray: 100 100;
+  }
+  100% {
+    stroke-dasharray: 22 100;
+  }
+}
+
+.hero-hl-ring-ripple {
+  opacity: 0;
+  animation: hero-hl-ring-ripple 4.2s ease-out infinite;
+}
+
+@keyframes hero-hl-ring-ripple {
+  0%, 54% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  58% {
+    opacity: 0.7;
+  }
+  78%, 100% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+/* 2: packets travel to a store that locks (packets 2.4 s, badge 2.6 s, ripple 3.8 s) */
+.hero-hl-packet {
+  animation: hero-hl-packet 2.4s linear infinite;
+}
+
+@keyframes hero-hl-packet {
+  from {
+    transform: translateX(-8px);
+  }
+  to {
+    transform: translateX(120px);
+  }
+}
+
+.hero-hl-badge {
+  background: #E8E4DA;
+  color: #5A685D;
+  animation: hero-hl-badge 2.6s ease infinite;
+}
+
+@keyframes hero-hl-badge {
+  0%, 30% {
+    background: #E8E4DA;
+    color: #5A685D;
+    transform: scale(1);
+  }
+  45%, 100% {
+    background: #22C55E;
+    color: #FFFFFF;
+    transform: scale(1.06);
+  }
+}
+
+.hero-hl-badge-ripple {
+  opacity: 0;
+  animation: hero-hl-badge-ripple 3.8s ease-out infinite;
+}
+
+@keyframes hero-hl-badge-ripple {
+  0%, 44% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+  }
+  75%, 100% {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+
+/* 3: performance line draws past a dashed benchmark (3.8 s) */
+.hero-hl-perf-line {
+  stroke-dasharray: 190;
+  stroke-dashoffset: 190;
+  animation: hero-hl-perf-line 3.8s ease infinite;
+}
+
+@keyframes hero-hl-perf-line {
+  0% {
+    stroke-dashoffset: 190;
+  }
+  50%, 100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.hero-hl-perf-area {
+  opacity: 0;
+  animation: hero-hl-perf-area 3.8s ease infinite;
+}
+
+@keyframes hero-hl-perf-area {
+  0%, 40% {
+    opacity: 0;
+  }
+  60%, 100% {
+    opacity: 1;
+  }
+}
+
+.hero-hl-perf-dot {
+  opacity: 0;
+  animation: hero-hl-perf-dot 3.8s ease infinite;
+}
+
+@keyframes hero-hl-perf-dot {
+  0%, 48% {
+    opacity: 0;
+  }
+  55%, 100% {
+    opacity: 1;
+  }
+}
+
+.hero-hl-perf-pill {
+  opacity: 0;
+  transform: scale(0.92);
+  animation: hero-hl-perf-pill 3.8s ease infinite;
+}
+
+@keyframes hero-hl-perf-pill {
+  0%, 52% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  64%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 4: access toggle switches off (3.8 s) */
+.hero-hl-toggle {
+  animation: hero-hl-toggle 3.8s ease infinite;
+}
+
+@keyframes hero-hl-toggle {
+  0%, 32% {
+    background: #22C55E;
+  }
+  42%, 100% {
+    background: #D9D5CB;
+  }
+}
+
+.hero-hl-toggle-knob {
+  transform: translateX(13px);
+  animation: hero-hl-toggle-knob 3.8s ease infinite;
+}
+
+@keyframes hero-hl-toggle-knob {
+  0%, 32% {
+    transform: translateX(13px);
+  }
+  42%, 100% {
+    transform: translateX(0);
+  }
+}
+
+.hero-hl-access-on {
+  animation: hero-hl-access-on 3.8s ease infinite;
+}
+
+@keyframes hero-hl-access-on {
+  0%, 32% {
+    opacity: 1;
+  }
+  40%, 100% {
+    opacity: 0;
+  }
+}
+
+.hero-hl-access-off {
+  opacity: 0;
+  animation: hero-hl-access-off 3.8s ease infinite;
+}
+
+@keyframes hero-hl-access-off {
+  0%, 36% {
+    opacity: 0;
+  }
+  46%, 100% {
+    opacity: 1;
+  }
+}
+
+/* 5: a highlighter hops along five holdings (6.4 s) */
+.hero-hl-scan {
+  opacity: 0;
+  animation: hero-hl-scan 6.4s linear infinite;
+}
+
+@keyframes hero-hl-scan {
+  0%, 6% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  10% {
+    opacity: 1;
+  }
+  14% {
+    transform: translateX(0);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.3, 1);
+  }
+  22% {
+    transform: translateX(34px);
+  }
+  28% {
+    transform: translateX(34px);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.3, 1);
+  }
+  36% {
+    transform: translateX(68px);
+  }
+  42% {
+    transform: translateX(68px);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.3, 1);
+  }
+  50% {
+    transform: translateX(102px);
+  }
+  56% {
+    transform: translateX(102px);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.3, 1);
+  }
+  64% {
+    opacity: 1;
+    transform: translateX(136px);
+  }
+  76% {
+    opacity: 1;
+    transform: translateX(136px);
+  }
+  84%, 99% {
+    opacity: 0;
+    transform: translateX(136px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+}
+
+/* 6: a marker hops along stepping stones to a flag (6.4 s) */
+.hero-hl-stone-1 {
+  animation: hero-hl-stone-1 6.4s ease infinite;
+}
+
+.hero-hl-stone-2 {
+  animation: hero-hl-stone-2 6.4s ease infinite;
+}
+
+.hero-hl-stone-3 {
+  animation: hero-hl-stone-3 6.4s ease infinite;
+}
+
+.hero-hl-stone-4 {
+  animation: hero-hl-stone-4 6.4s ease infinite;
+}
+
+@keyframes hero-hl-stone-1 {
+  0%, 15% {
+    background: #FFFFFF;
+    border-color: #111613;
+  }
+  18%, 92% {
+    background: #22C55E;
+    border-color: #15803D;
+  }
+  97%, 100% {
+    background: #FFFFFF;
+    border-color: #111613;
+  }
+}
+
+@keyframes hero-hl-stone-2 {
+  0%, 31% {
+    background: #FFFFFF;
+    border-color: #111613;
+  }
+  34%, 92% {
+    background: #22C55E;
+    border-color: #15803D;
+  }
+  97%, 100% {
+    background: #FFFFFF;
+    border-color: #111613;
+  }
+}
+
+@keyframes hero-hl-stone-3 {
+  0%, 47% {
+    background: #FFFFFF;
+    border-color: #111613;
+  }
+  50%, 92% {
+    background: #22C55E;
+    border-color: #15803D;
+  }
+  97%, 100% {
+    background: #FFFFFF;
+    border-color: #111613;
+  }
+}
+
+@keyframes hero-hl-stone-4 {
+  0%, 63% {
+    background: #FFFFFF;
+    border-color: #111613;
+  }
+  66%, 92% {
+    background: #22C55E;
+    border-color: #15803D;
+  }
+  97%, 100% {
+    background: #FFFFFF;
+    border-color: #111613;
+  }
+}
+
+.hero-hl-hop-x {
+  animation: hero-hl-hop-x 6.4s linear infinite;
+}
+
+@keyframes hero-hl-hop-x {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  4% {
+    opacity: 1;
+  }
+  6% {
+    transform: translateX(0);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.3, 1);
+  }
+  16% {
+    transform: translateX(30px);
+  }
+  22% {
+    transform: translateX(30px);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.3, 1);
+  }
+  32% {
+    transform: translateX(60px);
+  }
+  38% {
+    transform: translateX(60px);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.3, 1);
+  }
+  48% {
+    transform: translateX(90px);
+  }
+  54% {
+    transform: translateX(90px);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.3, 1);
+  }
+  64% {
+    transform: translateX(120px);
+  }
+  92% {
+    opacity: 1;
+    transform: translateX(120px);
+  }
+  97% {
+    opacity: 0;
+    transform: translateX(120px);
+  }
+  98%, 100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+}
+
+.hero-hl-hop-y {
+  animation: hero-hl-hop-y 6.4s ease-out infinite;
+}
+
+@keyframes hero-hl-hop-y {
+  0%, 6% {
+    transform: translateY(0);
+  }
+  11% {
+    transform: translateY(-11px);
+  }
+  16%, 22% {
+    transform: translateY(0);
+  }
+  27% {
+    transform: translateY(-11px);
+  }
+  32%, 38% {
+    transform: translateY(0);
+  }
+  43% {
+    transform: translateY(-11px);
+  }
+  48%, 54% {
+    transform: translateY(0);
+  }
+  59% {
+    transform: translateY(-11px);
+  }
+  64%, 100% {
+    transform: translateY(0);
+  }
+}
+
+.hero-hl-flag {
+  opacity: 0;
+  transform-origin: left bottom;
+  animation: hero-hl-flag 6.4s ease infinite;
+}
+
+@keyframes hero-hl-flag {
+  0%, 64% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+  78% {
+    transform: rotate(-6deg);
+  }
+  86% {
+    transform: rotate(2deg);
+  }
+  92% {
+    opacity: 1;
+  }
+  97%, 100% {
+    opacity: 0;
+  }
+}
+
+.hero-hl-flag-ring {
+  opacity: 0;
+  animation: hero-hl-flag-ring 6.4s ease-out infinite;
+}
+
+@keyframes hero-hl-flag-ring {
+  0%, 64% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  68% {
+    opacity: 0.8;
+  }
+  90%, 100% {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-hl-chip,
+  .hero-hl-ring,
+  .hero-hl-ring-arc,
+  .hero-hl-ring-ripple,
+  .hero-hl-packet,
+  .hero-hl-badge,
+  .hero-hl-badge-ripple,
+  .hero-hl-perf-line,
+  .hero-hl-perf-area,
+  .hero-hl-perf-dot,
+  .hero-hl-perf-pill,
+  .hero-hl-toggle,
+  .hero-hl-toggle-knob,
+  .hero-hl-access-on,
+  .hero-hl-access-off,
+  .hero-hl-scan,
+  .hero-hl-stone-1,
+  .hero-hl-stone-2,
+  .hero-hl-stone-3,
+  .hero-hl-stone-4,
+  .hero-hl-hop-x,
+  .hero-hl-hop-y,
+  .hero-hl-flag,
+  .hero-hl-flag-ring {
+    animation: none;
+  }
+
+  .hero-hl-kw {
     animation: none;
     background-size: 100% 3px;
   }
