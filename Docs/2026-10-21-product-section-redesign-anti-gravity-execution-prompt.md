@@ -1,0 +1,5 @@
+Build the redesigned Product section described in `Docs/2026-10-21-product-section-redesign-plan.md`. Read that plan first, then open `Docs/reference/product-section-prototype.html` in a browser (or read its source) and match it: it is the approved design. Assets are already in `public/product-storyboard/`.
+
+Rules: do not touch the hero, security, about, FAQ, contact, navbar or waitlist code. Do not delete `ProductBentoScene.tsx` or the scene-engine files; check who else uses their refs before hiding anything. The working tree has many uncommitted user changes: never run `git add -A`, `git checkout`, `git restore`, `git stash` or `git reset`, and do not commit. Preserve each file's line endings (CRLF where present) and make small edits. No new dependencies.
+
+The phone carousel must behave like the existing `MobileProductCarousel.tsx` (3000 ms auto-advance while visible, tap-and-hold pause, native smooth scroll, starts on card 1, arrows move exactly one card). Verify with `npx vitest run`, `npm run lint` and `npx tsc --noEmit`, then report the files changed, what you kept mounted for other scenes and why, and anything you could not verify.

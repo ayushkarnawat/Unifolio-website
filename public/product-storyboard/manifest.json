@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "source": "cut from PDF page 6 mockup (Unifolio Website Redesign.pdf), 1672x941",
+  "sourceWidth": 1672,
+  "sourceHeight": 941,
+  "plate": {
+    "file": "plate.webp",
+    "x": 300,
+    "y": 290,
+    "w": 1070,
+    "h": 328
+  },
+  "layers": [
+    {
+      "id": "mf",
+      "label": "Mutual Funds",
+      "file": "layer-mf.webp",
+      "x": 438,
+      "y": 313,
+      "w": 150,
+      "h": 123
+    },
+    {
+      "id": "st",
+      "label": "Stocks",
+      "file": "layer-st.webp",
+      "x": 345,
+      "y": 422,
+      "w": 149,
+      "h": 123
+    },
+    {
+      "id": "ba",
+      "label": "Bank Accounts",
+      "file": "layer-ba.webp",
+      "x": 457,
+      "y": 481,
+      "w": 149,
+      "h": 123
+    },
+    {
+      "id": "re",
+      "label": "Real Estate",
+      "file": "layer-re.webp",
+      "x": 1074,
+      "y": 314,
+      "w": 147,
+      "h": 120
+    },
+    {
+      "id": "pm",
+      "label": "PMS / AIFs",
+      "file": "layer-pm.webp",
+      "x": 1179,
+      "y": 423,
+      "w": 143,
+      "h": 122
+    },
+    {
+      "id": "go",
+      "label": "Gold",
+      "file": "layer-go.webp",
+      "x": 1069,
+      "y": 478,
+      "w": 146,
+      "h": 120
+    },
+    {
+      "id": "lap",
+      "label": "Laptop dashboard",
+      "file": "layer-lap.webp",
+      "x": 648,
+      "y": 357,
+      "w": 380,
+      "h": 244
+    }
+  ],
+  "illustrations": [
+    {
+      "id": "i1",
+      "file": "card-ill-1.webp",
+      "w": 105,
+      "h": 147
+    },
+    {
+      "id": "i2",
+      "file": "card-ill-2.webp",
+      "w": 101,
+      "h": 108
+    },
+    {
+      "id": "i3",
+      "file": "card-ill-3.webp",
+      "w": 130,
+      "h": 181
+    }
+  ]
+}

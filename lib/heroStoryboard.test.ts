@@ -104,6 +104,9 @@ describe("computePlacement", () => {
     [768, 1024],
     [390, 844],
     [390, 240],
+    [390, 300],
+    [360, 300],
+    [639, 300],
   ];
 
   it.each(sizes)("%i x %i: finite, ring inside the container", (w, h) => {
@@ -146,10 +149,10 @@ describe("computePlacement", () => {
     }
   });
 
-  it("stacks the artwork in the upper part of the hero on phones and tablets", () => {
+  it("stacks the artwork in the upper part of the hero on tablets", () => {
     for (const [w, h] of [
-      [390, 844],
       [768, 1024],
+      [640, 900],
     ]) {
       const p = computePlacement(w, h);
       expect(p.wide).toBe(false);
@@ -157,6 +160,33 @@ describe("computePlacement", () => {
       // ring outer diameter at least 25% of the viewport width
       expect((2 * RING_RADIUS_OUTER * p.sc) / w).toBeGreaterThanOrEqual(0.25);
       expect(p.x0 + ART_W * p.sc).toBeGreaterThan(w * 0.9);
+    }
+  });
+
+  it("keeps the tablet placement unchanged (artwork centred at 40% of the hero height)", () => {
+    const p = computePlacement(768, 1024);
+    const sc = Math.min((768 * 0.98) / 820, 0.95, (1024 * 0.42) / ART_H);
+    close(p.sc, sc);
+    close(p.x0, (768 - 820 * sc) / 2);
+    close(p.y0, 1024 * 0.4 - (ART_H / 2) * sc);
+    close(p.vy, 1);
+  });
+
+  it("centres the artwork in its own 300px box on phones (between the button and the highlight block)", () => {
+    for (const w of [320, 360, 390, 430, 639]) {
+      const h = 300;
+      const p = computePlacement(w, h);
+      expect(p.wide).toBe(false);
+      close(p.vy, 1);
+      // vertically centred in the box and fully inside it
+      close(p.y0 + (ART_H * p.sc) / 2, h / 2);
+      expect(p.y0).toBeGreaterThanOrEqual(0);
+      expect(p.y0 + ART_H * p.sc).toBeLessThanOrEqual(h);
+      // horizontally centred on the visible content
+      close(p.x0 + (820 * p.sc) / 2, w / 2);
+      // ring outer diameter at least 25% of the viewport width on usual phones (the box height caps the wider ones)
+      expect((2 * RING_RADIUS_OUTER * p.sc) / w).toBeGreaterThanOrEqual(w <= 430 ? 0.25 : 0.2);
+      if (w <= 430) expect(p.x0 + ART_W * p.sc).toBeGreaterThan(w * 0.9);
     }
   });
 });

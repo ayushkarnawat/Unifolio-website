@@ -39,9 +39,7 @@ const SECURITY_STATES: SecurityStateItem[] = [
     headline: "We never save your passwords",
     body: (
       <>
-        Your bank login stays with your bank. <br className="hidden sm:inline" />{" "}
-        We connect through India&apos;s RBI-regulated Account Aggregator framework,{" "}
-        so your credentials never reach us.
+        Your bank login stays with your bank, so your credentials never reach us.
       </>
     ),
   },
@@ -429,6 +427,25 @@ export function MobileSecuritySection() {
     }
   }, []);
 
+  // Swipe left / right on the card to move between states (in addition to the automatic advance)
+  const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
+  const handleSwipeStart = useCallback((e: React.PointerEvent) => {
+    swipeStartRef.current = { x: e.clientX, y: e.clientY };
+  }, []);
+  const handleSwipeEnd = useCallback(
+    (e: React.PointerEvent) => {
+      const start = swipeStartRef.current;
+      swipeStartRef.current = null;
+      if (!start) return;
+      const dx = e.clientX - start.x;
+      const dy = e.clientY - start.y;
+      if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+      if (dx < 0) nextState();
+      else prevState();
+    },
+    [nextState, prevState]
+  );
+
   // IntersectionObserver: Only start auto-advancing when user reaches the Security section
   useEffect(() => {
     const el = sectionRef.current;
@@ -535,11 +552,17 @@ export function MobileSecuritySection() {
 
       {/* 2. Glassmorphic Interactive Narrative Card (Standard Stable Size) */}
       <div
-        onPointerDown={handleHoldStart}
-        onPointerUp={handleHoldEnd}
+        onPointerDown={(e) => {
+          handleHoldStart();
+          handleSwipeStart(e);
+        }}
+        onPointerUp={(e) => {
+          handleHoldEnd();
+          handleSwipeEnd(e);
+        }}
         onPointerCancel={handleHoldEnd}
         onPointerLeave={handleHoldEnd}
-        style={{ touchAction: "manipulation" }}
+        style={{ touchAction: "pan-y" }}
         className="w-full rounded-[22px] p-5 sm:p-5.5 relative overflow-hidden flex flex-col justify-start bg-[rgba(232,243,236,0.88)] backdrop-blur-xl border border-white/80 shadow-[0_16px_36px_-12px_rgba(16,44,28,0.08),inset_0_1.5px_1px_0_rgba(255,255,255,0.9)] h-[268px] min-[390px]:h-[278px] sm:h-[288px] cursor-pointer"
       >
         {/* Top Edge Ambient Highlight */}
@@ -764,9 +787,8 @@ export function MobileSecuritySection() {
         </div>
       </div>
 
-      {/* 3. External Navigation Controls: Step Pill Counter + Arrows */}
-      <div className="flex items-center justify-between w-full px-2 mt-3 sm:mt-3.5">
-        {/* Previous Arrow Button */}
+      {/* 3. External Navigation Controls: same dock as the product carousel (arrows + indicator pills) */}
+      <div className="flex items-center justify-center gap-3 mt-4 px-4">
         <button
           type="button"
           onClick={prevState}
@@ -776,18 +798,26 @@ export function MobileSecuritySection() {
           <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
         </button>
 
-        {/* Interactive State Indicator */}
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 backdrop-blur-md border border-black/[0.06] shadow-sm">
-          <span className="font-mono text-xs font-bold text-neutral-800 tracking-wider">
-            0{activeIndex + 1}
-          </span>
-          <span className="text-neutral-400 text-xs">/</span>
-          <span className="font-mono text-xs text-neutral-500">
-            0{STATES_COUNT}
-          </span>
+        {/* Indicator pills, one per state */}
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-black/[0.06] shadow-sm">
+          {Array.from({ length: STATES_COUNT }).map((_, idx) => {
+            const isActive = activeIndex === idx;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => goToState(idx)}
+                aria-label={`Go to security state ${idx + 1}`}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  isActive
+                    ? "w-7 bg-[#22C55E] shadow-[0_0_8px_rgba(34,197,94,0.45)]"
+                    : "w-2 bg-neutral-300 hover:bg-neutral-400"
+                }`}
+              />
+            );
+          })}
         </div>
 
-        {/* Next Arrow Button */}
         <button
           type="button"
           onClick={nextState}

@@ -1,5 +1,6 @@
 "use client";
 
+import { isValidEmail } from "@/lib/emailValidation";
 import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -45,7 +46,7 @@ export function BlueprintContact() {
       case 0:
         return formData.name.trim().length > 0;
       case 1:
-        return formData.email.trim().length > 0;
+        return isValidEmail(formData.email);
       case 2:
         return formData.description.trim().length > 0;
       default:
@@ -687,8 +688,21 @@ export function BlueprintContact() {
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       onKeyDown={handleKeyDown}
                       placeholder="hello@example.com"
+                      aria-invalid={formData.email.trim().length > 0 && !isValidEmail(formData.email)}
+                      aria-describedby="contact-email-hint"
                       className="relative w-full text-center bg-black/[0.03] border border-black/15 focus:border-[#22C55E] focus:bg-black/[0.06] rounded-2xl px-7 py-4 text-base sm:text-lg text-[#111613] placeholder-black/30 focus:outline-none focus:shadow-[0_0_35px_rgba(34,197,94,0.22)] transition-all duration-300 font-sans font-normal tracking-tight"
                     />
+                    <p
+                      id="contact-email-hint"
+                      role="status"
+                      className={`mt-3 text-center font-sans text-sm text-[#B42318] transition-opacity duration-300 ${
+                        formData.email.trim().length > 3 && !inputFocused && !isValidEmail(formData.email)
+                          ? "opacity-100"
+                          : "opacity-0"
+                      }`}
+                    >
+                      Please enter a valid email address, like name@example.com.
+                    </p>
                   </div>
                 </div>
               )}

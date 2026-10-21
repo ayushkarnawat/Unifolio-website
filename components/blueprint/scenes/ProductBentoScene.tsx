@@ -18,7 +18,6 @@ import type { BentoGeometry } from "@/lib/dockLayout";
 import { Sparkles } from "lucide-react";
 import type { SceneEngine } from "../hero-engine/useSceneEngine";
 import { CINEMATIC_TIMESCALE, PRODUCT_CARDS } from "../BlueprintHero";
-import { MobileProductCarousel } from "../MobileProductCarousel";
 
 /** Count of "duplicated trail cards" rendered for Security's paper -> ink
  * choreography — verbatim value from BlueprintHero.tsx's own `COMPANION_COUNT`
@@ -820,7 +819,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
                                     className="mt-3.5 sm:mt-4 text-neutral-700 font-medium leading-[1.52]"
                                     style={{ fontSize: "clamp(12.5px, calc(0.95 * var(--bento-vw-tier, 14.4px)), 14px)" }}
                                   >
-                                    Mutual funds, stocks, bank accounts, loans, credit cards, real estate. Every asset and liability, aggregated into one accurate number.
+                                    Mutual funds, stocks, bank accounts, real estate. Every asset, aggregated into one accurate number.
                                   </p>
                                 </div>
 
@@ -1194,8 +1193,7 @@ export const ProductBentoScene = forwardRef<ProductBentoSceneHandle, ProductBent
               </div>
             </div>
 
-            {/* Continuous scrolling horizontal product carousel (mobile & tablet isolated, < 1024px) */}
-            <MobileProductCarousel />
+            {/* The phone carousel now lives in components/product/ProductSection.tsx (product redesign 2026-10-21). */}
       </>
     );
   }

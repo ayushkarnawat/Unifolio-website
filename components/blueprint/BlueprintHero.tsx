@@ -21,21 +21,15 @@ import {
   type ProductBentoSceneHandle,
   type ProductBentoSceneShared,
 } from "@/components/blueprint/scenes/ProductBentoScene";
+import { PRODUCT_HEADING_ID, ProductSection } from "@/components/product/ProductSection";
+import { SECURITY_HEADING_ID, SecuritySection } from "@/components/security/SecuritySection";
 import {
   SecurityVaultScene,
-  SecurityVaultSlot,
-  SecurityStageSlot,
   type SecurityVaultSceneHandle,
   type SecurityVaultSceneShared,
 } from "@/components/blueprint/scenes/SecurityVaultScene";
-import {
-  AboutScene,
-  AboutBackgroundSlot,
-  AboutEnvelopeSlot,
-  type AboutSceneHandle,
-  type AboutSceneShared,
-} from "@/components/blueprint/scenes/AboutScene";
-import { MobileSecuritySection } from "@/components/blueprint/MobileSecuritySection";
+import { AboutScene, type AboutSceneHandle, type AboutSceneShared } from "@/components/blueprint/scenes/AboutScene";
+import { ABOUT_HEADING_ID, AboutSection } from "@/components/about/AboutSection";
 
 interface ProductCardData {
   id: string;
@@ -76,7 +70,7 @@ export const PRODUCT_CARDS: ProductCardData[] = [
     illustration: "/product-cards/card-2d-2.png",
     hoverType: "paragraph",
     hoverParagraph:
-      "From mutual funds and stocks to bank accounts, loans, credit cards, and real estate, every asset and liability you and your family hold, aggregated into a number that's actually accurate.",
+      "From mutual funds and stocks to bank accounts and real estate, every asset you and your family hold, aggregated into a number that's actually accurate.",
     accent: "#34d399",
     restRotateY: 5,
     restRotateZ: -1.0,
@@ -220,9 +214,7 @@ export const SECURITY_STATES: SecurityStateItem[] = [
     headline: "We never save your passwords",
     body: (
       <>
-        Your bank login stays with your bank. <br />
-        <span className="sm:whitespace-nowrap">We connect through India&apos;s RBI-regulated Account Aggregator framework,</span> <br />
-        so your credentials never reach us.
+        <span className="sm:whitespace-nowrap">Your bank login stays with your bank, so your credentials never reach us.</span>
       </>
     ),
   },
@@ -1389,7 +1381,7 @@ export function BlueprintHero() {
           shared={aboutSharedRef}
         />
         {/* SECTION 1: HERO */}
-        <section id="hero" className="relative w-full h-screen min-h-screen bg-[#FAF8F5] select-none overflow-hidden flex flex-col justify-center">
+        <section id="hero" className="relative w-full h-screen min-h-screen max-sm:h-auto max-sm:min-h-0 bg-[#FAF8F5] select-none overflow-hidden flex flex-col justify-center">
           <HeroScene
             ref={heroSceneRef}
             engine={engine}
@@ -1401,192 +1393,88 @@ export function BlueprintHero() {
           />
         </section>
 
-        {/* SECTION 2: PRODUCT WORLD */}
+        {/* SECTION 2: PRODUCT (redesign 2026-10-21, see Docs/2026-10-21-product-section-redesign-plan.md) */}
         <section
           id="product"
           ref={productWorldRef}
-          className="relative w-full min-h-screen bg-[#FAF8F5] flex flex-col justify-start items-center px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-16 sm:pb-20 overflow-hidden select-none"
+          aria-labelledby={PRODUCT_HEADING_ID}
+          className="relative w-full bg-[#FAF8F5] flex flex-col items-center px-[clamp(16px,4vw,56px)] pt-[clamp(16px,2.5vw,32px)] scroll-mt-20 sm:scroll-mt-[88px] pb-[clamp(30px,5vw,56px)] max-sm:px-0 overflow-hidden select-none"
         >
-          {/* Product Hero Content (Headline) */}
-          <div
-            ref={headerRef}
-            className="w-full max-w-5xl mx-auto flex flex-col items-center text-center z-30 shrink-0 mb-3 sm:mb-12 px-2 will-change-transform pt-16 sm:pt-14 md:pt-16"
-          >
-            <h2
-              ref={headlineRef}
-              className="font-sans font-black text-2xl sm:text-3xl md:text-[36px] lg:text-[42px] xl:text-[46px] tracking-[-0.035em] leading-tight sm:whitespace-nowrap text-neutral-950"
-            >
-              Don&apos;t just see your wealth.{" "}
-              <span
-                className="font-black text-[#22C55E]"
-                style={{ color: "#22C55E" }}
-              >
-                Understand it.
-              </span>
-            </h2>
-          </div>
+          <ProductSection />
 
-          {/* Product Bento Grid */}
-          <ProductBentoScene
-            ref={productSceneRef}
-            engine={engine}
-            refs={{
-              cardsStageRef,
-              cardsClusterRef,
-              headerRef,
-              headlineRef,
-              ctaRef,
-              floorLineRef,
-              cardWrapperRefs,
-              cardFlipperRefs,
-              cardFrontRefs,
-              cardBackRefs,
-              cardDefaultRefs,
-              cardHoverRefs,
-              cardIllustrationRefs,
-              cardGradientBgRefs,
-              cardGlassOverlayRefs,
-              bentoTileContentRefs,
-              companionCardRefs,
-              cardInkRefs,
-              companionPaperRefs,
-              companionInkRefs,
-              restingToBentoTlRef,
-            }}
-            shared={productSharedRef}
-            securityVaultSlot={null}
-            aboutEnvelopeSlot={null}
-          />
+          {/* The old bento is no longer shown, but stays mounted (display:none) because the Security/About
+              scene code and BlueprintHero's own setup still read its refs (cardsClusterRef, cardWrapperRefs,
+              companion cards, ...). headerRef/headlineRef point at empty placeholders here so no leftover
+              timeline can hide the new headline. */}
+          <div className="hidden" aria-hidden="true">
+            <div ref={headerRef}>
+              <h2 ref={headlineRef} />
+            </div>
+            <ProductBentoScene
+              ref={productSceneRef}
+              engine={engine}
+              refs={{
+                cardsStageRef,
+                cardsClusterRef,
+                headerRef,
+                headlineRef,
+                ctaRef,
+                floorLineRef,
+                cardWrapperRefs,
+                cardFlipperRefs,
+                cardFrontRefs,
+                cardBackRefs,
+                cardDefaultRefs,
+                cardHoverRefs,
+                cardIllustrationRefs,
+                cardGradientBgRefs,
+                cardGlassOverlayRefs,
+                bentoTileContentRefs,
+                companionCardRefs,
+                cardInkRefs,
+                companionPaperRefs,
+                companionInkRefs,
+                restingToBentoTlRef,
+              }}
+              shared={productSharedRef}
+              securityVaultSlot={null}
+              aboutEnvelopeSlot={null}
+            />
+          </div>
 
           <div ref={floorLineRef} className="hidden" />
         </section>
 
-        {/* SECTION 3: SECURITY */}
+        {/* SECTION 3: SECURITY (redesign 2026-10-21, see Docs/2026-10-21-security-section-redesign-plan.md).
+            One static section: no pinning, no sticky states, no scroll hijacking. The old pinned markup
+            (SecurityVaultSlot + SafeVault3D, SecurityStageSlot with its lg:sticky states, MobileSecuritySection)
+            is no longer rendered. SecurityVaultScene above stays mounted (it renders nothing; reflowCurrentLayout
+            still calls its computeDockLayout on resize, which is null-safe for the vault). Without
+            SecurityStageSlot its mount effect finds no state refs, so it never installs its ScrollTrigger or its
+            window wheel / keydown / touchmove "1 scroll = 1 state" handlers. */}
         <section
           id="security"
-          className="relative w-full bg-[#FAF8F5] pt-8 sm:pt-12 lg:pt-28 pb-4 sm:pb-6 lg:pb-28 px-4 sm:px-6 lg:px-12 select-none"
+          aria-labelledby={SECURITY_HEADING_ID}
+          className="relative w-full bg-[#FAF8F5] px-[clamp(16px,4vw,56px)] pt-[clamp(40px,4.5vw,72px)] pb-[clamp(30px,5vw,56px)] scroll-mt-14 sm:scroll-mt-12 overflow-hidden select-none"
         >
-          {/* Seamless edge guard ensuring no clip artifacts or dark slivers on the left margin */}
-          <div
-            className="pointer-events-none absolute inset-y-0 left-0 w-2 sm:w-2.5 bg-[#FAF8F5] z-30"
-            aria-hidden="true"
-          />
-
-          {/* DESKTOP SECURITY VIEW (>= 1024px): 100% UNTOUCHED ORIGINAL LAYOUT & TIMELINES */}
-          <div className="hidden lg:flex max-w-6xl mx-auto flex-col lg:flex-row items-center lg:items-start justify-between gap-12 lg:gap-16">
-            {/* Left Column: Sticky Vault */}
-            <div className="w-full lg:w-5/12 flex items-center justify-center lg:sticky lg:top-36 shrink-0 py-4">
-              <SecurityVaultSlot
-                safeContainerRef={safeContainerRef}
-                safeVault3DRef={safeVault3DRef}
-              />
-            </div>
-
-            {/* Right Column: Stacked Narrative Sub-states */}
-            <div className="w-full lg:w-7/12 flex flex-col justify-start">
-              <SecurityStageSlot
-                securityStageRef={securityStageRef}
-                securityStateRefs={securityStateRefs}
-                securityHeroRibbonRef={securityHeroRibbonRef}
-                securityHeroWordRefs={securityHeroWordRefs}
-                typoEyesRef={typoEyesRef}
-                typoLeftWordRef={typoLeftWordRef}
-                typoRightWordRef={typoRightWordRef}
-                typoPupilsRef={typoPupilsRef}
-                typoEyelidsRef={typoEyelidsRef}
-                pwdLetterRefs={pwdLetterRefs}
-                pwdMaskRefs={pwdMaskRefs}
-                lockCharRefs={lockCharRefs}
-                lockIconWrapperRef={lockIconWrapperRef}
-                lockShackleRef={lockShackleRef}
-                lockBodyRef={lockBodyRef}
-                connectionCharRefs={connectionCharRefs}
-                connectionWrapperRef={connectionWrapperRef}
-                indiaCharRefs={indiaCharRefs}
-                indiaMapWrapperRef={indiaMapWrapperRef}
-                indiaMapPathRef={indiaMapPathRef}
-                moneyCharRefs={moneyCharRefs}
-                moneyWrapperRef={moneyWrapperRef}
-                moneyBill1Ref={moneyBill1Ref}
-                moneyBill2Ref={moneyBill2Ref}
-                sellCharRefs={sellCharRefs}
-                sellShieldWrapperRef={sellShieldWrapperRef}
-                sellShieldIconRef={sellShieldIconRef}
-                closingBlackTextRef={closingBlackTextRef}
-                closingGreenTextRef={closingGreenTextRef}
-                closingBlackWordRefs={closingBlackWordRefs}
-                closingGreenWordRefs={closingGreenWordRefs}
-              />
-            </div>
-          </div>
-
-          {/* MOBILE SECURITY VIEW (< 1024px): VAULT ON TOP, SEQUENTIAL STORIES WITH ARROWS */}
-          <div className="block lg:hidden w-full">
-            <MobileSecuritySection />
-          </div>
-
-          {/* Sparse transition fragments bridging Security into About */}
-          <div className="absolute inset-x-0 bottom-2 pointer-events-none overflow-hidden select-none hidden md:block h-32">
-            <div className="max-w-6xl mx-auto h-full relative">
-              <div
-                className="absolute left-[6%] bottom-4 rounded-[6px] border border-neutral-300/40 bg-[#F5F1E8]/70 p-2 shadow-[0_1px_2px_rgba(28,36,30,0.02)] -rotate-6 scale-90 opacity-20 pointer-events-none"
-                style={{ width: "140px" }}
-              >
-                <div className="flex items-center justify-between border-b border-neutral-300/30 pb-0.5 mb-1">
-                  <span className="font-mono text-[7.5px] font-bold text-neutral-400 uppercase">REGULATOR</span>
-                  <span className="font-mono text-[7.5px] text-neutral-400">RBI // AA</span>
-                </div>
-                <p className="font-sans text-[9.5px] font-semibold text-neutral-600 truncate">Account Aggregator</p>
-                <p className="font-mono text-[7.5px] text-neutral-400 mt-0.5 truncate">Consent Verified</p>
-              </div>
-
-              <div
-                className="absolute right-[10%] bottom-8 rounded-[6px] border border-neutral-300/40 bg-[#F5F1E8]/70 p-2 shadow-[0_1px_2px_rgba(28,36,30,0.02)] rotate-4 scale-85 opacity-22 pointer-events-none"
-                style={{ width: "135px" }}
-              >
-                <div className="flex items-center justify-between border-b border-neutral-300/30 pb-0.5 mb-1">
-                  <span className="font-mono text-[7.5px] font-bold text-neutral-400 uppercase">MUTUAL FUNDS</span>
-                  <span className="font-mono text-[7.5px] text-neutral-400">CAS // CAMS</span>
-                </div>
-                <p className="font-sans text-[9.5px] font-semibold text-neutral-600 truncate">Folio Statements</p>
-                <p className="font-mono text-[7.5px] text-neutral-400 mt-0.5 truncate">Encrypted Transit</p>
-              </div>
-
-              <div
-                className="absolute left-[36%] bottom-2 rounded-[6px] border border-neutral-300/30 bg-[#F5F1E8]/60 p-2 shadow-[0_1px_2px_rgba(28,36,30,0.02)] rotate-2 scale-80 opacity-18 pointer-events-none"
-                style={{ width: "130px" }}
-              >
-                <div className="flex items-center justify-between border-b border-neutral-300/30 pb-0.5 mb-1">
-                  <span className="font-mono text-[7.5px] font-bold text-neutral-400 uppercase">EQUITY</span>
-                  <span className="font-mono text-[7.5px] text-neutral-400">CDSL // DEMAT</span>
-                </div>
-                <p className="font-sans text-[9.5px] font-semibold text-neutral-600 truncate">Holding Summary</p>
-                <p className="font-mono text-[7.5px] text-neutral-400 mt-0.5 truncate">Read-Only Link</p>
-              </div>
-            </div>
-          </div>
+          <SecuritySection />
         </section>
 
-        {/* SECTION 4: ABOUT (Option 1: Single-Viewport In-Place Editorial Morph) */}
+        {/* SECTION 4: ABOUT (redesign 2026-10-21, see Docs/2026-10-21-about-section-redesign-plan.md).
+            One static section: no pinning, no sticky viewport, no scroll choreography. The old tall
+            (150-220vh) section with its sticky viewport, AboutBackgroundSlot and AboutEnvelopeSlot (whose
+            ScrollTrigger scrub drove the envelope / editorial morph) is no longer rendered. AboutScene above
+            stays mounted (it renders nothing; securitySharedRef still calls its computeEnvelopeParams /
+            jumpToAboutState). The About refs (aboutContentRef, unifiedEnvelopeRef, philosophyDocRef, ...) are
+            now simply null: every reader (SecurityVaultScene's inert timelines, __biDebug) null-checks them.
+            The section is its own size container: the design's sizes are in cqw. */}
         <section
           id="about"
-          className="relative w-full bg-[#FAF8F5] h-[150vh] sm:h-[175vh] lg:h-[220vh] select-none"
+          aria-labelledby={ABOUT_HEADING_ID}
+          className="relative w-full bg-[#FAF8F5] [container-type:inline-size] scroll-mt-14 sm:scroll-mt-12"
         >
-          <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between pt-4 sm:pt-6 lg:pt-10 pb-4 sm:pb-6 lg:pb-10 px-4 sm:px-6 lg:px-8">
-            <AboutBackgroundSlot aboutContentRef={aboutContentRef} />
-
-            <div className="relative z-10 max-w-5xl xl:max-w-6xl mx-auto w-full h-full flex flex-col justify-between">
-              <AboutEnvelopeSlot
-                unifiedEnvelopeRef={unifiedEnvelopeRef}
-                docCavityWrapperRef={docCavityWrapperRef}
-                philosophyDocRef={philosophyDocRef}
-                docPaperSheetRef={docPaperSheetRef}
-                docFlipperRef={docFlipperRef}
-                docInkCopyRef={docInkCopyRef}
-                envelopeTopFlapRef={envelopeTopFlapRef}
-                envelopeSealRef={envelopeSealRef}
-              />
-            </div>
+          <div className="px-[clamp(20px,5cqw,72px)] pt-[clamp(40px,4.5vw,72px)] pb-[clamp(36px,5vw,72px)]">
+            <AboutSection />
           </div>
         </section>
       </div>
