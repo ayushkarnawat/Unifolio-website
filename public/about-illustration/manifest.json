@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "source": "cut from the sketch the user supplied (1536x1024); pieces are multiplied onto the page cream, edges feathered",
+  "sourceWidth": 1536,
+  "sourceHeight": 1024,
+  "viewBox": {
+    "x": 100,
+    "y": 120,
+    "w": 1330,
+    "h": 800
+  },
+  "layers": [
+    {
+      "id": "p1",
+      "label": "man with phone (investments)",
+      "file": "person-p1.webp",
+      "x": 158,
+      "y": 128,
+      "w": 368,
+      "h": 296
+    },
+    {
+      "id": "p2",
+      "label": "woman with laptop (bank accounts)",
+      "file": "person-p2.webp",
+      "x": 972,
+      "y": 148,
+      "w": 446,
+      "h": 280
+    },
+    {
+      "id": "p3",
+      "label": "man with house (real estate)",
+      "file": "person-p3.webp",
+      "x": 108,
+      "y": 592,
+      "w": 514,
+      "h": 312
+    },
+    {
+      "id": "p4",
+      "label": "woman with goals checklist",
+      "file": "person-p4.webp",
+      "x": 984,
+      "y": 648,
+      "w": 414,
+      "h": 264
+    },
+    {
+      "id": "c",
+      "label": "shared dashboard (centre)",
+      "file": "dashboard.webp",
+      "x": 572,
+      "y": 284,
+      "w": 432,
+      "h": 406
+    }
+  ]
+}

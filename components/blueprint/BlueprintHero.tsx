@@ -28,13 +28,8 @@ import {
   type SecurityVaultSceneHandle,
   type SecurityVaultSceneShared,
 } from "@/components/blueprint/scenes/SecurityVaultScene";
-import {
-  AboutScene,
-  AboutBackgroundSlot,
-  AboutEnvelopeSlot,
-  type AboutSceneHandle,
-  type AboutSceneShared,
-} from "@/components/blueprint/scenes/AboutScene";
+import { AboutScene, type AboutSceneHandle, type AboutSceneShared } from "@/components/blueprint/scenes/AboutScene";
+import { ABOUT_HEADING_ID, AboutSection } from "@/components/about/AboutSection";
 
 interface ProductCardData {
   id: string;
@@ -1465,26 +1460,21 @@ export function BlueprintHero() {
           <SecuritySection />
         </section>
 
-        {/* SECTION 4: ABOUT (Option 1: Single-Viewport In-Place Editorial Morph) */}
+        {/* SECTION 4: ABOUT (redesign 2026-10-21, see Docs/2026-10-21-about-section-redesign-plan.md).
+            One static section: no pinning, no sticky viewport, no scroll choreography. The old tall
+            (150-220vh) section with its sticky viewport, AboutBackgroundSlot and AboutEnvelopeSlot (whose
+            ScrollTrigger scrub drove the envelope / editorial morph) is no longer rendered. AboutScene above
+            stays mounted (it renders nothing; securitySharedRef still calls its computeEnvelopeParams /
+            jumpToAboutState). The About refs (aboutContentRef, unifiedEnvelopeRef, philosophyDocRef, ...) are
+            now simply null: every reader (SecurityVaultScene's inert timelines, __biDebug) null-checks them.
+            The section is its own size container: the design's sizes are in cqw. */}
         <section
           id="about"
-          className="relative w-full bg-[#FAF8F5] h-[150vh] sm:h-[175vh] lg:h-[220vh] select-none"
+          aria-labelledby={ABOUT_HEADING_ID}
+          className="relative w-full bg-[#FAF8F5] [container-type:inline-size] scroll-mt-14 sm:scroll-mt-12"
         >
-          <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between pt-4 sm:pt-6 lg:pt-10 pb-4 sm:pb-6 lg:pb-10 px-4 sm:px-6 lg:px-8">
-            <AboutBackgroundSlot aboutContentRef={aboutContentRef} />
-
-            <div className="relative z-10 max-w-5xl xl:max-w-6xl mx-auto w-full h-full flex flex-col justify-between">
-              <AboutEnvelopeSlot
-                unifiedEnvelopeRef={unifiedEnvelopeRef}
-                docCavityWrapperRef={docCavityWrapperRef}
-                philosophyDocRef={philosophyDocRef}
-                docPaperSheetRef={docPaperSheetRef}
-                docFlipperRef={docFlipperRef}
-                docInkCopyRef={docInkCopyRef}
-                envelopeTopFlapRef={envelopeTopFlapRef}
-                envelopeSealRef={envelopeSealRef}
-              />
-            </div>
+          <div className="px-[clamp(20px,5cqw,72px)] pt-[clamp(40px,4.5vw,72px)] pb-[clamp(36px,5vw,72px)]">
+            <AboutSection />
           </div>
         </section>
       </div>
