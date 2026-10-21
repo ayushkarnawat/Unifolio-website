@@ -23,7 +23,7 @@ const MAX_STEP_MS = 100;
 
 type Phase = "show" | "out";
 
-function LockIcon({ className }: { className?: string }) {
+export function LockIcon({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -41,7 +41,7 @@ function LockIcon({ className }: { className?: string }) {
   );
 }
 
-function RestVisual({ figure, badgeOn }: { figure: string; badgeOn: boolean }) {
+export function RestVisual({ figure, badgeOn }: { figure: string; badgeOn: boolean }) {
   return (
     <div className="flex items-center gap-2 whitespace-nowrap text-[12.5px] text-[#111613]">
       <span className="text-[10px] font-bold tracking-[0.1em] text-[#5A685D]">BALANCE</span>
@@ -59,7 +59,7 @@ function RestVisual({ figure, badgeOn }: { figure: string; badgeOn: boolean }) {
   );
 }
 
-function TransitVisual() {
+export function TransitVisual() {
   return (
     <div className="flex items-center gap-2">
       <span className="h-5 w-3.5 flex-none rounded border-[1.6px] border-[#111613] opacity-80" />
@@ -78,7 +78,7 @@ function TransitVisual() {
   );
 }
 
-function ConsentVisual({ off }: { off: boolean }) {
+export function ConsentVisual({ off }: { off: boolean }) {
   return (
     <div className="flex items-center gap-2 whitespace-nowrap text-[12.5px]">
       <span
@@ -102,8 +102,19 @@ function ConsentVisual({ off }: { off: boolean }) {
  * three states (at rest, in transit, consent); each advances once its key-word
  * underline has been drawn, then holds briefly and slides to the next.
  * Pauses when the tab is hidden, the block is off screen, or `isPaused` is true.
+ *
+ * `align="center"` is the Security section variant (components/security/SecuritySection.tsx):
+ * always centred, no top margin, and the subtext stays on one line from 640px up.
+ * The default (`"hero"`) is the hero's original look, unchanged.
  */
-export function HeroTrustHighlights({ isPaused = false }: { isPaused?: boolean }) {
+export function HeroTrustHighlights({
+  isPaused = false,
+  align = "hero",
+}: {
+  isPaused?: boolean;
+  align?: "hero" | "center";
+}) {
+  const centered = align === "center";
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   const [reduced, setReduced] = useState(false);
@@ -218,7 +229,7 @@ export function HeroTrustHighlights({ isPaused = false }: { isPaused?: boolean }
   const slideClass = reduced ? "" : phase === "out" ? "trust-slide-out" : "trust-slide-in";
 
   return (
-    <div ref={rootRef} className={`mt-7 w-full ${active ? "" : "trust-paused"}`}>
+    <div ref={rootRef} className={`${centered ? "" : "mt-7 "}w-full ${active ? "" : "trust-paused"}`}>
       <ul className="sr-only">
         {TRUST_STATES.map((s) => (
           <li key={s.heading}>
@@ -230,10 +241,12 @@ export function HeroTrustHighlights({ isPaused = false }: { isPaused?: boolean }
       <div
         key={index}
         aria-hidden="true"
-        className={`flex flex-col items-center lg:items-start text-center lg:text-left will-change-transform ${slideClass}`}
+        className={`flex flex-col items-center text-center will-change-transform ${
+          centered ? "" : "lg:items-start lg:text-left"
+        } ${slideClass}`}
       >
         <div className="flex h-[30px] -translate-y-3 items-center">
-          <div className="scale-[1.2] origin-center lg:origin-left">
+          <div className={`scale-[1.2] origin-center ${centered ? "" : "lg:origin-left"}`}>
             {state.visual === "rest" && <RestVisual figure={figure} badgeOn={badgeOn} />}
             {state.visual === "transit" && <TransitVisual />}
             {state.visual === "consent" && <ConsentVisual off={toggleOff} />}
@@ -244,7 +257,11 @@ export function HeroTrustHighlights({ isPaused = false }: { isPaused?: boolean }
           {state.heading}
         </p>
 
-        <p className="mt-1.5 min-h-[2.7em] md:min-h-0 text-[16px] md:text-[18px] font-bold leading-[1.35] tracking-[-0.01em] text-[#3A473E] md:whitespace-nowrap">
+        <p
+          className={`mt-1.5 text-[16px] md:text-[18px] font-bold leading-[1.35] tracking-[-0.01em] text-[#3A473E] ${
+            centered ? "min-h-[2.7em] sm:min-h-0 sm:whitespace-nowrap" : "min-h-[2.7em] md:min-h-0 md:whitespace-nowrap"
+          }`}
+        >
           {state.subtext.map((part, i) =>
             part.kw ? (
               <span

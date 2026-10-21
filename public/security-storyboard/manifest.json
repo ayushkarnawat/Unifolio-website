@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "source": "cut from PDF page 9 mockup (Unifolio Website Redesign.pdf), 1536x1024; icons cut from the sketches the user supplied",
+  "sourceWidth": 1536,
+  "sourceHeight": 1024,
+  "plate": {
+    "file": "plate.webp",
+    "x": 62,
+    "y": 148,
+    "w": 706,
+    "h": 652
+  },
+  "layers": [
+    {
+      "id": "mf",
+      "label": "Mutual Funds",
+      "file": "layer-mf.webp",
+      "x": 474,
+      "y": 178,
+      "w": 138,
+      "h": 139
+    },
+    {
+      "id": "st",
+      "label": "Stocks",
+      "file": "layer-st.webp",
+      "x": 574,
+      "y": 258,
+      "w": 131,
+      "h": 127
+    },
+    {
+      "id": "ba",
+      "label": "Bank Accounts",
+      "file": "layer-ba.webp",
+      "x": 458,
+      "y": 346,
+      "w": 129,
+      "h": 113
+    },
+    {
+      "id": "re",
+      "label": "Real Estate",
+      "file": "layer-re.webp",
+      "x": 602,
+      "y": 414,
+      "w": 125,
+      "h": 117
+    },
+    {
+      "id": "pm",
+      "label": "PMS / AIFs",
+      "file": "layer-pm.webp",
+      "x": 466,
+      "y": 482,
+      "w": 129,
+      "h": 133
+    },
+    {
+      "id": "go",
+      "label": "Gold",
+      "file": "layer-go.webp",
+      "x": 574,
+      "y": 556,
+      "w": 137,
+      "h": 137
+    },
+    {
+      "id": "wheel",
+      "label": "Vault wheel (rotate in perspective: translate to centre, scale(1,ry/rx), rotate, scale(1,rx/ry))",
+      "file": "layer-wheel.webp",
+      "x": 138,
+      "y": 293,
+      "w": 212,
+      "h": 312,
+      "cx": 106,
+      "cy": 156,
+      "rx": 100,
+      "ry": 150
+    }
+  ],
+  "dots": [
+    [
+      477,
+      193,
+      8
+    ],
+    [
+      634,
+      234,
+      9
+    ],
+    [
+      718,
+      271,
+      9
+    ],
+    [
+      739,
+      474,
+      8
+    ],
+    [
+      727,
+      629,
+      9
+    ],
+    [
+      557,
+      660,
+      8
+    ]
+  ],
+  "icons": [
+    {
+      "id": "eye",
+      "for": "Read only, always",
+      "file": "icon-eye.webp",
+      "size": 240
+    },
+    {
+      "id": "lock",
+      "for": "We never save your passwords",
+      "file": "icon-lock.webp",
+      "size": 240
+    },
+    {
+      "id": "sell",
+      "for": "We don't sell your data",
+      "file": "icon-no-sell.webp",
+      "size": 240
+    },
+    {
+      "id": "india",
+      "for": "Stored in India (shield with cloud and tick)",
+      "file": "icon-shield.webp",
+      "size": 240
+    }
+  ]
+}
