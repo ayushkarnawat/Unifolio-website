@@ -163,13 +163,16 @@ describe("computePlacement", () => {
     }
   });
 
-  it("keeps the tablet placement unchanged (artwork centred at 40% of the hero height)", () => {
-    const p = computePlacement(768, 1024);
-    const sc = Math.min((768 * 0.98) / 820, 0.95, (1024 * 0.42) / ART_H);
-    close(p.sc, sc);
-    close(p.x0, (768 - 820 * sc) / 2);
-    close(p.y0, 1024 * 0.4 - (ART_H / 2) * sc);
-    close(p.vy, 1);
+  it("centres the artwork in its own box on tablets (above the text, never behind it)", () => {
+    for (const [w, h] of [[768, 430], [820, 496], [1023, 440]]) {
+      const p = computePlacement(w, h);
+      expect(p.wide).toBe(false);
+      close(p.vy, 1);
+      close(p.y0 + (ART_H * p.sc) / 2, h / 2);
+      expect(p.y0).toBeGreaterThanOrEqual(0);
+      expect(p.y0 + ART_H * p.sc).toBeLessThanOrEqual(h);
+      close(p.x0 + (820 * p.sc) / 2, w / 2);
+    }
   });
 
   it("centres the artwork in its own 300px box on phones (between the button and the highlight block)", () => {

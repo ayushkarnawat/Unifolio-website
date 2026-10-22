@@ -1381,7 +1381,7 @@ export function BlueprintHero() {
           shared={aboutSharedRef}
         />
         {/* SECTION 1: HERO */}
-        <section id="hero" className="relative w-full h-screen min-h-screen max-sm:h-auto max-sm:min-h-0 bg-[#FAF8F5] select-none overflow-hidden flex flex-col justify-center">
+        <section id="hero" className="relative w-full h-screen min-h-screen max-sm:h-auto max-sm:min-h-0 sm:max-lg:h-auto sm:max-lg:min-h-0 portrait:lg:h-[720px] portrait:lg:min-h-0 bg-[#FAF8F5] select-none overflow-hidden flex flex-col justify-center">
           <HeroScene
             ref={heroSceneRef}
             engine={engine}
