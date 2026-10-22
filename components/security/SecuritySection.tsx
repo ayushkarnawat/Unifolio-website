@@ -340,7 +340,7 @@ export function SecuritySection() {
             onTouchStart={handleHoldStart}
             onTouchEnd={handleHoldEnd}
             onTouchCancel={handleHoldEnd}
-            className="flex snap-x snap-mandatory overflow-x-auto [&::-webkit-scrollbar]:hidden"
+            className="-mt-4 flex snap-x snap-mandatory overflow-x-auto pt-4 [&::-webkit-scrollbar]:hidden"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
           >
             {SLIDES.map((slide, i) => {
