@@ -292,7 +292,7 @@ export function SecuritySection() {
         </div>
 
         {/* Vault, vertically centred against the right column on desktop */}
-        <div className="pointer-events-none w-full max-[899.98px]:mx-auto max-[899.98px]:max-w-[560px] min-[900px]:col-start-1 min-[900px]:row-span-2 min-[900px]:row-start-1 min-[900px]:-ml-[36%] min-[900px]:w-[134%] min-[900px]:self-center">
+        <div className="pointer-events-none w-full max-[899.98px]:mx-auto max-[899.98px]:max-w-[560px] min-[900px]:col-start-1 min-[900px]:row-span-2 min-[900px]:row-start-1 min-[900px]:[--vb:min(36%,max(0px,calc((100vw_-_1008px)/2_-_16px)))] min-[900px]:ml-[calc(-1_*_var(--vb))] min-[900px]:w-[calc(100%_+_var(--vb)_-_2%)] min-[900px]:self-center">
           <SecurityVaultVisual />
         </div>
 

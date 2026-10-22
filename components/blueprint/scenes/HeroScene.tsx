@@ -76,14 +76,14 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
   );
 
   return (
-    <div className="relative w-full h-screen min-h-screen max-sm:h-auto max-sm:min-h-0 max-sm:items-center max-sm:justify-start max-sm:pt-[104px] max-sm:pb-[26px] bg-[#FAF8F5] select-none overflow-hidden flex flex-col justify-center">
+    <div className="relative w-full h-screen min-h-screen max-sm:h-auto max-sm:min-h-0 portrait:lg:h-[720px] portrait:lg:min-h-0 max-sm:items-center max-sm:justify-start max-sm:pt-[104px] max-sm:pb-[26px] sm:max-lg:h-auto sm:max-lg:pt-[96px] sm:max-lg:pb-10 bg-[#FAF8F5] select-none overflow-hidden flex flex-col justify-center">
       {/* Phone (< 640px): the text wrappers below become `display: contents`, so the headline, line, button, this
           sketch and the highlight block are flex items of this column and are reordered with `order`:
           headline, line, button, sketch (a 300px normal-flow box), highlight block. Tablet and desktop are unchanged. */}
       {/* LAYER 1 (z-10): MASTER HERO VISUAL (Aperture Video Ring) */}
       <div
         ref={heroVisualRef}
-        className="absolute inset-0 w-full h-full z-10 flex items-center justify-center pointer-events-none will-change-transform max-sm:relative max-sm:inset-auto max-sm:order-3 max-sm:h-[300px] max-sm:shrink-0 max-sm:-mt-[26px] max-sm:-mb-[34px]"
+        className="absolute inset-0 w-full h-full z-10 flex items-center justify-center pointer-events-none will-change-transform max-sm:relative max-sm:inset-auto max-sm:order-3 max-sm:h-[300px] max-sm:shrink-0 max-sm:-mt-[26px] max-sm:-mb-[34px] sm:max-lg:relative sm:max-lg:inset-auto sm:max-lg:order-1 sm:max-lg:h-[clamp(300px,42vh,440px)] sm:max-lg:shrink-0"
         style={{
           transformOrigin: "62.87% 49.12%",
         }}
@@ -94,10 +94,10 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
       {/* LAYER 1B (z-10): HERO HEADLINE & SUBTEXT */}
       <div
         ref={heroIntroRef}
-        className="absolute inset-0 max-sm:contents z-10 flex flex-col justify-end lg:justify-center items-center lg:items-start px-6 sm:px-10 lg:px-16 xl:px-20 pt-20 pb-10 sm:pb-14 lg:pb-8 max-w-7xl mx-auto w-full pointer-events-none will-change-transform"
+        className="absolute inset-0 max-sm:contents z-10 flex flex-col justify-end lg:justify-center items-center lg:items-start px-6 sm:px-10 lg:pr-10 lg:pl-[max(64px,calc((100vw-1280px)/2-16px))] pt-20 pb-10 sm:pb-14 lg:pb-8 max-w-7xl lg:max-w-none mx-auto lg:mx-0 w-full pointer-events-none will-change-transform sm:max-lg:relative sm:max-lg:inset-auto sm:max-lg:order-2 sm:max-lg:justify-start sm:max-lg:pt-4 sm:max-lg:pb-0"
       >
-        <div className="flex-initial lg:flex-1 flex flex-col justify-center items-center lg:items-start text-center lg:text-left max-w-lg sm:max-w-xl lg:max-w-[490px] xl:max-w-[530px] translate-x-0 lg:-translate-x-20 xl:-translate-x-24 translate-y-0 sm:-translate-y-1 lg:-translate-y-6 pointer-events-auto max-sm:contents">
-          <h1 className="font-sans font-black text-[25px] max-sm:text-[length:clamp(25px,7.2vw,32px)] sm:text-[33px] md:text-[38px] lg:text-[42px] xl:text-[47px] text-neutral-950 tracking-[-0.035em] leading-[1.15] select-none flex flex-col items-center lg:items-start gap-2 sm:gap-3 lg:gap-3.5 max-sm:order-1 max-sm:px-5 max-sm:text-center">
+        <div className="flex-initial lg:flex-1 flex flex-col justify-center items-center lg:items-start text-center lg:text-left max-w-lg sm:max-w-xl lg:max-w-[490px] xl:max-w-[530px] translate-x-0 translate-y-0 sm:-translate-y-1 lg:-translate-y-6 [@media(min-width:1024px)_and_(max-height:720px)]:translate-y-2 pointer-events-auto max-sm:contents">
+          <h1 className="font-sans font-black text-[25px] max-sm:text-[length:clamp(25px,7.2vw,32px)] sm:text-[33px] md:text-[38px] lg:text-[42px] xl:text-[47px] [@media(min-width:1024px)_and_(max-height:720px)]:!text-[36px] text-neutral-950 tracking-[-0.035em] leading-[1.15] select-none flex flex-col items-center lg:items-start gap-2 sm:gap-3 lg:gap-3.5 max-sm:order-1 max-sm:px-5 max-sm:text-center">
             <span className="whitespace-nowrap">{HERO_HEADLINE[0]}</span>
             <span className="whitespace-nowrap text-[#22C55E]" style={{ color: "#22C55E" }}>
               {HERO_HEADLINE[1]}
@@ -106,7 +106,7 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
           <p className="mt-3.5 sm:mt-5 max-w-[34ch] lg:max-w-[30ch] text-base sm:text-lg md:text-xl lg:text-[21px] text-[#26332B] font-extrabold tracking-[-0.015em] leading-[1.35] select-none text-center lg:text-left max-sm:order-2 max-sm:relative max-sm:z-20 max-sm:mt-2.5 max-sm:px-6 max-sm:max-w-none">
             {HERO_LINE}
           </p>
-          <div className="mt-6 sm:mt-8 flex items-center justify-center lg:justify-start w-full max-sm:order-4 max-sm:mt-2 max-sm:relative max-sm:z-20">
+          <div className="mt-6 sm:mt-8 [@media(min-width:1024px)_and_(max-height:720px)]:mt-4 flex items-center justify-center lg:justify-start w-full max-sm:order-4 max-sm:mt-2 max-sm:relative max-sm:z-20">
             <Button
               type="button"
               size="md"
@@ -122,7 +122,7 @@ export const HeroScene = forwardRef<HeroSceneHandle, HeroSceneProps>(function He
             </Button>
           </div>
           {/* The highlight stays in the layout (so the headline, sub line and CTA sit where they did), and is only moved down visually from lg up, so the new parts sit lower while the text does not move. Phone: centred about 6px below the sketch (-22px here + the block's own 28px top margin) */}
-          <div className="w-full lg:w-[calc(100%+96px)] lg:max-w-none lg:translate-y-16 max-sm:order-5 max-sm:mt-[16px] max-sm:px-5 max-sm:flex max-sm:justify-center max-sm:relative max-sm:z-20">
+          <div className="w-full lg:w-[calc(100%+96px)] lg:max-w-none lg:translate-y-16 [@media(min-width:1024px)_and_(max-height:720px)]:translate-y-6 max-sm:order-5 max-sm:mt-[16px] max-sm:px-5 max-sm:flex max-sm:justify-center max-sm:relative max-sm:z-20">
             <HeroHighlights isPaused={isAperturePaused} />
           </div>
         </div>

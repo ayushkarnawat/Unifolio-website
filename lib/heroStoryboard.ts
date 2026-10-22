@@ -32,7 +32,7 @@ export const WIDE_MIN_WIDTH = 1024;
  * where the hero headline ends (about 45% of the viewport at lg/xl) and WIDE_RIGHT_MARGIN px short of the right
  * edge, so nothing is cut off, not even the faded edge of the plate.
  * Stacked (tablet): the visible content (x 0..CONTENT_W) is centred and sits in the upper part of the hero,
- * above the text block, which stays at the bottom of the hero below lg. Phones: see PHONE_MAX_WIDTH. */
+ * above the text block below lg. */
 export const WIDE_LEFT_FRACTION = 0.455;
 export const WIDE_LEFT_GAP = 16; // px
 export const WIDE_CONTENT_LEFT = 20; // art px: left-most thing that matters (a small sphere)
@@ -48,13 +48,9 @@ export const WIDE_VY_TARGET = 0.8; // aim for the content to use this fraction o
 export const CONTENT_W = 820; // art px: everything that matters sits in x 0..820
 export const STACKED_WIDTH_FRACTION = 0.98; // content width as a fraction of the container width
 export const STACKED_MAX_SCALE = 0.95;
-export const STACKED_HEIGHT_FRACTION = 0.42; // cap: artwork height as a fraction of the container height
-export const STACKED_CENTER_Y = 0.4; // artwork vertical centre as a fraction of the container height
-/* Phones (container narrower than PHONE_MAX_WIDTH): the canvas is its own normal-flow box (about 300px tall) between the
- * hero's button and its highlight block, so the artwork is simply centred in that box, as large as the width allows
- * and never taller than PHONE_HEIGHT_FRACTION of the box. */
-export const PHONE_MAX_WIDTH = 640;
-export const PHONE_HEIGHT_FRACTION = 0.9; // cap: artwork height as a fraction of the (phone) canvas box height
+/* Below the wide breakpoint (phones and tablets) the canvas is its own normal-flow box next to the text (about 300px tall on
+ * phones, 300-440px on tablets), so the artwork is simply centred in that box. */
+export const BOX_HEIGHT_FRACTION = 0.9; // cap: artwork height as a fraction of the (phone or tablet) canvas box height
 
 export type Placement = {
   wide: boolean;
@@ -94,14 +90,11 @@ export function computePlacement(w: number, h: number): Placement {
     // keep the vertical centre of the (stretched) artwork at WIDE_CENTER_Y of the container
     y0 = H * WIDE_CENTER_Y - (RING_CENTER[1] + (ART_H / 2 - RING_CENTER[1]) * vy) * sc;
   } else {
-    const phone = W < PHONE_MAX_WIDTH;
-    sc = Math.min(
-      (W * STACKED_WIDTH_FRACTION) / CONTENT_W,
-      STACKED_MAX_SCALE,
-      (H * (phone ? PHONE_HEIGHT_FRACTION : STACKED_HEIGHT_FRACTION)) / ART_H
-    );
+    // Below the wide breakpoint (phones and tablets) the canvas is its own normal-flow box above/below the text, so the
+    // artwork is centred in that box, as large as the width allows and never taller than the box.
+    sc = Math.min((W * STACKED_WIDTH_FRACTION) / CONTENT_W, STACKED_MAX_SCALE, (H * BOX_HEIGHT_FRACTION) / ART_H);
     x0 = (W - CONTENT_W * sc) / 2;
-    y0 = phone ? (H - ART_H * sc) / 2 : H * STACKED_CENTER_Y - (ART_H / 2) * sc;
+    y0 = (H - ART_H * sc) / 2;
   }
   const ringX = x0 + RING_CENTER[0] * sc;
   const ringY = y0 + RING_CENTER[1] * sc;
