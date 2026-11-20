@@ -30,7 +30,24 @@ echo "==> Building static export"
 npm run build
 
 echo "==> Syncing ./out to s3://${S3_BUCKET}"
-aws s3 sync ./out "s3://${S3_BUCKET}" --delete
+
+# 1. Sync hashed Next.js chunks (_next/static/) with long-term immutable caching.
+#    DO NOT pass --delete here: keeping previous chunks ensures visitors with open tabs
+#    or cached HTML do not encounter ChunkLoadError (404) when navigating or lazy-loading.
+aws s3 sync ./out/_next/static "s3://${S3_BUCKET}/_next/static" \
+  --cache-control "public, max-age=31536000, immutable"
+
+# 2. Sync all other assets (images, icons, models, docs) with standard caching.
+aws s3 sync ./out "s3://${S3_BUCKET}" \
+  --exclude "_next/static/*" \
+  --exclude "*.html" \
+  --delete
+
+# 3. Sync HTML files with must-revalidate so browsers immediately pick up new deployments.
+aws s3 sync ./out "s3://${S3_BUCKET}" \
+  --exclude "*" \
+  --include "*.html" \
+  --cache-control "public, max-age=0, must-revalidate"
 
 echo "==> Invalidating CloudFront cache (${CLOUDFRONT_DISTRIBUTION_ID})"
 aws cloudfront create-invalidation \
