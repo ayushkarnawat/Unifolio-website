@@ -7,6 +7,14 @@ import { aboutContent } from "@/content/about";
 export const metadata: Metadata = {
   title: "About — The Founding Story",
   description: "Why Unifolio was built, and who it's for.",
+  alternates: {
+    canonical: "/about",
+  },
+  openGraph: {
+    title: "About — The Founding Story | Unifolio",
+    description: "Why Unifolio was built, and who it's for.",
+    url: "/about",
+  },
 };
 
 export default function AboutPage() {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Manrope, DM_Sans, Caveat } from "next/font/google";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -54,8 +55,10 @@ export const metadata: Metadata = {
   creator: "Keystone Wealthtech Pvt. Ltd.",
   publisher: "Unifolio",
   alternates: {
-    canonical: "/",
     languages: { "en-IN": "/" },
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
   robots: {
     index: true,
@@ -132,6 +135,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="flex min-h-screen flex-col font-sans bg-[#FAF8F5] text-[#111613] selection:bg-[#22C55E]/40 selection:text-white overflow-x-hidden antialiased">
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <>
+            <Script
+              strategy="afterInteractive"
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+            />
+            <Script
+              id="google-analytics"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
+                    page_path: window.location.pathname,
+                  });
+                `,
+              }}
+            />
+          </>
+        )}
         <ThemeProvider>
           <script
             type="application/ld+json"

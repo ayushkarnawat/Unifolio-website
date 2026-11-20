@@ -5,6 +5,15 @@ export const metadata: Metadata = {
   title: "Get Started — Free Onboarding",
   description:
     "Start tracking your mutual funds for free, or book a demo for your advisory practice.",
+  alternates: {
+    canonical: "/get-started",
+  },
+  openGraph: {
+    title: "Get Started — Free Onboarding | Unifolio",
+    description:
+      "Start tracking your mutual funds for free, or book a demo for your advisory practice.",
+    url: "/get-started",
+  },
 };
 
 export default function GetStartedPage() {

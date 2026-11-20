@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: "Unifolio | Track & Understand Your Family's Investments",
   description:
     "Track mutual funds, stocks, FDs, loans and cards for your whole family in one app. See what you really own, what it costs you and where you're at risk.",
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function HomePage() {

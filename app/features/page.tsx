@@ -9,6 +9,15 @@ export const metadata: Metadata = {
   title: "Features — The Product Architecture",
   description:
     "How Unifolio works: import your CAS, see every holding, understand what it costs, and track it over time.",
+  alternates: {
+    canonical: "/features",
+  },
+  openGraph: {
+    title: "Features — The Product Architecture | Unifolio",
+    description:
+      "How Unifolio works: import your CAS, see every holding, understand what it costs, and track it over time.",
+    url: "/features",
+  },
 };
 
 export default function FeaturesPage() {

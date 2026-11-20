@@ -8,6 +8,15 @@ export const metadata: Metadata = {
   title: "Contact — Institutional & Press Inquiries",
   description:
     "Press and partnership inquiries. Looking to sign up or book a demo? Visit Get Started instead.",
+  alternates: {
+    canonical: "/contact",
+  },
+  openGraph: {
+    title: "Contact — Institutional & Press Inquiries | Unifolio",
+    description:
+      "Press and partnership inquiries. Looking to sign up or book a demo? Visit Get Started instead.",
+    url: "/contact",
+  },
 };
 
 export default function ContactPage() {

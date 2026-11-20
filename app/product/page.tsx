@@ -7,6 +7,15 @@ export const metadata: Metadata = {
   title: "Product — Understand Your Wealth | Unifolio",
   description:
     "Explore the five core dimensions of wealth intelligence: Ask anything, See everything, Understand what you own, Know your risk, and Plan ahead.",
+  alternates: {
+    canonical: "/product",
+  },
+  openGraph: {
+    title: "Product — Understand Your Wealth | Unifolio",
+    description:
+      "Explore the five core dimensions of wealth intelligence: Ask anything, See everything, Understand what you own, Know your risk, and Plan ahead.",
+    url: "/product",
+  },
 };
 
 export default function ProductPage() {

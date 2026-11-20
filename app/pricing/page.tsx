@@ -7,6 +7,14 @@ import { SectionLabel } from "@/components/ui/SectionLabel";
 export const metadata: Metadata = {
   title: "Pricing — Free Forever Core",
   description: "Unifolio is free, forever. No card required. See how it compares to Mprofit.",
+  alternates: {
+    canonical: "/pricing",
+  },
+  openGraph: {
+    title: "Pricing — Free Forever Core | Unifolio",
+    description: "Unifolio is free, forever. No card required. See how it compares to Mprofit.",
+    url: "/pricing",
+  },
 };
 
 export default function PricingPage() {
